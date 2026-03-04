@@ -1,0 +1,113 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_0
+displayName: Migrate to DataNucleus 5.0
+description: >-
+  Migrate DataNucleus 4.x applications to 5.0. This recipe handles package relocations,
+  type renames, property key changes, and dependency updates.
+tags:
+  - datanucleus
+  - jdo
+  - jpa
+recipeList:
+  - org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_4_0
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.datanucleus
+      artifactId: "*"
+      newVersion: 5.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.datanucleus
+      oldArtifactId: datanucleus-connection-pool
+      newGroupId: org.datanucleus
+      newArtifactId: datanucleus-connection-pool2
+      newVersion: 5.0.x
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_5_0
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusTypeChanges_5_0
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_0
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_5_0
+displayName: DataNucleus 5.0 package moves
+description: Relocate packages that were moved in DataNucleus 5.0.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.query.cache
+      newPackageName: org.datanucleus.query.compiler
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.query.symbol
+      newPackageName: org.datanucleus.query.compiler
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.encryption
+      newPackageName: org.datanucleus.store
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.scostore
+      newPackageName: org.datanucleus.store.types.scostore
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.exceptions
+      newPackageName: org.datanucleus.exceptions
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusTypeChanges_5_0
+displayName: DataNucleus 5.0 type changes
+description: Rename types that were changed in DataNucleus 5.0.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.datanucleus.store.rdbms.adapter.MSSQLServerAdapter
+      newFullyQualifiedTypeName: org.datanucleus.store.rdbms.adapter.SQLServerAdapter
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_0
+displayName: DataNucleus 5.0 property migrations
+description: Rename property keys that changed in DataNucleus 5.0.
+recipeList:
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.query.compileOptimiser
+      newPropertyKey: datanucleus.query.compileOptimiseVarThis
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.rdbms.adapter.informixUseSerialForIdentity
+      newPropertyKey: datanucleus.rdbms.informix.useSerialForIdentity
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.rdbms.oracleNlsSortOrder
+      newPropertyKey: datanucleus.rdbms.oracle.nlsSortOrder
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.schema.autoCreateSchema
+      newPropertyKey: datanucleus.schema.autoCreateDatabase
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.query.compileOptimiser
+      newValue: datanucleus.query.compileOptimiseVarThis
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.rdbms.adapter.informixUseSerialForIdentity
+      newValue: datanucleus.rdbms.informix.useSerialForIdentity
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.rdbms.oracleNlsSortOrder
+      newValue: datanucleus.rdbms.oracle.nlsSortOrder
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.schema.autoCreateSchema
+      newValue: datanucleus.schema.autoCreateDatabase

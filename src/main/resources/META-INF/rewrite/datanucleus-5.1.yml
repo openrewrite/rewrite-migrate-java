@@ -1,0 +1,113 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_1
+displayName: Migrate to DataNucleus 5.1
+description: >-
+  Migrate DataNucleus applications to 5.1. This recipe first applies the 5.0 migration,
+  then handles the transaction namespace reorganization and other property renames introduced in 5.1.
+tags:
+  - datanucleus
+  - jdo
+  - jpa
+recipeList:
+  - org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_0
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.datanucleus
+      artifactId: "*"
+      newVersion: 5.1.x
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_1
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_1
+displayName: DataNucleus 5.1 property migrations
+description: Rename property keys that changed in DataNucleus 5.1.
+recipeList:
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.nontransactionalRead
+      newPropertyKey: datanucleus.transaction.nontx.read
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.nontransactionalWrite
+      newPropertyKey: datanucleus.transaction.nontx.write
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.nontx.atomic
+      newPropertyKey: datanucleus.transaction.nontx.atomic
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.transactionType
+      newPropertyKey: datanucleus.transaction.type
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.transactionIsolation
+      newPropertyKey: datanucleus.transaction.isolation
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.jtaLocator
+      newPropertyKey: datanucleus.transaction.jta.transactionManagerLocator
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.jtaJndiLocation
+      newPropertyKey: datanucleus.transaction.jta.transactionManagerJNDI
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.datastoreTransactionFlushLimit
+      newPropertyKey: datanucleus.flush.auto.objectLimit
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.cache.level2.timeout
+      newPropertyKey: datanucleus.cache.level2.expireMillis
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.nontransactionalRead
+      newValue: datanucleus.transaction.nontx.read
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.nontransactionalWrite
+      newValue: datanucleus.transaction.nontx.write
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.nontx.atomic
+      newValue: datanucleus.transaction.nontx.atomic
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.transactionType
+      newValue: datanucleus.transaction.type
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.transactionIsolation
+      newValue: datanucleus.transaction.isolation
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.jtaLocator
+      newValue: datanucleus.transaction.jta.transactionManagerLocator
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.jtaJndiLocation
+      newValue: datanucleus.transaction.jta.transactionManagerJNDI
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.datastoreTransactionFlushLimit
+      newValue: datanucleus.flush.auto.objectLimit
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.cache.level2.timeout
+      newValue: datanucleus.cache.level2.expireMillis
