@@ -428,43 +428,32 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void lombokBumpedGoingTo17() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.mycompany.app</groupId>
-                <artifactId>my-app</artifactId>
-                <version>1</version>
-                <dependencies>
-                  <dependency>
-                    <groupId>org.projectlombok</groupId>
-                    <artifactId>lombok</artifactId>
-                    <version>1.16.22</version>
-                  </dependency>
-                </dependencies>
-              </project>
-              """,
-            spec -> spec.after(actual ->
+          spec -> spec.cycles(2).expectedCyclesThatMakeChanges(2),
+          mavenProject("project",
+            //language=xml
+            pomXml(
               """
                 <project>
                   <modelVersion>4.0.0</modelVersion>
                   <groupId>com.mycompany.app</groupId>
                   <artifactId>my-app</artifactId>
                   <version>1</version>
-                  <properties>
-                    <maven.compiler.release>17</maven.compiler.release>
-                  </properties>
                   <dependencies>
                     <dependency>
                       <groupId>org.projectlombok</groupId>
                       <artifactId>lombok</artifactId>
-                      <version>%s</version>
+                      <version>1.16.22</version>
                     </dependency>
                   </dependencies>
                 </project>
-                """.formatted(Pattern.compile("<version>(1\\.18.*)</version>")
-                .matcher(actual).results().findFirst().orElseThrow().group(1))
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>17</maven.compiler.release>")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
+              )
             )
           )
         );
