@@ -17,12 +17,18 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.marker.BuildTool;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.Tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.properties.Assertions.properties;
+import static org.openrewrite.test.SourceSpecs.other;
+import static org.openrewrite.test.SourceSpecs.text;
 
 class UpgradeToJava25Test implements RewriteTest {
 
@@ -103,6 +109,38 @@ class UpgradeToJava25Test implements RewriteTest {
                 .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.1\\.")
                 .actual())
           )
+        );
+    }
+
+    @Test
+    void upgradesGradleWrapperForJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25")
+            .beforeRecipe(withToolingApi())
+            .allSources(source -> source.markers(new BuildTool(Tree.randomId(), BuildTool.Type.Gradle, "8.5"))),
+          properties(
+            """
+              distributionBase=GRADLE_USER_HOME
+              distributionPath=wrapper/dists
+              distributionUrl=https\\://services.gradle.org/distributions/gradle-8.5-bin.zip
+              zipStoreBase=GRADLE_USER_HOME
+              zipStorePath=wrapper/dists
+              """,
+            spec -> spec.path("gradle/wrapper/gradle-wrapper.properties")
+              .after(actual -> {
+                  assertThat(actual).containsPattern("gradle-9\\.1\\.\\d+-bin\\.zip");
+                  return actual;
+              })
+          ),
+          text("", spec -> spec.path("gradlew").after(a -> {
+              assertThat(a).isNotEmpty();
+              return a + "\n";
+          })),
+          text("", spec -> spec.path("gradlew.bat").after(a -> {
+              assertThat(a).isNotEmpty();
+              return a + "\n";
+          })),
+          other("", spec -> spec.path("gradle/wrapper/gradle-wrapper.jar"))
         );
     }
 

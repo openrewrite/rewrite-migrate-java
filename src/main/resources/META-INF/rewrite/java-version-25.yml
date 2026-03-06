@@ -200,7 +200,7 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
   - org.openrewrite.gradle.UpdateGradleWrapper:
-      version: 9.1
+      version: 9.1.0
       addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
