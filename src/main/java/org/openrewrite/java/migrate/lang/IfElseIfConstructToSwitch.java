@@ -27,8 +27,10 @@ import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
@@ -225,34 +227,75 @@ public class IfElseIfConstructToSwitch extends Recipe {
          * JavaTemplate uses raw string substitution (#{}), which loses type information
          * for non-JDK types. This method restores the original type information from the
          * instanceof checks onto the generated switch case labels.
+         * When the type is completely unresolvable, JavaTemplate may not produce a
+         * J.VariableDeclarations at all, so we reconstruct one from the original instanceof.
          */
         private J.Switch fixTypeAttribution(J.Switch switch_) {
             Iterator<J.InstanceOf> instanceOfs = patternMatchers.keySet().iterator();
+            // Cases are ordered: [null case (optional)], [pattern cases...], [default case]
+            int nullCaseOffset = nullCheckedParameter != null ? 1 : 0;
+            int patternCaseCount = patternMatchers.size();
             return switch_.withCases(switch_.getCases().withStatements(
-                    ListUtils.map(switch_.getCases().getStatements(), stmt -> {
-                        if (stmt instanceof J.Case && instanceOfs.hasNext()) {
-                            J.Case case_ = (J.Case) stmt;
-                            if (!case_.getCaseLabels().isEmpty() && case_.getCaseLabels().get(0) instanceof J.VariableDeclarations) {
-                                J.InstanceOf instanceOf = instanceOfs.next();
-                                J.VariableDeclarations varDecl = (J.VariableDeclarations) case_.getCaseLabels().get(0);
-                                // Replace typeExpression with the original clazz (which has proper type info)
-                                varDecl = varDecl.withTypeExpression(
-                                        varDecl.getTypeExpression() != null ?
-                                                instanceOf.getClazz().withPrefix(varDecl.getTypeExpression().getPrefix()) :
-                                                instanceOf.getClazz().withPrefix(Space.EMPTY));
-                                // Fix variable type from original pattern
-                                if (instanceOf.getPattern() instanceof J.Identifier && !varDecl.getVariables().isEmpty()) {
-                                    J.Identifier originalPattern = (J.Identifier) instanceOf.getPattern();
-                                    J.VariableDeclarations.NamedVariable var0 = varDecl.getVariables().get(0);
-                                    varDecl = varDecl.withVariables(singletonList(
-                                            var0.withType(originalPattern.getType())
-                                                    .withName(var0.getName().withType(originalPattern.getType()))));
-                                }
-                                return case_.withCaseLabels(singletonList(varDecl.withPrefix(case_.getCaseLabels().get(0).getPrefix())));
-                            }
+                    ListUtils.map(switch_.getCases().getStatements(), (currentIndex, stmt) -> {
+                        if (!(stmt instanceof J.Case)) {
+                            return stmt;
                         }
-                        return stmt;
+                        int patternIndex = currentIndex - nullCaseOffset;
+                        if (patternIndex < 0 || patternIndex >= patternCaseCount || !instanceOfs.hasNext()) {
+                            return stmt; // null case or default case
+                        }
+                        J.Case case_ = (J.Case) stmt;
+                        J.InstanceOf instanceOf = instanceOfs.next();
+                        J label = case_.getCaseLabels().get(0);
+
+                        if (label instanceof J.VariableDeclarations) {
+                            J.VariableDeclarations varDecl = (J.VariableDeclarations) label;
+                            // Replace typeExpression with the original clazz (which has proper type info)
+                            varDecl = varDecl.withTypeExpression(
+                                    varDecl.getTypeExpression() != null ?
+                                            instanceOf.getClazz().withPrefix(varDecl.getTypeExpression().getPrefix()) :
+                                            instanceOf.getClazz().withPrefix(Space.EMPTY));
+                            // Fix variable type from original pattern
+                            if (instanceOf.getPattern() instanceof J.Identifier && !varDecl.getVariables().isEmpty()) {
+                                J.Identifier originalPattern = (J.Identifier) instanceOf.getPattern();
+                                J.VariableDeclarations.NamedVariable var0 = varDecl.getVariables().get(0);
+                                varDecl = varDecl.withVariables(singletonList(
+                                        var0.withType(originalPattern.getType())
+                                                .withName(var0.getName().withType(originalPattern.getType()))));
+                            }
+                            return case_.withCaseLabels(singletonList(varDecl.withPrefix(label.getPrefix())));
+                        } else {
+                            // JavaTemplate couldn't resolve the type, so no VariableDeclarations was produced.
+                            // Reconstruct one from the original instanceof pattern.
+                            return case_.withCaseLabels(singletonList(
+                                    buildVariableDeclarations(instanceOf, label.getPrefix())));
+                        }
                     })));
+        }
+
+        @SuppressWarnings("deprecation")
+        private J.VariableDeclarations buildVariableDeclarations(J.InstanceOf instanceOf, Space prefix) {
+            J.Identifier pattern = (J.Identifier) instanceOf.getPattern();
+            J.VariableDeclarations.NamedVariable namedVar = new J.VariableDeclarations.NamedVariable(
+                    Tree.randomId(),
+                    Space.SINGLE_SPACE,
+                    Markers.EMPTY,
+                    pattern.withPrefix(Space.EMPTY),
+                    Collections.emptyList(),
+                    null,
+                    null
+            );
+            return new J.VariableDeclarations(
+                    Tree.randomId(),
+                    prefix,
+                    Markers.EMPTY,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    instanceOf.getClazz().withPrefix(Space.EMPTY),
+                    null,
+                    null,
+                    singletonList(JRightPadded.build(namedVar))
+            );
         }
 
         private Optional<Expression> switchOn() {
