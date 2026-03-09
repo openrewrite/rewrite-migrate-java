@@ -2,6 +2,7 @@
 11.0.15-trava
 11.0.29-albba
 11.0.29-bisheng
+11.0.30-albba
 11.0.30-amzn
 11.0.30-kona
 11.0.30-librca
@@ -32,6 +33,7 @@
 17.0.18.fx-librca
 17.0.18.fx-zulu
 17.0.9-graalce
+21.0.10-albba
 21.0.10-amzn
 21.0.10-graal
 21.0.10-jbr
@@ -113,6 +115,7 @@
 26.ea.13-graal
 26.ea.35-open
 27.ea.10-open
+27.ea.11-open
 27.ea.9-open
 6.0.119-zulu
 7.0.352-zulu
@@ -120,6 +123,7 @@
 8.0.472-albba
 8.0.472-amzn
 8.0.472-bisheng
+8.0.482-albba
 8.0.482-kona
 8.0.482-librca
 8.0.482-sem

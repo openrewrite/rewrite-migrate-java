@@ -74,6 +74,7 @@ recipeList:
       artifactId: mapstruct*
       newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
+  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

@@ -1,0 +1,173 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_4_0
+displayName: Migrate to DataNucleus 4.0
+description: >-
+  Migrate DataNucleus 3.x applications to 4.0. This recipe handles package relocations,
+  type renames, property key changes, and dependency updates introduced in AccessPlatform 4.0.
+tags:
+  - datanucleus
+  - jdo
+  - jpa
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.datanucleus
+      artifactId: "*"
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.RemoveDependency:
+      groupId: org.datanucleus
+      artifactId: datanucleus-enhancer
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_4_0
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusTypeChanges_4_0
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_4_0
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_4_0
+displayName: DataNucleus 4.0 package moves
+description: Relocate packages that were moved in DataNucleus 4.0.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.types.simple
+      newPackageName: org.datanucleus.store.types.wrappers
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.types.backed
+      newPackageName: org.datanucleus.store.types.wrappers.backed
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.query.evaluator.memory
+      newPackageName: org.datanucleus.query.inmemory
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.query.node
+      newPackageName: org.datanucleus.query.compiler
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.jta
+      newPackageName: org.datanucleus.transaction.jta
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusTypeChanges_4_0
+displayName: DataNucleus 4.0 type changes
+description: Rename types that were changed in DataNucleus 4.0.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.datanucleus.PersistenceConfiguration
+      newFullyQualifiedTypeName: org.datanucleus.Configuration
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.datanucleus.JDOClassLoaderResolver
+      newFullyQualifiedTypeName: org.datanucleus.ClassLoaderResolverImpl
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_4_0
+displayName: DataNucleus 4.0 property migrations
+description: Rename property keys that changed in DataNucleus 4.0.
+recipeList:
+  # Schema auto-create properties
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.autoCreateSchema
+      newPropertyKey: datanucleus.schema.autoCreateAll
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.autoCreateTables
+      newPropertyKey: datanucleus.schema.autoCreateTables
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.autoCreateColumns
+      newPropertyKey: datanucleus.schema.autoCreateColumns
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.autoCreateConstraints
+      newPropertyKey: datanucleus.schema.autoCreateConstraints
+  # Schema validate properties
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.validateSchema
+      newPropertyKey: datanucleus.schema.validateAll
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.validateTables
+      newPropertyKey: datanucleus.schema.validateTables
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.validateColumns
+      newPropertyKey: datanucleus.schema.validateColumns
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.validateConstraints
+      newPropertyKey: datanucleus.schema.validateConstraints
+  # Metadata properties
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.metadata.validate
+      newPropertyKey: datanucleus.metadata.xml.validate
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.defaultInheritanceStrategy
+      newPropertyKey: datanucleus.metadata.defaultInheritanceStrategy
+  # Other
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.managedRuntime
+      newPropertyKey: datanucleus.jmxType
+  # XML equivalents
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.autoCreateSchema
+      newValue: datanucleus.schema.autoCreateAll
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.autoCreateTables
+      newValue: datanucleus.schema.autoCreateTables
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.autoCreateColumns
+      newValue: datanucleus.schema.autoCreateColumns
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.autoCreateConstraints
+      newValue: datanucleus.schema.autoCreateConstraints
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.validateSchema
+      newValue: datanucleus.schema.validateAll
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.validateTables
+      newValue: datanucleus.schema.validateTables
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.validateColumns
+      newValue: datanucleus.schema.validateColumns
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.validateConstraints
+      newValue: datanucleus.schema.validateConstraints
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.metadata.validate
+      newValue: datanucleus.metadata.xml.validate
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.defaultInheritanceStrategy
+      newValue: datanucleus.metadata.defaultInheritanceStrategy
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.managedRuntime
+      newValue: datanucleus.jmxType

@@ -38,7 +38,7 @@ recipeDependencies {
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
     compileOnly("org.projectlombok:lombok:latest.release")
-    compileOnly("org.codehaus.groovy:groovy:latest.release")
+    compileOnly("org.apache.groovy:groovy:4.+")
 
     annotationProcessor("org.projectlombok:lombok:latest.release")
     testImplementation("org.projectlombok:lombok:latest.release")
@@ -51,6 +51,8 @@ dependencies {
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
+    implementation("org.openrewrite:rewrite-properties")
+    implementation("org.openrewrite:rewrite-xml")
     implementation("org.openrewrite:rewrite-json")
     implementation("org.openrewrite:rewrite-maven")
     implementation("org.openrewrite:rewrite-gradle")
@@ -89,7 +91,7 @@ dependencies {
     testRuntimeOnly("commons-logging:commons-logging:1.3.2")
     testRuntimeOnly("org.apache.logging.log4j:log4j-api:2.23.1")
     testRuntimeOnly("org.apache.johnzon:johnzon-core:1.2.18")
-    testRuntimeOnly("org.codehaus.groovy:groovy:latest.release")
+    testRuntimeOnly("org.apache.groovy:groovy:4.+")
     testRuntimeOnly("org.jboss.logging:jboss-logging:3.6.0.Final")
     testRuntimeOnly("jakarta.annotation:jakarta.annotation-api:2.1.1")
     testRuntimeOnly("org.springframework:spring-core:6.1.13")

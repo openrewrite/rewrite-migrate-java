@@ -1,0 +1,76 @@
+#
+# Copyright 2025 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_2
+displayName: Migrate to DataNucleus 5.2
+description: >-
+  Migrate DataNucleus applications to 5.2. This recipe first applies the 5.1 migration,
+  then handles the column mapping package move and query-related property renames introduced in 5.2.
+tags:
+  - datanucleus
+  - jdo
+  - jpa
+recipeList:
+  - org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_1
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.datanucleus
+      artifactId: "*"
+      newVersion: 5.2.x
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_5_2
+  - org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_2
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusPackageMoves_5_2
+displayName: DataNucleus 5.2 package moves
+description: Relocate packages that were moved in DataNucleus 5.2.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.datanucleus.store.rdbms.mapping.datastore
+      newPackageName: org.datanucleus.store.rdbms.mapping.column
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.datanucleus.DataNucleusProperties_5_2
+displayName: DataNucleus 5.2 property migrations
+description: Rename property keys that changed in DataNucleus 5.2.
+recipeList:
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.jdoql.strict
+      newPropertyKey: datanucleus.query.jdoql.strict
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.jpql.strict
+      newPropertyKey: datanucleus.query.jpql.strict
+  - org.openrewrite.properties.ChangePropertyKey:
+      oldPropertyKey: datanucleus.sql.syntaxChecks
+      newPropertyKey: datanucleus.query.sql.syntaxChecks
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.jdoql.strict
+      newValue: datanucleus.query.jdoql.strict
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.jpql.strict
+      newValue: datanucleus.query.jpql.strict
+  - org.openrewrite.xml.ChangeTagAttribute:
+      elementName: property
+      attributeName: name
+      oldValue: datanucleus.sql.syntaxChecks
+      newValue: datanucleus.query.sql.syntaxChecks
