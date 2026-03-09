@@ -235,13 +235,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // Cases are ordered: [null case (optional)], [pattern cases...], [default case]
             int nullCaseOffset = nullCheckedParameter != null ? 1 : 0;
             int patternCaseCount = patternMatchers.size();
-            int[] index = {0};
             return switch_.withCases(switch_.getCases().withStatements(
-                    ListUtils.map(switch_.getCases().getStatements(), stmt -> {
+                    ListUtils.map(switch_.getCases().getStatements(), (currentIndex, stmt) -> {
                         if (!(stmt instanceof J.Case)) {
                             return stmt;
                         }
-                        int currentIndex = index[0]++;
                         int patternIndex = currentIndex - nullCaseOffset;
                         if (patternIndex < 0 || patternIndex >= patternCaseCount || !instanceOfs.hasNext()) {
                             return stmt; // null case or default case
