@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +28,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
 
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class ReplaceAWTGetPeerMethod extends Recipe {
@@ -47,9 +45,13 @@ public class ReplaceAWTGetPeerMethod extends Recipe {
     String lightweightPeerFQCN;
 
     @JsonCreator
-    public ReplaceAWTGetPeerMethod() {
-        getPeerMethodPattern = "java.awt.* getPeer()";
-        lightweightPeerFQCN = "java.awt.peer.LightweightPeer";
+    public ReplaceAWTGetPeerMethod(
+            @Nullable String getPeerMethodPattern,
+            @Nullable String lightweightPeerFQCN) {
+        this.getPeerMethodPattern = getPeerMethodPattern == null ?
+                "java.awt.* getPeer()" : getPeerMethodPattern;
+        this.lightweightPeerFQCN = lightweightPeerFQCN == null ?
+                "java.awt.peer.LightweightPeer" : lightweightPeerFQCN;
     }
 
     String displayName = "Replace AWT `getPeer()` method";

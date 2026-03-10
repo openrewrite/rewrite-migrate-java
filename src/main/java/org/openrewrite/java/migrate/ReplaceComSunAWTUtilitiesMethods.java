@@ -16,9 +16,9 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
@@ -28,7 +28,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
@@ -77,14 +76,28 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
     String setComponentMixingCutoutShapePattern;
 
     @JsonCreator
-    public ReplaceComSunAWTUtilitiesMethods() {
-        getAWTIsWindowsTranslucencyPattern = "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)";
-        getWindowOpacityPattern = "com.sun.awt.AWTUtilities getWindowOpacity(java.awt.Window)";
-        getWindowShapePattern = "com.sun.awt.AWTUtilities getWindowShape(java.awt.Window)";
-        isWindowOpaquePattern = "com.sun.awt.AWTUtilities isWindowOpaque(java.awt.Window)";
-        isTranslucencyCapablePattern = "com.sun.awt.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)";
-        setComponentMixingCutoutShapePattern = "com.sun.awt.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)";
-        setWindowOpacityPattern = "com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window, float)";
+    public ReplaceComSunAWTUtilitiesMethods(
+            @Nullable String getAWTIsWindowsTranslucencyPattern,
+            @Nullable String isWindowOpaquePattern,
+            @Nullable String isTranslucencyCapablePattern,
+            @Nullable String setWindowOpacityPattern,
+            @Nullable String getWindowOpacityPattern,
+            @Nullable String getWindowShapePattern,
+            @Nullable String setComponentMixingCutoutShapePattern) {
+        this.getAWTIsWindowsTranslucencyPattern = getAWTIsWindowsTranslucencyPattern == null ?
+                "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)" : getAWTIsWindowsTranslucencyPattern;
+        this.isWindowOpaquePattern = isWindowOpaquePattern == null ?
+                "com.sun.awt.AWTUtilities isWindowOpaque(java.awt.Window)" : isWindowOpaquePattern;
+        this.isTranslucencyCapablePattern = isTranslucencyCapablePattern == null ?
+                "com.sun.awt.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)" : isTranslucencyCapablePattern;
+        this.setWindowOpacityPattern = setWindowOpacityPattern == null ?
+                "com.sun.awt.AWTUtilities setWindowOpacity(java.awt.Window, float)" : setWindowOpacityPattern;
+        this.getWindowOpacityPattern = getWindowOpacityPattern == null ?
+                "com.sun.awt.AWTUtilities getWindowOpacity(java.awt.Window)" : getWindowOpacityPattern;
+        this.getWindowShapePattern = getWindowShapePattern == null ?
+                "com.sun.awt.AWTUtilities getWindowShape(java.awt.Window)" : getWindowShapePattern;
+        this.setComponentMixingCutoutShapePattern = setComponentMixingCutoutShapePattern == null ?
+                "com.sun.awt.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)" : setComponentMixingCutoutShapePattern;
     }
 
     String displayName = "Replace `com.sun.awt.AWTUtilities` static method invocations";
