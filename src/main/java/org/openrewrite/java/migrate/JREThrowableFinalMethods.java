@@ -16,8 +16,10 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -31,6 +33,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 @EqualsAndHashCode(callSuper = false)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class JREThrowableFinalMethods extends Recipe {
 
     private final String methodPatternAddSuppressed;
@@ -40,14 +43,6 @@ public class JREThrowableFinalMethods extends Recipe {
     public JREThrowableFinalMethods() {
         this.methodPatternAddSuppressed = "*..* addSuppressed(Throwable)";
         this.methodPatternGetSuppressed = "*..* getSuppressed()";
-    }
-
-    /**
-     * Overload constructor to allow for custom method patterns used in tests only.
-     */
-    JREThrowableFinalMethods(String methodPatternAddSuppressed, String methodPatternGetSuppressed) {
-        this.methodPatternAddSuppressed = methodPatternAddSuppressed;
-        this.methodPatternGetSuppressed = methodPatternGetSuppressed;
     }
 
     @Getter

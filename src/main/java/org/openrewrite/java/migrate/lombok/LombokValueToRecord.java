@@ -212,6 +212,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     }
 
+    @RequiredArgsConstructor
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
         private static final JavaTemplate TO_STRING_TEMPLATE = JavaTemplate
                 .builder("@Override public String toString() { return \"#{}(\" +\n#{}\n\")\"; }")
@@ -225,11 +226,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private final @Nullable Boolean useExactToString;
         private final Map<String, Set<String>> recordTypeToMembers;
-
-        public LombokValueToRecordVisitor(@Nullable Boolean useExactToString, Map<String, Set<String>> recordTypeToMembers) {
-            this.useExactToString = useExactToString;
-            this.recordTypeToMembers = recordTypeToMembers;
-        }
 
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {

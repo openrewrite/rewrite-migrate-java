@@ -15,7 +15,9 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -33,6 +35,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     private final String guavaType;
@@ -45,11 +48,6 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
             required = false)
     @Nullable
     Boolean convertReturnType;
-
-    AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
-        this.guavaType = guavaType;
-        this.javaType = javaType;
-    }
 
     AbstractNoGuavaImmutableOf(String guavaType, String javaType, @Nullable Boolean convertReturnType) {
         this.guavaType = guavaType;

@@ -15,7 +15,9 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -161,14 +163,10 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             return doc;
         }
 
+        @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
         private static final class ConvertedEntry {
             final Json.JsonObject entry;
             final boolean hasWarning;
-
-            ConvertedEntry(Json.JsonObject entry, boolean hasWarning) {
-                this.entry = entry;
-                this.hasWarning = hasWarning;
-            }
         }
 
         private @Nullable ConvertedEntry convertPatternEntry(Json.JsonObject entryObj) {
@@ -309,14 +307,10 @@ public class MigrateGraalVMResourceConfig extends Recipe {
 
         // Regex to glob conversion logic integrated from RegexToGlobConverter
 
+        @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
         private static final class ConversionResult {
             final @Nullable String glob;
             final @Nullable String warningMessage;
-
-            ConversionResult(@Nullable String glob, @Nullable String warningMessage) {
-                this.glob = glob;
-                this.warningMessage = warningMessage;
-            }
 
             boolean isSuccessful() {
                 return glob != null;
