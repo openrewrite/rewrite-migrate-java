@@ -37,6 +37,7 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.openrewrite.java.migrate.lang.NullCheck.Matcher.nullCheck;
 import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
@@ -246,30 +247,29 @@ public class IfElseIfConstructToSwitch extends Recipe {
                         }
                         J.Case case_ = (J.Case) stmt;
                         J.InstanceOf instanceOf = instanceOfs.next();
-                        J label = case_.getCaseLabels().get(0);
+                        J label = case_.getCaseLabels().get( 0 );
 
                         if (label instanceof J.VariableDeclarations) {
                             J.VariableDeclarations varDecl = (J.VariableDeclarations) label;
                             // Replace typeExpression with the original clazz (which has proper type info)
                             varDecl = varDecl.withTypeExpression(
                                     varDecl.getTypeExpression() != null ?
-                                            instanceOf.getClazz().withPrefix(varDecl.getTypeExpression().getPrefix()) :
-                                            instanceOf.getClazz().withPrefix(Space.EMPTY));
+                                            instanceOf.getClazz().withPrefix( varDecl.getTypeExpression().getPrefix() ) :
+                                            instanceOf.getClazz().withPrefix( Space.EMPTY ) );
                             // Fix variable type from original pattern
                             if (instanceOf.getPattern() instanceof J.Identifier && !varDecl.getVariables().isEmpty()) {
                                 J.Identifier originalPattern = (J.Identifier) instanceOf.getPattern();
-                                J.VariableDeclarations.NamedVariable var0 = varDecl.getVariables().get(0);
-                                varDecl = varDecl.withVariables(singletonList(
-                                        var0.withType(originalPattern.getType())
-                                                .withName(var0.getName().withType(originalPattern.getType()))));
+                                J.VariableDeclarations.NamedVariable var0 = varDecl.getVariables().get( 0 );
+                                varDecl = varDecl.withVariables( singletonList(
+                                        var0.withType( originalPattern.getType() )
+                                                .withName( var0.getName().withType( originalPattern.getType() ) ) ) );
                             }
-                            return case_.withCaseLabels(singletonList(varDecl.withPrefix(label.getPrefix())));
-                        } else {
-                            // JavaTemplate couldn't resolve the type, so no VariableDeclarations was produced.
-                            // Reconstruct one from the original instanceof pattern.
-                            return case_.withCaseLabels(singletonList(
-                                    buildVariableDeclarations(instanceOf, label.getPrefix())));
+                            return case_.withCaseLabels( singletonList( varDecl.withPrefix( label.getPrefix() ) ) );
                         }
+                        // JavaTemplate couldn't resolve the type, so no VariableDeclarations was produced.
+                        // Reconstruct one from the original instanceof pattern.
+                        return case_.withCaseLabels( singletonList(
+                                buildVariableDeclarations( instanceOf, label.getPrefix() ) ) );
                     })));
         }
 
@@ -281,7 +281,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     Space.SINGLE_SPACE,
                     Markers.EMPTY,
                     pattern.withPrefix(Space.EMPTY),
-                    Collections.emptyList(),
+                    emptyList(),
                     null,
                     null
             );
@@ -289,8 +289,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     Tree.randomId(),
                     prefix,
                     Markers.EMPTY,
-                    Collections.emptyList(),
-                    Collections.emptyList(),
+                    emptyList(),
+                    emptyList(),
                     instanceOf.getClazz().withPrefix(Space.EMPTY),
                     null,
                     null,

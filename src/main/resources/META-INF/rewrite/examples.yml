@@ -3498,6 +3498,80 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_4_0
+examples:
+- description: '`UpgradeDataNucleus_4_0Test#renameSchemaPropertyKeys`'
+  sources:
+  - before: |
+      datanucleus.autoCreateSchema=true
+      datanucleus.autoCreateTables=true
+      datanucleus.autoCreateColumns=true
+      datanucleus.autoCreateConstraints=true
+      datanucleus.validateSchema=true
+      datanucleus.validateTables=true
+      datanucleus.validateColumns=true
+      datanucleus.validateConstraints=true
+    after: |
+      datanucleus.schema.autoCreateAll=true
+      datanucleus.schema.autoCreateTables=true
+      datanucleus.schema.autoCreateColumns=true
+      datanucleus.schema.autoCreateConstraints=true
+      datanucleus.schema.validateAll=true
+      datanucleus.schema.validateTables=true
+      datanucleus.schema.validateColumns=true
+      datanucleus.schema.validateConstraints=true
+    language: properties
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_0
+examples:
+- description: '`UpgradeDataNucleus_5_0Test#renamePropertyKeys`'
+  sources:
+  - before: |
+      datanucleus.query.compileOptimiser=true
+      datanucleus.rdbms.adapter.informixUseSerialForIdentity=true
+      datanucleus.rdbms.oracleNlsSortOrder=BINARY
+      datanucleus.schema.autoCreateSchema=true
+    after: |
+      datanucleus.query.compileOptimiseVarThis=true
+      datanucleus.rdbms.informix.useSerialForIdentity=true
+      datanucleus.rdbms.oracle.nlsSortOrder=BINARY
+      datanucleus.schema.autoCreateDatabase=true
+    language: properties
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_1
+examples:
+- description: '`UpgradeDataNucleus_5_1Test#renameTransactionProperties`'
+  sources:
+  - before: |
+      datanucleus.nontransactionalRead=true
+      datanucleus.nontransactionalWrite=false
+      datanucleus.transactionType=JTA
+      datanucleus.transactionIsolation=read-committed
+    after: |
+      datanucleus.transaction.nontx.read=true
+      datanucleus.transaction.nontx.write=false
+      datanucleus.transaction.type=JTA
+      datanucleus.transaction.isolation=read-committed
+    language: properties
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_2
+examples:
+- description: '`UpgradeDataNucleus_5_2Test#renameQueryPropertyKeys`'
+  sources:
+  - before: |
+      datanucleus.jdoql.strict=true
+      datanucleus.jpql.strict=true
+      datanucleus.sql.syntaxChecks=true
+    after: |
+      datanucleus.query.jdoql.strict=true
+      datanucleus.query.jpql.strict=true
+      datanucleus.query.sql.syntaxChecks=true
+    language: properties
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuava
 examples:
 - description: '`NoGuavaJava21Test#preferMathClampForDouble`'
@@ -7863,6 +7937,31 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.UseAllArgsConstructor
+examples:
+- description: '`UseAllArgsConstructorTest#allNonStaticFields`'
+  sources:
+  - before: |
+      class A {
+          private final String name;
+          private int age;
+
+          public A(String name, int age) {
+              this.name = name;
+              this.age = age;
+          }
+      }
+    after: |
+      import lombok.AllArgsConstructor;
+
+      @AllArgsConstructor
+      class A {
+          private final String name;
+          private int age;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lombok.UseLombokGetter
 examples:
 - description: '`UseLombokGetterTest#replaceGetter`'
@@ -7924,6 +8023,28 @@ examples:
 
       @NoArgsConstructor
       class A {
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lombok.UseRequiredArgsConstructor
+examples:
+- description: '`UseRequiredArgsConstructorTest#singleFinalField`'
+  sources:
+  - before: |
+      class A {
+          private final int foo;
+
+          public A(int foo) {
+              this.foo = foo;
+          }
+      }
+    after: |
+      import lombok.RequiredArgsConstructor;
+
+      @RequiredArgsConstructor
+      class A {
+          private final int foo;
       }
     language: java
 ---

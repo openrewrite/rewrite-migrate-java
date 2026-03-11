@@ -130,9 +130,9 @@ public class UseRequiredArgsConstructor extends Recipe {
 
     private static String guessImport(J.Annotation ann) {
         if (ann.getAnnotationType().getType() != null) {
-            return TypeUtils.asFullyQualified(ann.getAnnotationType().getType()) != null
-                    ? TypeUtils.asFullyQualified(ann.getAnnotationType().getType()).getFullyQualifiedName()
-                    : ann.getAnnotationType().toString();
+            return TypeUtils.asFullyQualified(ann.getAnnotationType().getType()) != null ?
+                    TypeUtils.asFullyQualified(ann.getAnnotationType().getType()).getFullyQualifiedName() :
+                    ann.getAnnotationType().toString();
         }
         return ann.getAnnotationType().toString();
     }

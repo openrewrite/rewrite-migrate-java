@@ -17,10 +17,10 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Tree;
 import org.openrewrite.marker.BuildTool;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.Tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;

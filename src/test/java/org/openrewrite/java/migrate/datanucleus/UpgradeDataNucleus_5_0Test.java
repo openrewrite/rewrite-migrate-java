@@ -32,8 +32,8 @@ class UpgradeDataNucleus_5_0Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.datanucleus.UpgradeDataNucleus_5_0");
     }
 
-    @Test
     @DocumentExample
+    @Test
     void renamePropertyKeys() {
         rewriteRun(
           properties(

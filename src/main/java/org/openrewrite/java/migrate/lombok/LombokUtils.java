@@ -298,8 +298,8 @@ class LombokUtils {
             return false;
         }
 
-        JavaType.FullyQualified declaringType = constructor.getMethodType() != null
-                ? constructor.getMethodType().getDeclaringType() : null;
+        JavaType.FullyQualified declaringType = constructor.getMethodType() != null ?
+                constructor.getMethodType().getDeclaringType() : null;
 
         for (int i = 0; i < expectedFields.size(); i++) {
             J.VariableDeclarations.NamedVariable expectedField = expectedFields.get(i);
