@@ -91,7 +91,7 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
     void shouldRenameOnJava6() {
         //language=java
         rewriteRun(
-          spec -> spec.recipe(new JREThrowableFinalMethods()),
+          spec -> spec.recipe(new JREThrowableFinalMethods(null, null)),
           java(
             """
               class ClassUsingThrowable {
@@ -118,7 +118,7 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
     void shouldNotRenameOnJava7() {
         //language=java
         rewriteRun(
-          spec -> spec.recipe(new JREThrowableFinalMethods()),
+          spec -> spec.recipe(new JREThrowableFinalMethods(null, null)),
           java(
             """
               class ClassUsingThrowable {
