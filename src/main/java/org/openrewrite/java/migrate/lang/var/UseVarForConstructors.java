@@ -38,9 +38,9 @@ import java.util.List;
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class ExplicitTypeToVar extends Recipe {
+public class UseVarForConstructors extends Recipe {
 
-    String displayName = "Explicit type to `var` for exact constructor matches";
+    String displayName = "Use `var` for constructor call assignments";
 
     String description = "Replace explicit type declarations with `var` when the variable is initialized with a " +
             "constructor call of exactly the same type. Does not transform when declared type " +
@@ -50,10 +50,10 @@ public class ExplicitTypeToVar extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 new UsesJavaVersion<>(10),
-                new ExplicitTypeToVarVisitor());
+                new UseVarForConstructorsVisitor());
     }
 
-    static final class ExplicitTypeToVarVisitor extends JavaIsoVisitor<ExecutionContext> {
+    static final class UseVarForConstructorsVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
