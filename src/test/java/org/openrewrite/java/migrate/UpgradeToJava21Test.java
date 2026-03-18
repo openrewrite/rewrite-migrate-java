@@ -61,7 +61,7 @@ class UpgradeToJava21Test implements RewriteTest {
                             case String string -> Double.parseDouble(string);
                             case Integer integer -> integer.doubleValue();
                             case Long long1 -> long1.doubleValue();
-                            default -> (double) value;
+                            case null, default -> (double) value;
                         };
                     }
                 }
