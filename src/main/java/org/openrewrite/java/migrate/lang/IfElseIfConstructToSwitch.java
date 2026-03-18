@@ -212,7 +212,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 arguments[i++] = getPattern(instanceOf);
                 arguments[i++] = getStatement(entry.getValue());
             }
-            switchBody.append("default -> #{any()};\n");
+            switchBody.append(nullCheckedParameter != null ? "default" : "case null, default").append(" -> #{any()};\n");
             if (else_ != null) {
                 arguments[i] = getStatement(else_);
             } else {
