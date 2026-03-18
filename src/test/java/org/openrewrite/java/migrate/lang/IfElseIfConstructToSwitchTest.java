@@ -128,7 +128,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               String str = "String";
                               formatted = String.format("%s %s", str, s);
                           }
-                          default -> formatted = "unknown";
+                          case null, default -> formatted = "unknown";
                       }
                       return formatted;
                   }
@@ -331,7 +331,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               String str = "String";
                               formatted = String.format("%s %s", str, s);
                           }
-                          default -> formatted = "unknown";
+                          case null, default -> formatted = "unknown";
                       }
                       return formatted;
                   }
@@ -436,7 +436,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                           case Dog d -> result = "dog";
                           case Cat c -> result = "cat";
                           case Bird b -> result = "bird";
-                          default -> result = "unknown";
+                          case null, default -> result = "unknown";
                       }
                       return result;
                   }
