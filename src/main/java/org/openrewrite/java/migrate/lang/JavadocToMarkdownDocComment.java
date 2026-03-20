@@ -44,19 +44,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
         return Preconditions.check(new UsesJavaVersion<>(23), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
-                List<Comment> comments = space.getComments();
-                boolean hasJavadoc = false;
-                for (Comment comment : comments) {
-                    if (comment instanceof Javadoc.DocComment) {
-                        hasJavadoc = true;
-                        break;
-                    }
-                }
-                if (!hasJavadoc) {
-                    return space;
-                }
                 String spaceWhitespace = space.getWhitespace();
-                return space.withComments(ListUtils.flatMap(comments, comment -> {
+                return space.withComments(ListUtils.flatMap(space.getComments(), comment -> {
                     if (comment instanceof Javadoc.DocComment) {
                         return convertDocComment((Javadoc.DocComment) comment, spaceWhitespace);
                     }
@@ -68,88 +57,71 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
     private static List<Comment> convertDocComment(Javadoc.DocComment docComment, String spaceWhitespace) {
         // Derive the indentation from the space whitespace (e.g., "\n    " → "    ")
-        String indentation;
         int lastNewline = spaceWhitespace.lastIndexOf('\n');
-        if (lastNewline >= 0) {
-            indentation = spaceWhitespace.substring(lastNewline + 1);
-        } else {
-            indentation = spaceWhitespace;
-        }
+        String indentation = lastNewline >= 0 ? spaceWhitespace.substring(lastNewline + 1) : spaceWhitespace;
 
         JavadocToMarkdownConverter converter = new JavadocToMarkdownConverter();
         converter.convert(docComment.getBody());
 
-        List<String> lines = converter.getLines();
+        // Strip one leading space (from the space after * in javadoc), right-trim, drop
+        // leading/trailing blank lines, and collapse consecutive blank lines
+        List<String> lines = normalizeLines(converter.getLines());
 
-        // Strip exactly one leading space from each line (from the space after * in javadoc)
-        // Also right-trim each line
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            if (line.startsWith(" ")) {
-                line = line.substring(1);
-            }
-            lines.set(i, rtrim(line));
+        if (lines.isEmpty()) {
+            lines = Collections.singletonList("");
         }
 
-        // Skip leading empty lines (from the LineBreak after /**)
+        String interLineSuffix = "\n" + indentation;
+        List<Comment> result = toTextComments(lines, interLineSuffix);
+        return ListUtils.mapLast(result, comment -> comment.withSuffix(docComment.getSuffix()));
+    }
+
+    private static List<String> normalizeLines(List<String> raw) {
+        // Strip one leading space and right-trim
+        List<String> lines = new ArrayList<>(raw.size());
+        for (String line : raw) {
+            String stripped = line.startsWith(" ") ? line.substring(1) : line;
+            // Right-trim trailing spaces
+            int end = stripped.length();
+            while (end > 0 && stripped.charAt(end - 1) == ' ') {
+                end--;
+            }
+            lines.add(end < stripped.length() ? stripped.substring(0, end) : stripped);
+        }
+
+        // Trim leading and trailing blank lines
         int start = 0;
         while (start < lines.size() && lines.get(start).isEmpty()) {
             start++;
         }
-
-        // Find end excluding trailing empty lines
         int end = lines.size();
         while (end > start && lines.get(end - 1).isEmpty()) {
             end--;
         }
 
-        // Collapse consecutive blank lines into a single blank line
-        List<String> collapsed = new ArrayList<>();
+        // Collapse consecutive blank lines
+        List<String> result = new ArrayList<>();
         boolean prevBlank = false;
         for (int i = start; i < end; i++) {
             String line = lines.get(i);
-            if (line.isEmpty()) {
-                if (!prevBlank) {
-                    collapsed.add(line);
-                }
-                prevBlank = true;
-            } else {
-                collapsed.add(line);
-                prevBlank = false;
+            boolean blank = line.isEmpty();
+            if (!blank || !prevBlank) {
+                result.add(line);
             }
+            prevBlank = blank;
         }
-        lines = collapsed;
-
-        if (lines.isEmpty()) {
-            lines.add("");
-        }
-
-        List<Comment> result = new ArrayList<>();
-        String suffix = docComment.getSuffix();
-
-        for (int i = 0; i < lines.size(); i++) {
-            String lineContent = lines.get(i);
-            String lineSuffix;
-            if (i < lines.size() - 1) {
-                lineSuffix = "\n" + indentation;
-            } else {
-                lineSuffix = suffix;
-            }
-            // TextComment(false, text, suffix, markers) prints as "// + text"
-            // So text="/ content" produces "/// content"
-            String text = lineContent.isEmpty() ? "/" : "/ " + lineContent;
-            result.add(new TextComment(false, text, lineSuffix, Markers.EMPTY));
-        }
-
         return result;
     }
 
-    private static String rtrim(String s) {
-        int end = s.length();
-        while (end > 0 && s.charAt(end - 1) == ' ') {
-            end--;
+    private static List<Comment> toTextComments(List<String> lines, String suffix) {
+        List<Comment> result = new ArrayList<>(lines.size());
+        for (String lineContent : lines) {
+            // TextComment(false, text, suffix, markers) prints as "// + text"
+            // So text="/ content" produces "/// content"
+            String text = lineContent.isEmpty() ? "/" : "/ " + lineContent;
+            result.add(new TextComment(false, text, suffix, Markers.EMPTY));
         }
-        return s.substring(0, end);
+        return result;
     }
 
     static class JavadocToMarkdownConverter {
