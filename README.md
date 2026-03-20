@@ -106,10 +106,8 @@ Beyond Java and Jakarta EE version migrations, this module also includes recipes
 
 - **Guava** — Replace Guava utilities with Java standard library equivalents
 - **Lombok** — Best practices and modernization
-- **Logging** — Migrate between logging frameworks
 - **JSpecify** — Adopt JSpecify nullability annotations
 - **DataNucleus** — Upgrade DataNucleus versions
-- **Scala** — Java/Scala interop migrations
 
 ## Contributing
 
