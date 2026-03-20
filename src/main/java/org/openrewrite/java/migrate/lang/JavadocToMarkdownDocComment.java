@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -136,6 +137,16 @@ public class JavadocToMarkdownDocComment extends Recipe {
             return lines;
         }
 
+        private void flushLine() {
+            if (currentLine.length() > 0) {
+                lines.add(currentLine.toString());
+                currentLine = new StringBuilder();
+            } else if (lines.isEmpty()) {
+                lines.add(currentLine.toString());
+                currentLine = new StringBuilder();
+            }
+        }
+
         void convert(List<Javadoc> body) {
             for (Javadoc node : body) {
                 convertNode(node);
@@ -144,9 +155,10 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
         private void convertNode(Javadoc node) {
             if (node instanceof Javadoc.Text) {
-                convertText((Javadoc.Text) node);
+                currentLine.append(decodeHtmlEntities(((Javadoc.Text) node).getText()));
             } else if (node instanceof Javadoc.LineBreak) {
-                convertLineBreak((Javadoc.LineBreak) node);
+                lines.add(currentLine.toString());
+                currentLine = new StringBuilder();
             } else if (node instanceof Javadoc.Literal) {
                 convertLiteral((Javadoc.Literal) node);
             } else if (node instanceof Javadoc.Link) {
@@ -193,25 +205,6 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 currentLine.append(((Javadoc.Erroneous) node).getText());
             } else if (node instanceof Javadoc.Reference) {
                 currentLine.append(printReference((Javadoc.Reference) node));
-            }
-        }
-
-        private void convertText(Javadoc.Text text) {
-            currentLine.append(decodeHtmlEntities(text.getText()));
-        }
-
-        private void convertLineBreak(Javadoc.LineBreak lineBreak) {
-            lines.add(currentLine.toString());
-            currentLine = new StringBuilder();
-        }
-
-        private void flushLine() {
-            if (currentLine.length() > 0) {
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder();
-            } else if (lines.isEmpty()) {
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder();
             }
         }
 
@@ -490,7 +483,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
             return String.join("\n", inlineLines);
         }
 
-        private static String printReference(Javadoc.Reference ref) {
+        private static String printReference(Javadoc.@Nullable Reference ref) {
             if (ref == null) {
                 return "";
             }
@@ -583,10 +576,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private static String stripLeadingSpace(String s) {
-            if (s.startsWith(" ")) {
-                return s.substring(1);
-            }
-            return s;
+            return s.startsWith(" ") ? s.substring(1) : s;
         }
 
         private static String decodeHtmlEntities(String text) {
