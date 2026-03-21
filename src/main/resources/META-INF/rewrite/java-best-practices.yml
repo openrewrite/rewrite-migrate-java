@@ -39,6 +39,9 @@ recipeList:
   # JSpecify nullability annotations best practices
   - org.openrewrite.java.jspecify.JSpecifyBestPractices
   # Local variable type inference — targeted, non-controversial uses
+  # NOTE: UseVarForGenericsConstructors and UseVarForGenericMethodInvocations must run
+  # before UseDiamondOperator, as they need the explicit type arguments on constructors
+  # to safely infer the type for var. Diamond would erase that information.
   - org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
