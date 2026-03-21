@@ -43,6 +43,7 @@ recipeList:
   # before UseDiamondOperator, as they need the explicit type arguments on constructors
   # to safely infer the type for var. Diamond would erase that information.
   - org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
+  - org.openrewrite.java.migrate.lang.var.UseVarForConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
   # Prefer modern Java collection factories and utilities
