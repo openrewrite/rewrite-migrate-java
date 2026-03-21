@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang.var;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -48,75 +49,66 @@ public class UseVarForConstructors extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                new UsesJavaVersion<>(10),
-                new UseVarForConstructorsVisitor());
-    }
+        return Preconditions.check(new UsesJavaVersion<>(10), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations varDecl, ExecutionContext ctx) {
+                J.VariableDeclarations vd = super.visitVariableDeclarations(varDecl, ctx);
 
-    static final class UseVarForConstructorsVisitor extends JavaIsoVisitor<ExecutionContext> {
+                if (!DeclarationCheck.isVarApplicable(getCursor(), vd)) {
+                    return vd;
+                }
 
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
-            vd = super.visitVariableDeclarations(vd, ctx);
+                Expression initializer = vd.getVariables().get(0).getInitializer();
+                if (initializer == null) {
+                    return vd;
+                }
+                initializer = initializer.unwrap();
 
-            if (!DeclarationCheck.isVarApplicable(getCursor(), vd)) {
-                return vd;
+                // Only transform constructor calls
+                if (!(initializer instanceof J.NewClass)) {
+                    return vd;
+                }
+
+                // Declared type must exactly match constructor type, as to not have additional methods become available
+                if (!TypeUtils.isOfType(vd.getType(), initializer.getType())) {
+                    return vd;
+                }
+
+                if (vd.getType() instanceof JavaType.FullyQualified) {
+                    maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+                }
+
+                return DeclarationCheck.transformToVar(vd, (J.NewClass nc) -> maybeTransferTypeArguments(vd, nc));
             }
 
-            Expression initializer = vd.getVariables().get(0).getInitializer();
-            if (initializer == null) {
-                return vd;
-            }
-            initializer = initializer.unwrap();
+            private J.NewClass maybeTransferTypeArguments(J.VariableDeclarations vd, J.NewClass initializer) {
+                TypeTree typeExpression = vd.getTypeExpression();
+                if (!(typeExpression instanceof J.ParameterizedType)) {
+                    return initializer;
+                }
+                J.ParameterizedType paramType = (J.ParameterizedType) typeExpression;
 
-            // Only transform constructor calls
-            if (!(initializer instanceof J.NewClass)) {
-                return vd;
-            }
+                List<Expression> declaredTypeParams = paramType.getTypeParameters();
+                if (declaredTypeParams == null || declaredTypeParams.isEmpty()) {
+                    return initializer;
+                }
 
-            // Declared type must exactly match constructor type
-            if (!TypeUtils.isOfType(vd.getType(), initializer.getType())) {
-                return vd;
-            }
+                TypeTree constructorClazz = initializer.getClazz();
+                if (!(constructorClazz instanceof J.ParameterizedType)) {
+                    return initializer;
+                }
+                J.ParameterizedType constructorParamType = (J.ParameterizedType) constructorClazz;
 
-            if (vd.getType() instanceof JavaType.FullyQualified) {
-                maybeRemoveImport((JavaType.FullyQualified) vd.getType());
-            }
+                List<Expression> constructorTypeParams = constructorParamType.getTypeParameters();
+                boolean nullEmptyOrDiamondOperator = constructorTypeParams == null ||
+                        constructorTypeParams.isEmpty() ||
+                        constructorTypeParams.stream().allMatch(J.Empty.class::isInstance);
+                if (nullEmptyOrDiamondOperator) {
+                    return initializer.withClazz(constructorParamType.withTypeParameters(declaredTypeParams));
+                }
 
-            J.VariableDeclarations finalVd = vd;
-            return DeclarationCheck.<J.NewClass>transformToVar(vd, it -> maybeTransferTypeArguments(finalVd, it));
-        }
-
-        private static J.NewClass maybeTransferTypeArguments(J.VariableDeclarations vd, J.NewClass initializer) {
-            TypeTree typeExpression = vd.getTypeExpression();
-
-            if (!(typeExpression instanceof J.ParameterizedType)) {
                 return initializer;
             }
-            J.ParameterizedType paramType = (J.ParameterizedType) typeExpression;
-
-            List<Expression> declaredTypeParams = paramType.getTypeParameters();
-            if (declaredTypeParams == null || declaredTypeParams.isEmpty()) {
-                return initializer;
-            }
-
-            TypeTree constructorClazz = initializer.getClazz();
-            if (!(constructorClazz instanceof J.ParameterizedType)) {
-                return initializer;
-            }
-            J.ParameterizedType constructorParamType = (J.ParameterizedType) constructorClazz;
-
-            List<Expression> constructorTypeParams = constructorParamType.getTypeParameters();
-            if (constructorTypeParams == null || isDiamondOperator(constructorTypeParams)) {
-                J.ParameterizedType newClazz = constructorParamType.withTypeParameters(declaredTypeParams);
-                return initializer.withClazz(newClazz);
-            }
-
-            return initializer;
-        }
-
-        private static boolean isDiamondOperator(List<Expression> typeParams) {
-            return typeParams.isEmpty() || typeParams.stream().allMatch(J.Empty.class::isInstance);
-        }
+        });
     }
 }
