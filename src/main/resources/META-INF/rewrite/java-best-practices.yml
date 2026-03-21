@@ -42,7 +42,19 @@ recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
-  # Static analysis: broadly accepted improvements
+  # Prefer modern Java collection factories and utilities
+  - org.openrewrite.java.migrate.util.UseEnumSetOf
+  - org.openrewrite.java.migrate.util.UseListOf
+  - org.openrewrite.java.migrate.util.UseSetOf
+  - org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
+  # Static analysis: bug prevention
+  - org.openrewrite.staticanalysis.ReplaceWeekYearWithYear
+  - org.openrewrite.staticanalysis.RemoveHashCodeCallsFromArrayInstances
+  - org.openrewrite.staticanalysis.RemoveToStringCallsFromArrayInstances
+  - org.openrewrite.staticanalysis.UseObjectNotifyAll
+  - org.openrewrite.staticanalysis.RemoveCallsToSystemGc
+  - org.openrewrite.staticanalysis.RemoveCallsToObjectFinalize
+  # Static analysis: modernization and cleanup
   - org.openrewrite.staticanalysis.ReplaceLambdaWithMethodReference
   - org.openrewrite.staticanalysis.UseDiamondOperator
   - org.openrewrite.staticanalysis.UnnecessaryParentheses
@@ -51,5 +63,11 @@ recipeList:
   - org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator
   - org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks
   - org.openrewrite.staticanalysis.UseStringReplace
+  - org.openrewrite.staticanalysis.UseStandardCharset
+  - org.openrewrite.staticanalysis.UseSystemLineSeparator
+  - org.openrewrite.staticanalysis.RemoveRedundantTypeCast
+  - org.openrewrite.staticanalysis.ReplaceStackWithDeque
+  - org.openrewrite.staticanalysis.UseListSort
+  - org.openrewrite.staticanalysis.EqualsToContentEquals
   # Cleanup imports left behind by transformations
   - org.openrewrite.java.RemoveUnusedImports
