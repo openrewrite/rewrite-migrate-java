@@ -1277,6 +1277,40 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.UpgradeToJava21
+examples:
+- description: '`UpgradeToJava21Test#ifElseIfAssignmentToSwitchExpressionInOnePass`'
+  sources:
+  - before: |
+      class Test {
+          private static double convertToDouble(Object value) {
+              double dValue;
+              if (value instanceof String string) {
+                  dValue = Double.parseDouble(string);
+              } else if (value instanceof Integer integer) {
+                  dValue = integer.doubleValue();
+              } else if (value instanceof Long long1) {
+                  dValue = long1.doubleValue();
+              } else {
+                  dValue = (double) value;
+              }
+              return dValue;
+          }
+      }
+    after: |
+      class Test {
+          private static double convertToDouble(Object value) {
+              return switch (value) {
+                  case String string -> Double.parseDouble(string);
+                  case Integer integer -> integer.doubleValue();
+                  case Long long1 -> long1.doubleValue();
+                  case null, default -> (double) value;
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava25
 examples:
 - description: '`UpgradeToJava25Test#updateCompilerVersion`'
