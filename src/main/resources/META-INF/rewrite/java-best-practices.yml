@@ -49,8 +49,6 @@ recipeList:
   - org.openrewrite.staticanalysis.ReplaceStringBuilderWithString
   - org.openrewrite.staticanalysis.UseCollectionInterfaces
   - org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator
-  - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
-  - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
   - org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks
   - org.openrewrite.staticanalysis.UseStringReplace
   # Cleanup imports left behind by transformations
