@@ -1,0 +1,57 @@
+#
+# Copyright 2026 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.JavaBestPractices
+displayName: Java best practices
+description: >-
+  Applies opinionated best practices for Java projects targeting Java 25.
+  This recipe includes the full Java 25 upgrade chain plus additional improvements
+  to code style, API usage, and third-party dependency reduction that go beyond
+  what the version migration recipes apply.
+tags:
+  - java25
+  - best-practices
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  # Upgrade to the latest Java version
+  - org.openrewrite.java.migrate.UpgradeToJava25
+  # Text blocks for strings without newlines (upgrade chain only does convertStringsWithoutNewlines: false)
+  - org.openrewrite.java.migrate.lang.UseTextBlocks:
+      convertStringsWithoutNewlines: true
+  # Prefer Java standard library over Guava where possible
+  - org.openrewrite.java.migrate.guava.NoGuava
+  # JSpecify nullability annotations best practices
+  - org.openrewrite.java.jspecify.JSpecifyBestPractices
+  # Local variable type inference — targeted, non-controversial uses
+  - org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
+  - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
+  - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
+  # Static analysis: broadly accepted improvements
+  - org.openrewrite.staticanalysis.ReplaceLambdaWithMethodReference
+  - org.openrewrite.staticanalysis.UseDiamondOperator
+  - org.openrewrite.staticanalysis.UnnecessaryParentheses
+  - org.openrewrite.staticanalysis.ReplaceStringBuilderWithString
+  - org.openrewrite.staticanalysis.UseCollectionInterfaces
+  - org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator
+  - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
+  - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks
+  - org.openrewrite.staticanalysis.UseStringReplace
+  # Cleanup imports left behind by transformations
+  - org.openrewrite.java.RemoveUnusedImports
