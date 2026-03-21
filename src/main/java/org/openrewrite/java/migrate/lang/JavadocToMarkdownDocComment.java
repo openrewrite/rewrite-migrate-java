@@ -46,12 +46,10 @@ public class JavadocToMarkdownDocComment extends Recipe {
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 String spaceWhitespace = space.getWhitespace();
-                return space.withComments(ListUtils.flatMap(space.getComments(), comment -> {
-                    if (comment instanceof Javadoc.DocComment) {
-                        return convertDocComment((Javadoc.DocComment) comment, spaceWhitespace);
-                    }
-                    return comment;
-                }));
+                return space.withComments(ListUtils.flatMap(space.getComments(), comment ->
+                        comment instanceof Javadoc.DocComment ?
+                                convertDocComment((Javadoc.DocComment) comment, spaceWhitespace) :
+                                comment));
             }
         });
     }
@@ -73,8 +71,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         String interLineSuffix = "\n" + indentation;
-        List<Comment> result = toTextComments(lines, interLineSuffix);
-        return ListUtils.mapLast(result, comment -> comment.withSuffix(docComment.getSuffix()));
+        return ListUtils.mapLast(toTextComments(lines, interLineSuffix),
+                comment -> comment.withSuffix(docComment.getSuffix()));
     }
 
     private static List<String> normalizeLines(List<String> raw) {
@@ -82,12 +80,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         List<String> lines = new ArrayList<>(raw.size());
         for (String line : raw) {
             String stripped = line.startsWith(" ") ? line.substring(1) : line;
-            // Right-trim trailing spaces
-            int end = stripped.length();
-            while (end > 0 && stripped.charAt(end - 1) == ' ') {
-                end--;
-            }
-            lines.add(end < stripped.length() ? stripped.substring(0, end) : stripped);
+            lines.add(stripped.replaceAll("\\s+$", ""));
         }
 
         // Trim leading and trailing blank lines
