@@ -38,6 +38,7 @@ class UseVarForConstructorsTest implements RewriteTest {
           //language=java
           java(
             """
+              import java.io.ByteArrayInputStream;
               import java.util.ArrayList;
               import java.util.HashMap;
 
@@ -49,8 +50,14 @@ class UseVarForConstructorsTest implements RewriteTest {
                       // Constructor with arguments
                       StringBuilder sbWithArg = new StringBuilder("initial");
 
+                      // Final modifier
+                      final StringBuilder finalSb = new StringBuilder();
+
                       // Generics with concrete types
                       ArrayList<String> list = new ArrayList<>();
+
+                      // Explicit type arguments on constructor (non-diamond)
+                      ArrayList<String> explicitList = new ArrayList<String>();
 
                       // Nested generics with concrete types
                       HashMap<String, ArrayList<Integer>> map = new HashMap<>();
@@ -64,10 +71,22 @@ class UseVarForConstructorsTest implements RewriteTest {
                       // Nested type variables
                       HashMap<K, ArrayList<V>> nested = new HashMap<>();
 
+                      // Inner class constructor
+                      HashMap.SimpleEntry<String, Integer> entry = new HashMap.SimpleEntry<>("key", 1);
+
                       // In lambda
                       Runnable r = () -> {
                           ArrayList<String> lambdaList = new ArrayList<>();
                       };
+
+                      // For-loop initializer
+                      for (StringBuilder forSb = new StringBuilder(); forSb.length() < 10; forSb.append("x")) {
+                      }
+
+                      // Try-with-resources
+                      try (ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0])) {
+                      } catch (Exception e) {
+                      }
                   }
 
                   // Instance initializer
@@ -82,6 +101,7 @@ class UseVarForConstructorsTest implements RewriteTest {
               }
               """,
             """
+              import java.io.ByteArrayInputStream;
               import java.util.ArrayList;
               import java.util.HashMap;
 
@@ -93,8 +113,14 @@ class UseVarForConstructorsTest implements RewriteTest {
                       // Constructor with arguments
                       var sbWithArg = new StringBuilder("initial");
 
+                      // Final modifier
+                      final var finalSb = new StringBuilder();
+
                       // Generics with concrete types
                       var list = new ArrayList<String>();
+
+                      // Explicit type arguments on constructor (non-diamond)
+                      var explicitList = new ArrayList<String>();
 
                       // Nested generics with concrete types
                       var map = new HashMap<String, ArrayList<Integer>>();
@@ -108,10 +134,22 @@ class UseVarForConstructorsTest implements RewriteTest {
                       // Nested type variables
                       var nested = new HashMap<K, ArrayList<V>>();
 
+                      // Inner class constructor
+                      var entry = new HashMap.SimpleEntry<String, Integer>("key", 1);
+
                       // In lambda
                       Runnable r = () -> {
                           var lambdaList = new ArrayList<String>();
                       };
+
+                      // For-loop initializer
+                      for (var forSb = new StringBuilder(); forSb.length() < 10; forSb.append("x")) {
+                      }
+
+                      // Try-with-resources
+                      try (var bais = new ByteArrayInputStream(new byte[0])) {
+                      } catch (Exception e) {
+                      }
                   }
 
                   // Instance initializer
@@ -122,6 +160,23 @@ class UseVarForConstructorsTest implements RewriteTest {
                   // Static initializer
                   static {
                       var staticSb = new StringBuilder();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceWhenJavaVersionBelow10() {
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(9))),
+          //language=java
+          java(
+            """
+              class Test {
+                  void test() {
+                      StringBuilder sb = new StringBuilder();
                   }
               }
               """
@@ -168,6 +223,13 @@ class UseVarForConstructorsTest implements RewriteTest {
 
                       // Null initializer
                       StringBuilder nullInit = null;
+
+                      // Anonymous inner class
+                      ArrayList<String> anonList = new ArrayList<String>() {};
+                      Runnable r = new Runnable() {
+                          @Override
+                          public void run() {}
+                      };
                   }
 
                   ArrayList<String> getList() {
