@@ -39,7 +39,7 @@ public class UseVarForPrimitive extends Recipe {
 
 
     String description = "Try to apply local variable type inference `var` to primitive and String literal variables where possible. " +
-               "This recipe will not touch variable declarations with initializers containing ternary operators.";
+            "This recipe will not touch variable declarations with initializers containing ternary operators.";
 
 
     @Override
@@ -51,34 +51,25 @@ public class UseVarForPrimitive extends Recipe {
 
     static final class VarForPrimitivesVisitor extends JavaIsoVisitor<ExecutionContext> {
         @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, ExecutionContext ctx) {
-            vd = super.visitVariableDeclarations(vd, ctx);
+        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vardecl, ExecutionContext ctx) {
+            J.VariableDeclarations vd = super.visitVariableDeclarations(vardecl, ctx);
 
-            boolean isGeneralApplicable = DeclarationCheck.isVarApplicable(this.getCursor(), vd);
-            if (!isGeneralApplicable) {
+            if (!DeclarationCheck.isVarApplicable(this.getCursor(), vd)) {
                 return vd;
             }
 
-            // Recipe specific
-            boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
-            boolean isStringLiteral = isStringLiteralInitializer(vd);
-            if (!isPrimitive && !isStringLiteral) {
-                return vd;
+            if (isStringLiteralInitializer(vd)) {
+                return DeclarationCheck.transformToVar(vd);
             }
-            if (isPrimitive) {
+            if (DeclarationCheck.isPrimitive(vd)) {
                 boolean isByteVariable = DeclarationCheck.declarationHasType(vd, Byte);
                 boolean isShortVariable = DeclarationCheck.declarationHasType(vd, Short);
                 if (isByteVariable || isShortVariable) {
                     return vd;
                 }
+                return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitivTypeHint(vd, it) : it);
             }
-
-            if (isStringLiteral) {
-                return DeclarationCheck.transformToVar(vd);
-            }
-
-            J.VariableDeclarations finalVd = vd;
-            return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitivTypeHint(finalVd, it) : it);
+            return vd;
         }
 
         private boolean isStringLiteralInitializer(J.VariableDeclarations vd) {
