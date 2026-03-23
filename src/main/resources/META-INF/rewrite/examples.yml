@@ -7508,6 +7508,137 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.var.UseVarForConstructors
+examples:
+- description: '`UseVarForConstructorsTest#replacePatterns`'
+  sources:
+  - before: |
+      import java.io.ByteArrayInputStream;
+      import java.util.ArrayList;
+      import java.util.HashMap;
+
+      class Test<E, K, V> {
+          void test() {
+              // Basic constructor
+              StringBuilder sb = new StringBuilder();
+
+              // Constructor with arguments
+              StringBuilder sbWithArg = new StringBuilder("initial");
+
+              // Final modifier
+              final StringBuilder finalSb = new StringBuilder();
+
+              // Generics with concrete types
+              ArrayList<String> list = new ArrayList<>();
+
+              // Explicit type arguments on constructor (non-diamond)
+              ArrayList<String> explicitList = new ArrayList<String>();
+
+              // Nested generics with concrete types
+              HashMap<String, ArrayList<Integer>> map = new HashMap<>();
+
+              // Type variable in generic
+              ArrayList<E> typeVarList = new ArrayList<>();
+
+              // Multiple type variables
+              HashMap<K, V> typeVarMap = new HashMap<>();
+
+              // Nested type variables
+              HashMap<K, ArrayList<V>> nested = new HashMap<>();
+
+              // Inner class constructor
+              HashMap.SimpleEntry<String, Integer> entry = new HashMap.SimpleEntry<>("key", 1);
+
+              // In lambda
+              Runnable r = () -> {
+                  ArrayList<String> lambdaList = new ArrayList<>();
+              };
+
+              // For-loop initializer
+              for (StringBuilder forSb = new StringBuilder(); forSb.length() < 10; forSb.append("x")) {
+              }
+
+              // Try-with-resources
+              try (ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0])) {
+              } catch (Exception e) {
+              }
+          }
+
+          // Instance initializer
+          {
+              StringBuilder initSb = new StringBuilder();
+          }
+
+          // Static initializer
+          static {
+              StringBuilder staticSb = new StringBuilder();
+          }
+      }
+    after: |
+      import java.io.ByteArrayInputStream;
+      import java.util.ArrayList;
+      import java.util.HashMap;
+
+      class Test<E, K, V> {
+          void test() {
+              // Basic constructor
+              var sb = new StringBuilder();
+
+              // Constructor with arguments
+              var sbWithArg = new StringBuilder("initial");
+
+              // Final modifier
+              final var finalSb = new StringBuilder();
+
+              // Generics with concrete types
+              var list = new ArrayList<String>();
+
+              // Explicit type arguments on constructor (non-diamond)
+              var explicitList = new ArrayList<String>();
+
+              // Nested generics with concrete types
+              var map = new HashMap<String, ArrayList<Integer>>();
+
+              // Type variable in generic
+              var typeVarList = new ArrayList<E>();
+
+              // Multiple type variables
+              var typeVarMap = new HashMap<K, V>();
+
+              // Nested type variables
+              var nested = new HashMap<K, ArrayList<V>>();
+
+              // Inner class constructor
+              var entry = new HashMap.SimpleEntry<String, Integer>("key", 1);
+
+              // In lambda
+              Runnable r = () -> {
+                  var lambdaList = new ArrayList<String>();
+              };
+
+              // For-loop initializer
+              for (var forSb = new StringBuilder(); forSb.length() < 10; forSb.append("x")) {
+              }
+
+              // Try-with-resources
+              try (var bais = new ByteArrayInputStream(new byte[0])) {
+              } catch (Exception e) {
+              }
+          }
+
+          // Instance initializer
+          {
+              var initSb = new StringBuilder();
+          }
+
+          // Static initializer
+          static {
+              var staticSb = new StringBuilder();
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
 examples:
 - description: '`Applicable#withJDKFactoryMethods`'
