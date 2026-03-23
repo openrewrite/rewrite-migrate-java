@@ -25,6 +25,8 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import static java.lang.String.format;
 import static org.openrewrite.java.tree.JavaType.Primitive.*;
@@ -33,10 +35,10 @@ import static org.openrewrite.java.tree.JavaType.Primitive.*;
 @Value
 public class UseVarForPrimitive extends Recipe {
 
-    String displayName = "Use `var` for primitive-typed variables";
+    String displayName = "Use `var` for primitive and String variables";
 
 
-    String description = "Try to apply local variable type inference `var` to primitive variables where possible. " +
+    String description = "Try to apply local variable type inference `var` to primitive and String literal variables where possible. " +
                "This recipe will not touch variable declarations with initializers containing ternary operators.";
 
 
@@ -58,15 +60,33 @@ public class UseVarForPrimitive extends Recipe {
             }
 
             // Recipe specific
-            boolean isNoPrimitive = !DeclarationCheck.isPrimitive(vd);
-            boolean isByteVariable = DeclarationCheck.declarationHasType(vd, Byte);
-            boolean isShortVariable = DeclarationCheck.declarationHasType(vd, Short);
-            if (isNoPrimitive || isByteVariable || isShortVariable) {
+            boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
+            boolean isStringLiteral = isStringLiteralInitializer(vd);
+            if (!isPrimitive && !isStringLiteral) {
                 return vd;
+            }
+            if (isPrimitive) {
+                boolean isByteVariable = DeclarationCheck.declarationHasType(vd, Byte);
+                boolean isShortVariable = DeclarationCheck.declarationHasType(vd, Short);
+                if (isByteVariable || isShortVariable) {
+                    return vd;
+                }
+            }
+
+            if (isStringLiteral) {
+                return DeclarationCheck.transformToVar(vd);
             }
 
             J.VariableDeclarations finalVd = vd;
             return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitivTypeHint(finalVd, it) : it);
+        }
+
+        private boolean isStringLiteralInitializer(J.VariableDeclarations vd) {
+            if (!TypeUtils.isOfClassType(vd.getType(), "java.lang.String")) {
+                return false;
+            }
+            Expression initializer = vd.getVariables().get(0).getInitializer();
+            return initializer != null && initializer.unwrap() instanceof J.Literal;
         }
 
         private Expression expandWithPrimitivTypeHint(J.VariableDeclarations vd, Expression initializer) {
