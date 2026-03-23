@@ -387,6 +387,15 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.enterprise.concurrent
+      oldArtifactId: javax.enterprise.concurrent-api
+      newGroupId: jakarta.enterprise.concurrent
+      newArtifactId: jakarta.enterprise.concurrent-api
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: jakarta.enterprise.concurrent
+      artifactId: jakarta.enterprise.concurrent-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.enterprise
       oldArtifactId: cdi-api
       newGroupId: jakarta.enterprise
