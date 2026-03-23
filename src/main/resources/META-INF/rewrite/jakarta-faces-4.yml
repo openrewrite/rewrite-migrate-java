@@ -242,13 +242,13 @@ recipeList:
       oldFullyQualifiedTypeName: javax.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
       ignoreDefinition: true
-  - org.openrewrite.java.RemoveAnnotationAttribute:
-      annotationType: jakarta.faces.annotation.ManagedProperty
-      attributeName: name
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
       ignoreDefinition: true
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: jakarta.faces.annotation.ManagedProperty
+      attributeName: name
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.NoneScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
