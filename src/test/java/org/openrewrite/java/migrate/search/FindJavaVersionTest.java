@@ -36,7 +36,7 @@ class FindJavaVersionTest implements RewriteTest {
     @DocumentExample
     @Test
     void twoClassesWithSameMarkerLeadToOneRow() {
-        JavaVersion jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
+        var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
           spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
               assertThat(rows).containsExactly(
