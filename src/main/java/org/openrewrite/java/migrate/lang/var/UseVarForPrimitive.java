@@ -25,7 +25,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static java.lang.String.format;
@@ -61,13 +60,10 @@ public class UseVarForPrimitive extends Recipe {
             if (isStringLiteralInitializer(vd)) {
                 return DeclarationCheck.transformToVar(vd);
             }
-            if (DeclarationCheck.isPrimitive(vd)) {
-                boolean isByteVariable = DeclarationCheck.declarationHasType(vd, Byte);
-                boolean isShortVariable = DeclarationCheck.declarationHasType(vd, Short);
-                if (isByteVariable || isShortVariable) {
-                    return vd;
-                }
-                return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitivTypeHint(vd, it) : it);
+            if (DeclarationCheck.isPrimitive(vd) &&
+                    !DeclarationCheck.declarationHasType(vd, Byte) &&
+                    !DeclarationCheck.declarationHasType(vd, Short)) {
+                return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitiveTypeHint(vd, it) : it);
             }
             return vd;
         }
@@ -80,26 +76,19 @@ public class UseVarForPrimitive extends Recipe {
             return initializer != null && initializer.unwrap() instanceof J.Literal;
         }
 
-        private Expression expandWithPrimitivTypeHint(J.VariableDeclarations vd, Expression initializer) {
+        private Expression expandWithPrimitiveTypeHint(J.VariableDeclarations vd, Expression initializer) {
             String valueSource = ((J.Literal) initializer).getValueSource();
 
             if (valueSource == null) {
                 return initializer;
             }
 
-            boolean isLongLiteral = Long == vd.getType();
-            boolean inferredAsLong = valueSource.endsWith("l") || valueSource.endsWith("L");
-            boolean isFloatLiteral = Float == vd.getType();
-            boolean inferredAsFloat = valueSource.endsWith("f") || valueSource.endsWith("F");
-            boolean isDoubleLiteral = Double == vd.getType();
-            boolean inferredAsDouble = valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains(".");
-
             String typNotation = null;
-            if (isLongLiteral && !inferredAsLong) {
+            if (Long == vd.getType() && !(valueSource.endsWith("l") || valueSource.endsWith("L"))) {
                 typNotation = "L";
-            } else if (isFloatLiteral && !inferredAsFloat) {
+            } else if (Float == vd.getType() && !(valueSource.endsWith("f") || valueSource.endsWith("F"))) {
                 typNotation = "F";
-            } else if (isDoubleLiteral && !inferredAsDouble) {
+            } else if (Double == vd.getType() && !(valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains("."))) {
                 typNotation = "D";
             }
 
