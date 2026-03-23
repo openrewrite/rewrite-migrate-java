@@ -30,7 +30,7 @@ class AboutJavaVersionTest implements RewriteTest {
     @DocumentExample
     @Test
     void aboutJavaVersion() {
-        JavaVersion jv = new JavaVersion(randomId(), "me", "me", "11.0.15+10", "11.0.15+10");
+        var jv = new JavaVersion(randomId(), "me", "me", "11.0.15+10", "11.0.15+10");
         rewriteRun(
           spec -> spec.recipe(new AboutJavaVersion(null))
             .dataTable(JavaVersionRow.class, rows ->
