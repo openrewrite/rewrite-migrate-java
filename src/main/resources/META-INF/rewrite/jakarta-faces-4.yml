@@ -238,13 +238,13 @@ recipeList:
   # Refer to https://github.com/openrewrite/rewrite-migrate-java/issues/1023
   # TODO: CustomScoped is replaced by Context, but not straightforward ChangeType. Custom recipe for @CustomScoped to use CDI custom scopes
   #     Docs: https://jakarta.ee/specifications/cdi/4.0/jakarta-cdi-spec-4.0.html#defining_new_scope_type
-  # TODO: Original ManagedProperty name needs replacement? or code removal?
-  #     Old - https://jakarta.ee/specifications/faces/3.0/apidocs/jakarta/faces/bean/managedproperty
-  #     New - https://jakarta.ee/specifications/faces/4.0/apidocs/jakarta/faces/annotation/managedproperty
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
       ignoreDefinition: true
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: jakarta.faces.annotation.ManagedProperty
+      attributeName: name
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
