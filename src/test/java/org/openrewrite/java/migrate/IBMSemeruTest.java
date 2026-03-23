@@ -45,7 +45,7 @@ class IBMSemeruTest implements RewriteTest {
           //language=java
           java(
             """
-              import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
+              import com.sun.net.ssl.internal.www.protocol.https.*;
 
               class Foo{
                 void bar() {
@@ -70,7 +70,6 @@ class IBMSemeruTest implements RewriteTest {
               """,
             """
               import com.ibm.net.ssl.www2.protocol.https.Handler;
-              import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
 
               class Foo{
                 void bar() {
@@ -142,7 +141,7 @@ class IBMSemeruTest implements RewriteTest {
           //language=java
           java(
             """
-              import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
+              import com.sun.net.ssl.internal.ssl.*;
 
               class TestClass_2{
                 void bar() {
@@ -154,7 +153,6 @@ class IBMSemeruTest implements RewriteTest {
               """,
             """
               import com.ibm.jsse2.IBMJSSEProvider2;
-              import com.sun.net.ssl.internal.ssl.*;  // do NOT flag, handled by other rule
 
               class TestClass_2{
                 void bar() {
