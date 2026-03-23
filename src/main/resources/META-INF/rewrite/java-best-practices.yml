@@ -46,6 +46,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
+  - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
   # Prefer modern Java collection factories and utilities
   - org.openrewrite.java.migrate.util.UseEnumSetOf
   - org.openrewrite.java.migrate.util.UseListOf
