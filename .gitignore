@@ -8,5 +8,5 @@ out/
 .settings/
 .DS_Store
 bin/
-
-.claude/settings.local.json 
+.claude/settings.local.json
+working-set*/

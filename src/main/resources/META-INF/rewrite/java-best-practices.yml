@@ -74,5 +74,7 @@ recipeList:
   - org.openrewrite.staticanalysis.ReplaceStackWithDeque
   - org.openrewrite.staticanalysis.UseListSort
   - org.openrewrite.staticanalysis.EqualsToContentEquals
+  # Markdown documentation comments (JEP 467, Java 23+)
+  - org.openrewrite.java.migrate.lang.JavadocToMarkdownDocComment
   # Cleanup imports left behind by transformations
   - org.openrewrite.java.RemoveUnusedImports
