@@ -50,6 +50,7 @@ recipeList:
   # Prefer modern Java collection factories and utilities
   - org.openrewrite.java.migrate.util.UseEnumSetOf
   - org.openrewrite.java.migrate.util.UseListOf
+  - org.openrewrite.java.migrate.util.UseMapOf
   - org.openrewrite.java.migrate.util.UseSetOf
   # Static analysis: bug prevention
   - org.openrewrite.staticanalysis.ReplaceWeekYearWithYear
