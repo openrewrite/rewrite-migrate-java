@@ -224,6 +224,8 @@ description: >-
   This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
 preconditions:
   - org.openrewrite.Singleton
+# Previous Faces 3.0 docs show new replacements: https://jakarta.ee/specifications/faces/3.0/apidocs/jakarta/faces/bean/package-summary
+# Additional docs: https://docs.redhat.com/en/documentation/red_hat_jboss_enterprise_application_platform/8.0/html/migration_guide/application-migration-from-jakarta-ee-8-to-ee-10_default#faces-managed-beans_default
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.ApplicationScoped
@@ -233,6 +235,9 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ApplicationScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.ApplicationScoped
       ignoreDefinition: true
+  # Refer to https://github.com/openrewrite/rewrite-migrate-java/issues/1023
+  # TODO: CustomScoped is replaced by Context, but not straightforward ChangeType. Custom recipe for @CustomScoped to use CDI custom scopes
+  #     Docs: https://jakarta.ee/specifications/cdi/4.0/jakarta-cdi-spec-4.0.html#defining_new_scope_type
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
@@ -241,6 +246,9 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.ManagedProperty
       newFullyQualifiedTypeName: jakarta.faces.annotation.ManagedProperty
       ignoreDefinition: true
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: jakarta.faces.annotation.ManagedProperty
+      attributeName: name
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.NoneScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
@@ -249,6 +257,7 @@ recipeList:
       oldFullyQualifiedTypeName: jakarta.faces.bean.NoneScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.Dependent
       ignoreDefinition: true
+  # ReferencedBean has no replacement, was never widely adopted
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.bean.RequestScoped
       newFullyQualifiedTypeName: jakarta.enterprise.context.RequestScoped

@@ -500,7 +500,7 @@ examples:
 - description: '`IBMSemeruTest#doNotUseSunNetSslInternalWwwProtocolHttpsHandler`'
   sources:
   - before: |
-      import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
+      import com.sun.net.ssl.internal.www.protocol.https.*;
 
       class Foo{
         void bar() {
@@ -524,7 +524,6 @@ examples:
       }
     after: |
       import com.ibm.net.ssl.www2.protocol.https.Handler;
-      import com.sun.net.ssl.internal.www.protocol.https.*;  //do NOT flag this
 
       class Foo{
         void bar() {

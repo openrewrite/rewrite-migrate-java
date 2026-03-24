@@ -67,6 +67,43 @@ class UseVarForPrimitiveTest extends VarBaseTest {
               )
             );
         }
+
+        @Test
+        void forStringConcatenation() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String s = "a" + "b";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forStringMethodCall() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    String get() { return "hello"; }
+                    void m() {
+                        String s = get();
+                    }
+                  }
+                  """
+              )
+            );
+        }
     }
 
     @Nested
@@ -305,6 +342,60 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                   class A {
                     void m() {
                         final var i = 42;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forString() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String s = "hello";
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var s = "hello";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void forStringWithFinal() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        final String s = "hello";
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        final var s = "hello";
                     }
                   }
                   """
