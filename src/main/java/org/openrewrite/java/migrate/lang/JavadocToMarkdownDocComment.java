@@ -195,7 +195,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
             } else if (node instanceof Javadoc.UnknownInline) {
                 convertUnknownInline((Javadoc.UnknownInline) node);
             } else if (node instanceof Javadoc.Erroneous) {
-                currentLine.append(((Javadoc.Erroneous) node).getText());
+                convert(((Javadoc.Erroneous) node).getText());
             } else if (node instanceof Javadoc.Reference) {
                 currentLine.append(printReference((Javadoc.Reference) node));
             }
@@ -203,20 +203,18 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
         private void convertLiteral(Javadoc.Literal literal) {
             String content = stripLeadingSpace(renderInline(literal.getDescription()));
-            if (literal.isCode()) {
-                if (content.contains("\n")) {
-                    // Multi-line: use fenced code block
-                    currentLine.append("```");
-                    lines.add(currentLine.toString());
-                    for (String line : content.split("\n", -1)) {
-                        lines.add(line);
-                    }
-                    currentLine = new StringBuilder("```");
-                } else {
-                    currentLine.append('`').append(content).append('`');
+            // Both {@code} and {@literal} map to backticks in Markdown.
+            // {@literal} prevents HTML interpretation; backticks achieve the same in Markdown.
+            if (content.contains("\n")) {
+                // Multi-line: use fenced code block
+                currentLine.append("```");
+                lines.add(currentLine.toString());
+                for (String line : content.split("\n", -1)) {
+                    lines.add(line);
                 }
+                currentLine = new StringBuilder("```");
             } else {
-                currentLine.append(content);
+                currentLine.append('`').append(content).append('`');
             }
         }
 
