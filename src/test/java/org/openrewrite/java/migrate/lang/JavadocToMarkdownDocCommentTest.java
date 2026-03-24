@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
@@ -473,7 +474,6 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
-    // P0: {@literal} should be wrapped in backticks to prevent Markdown interpretation
     @Test
     void javadocWithLiteralTag() {
         rewriteRun(
@@ -496,319 +496,313 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
-    // P2: {@link ref label} form — JEP 467: {@link #equals(Object) equals} → [equals][#equals(Object)]
-    @Test
-    void javadocWithLinkWithLabel() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * See {@link #equals(Object) equals} for details.
-                   */
-                  public void m() {}
-                  public boolean equals(Object o) { return false; }
-              }
-              """,
-            """
-              public class A {
-                  /// See [equals][#equals(Object)] for details.
-                  public void m() {}
-                  public boolean equals(Object o) { return false; }
-              }
-              """
-          )
-        );
-    }
+    @Nested
+    class Jep467FlagshipExamples {
 
-    // P2: ordered list <ol>/<li>
-    @Test
-    void javadocWithOrderedList() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * Steps:
-                   * <ol>
-                   * <li>First</li>
-                   * <li>Second</li>
-                   * <li>Third</li>
-                   * </ol>
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// Steps:
-                  ///
-                  /// 1. First
-                  /// 2. Second
-                  /// 3. Third
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithLinkWithLabel() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * See {@link #equals(Object) equals} for details.
+                       */
+                      public void m() {}
+                      public boolean equals(Object o) { return false; }
+                  }
+                  """,
+                """
+                  public class A {
+                      /// See [equals][#equals(Object)] for details.
+                      public void m() {}
+                      public boolean equals(Object o) { return false; }
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: @exception (alternative form of @throws)
-    @Test
-    void javadocWithException() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * Does something.
-                   *
-                   * @exception IllegalArgumentException if argument is invalid
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// Does something.
-                  ///
-                  /// @exception IllegalArgumentException if argument is invalid
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithOrderedList() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * Steps:
+                       * <ol>
+                       * <li>First</li>
+                       * <li>Second</li>
+                       * <li>Third</li>
+                       * </ol>
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// Steps:
+                      ///
+                      /// 1. First
+                      /// 2. Second
+                      /// 3. Third
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: multi-line {@code} becomes fenced code block
-    @ExpectedToFail("Extra blank lines around content in fenced code block")
-    @Test
-    void javadocWithMultiLineCode() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * Example:
-                   * {@code
-                   * int x = 1;
-                   * int y = 2;
-                   * }
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// Example:
-                  /// ```
-                  /// int x = 1;
-                  /// int y = 2;
-                  /// ```
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithException() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * Does something.
+                       *
+                       * @exception IllegalArgumentException if argument is invalid
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// Does something.
+                      ///
+                      /// @exception IllegalArgumentException if argument is invalid
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: @implSpec handled via UnknownBlock
-    @Test
-    void javadocWithImplSpec() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * Does something.
-                   *
-                   * @implSpec The default implementation does nothing.
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// Does something.
-                  ///
-                  /// @implSpec The default implementation does nothing.
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @ExpectedToFail("Extra blank lines around content in fenced code block")
+        @Test
+        void javadocWithMultiLineCode() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * Example:
+                       * {@code
+                       * int x = 1;
+                       * int y = 2;
+                       * }
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// Example:
+                      /// ```
+                      /// int x = 1;
+                      /// int y = 2;
+                      /// ```
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: <i> and <b> tags (aliases for <em> and <strong>)
-    @Test
-    void javadocWithItalicAndBoldTags() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * This is <i>italic</i> and <b>bold</b> text.
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// This is _italic_ and **bold** text.
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithImplSpec() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * Does something.
+                       *
+                       * @implSpec The default implementation does nothing.
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// Does something.
+                      ///
+                      /// @implSpec The default implementation does nothing.
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: @param with inline {@code} — JEP 467 example: @param l the list, or `null`
-    @Test
-    void javadocParamWithInlineCode() {
-        rewriteRun(
-          java(
-            """
-              import java.util.List;
-              public class A {
-                  /**
-                   * Processes items.
-                   *
-                   * @param items the list, or {@code null} if not available
-                   */
-                  public void m(List<String> items) {}
-              }
-              """,
-            """
-              import java.util.List;
-              public class A {
-                  /// Processes items.
-                  ///
-                  /// @param items the list, or `null` if not available
-                  public void m(List<String> items) {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithItalicAndBoldTags() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * This is <i>italic</i> and <b>bold</b> text.
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// This is _italic_ and **bold** text.
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: {@docRoot} preserved as-is
-    @Test
-    void javadocWithDocRoot() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /**
-                   * See <a href="{@docRoot}/help.html">help</a>.
-                   */
-                  public void m() {}
-              }
-              """,
-            """
-              public class A {
-                  /// See <a href="{@docRoot}/help.html">help</a>.
-                  public void m() {}
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocParamWithInlineCode() {
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  public class A {
+                      /**
+                       * Processes items.
+                       *
+                       * @param items the list, or {@code null} if not available
+                       */
+                      public void m(List<String> items) {}
+                  }
+                  """,
+                """
+                  import java.util.List;
+                  public class A {
+                      /// Processes items.
+                      ///
+                      /// @param items the list, or `null` if not available
+                      public void m(List<String> items) {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P2: {@value} preserved as-is
-    @Test
-    void javadocWithValue() {
-        rewriteRun(
-          java(
-            """
-              public class A {
-                  /** The default value is {@value}. */
-                  public static final int DEFAULT = 42;
-              }
-              """,
-            """
-              public class A {
-                  /// The default value is {@value}.
-                  public static final int DEFAULT = 42;
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void javadocWithDocRoot() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /**
+                       * See <a href="{@docRoot}/help.html">help</a>.
+                       */
+                      public void m() {}
+                  }
+                  """,
+                """
+                  public class A {
+                      /// See <a href="{@docRoot}/help.html">help</a>.
+                      public void m() {}
+                  }
+                  """
+              )
+            );
+        }
 
-    // P3: JEP 467 hashCode() flagship example — complex mixed content
-    @ExpectedToFail("@see with qualified names uses # instead of . for package separators")
-    @Test
-    void javadocHashCodeExample() {
-        rewriteRun(
-          java(
-            """
-              import java.util.HashMap;
-              public class A {
-                  /**
-                   * Returns a hash code value for the object. This method is
-                   * supported for the benefit of hash tables such as those provided by
-                   * {@link java.util.HashMap}.
-                   * <p>
-                   * The general contract of {@code hashCode} is:
-                   * <ul>
-                   * <li>Whenever it is invoked on the same object more than once during
-                   *     an execution of a Java application, the {@code hashCode} method
-                   *     must consistently return the same integer.
-                   * <li>If two objects are equal according to the {@link
-                   *     #equals(Object) equals} method, then calling the {@code
-                   *     hashCode} method on each of the two objects must produce the
-                   *     same integer result.
-                   * <li>It is <em>not</em> required that if two objects are unequal
-                   *     according to the {@link #equals(Object) equals} method, then
-                   *     calling the {@code hashCode} method on each of the two objects
-                   *     must produce distinct integer results.
-                   * </ul>
-                   *
-                   * @implSpec
-                   * As far as is reasonably practical, the {@code hashCode} method defined
-                   * by class {@code Object} returns distinct integers for distinct objects.
-                   *
-                   * @return  a hash code value for this object.
-                   * @see     java.lang.Object#equals(java.lang.Object)
-                   * @see     java.lang.System#identityHashCode
-                   */
-                  public int hashCode() { return 0; }
-                  public boolean equals(Object o) { return false; }
-              }
-              """,
-            """
-              import java.util.HashMap;
-              public class A {
-                  /// Returns a hash code value for the object. This method is
-                  /// supported for the benefit of hash tables such as those provided by
-                  /// [java.util.HashMap].
-                  ///
-                  /// The general contract of `hashCode` is:
-                  ///
-                  /// - Whenever it is invoked on the same object more than once during
-                  ///     an execution of a Java application, the `hashCode` method
-                  ///     must consistently return the same integer.
-                  /// - If two objects are equal according to the
-                  ///     [equals][#equals(Object)] method, then calling the `hashCode`
-                  ///     method on each of the two objects must produce the
-                  ///     same integer result.
-                  /// - It is _not_ required that if two objects are unequal
-                  ///     according to the [equals][#equals(Object)] method, then
-                  ///     calling the `hashCode` method on each of the two objects
-                  ///     must produce distinct integer results.
-                  ///
-                  /// @implSpec
-                  /// As far as is reasonably practical, the `hashCode` method defined
-                  /// by class `Object` returns distinct integers for distinct objects.
-                  ///
-                  /// @return  a hash code value for this object.
-                  /// @see     java.lang.Object#equals(java.lang.Object)
-                  /// @see     java.lang.System#identityHashCode
-                  public int hashCode() { return 0; }
-                  public boolean equals(Object o) { return false; }
-              }
-              """
-          )
-        );
+        @Test
+        void javadocWithValue() {
+            rewriteRun(
+              java(
+                """
+                  public class A {
+                      /** The default value is {@value}. */
+                      public static final int DEFAULT = 42;
+                  }
+                  """,
+                """
+                  public class A {
+                      /// The default value is {@value}.
+                      public static final int DEFAULT = 42;
+                  }
+                  """
+              )
+            );
+        }
+
+        @ExpectedToFail("@see with qualified names uses # instead of . for package separators")
+        @Test
+        void javadocHashCodeExample() {
+            rewriteRun(
+              java(
+                """
+                  import java.util.HashMap;
+                  public class A {
+                      /**
+                       * Returns a hash code value for the object. This method is
+                       * supported for the benefit of hash tables such as those provided by
+                       * {@link java.util.HashMap}.
+                       * <p>
+                       * The general contract of {@code hashCode} is:
+                       * <ul>
+                       * <li>Whenever it is invoked on the same object more than once during
+                       *     an execution of a Java application, the {@code hashCode} method
+                       *     must consistently return the same integer.
+                       * <li>If two objects are equal according to the {@link
+                       *     #equals(Object) equals} method, then calling the {@code
+                       *     hashCode} method on each of the two objects must produce the
+                       *     same integer result.
+                       * <li>It is <em>not</em> required that if two objects are unequal
+                       *     according to the {@link #equals(Object) equals} method, then
+                       *     calling the {@code hashCode} method on each of the two objects
+                       *     must produce distinct integer results.
+                       * </ul>
+                       *
+                       * @implSpec
+                       * As far as is reasonably practical, the {@code hashCode} method defined
+                       * by class {@code Object} returns distinct integers for distinct objects.
+                       *
+                       * @return  a hash code value for this object.
+                       * @see     java.lang.Object#equals(java.lang.Object)
+                       * @see     java.lang.System#identityHashCode
+                       */
+                      public int hashCode() { return 0; }
+                      public boolean equals(Object o) { return false; }
+                  }
+                  """,
+                """
+                  import java.util.HashMap;
+                  public class A {
+                      /// Returns a hash code value for the object. This method is
+                      /// supported for the benefit of hash tables such as those provided by
+                      /// [java.util.HashMap].
+                      ///
+                      /// The general contract of `hashCode` is:
+                      ///
+                      /// - Whenever it is invoked on the same object more than once during
+                      ///     an execution of a Java application, the `hashCode` method
+                      ///     must consistently return the same integer.
+                      /// - If two objects are equal according to the
+                      ///     [equals][#equals(Object)] method, then calling the `hashCode`
+                      ///     method on each of the two objects must produce the
+                      ///     same integer result.
+                      /// - It is _not_ required that if two objects are unequal
+                      ///     according to the [equals][#equals(Object)] method, then
+                      ///     calling the `hashCode` method on each of the two objects
+                      ///     must produce distinct integer results.
+                      ///
+                      /// @implSpec
+                      /// As far as is reasonably practical, the `hashCode` method defined
+                      /// by class `Object` returns distinct integers for distinct objects.
+                      ///
+                      /// @return  a hash code value for this object.
+                      /// @see     java.lang.Object#equals(java.lang.Object)
+                      /// @see     java.lang.System#identityHashCode
+                      public int hashCode() { return 0; }
+                      public boolean equals(Object o) { return false; }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
