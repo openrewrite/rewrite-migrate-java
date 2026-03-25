@@ -718,6 +718,32 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.JavaBestPractices
+examples:
+- description: '`JavaBestPracticesTest#updateCompilerVersion`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>17</maven.compiler.release>
+          </properties>
+      </project>
+    after: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>25</maven.compiler.release>
+          </properties>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.JpaCacheProperties
 examples:
 - description: '`JpaCachePropertiesTest#set_set_set1`'
@@ -6958,6 +6984,37 @@ examples:
          public void test() {
              boolean result = Character.isJavaIdentifierStart('b');
          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.JavadocToMarkdownDocComment
+examples:
+- description: '`JavadocToMarkdownDocCommentTest#multiLineJavadocWithTags`'
+  sources:
+  - before: |
+      public class A {
+          /**
+           * Computes the sum of two numbers.
+           *
+           * @param a the first number
+           * @param b the second number
+           * @return the sum of a and b
+           */
+          public int add(int a, int b) {
+              return a + b;
+          }
+      }
+    after: |
+      public class A {
+          /// Computes the sum of two numbers.
+          ///
+          /// @param a the first number
+          /// @param b the second number
+          /// @return the sum of a and b
+          public int add(int a, int b) {
+              return a + b;
+          }
       }
     language: java
 ---
