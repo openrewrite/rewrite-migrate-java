@@ -43,7 +43,3 @@ recipeList:
       groupId: jakarta.servlet.jsp
       artifactId: jakarta.servlet.jsp-api
       newVersion: 4.0.x
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: jakarta.servlet.jsp.jstl
-      artifactId: jakarta.servlet.jsp.jstl-api
-      newVersion: 3.0.x
