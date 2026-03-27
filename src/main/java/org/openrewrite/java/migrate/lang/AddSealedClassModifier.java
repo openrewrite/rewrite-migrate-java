@@ -38,7 +38,8 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
     String displayName = "Use `sealed` classes where possible";
 
     String description = "Adds the `sealed` modifier to classes whose only subclasses " +
-            "are nested within the same class declaration and whose constructors are all private. " +
+            "are nested within the same class declaration and whose constructors are all private " +
+            "(or the class is abstract with no explicit constructor). " +
             "Only applies when all nested subclasses are already `final`, `sealed`, `non-sealed`, or are records/enums.";
 
     static class Accumulator {
@@ -72,17 +73,6 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                             .computeIfAbsent(parentFqn, k -> ConcurrentHashMap.newKeySet())
                             .add(type.getFullyQualifiedName());
                 }
-                List<TypeTree> implementsClauses = cd.getImplements();
-                if (implementsClauses != null) {
-                    for (TypeTree impl : implementsClauses) {
-                        if (impl.getType() instanceof JavaType.FullyQualified) {
-                            String parentFqn = ((JavaType.FullyQualified) impl.getType()).getFullyQualifiedName();
-                            acc.subclassesByParent
-                                    .computeIfAbsent(parentFqn, k -> ConcurrentHashMap.newKeySet())
-                                    .add(type.getFullyQualifiedName());
-                        }
-                    }
-                }
                 return cd;
             }
         };
@@ -94,7 +84,10 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 // Only apply to Java source files, not Kotlin or other JVM languages
-                if (!(getCursor().firstEnclosing(JavaSourceFile.class) instanceof J.CompilationUnit)) {
+                JavaSourceFile sourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
+                if (sourceFile == null ||
+                    !(sourceFile instanceof J.CompilationUnit) ||
+                    !sourceFile.getSourcePath().toString().endsWith(".java")) {
                     return classDecl;
                 }
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
@@ -189,9 +182,10 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                 .filter(J.MethodDeclaration::isConstructor)
                 .collect(Collectors.toList());
 
-        // If there are no explicit constructors, the default constructor is package-private — not safe
+        // Abstract classes with no explicit constructor have an implicit protected constructor.
+        // This is safe when the scanner confirms all subclasses are nested.
         if (constructors.isEmpty()) {
-            return false;
+            return cd.hasModifier(J.Modifier.Type.Abstract);
         }
 
         return constructors.stream().allMatch(ctor ->
@@ -203,7 +197,7 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
         for (Statement stmt : parent.getBody().getStatements()) {
             if (stmt instanceof J.ClassDeclaration) {
                 J.ClassDeclaration nested = (J.ClassDeclaration) stmt;
-                if (extendsOrImplements(nested, parentFqn)) {
+                if (extendsClass(nested, parentFqn)) {
                     result.add(nested);
                 }
             }
@@ -211,22 +205,10 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
         return result;
     }
 
-    private static boolean extendsOrImplements(J.ClassDeclaration cd, String parentFqn) {
+    private static boolean extendsClass(J.ClassDeclaration cd, String parentFqn) {
         TypeTree extendsClause = cd.getExtends();
-        if (extendsClause != null && extendsClause.getType() instanceof JavaType.FullyQualified) {
-            if (parentFqn.equals(((JavaType.FullyQualified) extendsClause.getType()).getFullyQualifiedName())) {
-                return true;
-            }
-        }
-        List<TypeTree> implementsClauses = cd.getImplements();
-        if (implementsClauses != null) {
-            for (TypeTree impl : implementsClauses) {
-                if (impl.getType() instanceof JavaType.FullyQualified &&
-                    parentFqn.equals(((JavaType.FullyQualified) impl.getType()).getFullyQualifiedName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return extendsClause != null &&
+                extendsClause.getType() instanceof JavaType.FullyQualified &&
+                parentFqn.equals(((JavaType.FullyQualified) extendsClause.getType()).getFullyQualifiedName());
     }
 }

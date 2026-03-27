@@ -91,6 +91,27 @@ class AddSealedClassModifierTest implements RewriteTest {
         );
     }
 
+    @Test
+    void sealAbstractClassWithImplicitConstructor() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              public abstract class Shape {
+                  public static final class Circle extends Shape {}
+                  public static final class Square extends Shape {}
+              }
+              """,
+            """
+              public abstract sealed class Shape permits Circle, Square {
+                  public static final class Circle extends Shape {}
+                  public static final class Square extends Shape {}
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NoChange {
 
