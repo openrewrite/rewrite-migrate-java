@@ -37,7 +37,7 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
 
     String displayName = "Use `sealed` classes where possible";
 
-    String description = "Adds the `sealed` modifier to classes and interfaces whose only subclasses/implementations " +
+    String description = "Adds the `sealed` modifier to classes whose only subclasses " +
             "are nested within the same class declaration and whose constructors are all private. " +
             "Only applies when all nested subclasses are already `final`, `sealed`, `non-sealed`, or are records/enums.";
 
@@ -108,17 +108,15 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                     return cd;
                 }
 
-                // Skip enums and records
-                if (cd.getKind() == J.ClassDeclaration.Kind.Type.Enum ||
-                    cd.getKind() == J.ClassDeclaration.Kind.Type.Record) {
+                // Skip interfaces (no private constructor guarantee), enums, and records
+                if (cd.getKind() != J.ClassDeclaration.Kind.Type.Class) {
                     return cd;
                 }
 
                 String parentFqn = type.getFullyQualifiedName();
-                boolean isInterface = cd.getKind() == J.ClassDeclaration.Kind.Type.Interface;
 
-                // For classes: verify all constructors are private
-                if (!isInterface && !allConstructorsPrivate(cd)) {
+                // Verify all constructors are private
+                if (!allConstructorsPrivate(cd)) {
                     return cd;
                 }
 

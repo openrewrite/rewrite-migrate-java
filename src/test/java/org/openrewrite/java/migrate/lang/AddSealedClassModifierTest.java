@@ -91,27 +91,6 @@ class AddSealedClassModifierTest implements RewriteTest {
         );
     }
 
-    @Test
-    void sealInterfaceWithNestedRecordImplementors() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              public interface Event {
-                  record Click(int x, int y) implements Event {}
-                  record KeyPress(char key) implements Event {}
-              }
-              """,
-            """
-              public sealed interface Event permits Click, KeyPress {
-                  record Click(int x, int y) implements Event {}
-                  record KeyPress(char key) implements Event {}
-              }
-              """
-          )
-        );
-    }
-
     @Nested
     class NoChange {
 
@@ -189,7 +168,7 @@ class AddSealedClassModifierTest implements RewriteTest {
         }
 
         @Test
-        void doNotSealWhenSubclassExistsOutsideClass() {
+        void doNotSealWhenSubclassExistsInAnotherFile() {
             rewriteRun(
               //language=java
               java(
@@ -205,8 +184,21 @@ class AddSealedClassModifierTest implements RewriteTest {
               java(
                 """
                   package p;
-                  public final class External extends Parent {
-                      private External() {}
+                  final class External extends Parent {}
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotSealInterface() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  public interface Event {
+                      record Click(int x, int y) implements Event {}
+                      record KeyPress(char key) implements Event {}
                   }
                   """
               )
