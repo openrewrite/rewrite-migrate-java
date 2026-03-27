@@ -10,3 +10,5 @@ out/
 bin/
 .claude/settings.local.json
 working-set*/
+working-set-square*/
+working-set-spring*/

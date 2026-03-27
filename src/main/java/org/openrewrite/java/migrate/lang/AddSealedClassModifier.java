@@ -39,7 +39,7 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
 
     String description = "Adds the `sealed` modifier to classes and interfaces whose only subclasses/implementations " +
             "are nested within the same class declaration and whose constructors are all private. " +
-            "Also adds `final` to permitted subclasses that are not already `final`, `sealed`, or `non-sealed`.";
+            "Only applies when all nested subclasses are already `final`, `sealed`, `non-sealed`, or are records/enums.";
 
     static class Accumulator {
         // Maps fully qualified parent class name -> set of fully qualified subclass names found across the whole codebase
@@ -53,7 +53,10 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        return Preconditions.check(new UsesJavaVersion<>(17), new JavaIsoVisitor<ExecutionContext>() {
+        // Scan ALL source files unconditionally to build a complete subclass map.
+        // Do not gate with UsesJavaVersion here — in mixed-version codebases, subclasses
+        // in pre-Java-17 files must still be recorded to prevent incorrectly sealing classes.
+        return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
@@ -82,7 +85,7 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                 }
                 return cd;
             }
-        });
+        };
     }
 
     @Override
@@ -90,6 +93,10 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
         return Preconditions.check(new UsesJavaVersion<>(17), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                // Only apply to Java source files, not Kotlin or other JVM languages
+                if (!(getCursor().firstEnclosing(JavaSourceFile.class) instanceof J.CompilationUnit)) {
+                    return classDecl;
+                }
                 J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
                 JavaType.FullyQualified type = cd.getType();
                 if (type == null) {
@@ -135,7 +142,6 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                 }
 
                 // Verify all nested subclasses are already final, sealed, or non-sealed
-                // (if not, we'll add final to them)
                 boolean allSubclassesCompatible = nestedSubclasses.stream().allMatch(sub ->
                         sub.hasModifier(J.Modifier.Type.Final) ||
                         sub.hasModifier(J.Modifier.Type.Sealed) ||
@@ -152,15 +158,14 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                     J.ClassDeclaration sub = nestedSubclasses.get(i);
                     J.Identifier permitIdent = new J.Identifier(
                             randomId(),
-                            i == 0 ? Space.SINGLE_SPACE : Space.SINGLE_SPACE,
+                            Space.SINGLE_SPACE,
                             Markers.EMPTY,
                             emptyList(),
                             sub.getSimpleName(),
                             sub.getType(),
                             null
                     );
-                    Space after = i < nestedSubclasses.size() - 1 ? Space.EMPTY : Space.EMPTY;
-                    permitsEntries.add(JRightPadded.build((TypeTree) permitIdent).withAfter(after));
+                    permitsEntries.add(JRightPadded.build((TypeTree) permitIdent));
                 }
 
                 JContainer<TypeTree> permits = JContainer.build(
