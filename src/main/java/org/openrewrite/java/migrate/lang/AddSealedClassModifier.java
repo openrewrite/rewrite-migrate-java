@@ -173,10 +173,8 @@ public class AddSealedClassModifier extends ScanningRecipe<AddSealedClassModifie
                 List<J.Modifier> modifiers = new ArrayList<>(cd.getModifiers());
                 modifiers.add(new J.Modifier(randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, J.Modifier.Type.Sealed, emptyList()));
 
-                cd = cd.withModifiers(sortModifiers(modifiers));
-                cd = cd.getPadding().withPermits(permits);
-
-                return cd;
+                return cd.withModifiers(sortModifiers(modifiers))
+                        .getPadding().withPermits(permits);
             }
         });
     }
