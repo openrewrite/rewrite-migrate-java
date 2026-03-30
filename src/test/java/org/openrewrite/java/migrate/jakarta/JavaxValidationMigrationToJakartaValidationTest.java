@@ -156,7 +156,7 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaValidationApiDependencyIfJavaxValidationApiOnlyExistsInTransitive() {
+    void addsJakartaValidationApiDependencyWhenNoExplicitValidationDependencyDeclared() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "validation-api-2.0.1.Final")),

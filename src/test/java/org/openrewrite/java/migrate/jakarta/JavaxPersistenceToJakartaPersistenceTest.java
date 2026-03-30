@@ -89,7 +89,7 @@ class JavaxPersistenceToJakartaPersistenceTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaPersistenceApiDependencyIfJavaxPersistenceApiOnlyExistsInTransitive() {
+    void addsJakartaPersistenceApiDependencyWhenNoExplicitPersistenceDependencyDeclared() {
         rewriteRun(
           mavenProject(
             "Sample",

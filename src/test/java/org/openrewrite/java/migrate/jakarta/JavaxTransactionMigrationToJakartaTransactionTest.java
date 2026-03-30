@@ -107,7 +107,7 @@ class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaTransactionApiDependencyIfJavaxTransactionApiOnlyExistsInTransitive() {
+    void addsJakartaTransactionApiDependencyWhenNoExplicitTransactionDependencyDeclared() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "javax.transaction-api-1.3")),

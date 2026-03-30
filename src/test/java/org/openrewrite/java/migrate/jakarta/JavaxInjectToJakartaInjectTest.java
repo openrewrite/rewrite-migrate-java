@@ -67,7 +67,7 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaInjectApiDependencyIfJavaxInjectOnlyExistsInTransitive() {
+    void addsJakartaInjectApiDependencyWhenNoExplicitInjectDependencyDeclared() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "javax.inject-1")),
