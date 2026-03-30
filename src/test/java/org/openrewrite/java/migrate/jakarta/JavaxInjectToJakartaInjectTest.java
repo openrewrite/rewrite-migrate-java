@@ -17,10 +17,15 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JavaxInjectToJakartaInjectTest implements RewriteTest {
@@ -36,7 +41,6 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
     @Test
     void projectWithJavaxInject() {
         rewriteRun(
-          //language=xml
           pomXml(
             """
               <project>
@@ -58,6 +62,62 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
               .contains("<artifactId>jakarta.inject-api</artifactId>")
               .containsPattern("<version>\\d+\\.\\d+\\.\\d+.*</version>")
               .actual())
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaInjectApiDependencyWhenNoExplicitInjectDependencyDeclared() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.inject-1")),
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.inject.Inject;
+                  public class TestApplication {
+                      @Inject
+                      private String name;
+                  }
+                  """,
+                """
+                  import jakarta.inject.Inject;
+                  public class TestApplication {
+                      @Inject
+                      private String name;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot</artifactId>
+                            <version>2.1.9.RELEASE</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .containsPattern(
+                      "<groupId>jakarta\\.inject</groupId>\\s*" +
+                      "<artifactId>jakarta\\.inject-api</artifactId>\\s*" +
+                      "<version>2\\.0\\.\\d+</version>");
+                  return pom;
+              })
+            )
           )
         );
     }

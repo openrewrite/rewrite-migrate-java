@@ -17,13 +17,18 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
 
@@ -146,6 +151,62 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaValidationApiDependencyWhenNoExplicitValidationDependencyDeclared() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "validation-api-2.0.1.Final")),
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.validation.constraints.NotNull;
+                  public class TestApplication {
+                      @NotNull
+                      private String name;
+                  }
+                  """,
+                """
+                  import jakarta.validation.constraints.NotNull;
+                  public class TestApplication {
+                      @NotNull
+                      private String name;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot</artifactId>
+                            <version>2.1.9.RELEASE</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .containsPattern(
+                      "<groupId>jakarta\\.validation</groupId>\\s*" +
+                      "<artifactId>jakarta\\.validation-api</artifactId>\\s*" +
+                      "<version>3\\.0\\.\\d+</version>");
+                  return pom;
+              })
+            )
           )
         );
     }

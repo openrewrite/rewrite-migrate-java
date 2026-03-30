@@ -98,6 +98,11 @@ recipeList:
       groupId: jakarta.activation
       artifactId: jakarta.activation-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.activation
+      artifactId: jakarta.activation-api
+      version: 2.0.x
+      onlyIfUsing: javax.activation..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
@@ -176,6 +181,11 @@ recipeList:
       groupId: jakarta.authentication
       artifactId: jakarta.authentication-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.authentication
+      artifactId: jakarta.authentication-api
+      version: 2.0.x
+      onlyIfUsing: javax.security.auth.message..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.auth.message
       newPackageName: jakarta.security.auth.message
@@ -210,6 +220,11 @@ recipeList:
       groupId: jakarta.authorization
       artifactId: jakarta.authorization-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.authorization
+      artifactId: jakarta.authorization-api
+      version: 2.0.x
+      onlyIfUsing: javax.security.jacc..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.jacc
       newPackageName: jakarta.security.jacc
@@ -236,6 +251,11 @@ recipeList:
       groupId: jakarta.batch
       artifactId: jakarta.batch-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.batch
+      artifactId: jakarta.batch-api
+      version: 2.0.x
+      onlyIfUsing: javax.batch..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.batch
       newPackageName: jakarta.batch
@@ -262,6 +282,11 @@ recipeList:
       groupId: jakarta.validation
       artifactId: jakarta.validation-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      version: 3.0.x
+      onlyIfUsing: javax.validation..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
@@ -294,6 +319,11 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.decorator..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
@@ -322,6 +352,11 @@ recipeList:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ejb
+      artifactId: jakarta.ejb-api
+      version: 4.0.x
+      onlyIfUsing: javax.ejb..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ejb
       newPackageName: jakarta.ejb
@@ -344,6 +379,11 @@ recipeList:
       groupId: jakarta.el
       artifactId: jakarta.el-api
       newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.el
+      artifactId: jakarta.el-api
+      version: 4.0.x
+      onlyIfUsing: javax.el..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.el
       newPackageName: jakarta.el
@@ -405,6 +445,11 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.enterprise..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
@@ -437,6 +482,11 @@ recipeList:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.inject
+      artifactId: jakarta.inject-api
+      version: 2.0.x
+      onlyIfUsing: javax.inject..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
@@ -459,6 +509,11 @@ recipeList:
       groupId: jakarta.interceptor
       artifactId: jakarta.interceptor-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.interceptor
+      artifactId: jakarta.interceptor-api
+      version: 2.0.x
+      onlyIfUsing: javax.interceptor..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.interceptor
       newPackageName: jakarta.interceptor
@@ -487,6 +542,11 @@ recipeList:
       groupId: jakarta.jms
       artifactId: jakarta.jms-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.jms
+      artifactId: jakarta.jms-api
+      version: 3.0.x
+      onlyIfUsing: javax.jms..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jms
       newPackageName: jakarta.jms
@@ -509,6 +569,11 @@ recipeList:
       groupId: jakarta.json
       artifactId: jakarta.json-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.json
+      artifactId: jakarta.json-api
+      version: 2.0.x
+      onlyIfUsing: javax.json..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.json
       newPackageName: jakarta.json
@@ -537,6 +602,11 @@ recipeList:
       groupId: jakarta.jws
       artifactId: jakarta.jws-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.jws
+      artifactId: jakarta.jws-api
+      version: 3.0.x
+      onlyIfUsing: javax.jws..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jws
       newPackageName: jakarta.jws
@@ -643,6 +713,11 @@ recipeList:
       groupId: jakarta.persistence
       artifactId: jakarta.persistence-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.persistence
+      artifactId: jakarta.persistence-api
+      version: 3.0.x
+      onlyIfUsing: javax.persistence..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.persistence
       newPackageName: jakarta.persistence
@@ -671,6 +746,11 @@ recipeList:
       groupId: jakarta.resource
       artifactId: jakarta.resource-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.resource
+      artifactId: jakarta.resource-api
+      version: 2.0.x
+      onlyIfUsing: javax.resource..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.resource
       newPackageName: jakarta.resource
@@ -693,6 +773,11 @@ recipeList:
       groupId: jakarta.security.enterprise
       artifactId: jakarta.security.enterprise-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.security.enterprise
+      artifactId: jakarta.security.enterprise-api
+      version: 2.0.x
+      onlyIfUsing: javax.security.enterprise..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.enterprise
       newPackageName: jakarta.security.enterprise
@@ -752,6 +837,11 @@ recipeList:
       groupId: jakarta.transaction
       artifactId: jakarta.transaction-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.transaction
+      artifactId: jakarta.transaction-api
+      version: 2.0.x
+      onlyIfUsing: javax.transaction..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
@@ -794,6 +884,11 @@ recipeList:
       groupId: jakarta.websocket
       artifactId: jakarta.websocket-all
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.websocket
+      artifactId: jakarta.websocket-api
+      version: 2.0.x
+      onlyIfUsing: javax.websocket..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
@@ -858,6 +953,11 @@ recipeList:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 3.0.x
+      onlyIfUsing: javax.xml.bind..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind
@@ -942,6 +1042,11 @@ recipeList:
       groupId: jakarta.xml.soap
       artifactId: jakarta.xml.soap-api
       newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.xml.soap
+      artifactId: jakarta.xml.soap-api
+      version: 2.0.x
+      onlyIfUsing: javax.xml.soap..*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.soap
       newPackageName: jakarta.xml.soap
