@@ -79,66 +79,43 @@ class EnableLombokAnnotationProcessorTest implements RewriteTest {
     @Test
     void doesNotAddLombokToModuleWithoutLombok() {
         rewriteRun(
-          mavenProject("parent",
+          mavenProject("module-with-lombok",
             pomXml(
               //language=xml
               """
                 <project>
                     <groupId>com.mycompany.app</groupId>
-                    <artifactId>parent</artifactId>
+                    <artifactId>module-with-lombok</artifactId>
                     <version>1</version>
-                    <packaging>pom</packaging>
-                    <modules>
-                        <module>module-with-lombok</module>
-                        <module>module-without-lombok</module>
-                    </modules>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.40</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> actual)
+            )
+          ),
+          mavenProject("module-without-lombok",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>module-without-lombok</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.google.guava</groupId>
+                            <artifactId>guava</artifactId>
+                            <version>33.0.0-jre</version>
+                        </dependency>
+                    </dependencies>
                 </project>
                 """
-            ),
-            mavenProject("module-with-lombok",
-              pomXml(
-                //language=xml
-                """
-                  <project>
-                      <parent>
-                          <groupId>com.mycompany.app</groupId>
-                          <artifactId>parent</artifactId>
-                          <version>1</version>
-                      </parent>
-                      <artifactId>module-with-lombok</artifactId>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.projectlombok</groupId>
-                              <artifactId>lombok</artifactId>
-                              <version>1.18.40</version>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """,
-                spec -> spec.after(actual -> actual)
-              )
-            ),
-            mavenProject("module-without-lombok",
-              pomXml(
-                //language=xml
-                """
-                  <project>
-                      <parent>
-                          <groupId>com.mycompany.app</groupId>
-                          <artifactId>parent</artifactId>
-                          <version>1</version>
-                      </parent>
-                      <artifactId>module-without-lombok</artifactId>
-                      <dependencies>
-                          <dependency>
-                              <groupId>com.google.guava</groupId>
-                              <artifactId>guava</artifactId>
-                              <version>33.0.0-jre</version>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """
-              )
             )
           )
         );
