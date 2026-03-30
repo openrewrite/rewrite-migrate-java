@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,7 +30,7 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("javax.servlet.jsp-api"))
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.servlet.jsp-api-2.3.3"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp");
@@ -58,13 +59,14 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.servlet.jsp</groupId>")
-                .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
-                .containsPattern("<version>3.0.\\d+</version>")
-                .doesNotContain("<groupId>javax.servlet.jsp</groupId>")
-                .doesNotContain("<artifactId>javax.servlet.jsp-api</artifactId>")
-                .actual())
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .contains("<groupId>jakarta.servlet.jsp</groupId>")
+                    .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
+                    .containsPattern("<version>3\\.0\\.\\d+</version>")
+                    .doesNotContain("javax.servlet.jsp");
+                  return pom;
+              })
             )
           ),
           srcMainJava(
@@ -122,11 +124,13 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.servlet.jsp</groupId>")
-                .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
-                .containsPattern("<version>3.0.\\d+</version>")
-                .actual())
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .contains("<groupId>jakarta.servlet.jsp</groupId>")
+                    .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
+                    .containsPattern("<version>3\\.0\\.\\d+</version>");
+                  return pom;
+              })
             )
           )
         );
