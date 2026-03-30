@@ -91,7 +91,7 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaJspApiDependencyIfJavaxJspApiOnlyExistsInTransitive() {
+    void addsJakartaJspApiDependencyWhenNoExplicitJspDependencyDeclared() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -176,7 +176,7 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
     }
 
     @Test
-    void addsJakartaJspApiDependencyInGradleIfJavaxJspApiOnlyExistsInTransitive() {
+    void addsJakartaJspApiDependencyInGradleWhenNoExplicitJspDependencyDeclared() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi()),
           mavenProject(
