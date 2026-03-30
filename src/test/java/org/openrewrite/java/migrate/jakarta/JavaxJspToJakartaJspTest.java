@@ -61,10 +61,11 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 """,
               spec -> spec.after(pom -> {
                   assertThat(pom)
-                    .contains("<groupId>jakarta.servlet.jsp</groupId>")
-                    .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
-                    .containsPattern("<version>3\\.0\\.\\d+</version>")
-                    .doesNotContain("javax.servlet.jsp");
+                    .doesNotContain("javax.servlet.jsp")
+                    .containsPattern(
+                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                      "<version>3\\.0\\.\\d+</version>");
                   return pom;
               })
             )
@@ -126,11 +127,84 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 """,
               spec -> spec.after(pom -> {
                   assertThat(pom)
-                    .contains("<groupId>jakarta.servlet.jsp</groupId>")
-                    .contains("<artifactId>jakarta.servlet.jsp-api</artifactId>")
-                    .containsPattern("<version>3\\.0\\.\\d+</version>");
+                    .containsPattern(
+                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                      "<version>3\\.0\\.\\d+</version>");
                   return pom;
               })
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradesJakartaJspApiDependencyIfAlreadyExistingAtLowerVersion() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.servlet.jsp</groupId>
+                            <artifactId>jakarta.servlet.jsp-api</artifactId>
+                            <version>2.3.6</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .containsPattern(
+                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                      "<version>3\\.0\\.\\d+</version>");
+                  return pom;
+              })
+            )
+          )
+        );
+    }
+
+    @Test
+    void noChangeIfAlreadyOnJakartaJspApi() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import jakarta.servlet.jsp.PageContext;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.servlet.jsp</groupId>
+                            <artifactId>jakarta.servlet.jsp-api</artifactId>
+                            <version>3.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
             )
           )
         );
