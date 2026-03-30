@@ -18,12 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
     @Language("java")
@@ -97,6 +102,60 @@ class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
                   XAResource xa;
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaTransactionApiDependencyIfJavaxTransactionApiOnlyExistsInTransitive() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.transaction-api-1.3")),
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.transaction.Transactional;
+                  @Transactional
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.transaction.Transactional;
+                  @Transactional
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot</artifactId>
+                            <version>2.1.9.RELEASE</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  assertThat(pom)
+                    .containsPattern(
+                      "<groupId>jakarta\\.transaction</groupId>\\s*" +
+                      "<artifactId>jakarta\\.transaction-api</artifactId>\\s*" +
+                      "<version>2\\.0\\.\\d+</version>");
+                  return pom;
+              })
+            )
           )
         );
     }
