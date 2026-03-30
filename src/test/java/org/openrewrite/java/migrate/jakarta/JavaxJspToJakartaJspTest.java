@@ -23,6 +23,8 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -167,6 +169,48 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                       "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
                       "<version>3\\.0\\.\\d+</version>");
                   return pom;
+              })
+            )
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaJspApiDependencyInGradleIfJavaxJspApiOnlyExistsInTransitive() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.servlet.jsp.PageContext;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.servlet.jsp.PageContext;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            ),
+            //language=groovy
+            buildGradle(
+              """
+                plugins {
+                    id "java-library"
+                }
+
+                repositories {
+                    mavenCentral()
+                }
+                """,
+              spec -> spec.after(gradle -> {
+                  assertThat(gradle)
+                    .contains("jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.0.");
+                  return gradle;
               })
             )
           )
