@@ -565,6 +565,11 @@ recipeList:
       groupId: jakarta.servlet.jsp
       artifactId: jakarta.servlet.jsp-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.servlet.jsp
+      artifactId: jakarta.servlet.jsp-api
+      version: 3.0.x
+      onlyIfUsing: javax.servlet.jsp.*
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet.jsp
       newPackageName: jakarta.servlet.jsp
