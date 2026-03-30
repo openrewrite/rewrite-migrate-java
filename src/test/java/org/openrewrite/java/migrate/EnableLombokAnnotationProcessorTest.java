@@ -121,7 +121,6 @@ class EnableLombokAnnotationProcessorTest implements RewriteTest {
         );
     }
 
-
     @Test
     void doesNotAddLombokWhenNotPresent() {
         rewriteRun(

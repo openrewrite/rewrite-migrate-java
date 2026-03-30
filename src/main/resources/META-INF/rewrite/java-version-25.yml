@@ -170,10 +170,9 @@ description: >-
   With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
   The change is valid for older versions as well.
 preconditions:
-  - org.openrewrite.java.dependencies.DependencyInsight:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.AddAnnotationProcessor:
       groupId: org.projectlombok
