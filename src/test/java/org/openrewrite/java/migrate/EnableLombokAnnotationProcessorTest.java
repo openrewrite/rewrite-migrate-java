@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -96,7 +97,12 @@ class EnableLombokAnnotationProcessorTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              spec -> spec.after(actual -> actual)
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
+              )
             )
           ),
           mavenProject("module-without-lombok",
