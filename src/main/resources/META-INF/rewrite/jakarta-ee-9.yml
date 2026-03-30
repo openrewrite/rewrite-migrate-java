@@ -103,6 +103,7 @@ recipeList:
       artifactId: jakarta.activation-api
       version: 2.0.x
       onlyIfUsing: javax.activation..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.activation
       newPackageName: jakarta.activation
@@ -186,6 +187,7 @@ recipeList:
       artifactId: jakarta.authentication-api
       version: 2.0.x
       onlyIfUsing: javax.security.auth.message..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.auth.message
       newPackageName: jakarta.security.auth.message
@@ -225,6 +227,7 @@ recipeList:
       artifactId: jakarta.authorization-api
       version: 2.0.x
       onlyIfUsing: javax.security.jacc..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.jacc
       newPackageName: jakarta.security.jacc
@@ -256,6 +259,7 @@ recipeList:
       artifactId: jakarta.batch-api
       version: 2.0.x
       onlyIfUsing: javax.batch..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.batch
       newPackageName: jakarta.batch
@@ -287,6 +291,7 @@ recipeList:
       artifactId: jakarta.validation-api
       version: 3.0.x
       onlyIfUsing: javax.validation..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
@@ -324,6 +329,7 @@ recipeList:
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.x
       onlyIfUsing: javax.decorator..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
@@ -357,6 +363,7 @@ recipeList:
       artifactId: jakarta.ejb-api
       version: 4.0.x
       onlyIfUsing: javax.ejb..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ejb
       newPackageName: jakarta.ejb
@@ -384,6 +391,7 @@ recipeList:
       artifactId: jakarta.el-api
       version: 4.0.x
       onlyIfUsing: javax.el..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.el
       newPackageName: jakarta.el
@@ -450,6 +458,7 @@ recipeList:
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.x
       onlyIfUsing: javax.enterprise..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
@@ -487,6 +496,7 @@ recipeList:
       artifactId: jakarta.inject-api
       version: 2.0.x
       onlyIfUsing: javax.inject..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
@@ -514,6 +524,7 @@ recipeList:
       artifactId: jakarta.interceptor-api
       version: 2.0.x
       onlyIfUsing: javax.interceptor..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.interceptor
       newPackageName: jakarta.interceptor
@@ -547,6 +558,7 @@ recipeList:
       artifactId: jakarta.jms-api
       version: 3.0.x
       onlyIfUsing: javax.jms..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jms
       newPackageName: jakarta.jms
@@ -574,6 +586,7 @@ recipeList:
       artifactId: jakarta.json-api
       version: 2.0.x
       onlyIfUsing: javax.json..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.json
       newPackageName: jakarta.json
@@ -607,6 +620,7 @@ recipeList:
       artifactId: jakarta.jws-api
       version: 3.0.x
       onlyIfUsing: javax.jws..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.jws
       newPackageName: jakarta.jws
@@ -640,6 +654,7 @@ recipeList:
       artifactId: jakarta.servlet.jsp-api
       version: 3.0.x
       onlyIfUsing: javax.servlet.jsp..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet.jsp
       newPackageName: jakarta.servlet.jsp
@@ -685,6 +700,7 @@ recipeList:
       artifactId: jakarta.mail-api
       version: 2.0.x
       onlyIfUsing: javax.mail.*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
@@ -718,6 +734,7 @@ recipeList:
       artifactId: jakarta.persistence-api
       version: 3.0.x
       onlyIfUsing: javax.persistence..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.persistence
       newPackageName: jakarta.persistence
@@ -751,6 +768,7 @@ recipeList:
       artifactId: jakarta.resource-api
       version: 2.0.x
       onlyIfUsing: javax.resource..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.resource
       newPackageName: jakarta.resource
@@ -778,6 +796,7 @@ recipeList:
       artifactId: jakarta.security.enterprise-api
       version: 2.0.x
       onlyIfUsing: javax.security.enterprise..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.security.enterprise
       newPackageName: jakarta.security.enterprise
@@ -805,6 +824,7 @@ recipeList:
       artifactId: jakarta.servlet-api
       version: 5.0.x
       onlyIfUsing: javax.servlet.*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet
       newPackageName: jakarta.servlet
@@ -842,6 +862,7 @@ recipeList:
       artifactId: jakarta.transaction-api
       version: 2.0.x
       onlyIfUsing: javax.transaction..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
@@ -889,6 +910,7 @@ recipeList:
       artifactId: jakarta.websocket-api
       version: 2.0.x
       onlyIfUsing: javax.websocket..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.websocket
       newPackageName: jakarta.websocket
@@ -916,6 +938,7 @@ recipeList:
       artifactId: jakarta.ws.rs-api
       version: 3.0.x
       onlyIfUsing: javax.ws.rs.core.*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
@@ -958,6 +981,7 @@ recipeList:
       artifactId: jakarta.xml.bind-api
       version: 3.0.x
       onlyIfUsing: javax.xml.bind..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind
@@ -1047,6 +1071,7 @@ recipeList:
       artifactId: jakarta.xml.soap-api
       version: 2.0.x
       onlyIfUsing: javax.xml.soap..*
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.soap
       newPackageName: jakarta.xml.soap
