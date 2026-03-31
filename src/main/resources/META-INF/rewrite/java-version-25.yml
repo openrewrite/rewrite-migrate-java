@@ -250,7 +250,11 @@ displayName: Upgrade build to Java 25 (default)
 description: >-
   Upgrades build files to Java 25 for projects without Kotlin <2.3.
 preconditions:
-  - org.openrewrite.java.migrate.HasNoOldKotlinDependency
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.jetbrains.kotlin
+      artifactIdPattern: kotlin-stdlib*
+      version: "[0,2.3)"
+      invertMarking: true
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
