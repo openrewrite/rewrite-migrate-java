@@ -28,8 +28,7 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeJavaVersion:
-      version: 25
+  - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
@@ -217,3 +216,41 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava25
+displayName: Upgrade build to Java 25
+description: >-
+  Upgrades build files to use Java 25, or Java 24 when the project
+  uses Kotlin <2.3 which does not yet support Java 25.
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
+  - org.openrewrite.java.migrate.UpgradeBuildToJava25Default
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
+displayName: Upgrade build to Java 24 for Kotlin <2.3
+description: >-
+  Kotlin versions before 2.3 only support up to Java 24.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.jetbrains.kotlin
+      artifactIdPattern: kotlin-stdlib*
+      version: "[0,2.3)"
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 24
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava25Default
+displayName: Upgrade build to Java 25 (default)
+description: >-
+  Upgrades build files to Java 25 for projects without Kotlin <2.3.
+preconditions:
+  - org.openrewrite.java.migrate.HasNoOldKotlinDependency
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 25

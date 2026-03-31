@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JavaBestPracticesTest implements RewriteTest {
@@ -33,28 +34,30 @@ class JavaBestPracticesTest implements RewriteTest {
     @Test
     void updateCompilerVersion() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-app</artifactId>
-                  <version>1</version>
-                  <properties>
-                      <maven.compiler.release>17</maven.compiler.release>
-                  </properties>
-              </project>
-              """,
-            """
-              <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-app</artifactId>
-                  <version>1</version>
-                  <properties>
-                      <maven.compiler.release>25</maven.compiler.release>
-                  </properties>
-              </project>
+          mavenProject("project",
+            //language=xml
+            pomXml(
               """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                </project>
+                """
+            )
           )
         );
     }
