@@ -35,6 +35,83 @@ class JSpecifyBestPracticesTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core", "micronaut-core"));
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/934")
+    @Test
+    void jspecifyArrayNullable() {
+        rewriteRun(
+          mavenProject("foo",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.annotation.Nullable;
+
+                  class Foo {
+                      @Nullable
+                      public byte[] bar() {
+                          return null;
+                      }
+
+                      public void baz(@Nullable byte[] a) {
+                      }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  class Foo {
+                      public byte @Nullable[] bar() {
+                          return null;
+                      }
+
+                      public void baz(byte @Nullable[] a) {
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.annotation</groupId>
+                            <artifactId>javax.annotation-api</artifactId>
+                            <version>1.3.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.annotation</groupId>
+                            <artifactId>javax.annotation-api</artifactId>
+                            <version>1.3.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void migrateFromJavaxAnnotationApiToJspecify() {

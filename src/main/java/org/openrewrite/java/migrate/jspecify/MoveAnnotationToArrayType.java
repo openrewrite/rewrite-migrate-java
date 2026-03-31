@@ -1,0 +1,122 @@
+/*
+ * Copyright 2024 the original author or authors.
+ * <p>
+ * Licensed under the Moderne Source Available License (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://docs.moderne.io/licensing/moderne-source-available-license
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.openrewrite.java.migrate.jspecify;
+
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import org.openrewrite.*;
+import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.TypeMatcher;
+import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.*;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import static java.util.Collections.singletonList;
+
+@EqualsAndHashCode(callSuper = false)
+@Value
+public class MoveAnnotationToArrayType extends Recipe {
+
+    @Option(displayName = "Annotation type",
+            description = "The type of annotation to move to the array type.",
+            example = "org.jspecify.annotations.*",
+            required = false)
+    @org.jspecify.annotations.Nullable
+    String annotationType;
+
+    String displayName = "Move annotation to array type";
+
+    String description = "When a type-use annotation like `@Nullable` is applied to an array type, " +
+                         "it should be placed on the array brackets rather than before the element type. " +
+                         "For example, `@Nullable byte[]` becomes `byte @Nullable[]`.";
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        String pattern = annotationType == null ? "org.jspecify.annotations.*" : annotationType;
+
+        return Preconditions.check(new UsesType<>(pattern, null), new JavaIsoVisitor<ExecutionContext>() {
+            final TypeMatcher typeMatcher = new TypeMatcher(pattern);
+
+            @Override
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
+
+                if (!(md.getReturnTypeExpression() instanceof J.ArrayType)) {
+                    return md;
+                }
+
+                AtomicReference<J.@org.jspecify.annotations.Nullable Annotation> matched = new AtomicReference<>();
+                md = md.withLeadingAnnotations(ListUtils.map(md.getLeadingAnnotations(), a -> {
+                    if (matched.get() == null && matchesType(a)) {
+                        matched.set(a);
+                        return null;
+                    }
+                    return a;
+                }));
+
+                if (matched.get() != null) {
+                    J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
+                    arrayType = arrayType.withAnnotations(
+                            singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                    md = md.withReturnTypeExpression(arrayType);
+                    if (md.getLeadingAnnotations().isEmpty()) {
+                        md = md.withReturnTypeExpression(arrayType.withPrefix(
+                                arrayType.getPrefix().withWhitespace("")));
+                    }
+                    md = autoFormat(md, arrayType, ctx, getCursor().getParentOrThrow());
+                }
+                return md;
+            }
+
+            @Override
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                J.VariableDeclarations mv = super.visitVariableDeclarations(multiVariable, ctx);
+
+                if (!(mv.getTypeExpression() instanceof J.ArrayType)) {
+                    return mv;
+                }
+
+                AtomicReference<J.@org.jspecify.annotations.Nullable Annotation> matched = new AtomicReference<>();
+                mv = mv.withLeadingAnnotations(ListUtils.map(mv.getLeadingAnnotations(), a -> {
+                    if (matched.get() == null && matchesType(a)) {
+                        matched.set(a);
+                        return null;
+                    }
+                    return a;
+                }));
+
+                if (matched.get() != null) {
+                    J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
+                    arrayType = arrayType.withAnnotations(
+                            singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                    if (mv.getLeadingAnnotations().isEmpty()) {
+                        arrayType = arrayType.withPrefix(arrayType.getPrefix().withWhitespace(""));
+                    }
+                    mv = mv.withTypeExpression(arrayType);
+                    mv = autoFormat(mv, arrayType, ctx, getCursor().getParentOrThrow());
+                }
+                return mv;
+            }
+
+            private boolean matchesType(J.Annotation ann) {
+                JavaType.FullyQualified fq = TypeUtils.asFullyQualified(ann.getType());
+                return fq != null && typeMatcher.matches(fq);
+            }
+        });
+    }
+}
