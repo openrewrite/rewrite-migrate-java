@@ -27,7 +27,6 @@ import org.openrewrite.java.tree.*;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Collections.singletonList;
 
@@ -62,23 +61,25 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return md;
                 }
 
-                AtomicReference<J.@Nullable Annotation> matched = new AtomicReference<>();
-                List<J.Annotation> leading = ListUtils.map(md.getLeadingAnnotations(), a -> {
-                    if (matched.get() == null && matchesType(a)) {
-                        matched.set(a);
-                        return null;
-                    }
-                    return a;
-                });
-                if (leading == md.getLeadingAnnotations()) {
+                List<J.Annotation> annotations = md.getLeadingAnnotations();
+                List<J.Annotation> leading = ListUtils.map(annotations, a -> matchesType(a) ? null : a);
+                if (leading == annotations) {
                     return md;
                 }
                 md = md.withLeadingAnnotations(leading);
 
+                J.@Nullable Annotation match = null;
+                for (J.Annotation a : annotations) {
+                    if (matchesType(a)) {
+                        match = a;
+                        break;
+                    }
+                }
+
                 J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
                 //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
-                        singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                        singletonList(match.withPrefix(Space.SINGLE_SPACE)));
                 md = md.withReturnTypeExpression(arrayType);
                 if (md.getLeadingAnnotations().isEmpty()) {
                     md = md.withReturnTypeExpression(arrayType.withPrefix(
@@ -95,23 +96,25 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return mv;
                 }
 
-                AtomicReference<J.@Nullable Annotation> matched = new AtomicReference<>();
-                List<J.Annotation> leading = ListUtils.map(mv.getLeadingAnnotations(), a -> {
-                    if (matched.get() == null && matchesType(a)) {
-                        matched.set(a);
-                        return null;
-                    }
-                    return a;
-                });
-                if (leading == mv.getLeadingAnnotations()) {
+                List<J.Annotation> annotations = mv.getLeadingAnnotations();
+                List<J.Annotation> leading = ListUtils.map(annotations, a -> matchesType(a) ? null : a);
+                if (leading == annotations) {
                     return mv;
                 }
                 mv = mv.withLeadingAnnotations(leading);
 
+                J.@Nullable Annotation match = null;
+                for (J.Annotation a : annotations) {
+                    if (matchesType(a)) {
+                        match = a;
+                        break;
+                    }
+                }
+
                 J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
                 //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
-                        singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                        singletonList(match.withPrefix(Space.SINGLE_SPACE)));
                 if (mv.getLeadingAnnotations().isEmpty()) {
                     arrayType = arrayType.withPrefix(arrayType.getPrefix().withWhitespace(""));
                 }
