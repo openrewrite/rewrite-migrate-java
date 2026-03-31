@@ -66,7 +66,7 @@ recipeList:
       onlyIfUsing: javax.annotation.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: javax.annotation.*
+      annotationType: javax.annotation.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -96,7 +96,7 @@ recipeList:
       onlyIfUsing: jakarta.annotation.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: jakarta.annotation.*
+      annotationType: jakarta.annotation.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -122,7 +122,7 @@ recipeList:
       onlyIfUsing: org.jetbrains.annotations.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: org.jetbrains.annotations.*
+      annotationType: org.jetbrains.annotations.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -148,7 +148,7 @@ recipeList:
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: io.micrometer.core.lang.*
+      annotationType: io.micrometer.core.lang.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micrometer.core.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -174,7 +174,7 @@ recipeList:
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: org.springframework.lang.*
+      annotationType: org.springframework.lang.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.springframework.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -200,7 +200,7 @@ recipeList:
       onlyIfUsing: io.micronaut.core.annotation.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: io.micronaut.core.annotation.*
+      annotationType: io.micronaut.core.annotation.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micronaut.core.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable

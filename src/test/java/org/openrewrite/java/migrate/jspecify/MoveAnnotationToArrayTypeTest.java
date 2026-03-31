@@ -30,7 +30,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new MoveAnnotationToArrayType("javax.annotation.*"))
+          .recipe(new MoveAnnotationToArrayType("javax.annotation.*ull*"))
           .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jspecify"));
     }
 

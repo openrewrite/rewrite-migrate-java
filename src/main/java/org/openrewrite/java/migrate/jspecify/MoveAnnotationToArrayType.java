@@ -38,7 +38,7 @@ public class MoveAnnotationToArrayType extends Recipe {
             description = "The type of annotation to move to the array type. " +
                           "Should target the pre-migration annotation type to avoid changing the semantics " +
                           "of pre-existing type-use annotations on object arrays.",
-            example = "javax.annotation.*")
+            example = "javax.annotation.*ull*")
     String annotationType;
 
     String displayName = "Move annotation to array type";
