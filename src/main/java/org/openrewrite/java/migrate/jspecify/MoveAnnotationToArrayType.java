@@ -61,25 +61,23 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return md;
                 }
 
-                List<J.Annotation> annotations = md.getLeadingAnnotations();
-                List<J.Annotation> leading = ListUtils.map(annotations, a -> matchesType(a) ? null : a);
-                if (leading == annotations) {
+                J.@Nullable Annotation[] match = {null};
+                List<J.Annotation> leading = ListUtils.map(md.getLeadingAnnotations(), a -> {
+                    if (match[0] == null && matchesType(a)) {
+                        match[0] = a;
+                        return null;
+                    }
+                    return a;
+                });
+                if (leading == md.getLeadingAnnotations()) {
                     return md;
                 }
                 md = md.withLeadingAnnotations(leading);
 
-                J.@Nullable Annotation match = null;
-                for (J.Annotation a : annotations) {
-                    if (matchesType(a)) {
-                        match = a;
-                        break;
-                    }
-                }
-
                 J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
                 //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
-                        singletonList(match.withPrefix(Space.SINGLE_SPACE)));
+                        singletonList(match[0].withPrefix(Space.SINGLE_SPACE)));
                 md = md.withReturnTypeExpression(arrayType);
                 if (md.getLeadingAnnotations().isEmpty()) {
                     md = md.withReturnTypeExpression(arrayType.withPrefix(
@@ -96,25 +94,23 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return mv;
                 }
 
-                List<J.Annotation> annotations = mv.getLeadingAnnotations();
-                List<J.Annotation> leading = ListUtils.map(annotations, a -> matchesType(a) ? null : a);
-                if (leading == annotations) {
+                J.@Nullable Annotation[] match = {null};
+                List<J.Annotation> leading = ListUtils.map(mv.getLeadingAnnotations(), a -> {
+                    if (match[0] == null && matchesType(a)) {
+                        match[0] = a;
+                        return null;
+                    }
+                    return a;
+                });
+                if (leading == mv.getLeadingAnnotations()) {
                     return mv;
                 }
                 mv = mv.withLeadingAnnotations(leading);
 
-                J.@Nullable Annotation match = null;
-                for (J.Annotation a : annotations) {
-                    if (matchesType(a)) {
-                        match = a;
-                        break;
-                    }
-                }
-
                 J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
                 //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
-                        singletonList(match.withPrefix(Space.SINGLE_SPACE)));
+                        singletonList(match[0].withPrefix(Space.SINGLE_SPACE)));
                 if (mv.getLeadingAnnotations().isEmpty()) {
                     arrayType = arrayType.withPrefix(arrayType.getPrefix().withWhitespace(""));
                 }
