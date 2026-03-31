@@ -56,10 +56,8 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         }
                         String methodName = m.getName().getSimpleName();
                         return m.getArguments().isEmpty() ?
-                                JavaTemplate.builder("IO.#{}()").build()
-                                        .apply(getCursor(), m.getCoordinates().replace(), methodName) :
-                                JavaTemplate.builder("IO.#{}(#{any()})").build()
-                                        .apply(getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get(0));
+                                JavaTemplate.apply( "IO.#{}()", getCursor(), m.getCoordinates().replace(), methodName ) :
+                                JavaTemplate.apply( "IO.#{}(#{any()})", getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get( 0 ) );
                     }
 
                     private boolean isSystemOutMethod(J.MethodInvocation mi) {

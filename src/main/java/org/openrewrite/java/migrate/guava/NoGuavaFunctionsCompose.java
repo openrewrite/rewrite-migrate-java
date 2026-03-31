@@ -54,12 +54,7 @@ public class NoGuavaFunctionsCompose extends Recipe {
                             maybeRemoveImport("com.google.common.base.Functions");
                             maybeAddImport("java.util.function.Function");
 
-                            return JavaTemplate.builder("#{any(java.util.function.Function)}.compose(#{any(java.util.function.Function)})")
-                                    .build()
-                                    .apply(getCursor(),
-                                            method.getCoordinates().replace(),
-                                            method.getArguments().get(0),
-                                            method.getArguments().get(1));
+                            return JavaTemplate.apply( "#{any(java.util.function.Function)}.compose(#{any(java.util.function.Function)})", getCursor(), method.getCoordinates().replace(), method.getArguments().get( 0 ), method.getArguments().get( 1 ) );
                         }
                         return super.visitMethodInvocation(method, ctx);
                     }

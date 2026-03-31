@@ -54,12 +54,7 @@ public class NoGuavaIterablesAll extends Recipe {
                     maybeAddImport("java.util.function.Predicate");
 
                     if (TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
-                        return JavaTemplate.builder("#{any(java.util.Collection)}.stream().allMatch(#{any(java.util.function.Predicate)})")
-                                .build()
-                                .apply(getCursor(),
-                                        method.getCoordinates().replace(),
-                                        method.getArguments().get(0),
-                                        method.getArguments().get(1));
+                        return JavaTemplate.apply( "#{any(java.util.Collection)}.stream().allMatch(#{any(java.util.function.Predicate)})", getCursor(), method.getCoordinates().replace(), method.getArguments().get( 0 ), method.getArguments().get( 1 ) );
                     }
                     return method;
                 }

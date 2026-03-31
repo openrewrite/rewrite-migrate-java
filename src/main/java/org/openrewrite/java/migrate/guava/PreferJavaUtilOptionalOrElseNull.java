@@ -62,9 +62,7 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (OPTIONAL_OR_NULL_MATCHER.matches(mi)) {
                 mi = mi.withName(mi.getName().withSimpleName("orElse"));
-                mi = JavaTemplate.builder("null")
-                        .build()
-                        .apply(updateCursor(mi), mi.getCoordinates().replaceArguments());
+                mi = JavaTemplate.apply( "null", updateCursor( mi ), mi.getCoordinates().replaceArguments() );
             }
             return mi;
         }
