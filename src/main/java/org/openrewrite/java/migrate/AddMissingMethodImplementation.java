@@ -89,10 +89,7 @@ public class AddMissingMethodImplementation extends Recipe {
                 supertype = supertype.getSupertype();
             }
 
-            return classDecl.withBody(JavaTemplate.builder(methodTemplateString)
-                    .build()
-                    .apply(new Cursor(getCursor(), classDecl.getBody()),
-                            classDecl.getBody().getCoordinates().lastStatement()));
+            return classDecl.withBody(JavaTemplate.apply( methodTemplateString, new Cursor( getCursor(), classDecl.getBody() ), classDecl.getBody().getCoordinates().lastStatement() ));
         }
     }
 }

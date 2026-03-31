@@ -50,9 +50,7 @@ public class MigrateDriverManagerSetLogStream extends Recipe {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (METHOD_MATCHER.matches(m)) {
                     m = m.withName(m.getName().withSimpleName("setLogWriter"));
-                    m = JavaTemplate.builder("new java.io.PrintWriter(#{any(java.io.PrintStream)})")
-                            .build()
-                            .apply(updateCursor(m), m.getCoordinates().replaceArguments(), m.getArguments().get(0));
+                    m = JavaTemplate.apply( "new java.io.PrintWriter(#{any(java.io.PrintStream)})", updateCursor( m ), m.getCoordinates().replaceArguments(), m.getArguments().get( 0 ) );
                 }
                 return m;
             }
