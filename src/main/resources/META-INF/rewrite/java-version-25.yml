@@ -28,7 +28,8 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeBuildToJava25
+  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
+  - org.openrewrite.java.migrate.UpgradeBuildToJava25Default
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
@@ -216,17 +217,6 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava25
-displayName: Upgrade build to Java 25
-description: >-
-  Upgrades build files to use Java 25, or Java 24 when the project
-  uses Kotlin <2.3 which does not yet support Java 25.
-recipeList:
-  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
-  - org.openrewrite.java.migrate.UpgradeBuildToJava25Default
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
