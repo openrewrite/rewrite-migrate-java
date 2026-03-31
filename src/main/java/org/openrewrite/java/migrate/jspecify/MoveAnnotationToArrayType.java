@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -59,7 +61,7 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return md;
                 }
 
-                AtomicReference<J.@org.jspecify.annotations.Nullable Annotation> matched = new AtomicReference<>();
+                AtomicReference<J.@Nullable Annotation> matched = new AtomicReference<>();
                 md = md.withLeadingAnnotations(ListUtils.map(md.getLeadingAnnotations(), a -> {
                     if (matched.get() == null && matchesType(a)) {
                         matched.set(a);
@@ -68,18 +70,19 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return a;
                 }));
 
-                if (matched.get() != null) {
-                    J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
-                    arrayType = arrayType.withAnnotations(
-                            singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
-                    md = md.withReturnTypeExpression(arrayType);
-                    if (md.getLeadingAnnotations().isEmpty()) {
-                        md = md.withReturnTypeExpression(arrayType.withPrefix(
-                                arrayType.getPrefix().withWhitespace("")));
-                    }
-                    md = autoFormat(md, arrayType, ctx, getCursor().getParentOrThrow());
+                if (matched.get() == null) {
+                    return md;
                 }
-                return md;
+
+                J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
+                arrayType = arrayType.withAnnotations(
+                        singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                md = md.withReturnTypeExpression(arrayType);
+                if (md.getLeadingAnnotations().isEmpty()) {
+                    md = md.withReturnTypeExpression(arrayType.withPrefix(
+                            arrayType.getPrefix().withWhitespace("")));
+                }
+                return autoFormat(md, arrayType, ctx, getCursor().getParentOrThrow());
             }
 
             @Override
@@ -90,7 +93,7 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return mv;
                 }
 
-                AtomicReference<J.@org.jspecify.annotations.Nullable Annotation> matched = new AtomicReference<>();
+                AtomicReference<J.@Nullable Annotation> matched = new AtomicReference<>();
                 mv = mv.withLeadingAnnotations(ListUtils.map(mv.getLeadingAnnotations(), a -> {
                     if (matched.get() == null && matchesType(a)) {
                         matched.set(a);
@@ -99,17 +102,18 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return a;
                 }));
 
-                if (matched.get() != null) {
-                    J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
-                    arrayType = arrayType.withAnnotations(
-                            singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
-                    if (mv.getLeadingAnnotations().isEmpty()) {
-                        arrayType = arrayType.withPrefix(arrayType.getPrefix().withWhitespace(""));
-                    }
-                    mv = mv.withTypeExpression(arrayType);
-                    mv = autoFormat(mv, arrayType, ctx, getCursor().getParentOrThrow());
+                if (matched.get() == null) {
+                    return mv;
                 }
-                return mv;
+
+                J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
+                arrayType = arrayType.withAnnotations(
+                        singletonList(matched.get().withPrefix(Space.SINGLE_SPACE)));
+                if (mv.getLeadingAnnotations().isEmpty()) {
+                    arrayType = arrayType.withPrefix(arrayType.getPrefix().withWhitespace(""));
+                }
+                mv = mv.withTypeExpression(arrayType);
+                return autoFormat(mv, arrayType, ctx, getCursor().getParentOrThrow());
             }
 
             private boolean matchesType(J.Annotation ann) {
