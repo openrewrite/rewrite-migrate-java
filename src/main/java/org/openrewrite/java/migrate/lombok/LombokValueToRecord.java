@@ -214,11 +214,6 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
     @RequiredArgsConstructor
     private static class LombokValueToRecordVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private static final JavaTemplate TO_STRING_TEMPLATE = JavaTemplate
-                .builder("@Override public String toString() { return \"#{}(\" +\n#{}\n\")\"; }")
-                .contextSensitive()
-                .build();
-
         private static final String TO_STRING_MEMBER_LINE_PATTERN = "\"%s=\" + %s +";
         private static final String TO_STRING_MEMBER_DELIMITER = "\", \" +\n";
         private static final String STANDARD_GETTER_PREFIX = "get";
@@ -319,7 +314,10 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
 
         private J.ClassDeclaration addExactToStringMethod(J.ClassDeclaration classDeclaration,
                                                           List<J.VariableDeclarations> memberVariables) {
-            return classDeclaration.withBody(TO_STRING_TEMPLATE
+            return classDeclaration.withBody(JavaTemplate
+                    .builder("@Override public String toString() { return \"#{}(\" +\n#{}\n\")\"; }")
+                    .contextSensitive()
+                    .build()
                     .apply(new Cursor(getCursor(), classDeclaration.getBody()),
                             classDeclaration.getBody().getCoordinates().lastStatement(),
                             classDeclaration.getSimpleName(),
