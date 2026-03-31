@@ -41,28 +41,30 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void updateCompilerVersion() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-app</artifactId>
-                  <version>1</version>
-                  <properties>
-                      <maven.compiler.release>17</maven.compiler.release>
-                  </properties>
-              </project>
-              """,
-            """
-              <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-app</artifactId>
-                  <version>1</version>
-                  <properties>
-                      <maven.compiler.release>25</maven.compiler.release>
-                  </properties>
-              </project>
+          mavenProject("project",
+            //language=xml
+            pomXml(
               """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                </project>
+                """
+            )
           )
         );
     }
@@ -70,44 +72,46 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void upgradesMavenPluginsForJava25() {
         rewriteRun(
-          pomXml(
-            //language=xml
-            """
-              <project>
-                  <groupId>com.mycompany.app</groupId>
-                  <artifactId>my-app</artifactId>
-                  <version>1</version>
-                  <properties>
-                      <maven.compiler.release>17</maven.compiler.release>
-                  </properties>
-                  <build>
-                      <plugins>
-                          <plugin>
-                              <groupId>org.apache.maven.plugins</groupId>
-                              <artifactId>maven-compiler-plugin</artifactId>
-                              <version>3.13.0</version>
-                          </plugin>
-                          <plugin>
-                              <groupId>org.apache.maven.plugins</groupId>
-                              <artifactId>maven-surefire-plugin</artifactId>
-                              <version>2.22.2</version>
-                          </plugin>
-                          <plugin>
-                              <groupId>org.apache.maven.plugins</groupId>
-                              <artifactId>maven-failsafe-plugin</artifactId>
-                              <version>2.22.2</version>
-                          </plugin>
-                  </plugins>
-                  </build>
-              </project>
-              """,
-            spec -> spec.after(actual ->
-              assertThat(actual)
-                .contains("<maven.compiler.release>25</maven.compiler.release>")
-                .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
-                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
-                .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
-                .actual())
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <version>3.13.0</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>2.22.2</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-failsafe-plugin</artifactId>
+                                <version>2.22.2</version>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
+                  .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
+                  .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
+                  .actual())
+            )
           )
         );
     }
@@ -141,6 +145,96 @@ class UpgradeToJava25Test implements RewriteTest {
               return a + "\n";
           })),
           other("", spec -> spec.path("gradle/wrapper/gradle-wrapper.jar"))
+        );
+    }
+
+    @Test
+    void kotlinOlderThan2_3CapsJavaVersionAt24() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void kotlinNewerThan2_3UpgradesToJava25() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
         );
     }
 
