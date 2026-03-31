@@ -33,24 +33,23 @@ import static java.util.Collections.singletonList;
 public class MoveAnnotationToArrayType extends Recipe {
 
     @Option(displayName = "Annotation type",
-            description = "The type of annotation to move to the array type.",
-            example = "org.jspecify.annotations.*",
-            required = false)
-    @org.jspecify.annotations.Nullable
+            description = "The type of annotation to move to the array type. " +
+                          "Should target the pre-migration annotation type to avoid changing the semantics " +
+                          "of pre-existing type-use annotations on object arrays.",
+            example = "javax.annotation.*")
     String annotationType;
 
     String displayName = "Move annotation to array type";
 
-    String description = "When a type-use annotation like `@Nullable` is applied to an array type, " +
-                         "it should be placed on the array brackets rather than before the element type. " +
-                         "For example, `@Nullable byte[]` becomes `byte @Nullable[]`.";
+    String description = "When an annotation like `@Nullable` is applied to an array type in declaration position, " +
+                         "this recipe moves it to the array brackets. " +
+                         "For example, `@Nullable byte[]` becomes `byte @Nullable[]`. " +
+                         "Best used before `ChangeType` in a migration pipeline, targeting the pre-migration annotation type.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String pattern = annotationType == null ? "org.jspecify.annotations.*" : annotationType;
-
-        return Preconditions.check(new UsesType<>(pattern, null), new JavaIsoVisitor<ExecutionContext>() {
-            final TypeMatcher typeMatcher = new TypeMatcher(pattern);
+        return Preconditions.check(new UsesType<>(annotationType, null), new JavaIsoVisitor<ExecutionContext>() {
+            final TypeMatcher typeMatcher = new TypeMatcher(annotationType);
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {

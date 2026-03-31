@@ -65,6 +65,8 @@ recipeList:
       version: latest.release
       onlyIfUsing: javax.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: javax.annotation.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -78,8 +80,6 @@ recipeList:
       newFullyQualifiedTypeName: org.jspecify.annotations.NullMarked
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
-      annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -95,6 +95,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: jakarta.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: jakarta.annotation.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -104,8 +106,6 @@ recipeList:
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
-      annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -121,6 +121,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.jetbrains.annotations.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: org.jetbrains.annotations.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -130,8 +132,6 @@ recipeList:
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
-      annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -147,6 +147,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: io.micrometer.core.lang.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micrometer.core.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -156,8 +158,6 @@ recipeList:
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
-      annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -173,6 +173,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: org.springframework.lang.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.springframework.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -183,12 +185,9 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
-      annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromMicronautAnnotations
-
 displayName: Migrate from Micronaut Framework annotations to JSpecify
 description: Migrate from Micronaut Framework annotations to JSpecify.
 preconditions:
@@ -200,6 +199,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: io.micronaut.core.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: io.micronaut.core.annotation.*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micronaut.core.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -209,6 +210,4 @@ recipeList:
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
-      annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.jspecify.annotations.*

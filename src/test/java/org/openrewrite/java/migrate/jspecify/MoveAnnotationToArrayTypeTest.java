@@ -30,8 +30,8 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new MoveAnnotationToArrayType("org.jspecify.annotations.*"))
-          .parser(JavaParser.fromJavaVersion().classpath("jspecify"));
+          .recipe(new MoveAnnotationToArrayType("javax.annotation.*"))
+          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jspecify"));
     }
 
     @DocumentExample
@@ -41,7 +41,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   @Nullable
@@ -51,7 +51,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
               }
               """,
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public byte @Nullable[] bar() {
@@ -69,7 +69,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public void baz(@Nullable byte[] a) {
@@ -77,7 +77,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
               }
               """,
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public void baz(byte @Nullable[] a) {
@@ -94,7 +94,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   @Nullable
@@ -102,10 +102,38 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
               }
               """,
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public byte @Nullable[] data;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void moveNullableToObjectArrayReturnType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.Nullable;
+
+              class Foo {
+                  @Nullable
+                  public String[] bar() {
+                      return null;
+                  }
+              }
+              """,
+            """
+              import javax.annotation.Nullable;
+
+              class Foo {
+                  public String @Nullable[] bar() {
+                      return null;
+                  }
               }
               """
           )
@@ -118,7 +146,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   @Nullable
@@ -137,7 +165,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public void baz(@Nullable String a) {
@@ -154,7 +182,7 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
           //language=java
           java(
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   @Nullable
@@ -164,10 +192,29 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
               }
               """,
             """
-              import org.jspecify.annotations.Nullable;
+              import javax.annotation.Nullable;
 
               class Foo {
                   public String @Nullable[][] bar() {
+                      return null;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeForPreExistingJSpecifyAnnotation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import org.jspecify.annotations.Nullable;
+
+              class Foo {
+                  @Nullable
+                  public String[] bar() {
                       return null;
                   }
               }
