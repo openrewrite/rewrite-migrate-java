@@ -139,48 +139,32 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 }
                 if (isWindowOpaquePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.isOpaque()")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
+                    return JavaTemplate.apply( "#{any()}.isOpaque()", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 if (isTranslucencyCapablePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.isTranslucencyCapable()")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
+                    return JavaTemplate.apply( "#{any()}.isTranslucencyCapable()", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 if (setWindowOpacityPatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.setOpacity(#{any()})")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(),
-                                    mi.getArguments().get(0),
-                                    mi.getArguments().get(1))
+                    return JavaTemplate.apply( "#{any()}.setOpacity(#{any()})", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ), mi.getArguments().get( 1 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 if (getWindowOpacityPatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.getOpacity()")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
+                    return JavaTemplate.apply( "#{any()}.getOpacity()", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 if (getWindowShapePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.getShape()")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0))
+                    return JavaTemplate.apply( "#{any()}.getShape()", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 if (setComponentMixingCutoutShapePatternMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    return JavaTemplate.builder("#{any()}.setMixingCutoutShape(#{any()})")
-                            .build()
-                            .apply(getCursor(), mi.getCoordinates().replace(),
-                                    mi.getArguments().get(0),
-                                    mi.getArguments().get(1))
+                    return JavaTemplate.apply( "#{any()}.setMixingCutoutShape(#{any()})", getCursor(), mi.getCoordinates().replace(), mi.getArguments().get( 0 ), mi.getArguments().get( 1 ) )
                             .withPrefix(mi.getPrefix());
                 }
                 return mi;
