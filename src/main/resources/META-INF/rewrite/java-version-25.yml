@@ -28,7 +28,7 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
+  - org.openrewrite.java.migrate.UpgradeBuildToJava24
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
@@ -220,7 +220,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava24ForOldKotlin
+name: org.openrewrite.java.migrate.UpgradeBuildToJava24
 displayName: Upgrade build to Java 24 for Kotlin <2.3
 description: >-
   Kotlin versions before 2.3 only support up to Java 24.
