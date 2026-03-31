@@ -27,20 +27,10 @@ import java.util.Set;
 public class AnnotateTypesVisitor extends JavaIsoVisitor<Set<String>> {
     private final String annotationToBeAdded;
     private final AnnotationMatcher annotationMatcher;
-    private final JavaTemplate template;
 
     public AnnotateTypesVisitor(String annotationToBeAdded) {
         this.annotationToBeAdded = annotationToBeAdded;
-        String[] split = this.annotationToBeAdded.split("\\.");
-        String className = split[split.length - 1];
-        String packageName = this.annotationToBeAdded.substring(0, this.annotationToBeAdded.lastIndexOf("."));
         this.annotationMatcher = new AnnotationMatcher("@" + this.annotationToBeAdded);
-        String interfaceAsString = String.format("package %s\npublic @interface %s {}", packageName, className);
-        //noinspection LanguageMismatch
-        this.template = JavaTemplate.builder("@" + className)
-                .imports(this.annotationToBeAdded)
-                .javaParser(JavaParser.fromJavaVersion().dependsOn(interfaceAsString))
-                .build();
     }
 
     @Override
@@ -49,7 +39,16 @@ public class AnnotateTypesVisitor extends JavaIsoVisitor<Set<String>> {
         if (cd.getType() != null && injectedTypes.contains(cd.getType().getFullyQualifiedName()) &&
             cd.getLeadingAnnotations().stream().noneMatch(annotationMatcher::matches)) {
             maybeAddImport(annotationToBeAdded);
-            cd = template.apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+            String[] split = annotationToBeAdded.split("\\.");
+            String className = split[split.length - 1];
+            String packageName = annotationToBeAdded.substring(0, annotationToBeAdded.lastIndexOf("."));
+            String interfaceAsString = String.format("package %s\npublic @interface %s {}", packageName, className);
+            //noinspection LanguageMismatch
+            cd = JavaTemplate.builder("@" + className)
+                    .imports(annotationToBeAdded)
+                    .javaParser(JavaParser.fromJavaVersion().dependsOn(interfaceAsString))
+                    .build()
+                    .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             cd = maybeAutoFormat(classDecl, cd, cd.getName(), injectedTypes, getCursor());
         }
         return cd;
