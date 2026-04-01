@@ -205,6 +205,32 @@ class MoveAnnotationToArrayTypeTest implements RewriteTest {
     }
 
     @Test
+    void moveNullableToNestedClassArrayField() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.Nullable;
+              import java.util.Map;
+
+              class Foo {
+                  @Nullable
+                  public Map.Entry<String, String>[] entries;
+              }
+              """,
+            """
+              import javax.annotation.Nullable;
+              import java.util.Map;
+
+              class Foo {
+                  public Map.Entry<String, String> @Nullable[] entries;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void noChangeForPreExistingJSpecifyAnnotation() {
         rewriteRun(
           //language=java
