@@ -65,6 +65,8 @@ recipeList:
       version: latest.release
       onlyIfUsing: javax.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: javax.annotation.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -93,6 +95,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: jakarta.annotation.*ull*
       acceptTransitive: true
+  # Not moving jakarta annotations to array brackets; they target TYPE_USE,
+  # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: jakarta.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -117,6 +121,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.jetbrains.annotations.*ull*
       acceptTransitive: true
+  # Not moving JetBrains annotations to array brackets; they target TYPE_USE,
+  # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -141,6 +147,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: io.micrometer.core.lang.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micrometer.core.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -165,6 +173,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: org.springframework.lang.*ull*
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.springframework.lang.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
@@ -189,6 +199,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: io.micronaut.core.annotation.*ull*
       acceptTransitive: true
+  # Not moving Micronaut annotations to array brackets; they target TYPE_USE,
+  # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micronaut.core.annotation.Nullable
       newFullyQualifiedTypeName: org.jspecify.annotations.Nullable

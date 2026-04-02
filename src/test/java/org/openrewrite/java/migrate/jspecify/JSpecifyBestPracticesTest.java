@@ -32,7 +32,80 @@ class JSpecifyBestPracticesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
-          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jakarta.annotation-api", "annotations", "spring-core", "micronaut-core"));
+          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jspecify", "jakarta.annotation-api", "annotations", "spring-core", "micronaut-core"));
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/934")
+    @Test
+    void existingJSpecifyArrayOfNullableElementsNotAffected() {
+        rewriteRun(
+          mavenProject("foo",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.annotation.Nullable;
+
+                  class Legacy {
+                      @Nullable
+                      public String[] bar() {
+                          return null;
+                      }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  class Legacy {
+                      public String @Nullable[] bar() {
+                          return null;
+                      }
+                  }
+                  """
+              ),
+              //language=java
+              java(
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  class Modern {
+                      @Nullable String[] arrayOfNullableStrings;
+
+                      public @Nullable String[] bar() {
+                          return arrayOfNullableStrings;
+                      }
+
+                      public void baz(@Nullable String[] a) {
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.annotation</groupId>
+                            <artifactId>javax.annotation-api</artifactId>
+                            <version>1.3.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
     }
 
     @DocumentExample
