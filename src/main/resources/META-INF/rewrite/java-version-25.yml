@@ -217,6 +217,10 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.mockito
+      artifactId: mockito-*
+      newVersion: 5.17.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
