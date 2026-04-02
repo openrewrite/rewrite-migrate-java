@@ -21,8 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.regex.Pattern;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpdateJakartaFacesApiTest {
@@ -54,24 +53,13 @@ class UpdateJakartaFacesApiTest {
                       </dependencies>
                   </project>
                   """,
-                spec -> spec.after(actual -> {
-                    String version = Pattern.compile("<version>(3\\.0\\.\\d+)</version>")
-                      .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
-                    return """
-                      <project>
-                          <groupId>com.example</groupId>
-                          <artifactId>jsf-app</artifactId>
-                          <version>1.0.0</version>
-                          <dependencies>
-                              <dependency>
-                                  <groupId>jakarta.faces</groupId>
-                                  <artifactId>jakarta.faces-api</artifactId>
-                                  <version>%s</version>
-                              </dependency>
-                          </dependencies>
-                      </project>
-                      """.formatted(version);
-                })
+                spec -> spec.after(pom -> assertThat(pom)
+                  .contains("<groupId>jakarta.faces</groupId>")
+                  .contains("<artifactId>jakarta.faces-api</artifactId>")
+                  .containsPattern("<version>3\\.0\\.\\d+</version>")
+                  .doesNotContain("<groupId>com.sun.faces</groupId>")
+                  .doesNotContain("<artifactId>jsf-api</artifactId>")
+                  .actual())
               )
             );
         }
@@ -95,24 +83,13 @@ class UpdateJakartaFacesApiTest {
                       </dependencies>
                   </project>
                   """,
-                spec -> spec.after(actual -> {
-                    String version = Pattern.compile("<version>(3\\.0\\.\\d+)</version>")
-                      .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
-                    return """
-                      <project>
-                          <groupId>com.example</groupId>
-                          <artifactId>jsf-app</artifactId>
-                          <version>1.0.0</version>
-                          <dependencies>
-                              <dependency>
-                                  <groupId>org.glassfish</groupId>
-                                  <artifactId>jakarta.faces</artifactId>
-                                  <version>%s</version>
-                              </dependency>
-                          </dependencies>
-                      </project>
-                      """.formatted(version);
-                })
+                spec -> spec.after(pom -> assertThat(pom)
+                  .contains("<groupId>org.glassfish</groupId>")
+                  .contains("<artifactId>jakarta.faces</artifactId>")
+                  .containsPattern("<version>3\\.0\\.\\d+</version>")
+                  .doesNotContain("<groupId>com.sun.faces</groupId>")
+                  .doesNotContain("<artifactId>jsf-impl</artifactId>")
+                  .actual())
               )
             );
         }
@@ -136,24 +113,12 @@ class UpdateJakartaFacesApiTest {
                       </dependencies>
                   </project>
                   """,
-                spec -> spec.after(actual -> {
-                    String version = Pattern.compile("<version>(3\\.0\\.\\d+)</version>")
-                      .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
-                    return """
-                      <project>
-                          <groupId>com.example</groupId>
-                          <artifactId>jsf-app</artifactId>
-                          <version>1.0.0</version>
-                          <dependencies>
-                              <dependency>
-                                  <groupId>org.glassfish</groupId>
-                                  <artifactId>jakarta.faces</artifactId>
-                                  <version>%s</version>
-                              </dependency>
-                          </dependencies>
-                      </project>
-                      """.formatted(version);
-                })
+                spec -> spec.after(pom -> assertThat(pom)
+                  .contains("<groupId>org.glassfish</groupId>")
+                  .contains("<artifactId>jakarta.faces</artifactId>")
+                  .containsPattern("<version>3\\.0\\.\\d+</version>")
+                  .doesNotContain("<artifactId>javax.faces</artifactId>")
+                  .actual())
               )
             );
         }
@@ -185,24 +150,12 @@ class UpdateJakartaFacesApiTest {
                       </dependencies>
                   </project>
                   """,
-                spec -> spec.after(actual -> {
-                    String version = Pattern.compile("<version>(4\\.0\\.\\d+)</version>")
-                      .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
-                    return """
-                      <project>
-                          <groupId>com.example</groupId>
-                          <artifactId>jsf-app</artifactId>
-                          <version>1.0.0</version>
-                          <dependencies>
-                              <dependency>
-                                  <groupId>org.glassfish</groupId>
-                                  <artifactId>jakarta.faces</artifactId>
-                                  <version>%s</version>
-                              </dependency>
-                          </dependencies>
-                      </project>
-                      """.formatted(version);
-                })
+                spec -> spec.after(pom -> assertThat(pom)
+                  .contains("<groupId>org.glassfish</groupId>")
+                  .contains("<artifactId>jakarta.faces</artifactId>")
+                  .containsPattern("<version>4\\.0\\.\\d+</version>")
+                  .doesNotContain("<version>3.0.3</version>")
+                  .actual())
               )
             );
         }
