@@ -81,13 +81,11 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              spec -> spec.after(pom -> {
-                  assertThat(pom)
+              spec -> spec.after(pom -> assertThat(pom)
                     .contains("<groupId>jakarta.annotation</groupId>")
                     .contains("<artifactId>jakarta.annotation-api</artifactId>")
-                    .containsPattern("<version>2\\.0\\.\\d+</version>");
-                  return pom;
-              })
+                    .containsPattern("<version>2\\.0\\.\\d+</version>")
+                    .actual())
             )
           )
         );
