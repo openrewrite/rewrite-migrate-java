@@ -331,6 +331,70 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
+        @Test
+        void nonParameterizedNewClassArgument() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          List<String> strs = Collections.singletonList(new String("test"));
+                      }
+                    }
+                    """,
+                  """
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          var strs = Collections.singletonList(new String("test"));
+                      }
+                    }
+                    """
+                ),
+                10
+              )
+            );
+        }
+
+        @Test
+        void fieldAccessNewClassArgument() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          List<java.lang.String> strs = Collections.singletonList(new java.lang.String("test"));
+                      }
+                    }
+                    """,
+                  """
+                    import java.util.Collections;
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          var strs = Collections.singletonList(new java.lang.String("test"));
+                      }
+                    }
+                    """
+                ),
+                10
+              )
+            );
+        }
+
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/868")
         @Test
         void genericsCollectorsRegression() {

@@ -119,7 +119,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 if (arg instanceof J.NewClass) {
                     J.NewClass newClass = (J.NewClass) arg;
                     // Check if using diamond operator (rightTypeParams is empty)
-                    if (!hasTypeParams(newClass.getClazz())) {
+                    if (newClass.getClazz() instanceof J.ParameterizedType && !hasTypeParams(newClass.getClazz())) {
                         // Copy type parameters from left side to right side
                         J.ParameterizedType rightType = (J.ParameterizedType) newClass.getClazz();
                         return newClass.withClazz(requireNonNull(rightType).withTypeParameters(leftTypeParams));
