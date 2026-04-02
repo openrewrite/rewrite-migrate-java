@@ -58,6 +58,24 @@ recipeList:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.faces
+      oldArtifactId: jsf-api
+      newGroupId: jakarta.faces
+      newArtifactId: jakarta.faces-api
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.faces
+      oldArtifactId: jsf-impl
+      newGroupId: org.glassfish
+      newArtifactId: jakarta.faces
+      newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.glassfish
+      oldArtifactId: javax.faces
+      newGroupId: org.glassfish
+      newArtifactId: jakarta.faces
+      newVersion: 3.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.faces
       newPackageName: jakarta.faces

@@ -48,6 +48,10 @@ recipeList:
       groupId: jakarta.faces
       artifactId: jakarta.faces-api
       newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.glassfish
+      artifactId: jakarta.faces
+      newVersion: 4.0.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10
