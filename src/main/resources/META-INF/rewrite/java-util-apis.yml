@@ -22,6 +22,9 @@ description: Certain java util APIs have been introduced and are favored over pr
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.util.MigrateCollectionsEmptyList
+  - org.openrewrite.java.migrate.util.MigrateCollectionsEmptyMap
+  - org.openrewrite.java.migrate.util.MigrateCollectionsEmptySet
   - org.openrewrite.java.migrate.util.MigrateCollectionsSingletonList
   - org.openrewrite.java.migrate.util.MigrateCollectionsSingletonMap
   - org.openrewrite.java.migrate.util.MigrateCollectionsSingletonSet

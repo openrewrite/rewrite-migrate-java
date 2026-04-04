@@ -8809,6 +8809,63 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptyList
+examples:
+- description: '`MigrateCollectionsEmptyListTest#emptyList`'
+  sources:
+  - before: |
+      import java.util.*;
+
+      class Test {
+          List<String> list = Collections.emptyList();
+      }
+    after: |
+      import java.util.List;
+
+      class Test {
+          List<String> list = List.of();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptySet
+examples:
+- description: '`MigrateCollectionsEmptySetTest#emptySet`'
+  sources:
+  - before: |
+      import java.util.*;
+
+      class Test {
+          Set<String> set = Collections.emptySet();
+      }
+    after: |
+      import java.util.Set;
+
+      class Test {
+          Set<String> set = Set.of();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptyMap
+examples:
+- description: '`MigrateCollectionsEmptyMapTest#emptyMap`'
+  sources:
+  - before: |
+      import java.util.*;
+
+      class Test {
+          Map<String, String> map = Collections.emptyMap();
+      }
+    after: |
+      import java.util.Map;
+
+      class Test {
+          Map<String, String> map = Map.of();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsSingletonList
 examples:
 - description: '`MigrateCollectionsSingletonListTest#singletonList`'
