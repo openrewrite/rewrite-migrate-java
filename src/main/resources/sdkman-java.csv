@@ -111,6 +111,7 @@
 26-oracle
 26-sapmchn
 26-sem
+26-tem
 26-zulu
 26.crac-zulu
 26.ea.13-graal
@@ -118,6 +119,7 @@
 26.fx-librca
 26.fx-zulu
 27.ea.14-open
+27.ea.15-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.282-trava
@@ -129,5 +131,6 @@
 8.0.482-sem
 8.0.482-tem
 8.0.482-zulu
+8.0.482.1-sem
 8.0.482.fx-librca
 8.0.482.fx-zulu
