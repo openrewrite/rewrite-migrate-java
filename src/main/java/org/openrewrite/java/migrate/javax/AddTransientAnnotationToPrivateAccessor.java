@@ -110,7 +110,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                                 return super.visitReturn(ret, returnedVars);
                             }
                         };
-                        returnValueCollector.visitBlock(method.getBody(), returns);
+                        returnValueCollector.visit( method.getBody(), returns, getCursor().getParentTreeCursor() );
 
                         // Check if any return values are a class field
                         return returns.stream().anyMatch(classVars::contains);

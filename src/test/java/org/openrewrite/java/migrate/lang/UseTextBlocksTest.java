@@ -585,7 +585,7 @@ class UseTextBlocksTest implements RewriteTest {
       """)
     @Test
     void textBlockDemo() {
-        String s1 = """
+        var s1 = """
 
                     =========================================================
                                                                             \s
@@ -596,7 +596,7 @@ class UseTextBlocksTest implements RewriteTest {
                                                                             \s
                     =========================================================\
                     """;
-        String s2 = """
+        var s2 = """
 
           =========================================================
                                                                   \s
@@ -607,7 +607,7 @@ class UseTextBlocksTest implements RewriteTest {
                                                                   \s
           =========================================================\
           """;
-        String s3 = """
+        var s3 = """
           \n=========================================================\
           \n                                                         \
           \n          Welcome to Spring Integration!                 \

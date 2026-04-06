@@ -72,13 +72,13 @@ public class IfElseIfConstructToSwitch extends Recipe {
                             if (case_.getBody() instanceof J.Block &&
                                     ((J.Block) case_.getBody()).getStatements().isEmpty() &&
                                     !((J.Block) case_.getBody()).getEnd().isEmpty()) {
-                                return case_.withBody(((J.Block) case_.getBody())
-                                        .withPrefix(Space.SINGLE_SPACE)
-                                        .withEnd(Space.EMPTY));
+                                return case_.withBody( ((J.Block) case_.getBody())
+                                        .withPrefix( Space.SINGLE_SPACE )
+                                        .withEnd( Space.EMPTY ) );
                             }
-                            return case_.withBody(case_.getBody().withPrefix(Space.SINGLE_SPACE));
+                            return case_.withBody( case_.getBody().withPrefix( Space.SINGLE_SPACE ) );
                         }
-                    }.visitSwitch(switch_, ctx);
+                    }.visit( switch_, ctx, getCursor().getParentTreeCursor() );
                     return super.visitSwitch(switch_, ctx);
                 }
                 return super.visitIf(if_, ctx);

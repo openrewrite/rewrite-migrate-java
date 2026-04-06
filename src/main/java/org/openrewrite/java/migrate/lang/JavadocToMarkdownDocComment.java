@@ -28,7 +28,12 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 public class JavadocToMarkdownDocComment extends Recipe {
 
@@ -67,7 +72,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         List<String> lines = normalizeLines(converter.getLines());
 
         if (lines.isEmpty()) {
-            lines = Collections.singletonList("");
+            lines = singletonList("");
         }
 
         String interLineSuffix = "\n" + indentation;
@@ -516,7 +521,9 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 sb.append('(');
                 List<Expression> args = mi.getArguments();
                 for (int i = 0; i < args.size(); i++) {
-                    if (i > 0) sb.append(", ");
+                    if (i > 0) {
+                        sb.append( ", " );
+                    }
                     Expression arg = args.get(i);
                     if (!(arg instanceof J.Empty)) {
                         sb.append(printJRef(arg));
@@ -546,7 +553,9 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 if (pt.getTypeParameters() != null) {
                     sb.append('<');
                     for (int i = 0; i < pt.getTypeParameters().size(); i++) {
-                        if (i > 0) sb.append(", ");
+                        if (i > 0) {
+                            sb.append( ", " );
+                        }
                         sb.append(printJ((J) pt.getTypeParameters().get(i)));
                     }
                     sb.append('>');

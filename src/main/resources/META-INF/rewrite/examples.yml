@@ -722,6 +722,8 @@ recipeName: org.openrewrite.java.migrate.JavaBestPractices
 examples:
 - description: '`JavaBestPracticesTest#updateCompilerVersion`'
   sources:
+  - before: project
+    language: mavenProject
   - before: |
       <project>
           <groupId>com.mycompany.app</groupId>
@@ -1340,6 +1342,8 @@ recipeName: org.openrewrite.java.migrate.UpgradeToJava25
 examples:
 - description: '`UpgradeToJava25Test#updateCompilerVersion`'
   sources:
+  - before: project
+    language: mavenProject
   - before: |
       <project>
           <groupId>com.mycompany.app</groupId>
@@ -4964,6 +4968,45 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
+examples:
+- description: '`JavaxAnnotationMigrationToJakartaAnnotationTest#migratesExplicitDependency`'
+  sources:
+  - before: |
+      import javax.annotation.Nonnull;
+
+      class A {
+          @Nonnull
+          String name;
+      }
+    after: |
+      import jakarta.annotation.Nonnull;
+
+      class A {
+          @Nonnull
+          String name;
+      }
+    language: java
+  - before: my-project
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.annotation</groupId>
+                  <artifactId>javax.annotation-api</artifactId>
+                  <version>1.3.2</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
 examples:
 - description: '`JavaxBeanValidationXmlToJakartaBeanValidationXmlTest#migrateJCP`'
@@ -5237,6 +5280,39 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxJspToJakartaJsp
+examples:
+- description: '`JavaxJspToJakartaJspTest#switchesJavaxJspApiDependencyToJakartaJspApiDependency`'
+  sources:
+  - before: |
+      import javax.servlet.jsp.PageContext;
+      public class TestApplication {
+      }
+    after: |
+      import jakarta.servlet.jsp.PageContext;
+      public class TestApplication {
+      }
+    language: java
+  - before: Sample
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.servlet.jsp</groupId>
+                  <artifactId>javax.servlet.jsp-api</artifactId>
+                  <version>2.3.3</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 examples:
 - description: '`JavaxMailToJakartaMailTest#switchesJavaxMailApiDependencyToJakartaMailApiDependency`'
@@ -5283,6 +5359,39 @@ examples:
       public class B {
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxPersistenceToJakartaPersistence
+examples:
+- description: '`JavaxPersistenceToJakartaPersistenceTest#switchesJavaxPersistenceApiDependencyToJakartaPersistenceApiDependency`'
+  sources:
+  - before: |
+      import javax.persistence.EntityManagerFactory;
+      public class TestApplication {
+      }
+    after: |
+      import jakarta.persistence.EntityManagerFactory;
+      public class TestApplication {
+      }
+    language: java
+  - before: Sample
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.persistence</groupId>
+                  <artifactId>javax.persistence-api</artifactId>
+                  <version>2.2</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
@@ -6066,6 +6175,27 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi3
+examples:
+- description: '`Faces3#migrateSunFacesJsfApi`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.example</groupId>
+          <artifactId>jsf-app</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>com.sun.faces</groupId>
+                  <artifactId>jsf-api</artifactId>
+                  <version>2.2.20</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.WsWsocServerContainerDeprecation
@@ -6873,6 +7003,32 @@ examples:
           @ManyToOne
           @JoinColumn(name="account")
           private Account account;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType
+examples:
+- description: '`MoveAnnotationToArrayTypeTest#moveNullableToArrayReturnType`'
+  parameters:
+  - javax.annotation.*ull*
+  sources:
+  - before: |
+      import javax.annotation.Nullable;
+
+      class Foo {
+          @Nullable
+          public byte[] bar() {
+              return null;
+          }
+      }
+    after: |
+      import javax.annotation.Nullable;
+
+      class Foo {
+          public byte @Nullable[] bar() {
+              return null;
+          }
       }
     language: java
 ---

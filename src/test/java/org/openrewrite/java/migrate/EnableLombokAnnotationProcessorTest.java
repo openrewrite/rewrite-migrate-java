@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,6 +31,7 @@ class EnableLombokAnnotationProcessorTest implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.EnableLombokAnnotationProcessor");
     }
 
+    @DocumentExample
     @Test
     void doesNotAddLombokWhenNotPresentViaUpgradeToJava25() {
         rewriteRun(

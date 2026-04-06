@@ -85,12 +85,12 @@ public class RefineSwitchCases extends Recipe {
                                 if (body.getStatements().isEmpty() &&
                                         body.getEnd().getComments().isEmpty() &&
                                         !body.getEnd().isEmpty()) {
-                                    return case_.withBody(body.withEnd(Space.EMPTY));
+                                    return case_.withBody( body.withEnd( Space.EMPTY ) );
                                 }
                             }
                             return case_;
                         }
-                    }.visitSwitch(autoFormat(mappedSwitch, ctx), ctx);
+                    }.visit( autoFormat( mappedSwitch, ctx ), ctx, getCursor().getParentTreeCursor() );
                 }
                 return switch_;
             }
