@@ -76,7 +76,7 @@ public class RefineSwitchCases extends Recipe {
                             return statement;
                         })));
                 if (mappedSwitch != switch_) {
-                    return new JavaIsoVisitor<ExecutionContext>() {
+                    return (J.Switch) new JavaIsoVisitor<ExecutionContext>() {
                         @Override
                         public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
                             // Remove any trailing new line in empty case body

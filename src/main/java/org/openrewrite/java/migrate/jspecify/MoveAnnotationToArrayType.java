@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return md;
                 }
 
-                J.@Nullable Annotation[] match = {null};
+                J.Annotation @Nullable [] match = {null};
                 List<J.Annotation> leading = ListUtils.map(md.getLeadingAnnotations(), a -> {
                     if (match[0] == null && matchesType(a)) {
                         match[0] = a;
@@ -95,7 +96,7 @@ public class MoveAnnotationToArrayType extends Recipe {
                     return mv;
                 }
 
-                J.@Nullable Annotation[] match = {null};
+                J.Annotation @Nullable [] match = {null};
                 List<J.Annotation> leading = ListUtils.map(mv.getLeadingAnnotations(), a -> {
                     if (match[0] == null && matchesType(a)) {
                         match[0] = a;
