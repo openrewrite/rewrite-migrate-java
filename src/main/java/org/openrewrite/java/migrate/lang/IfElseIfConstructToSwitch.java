@@ -63,7 +63,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             public J visitIf(J.If if_, ExecutionContext ctx) {
                 J.Switch switch_ = new SwitchCandidate(if_, getCursor()).buildSwitchTemplate();
                 if (switch_ != null) {
-                    switch_ = new JavaIsoVisitor<ExecutionContext>() {
+                    switch_ = (J.Switch) new JavaIsoVisitor<ExecutionContext>() {
                         @Override
                         public J.Case visitCase(J.Case case_, ExecutionContext ctx) {
                             if (case_.getBody() == null) {

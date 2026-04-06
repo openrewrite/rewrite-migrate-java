@@ -354,7 +354,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
             bodyStatements.removeAll(memberVariables);
 
-            classDeclaration = new RemoveAnnotationVisitor( LOMBOK_VALUE_MATCHER ).visit( classDeclaration, ctx, getCursor().getParentTreeCursor() );
+            classDeclaration = (J.ClassDeclaration) new RemoveAnnotationVisitor( LOMBOK_VALUE_MATCHER ).visit( classDeclaration, ctx, getCursor().getParentTreeCursor() );
             maybeRemoveImport("lombok.Value");
 
             List<J.Modifier> mappedModifiers = ListUtils.map(classDeclaration.getModifiers(), modifier -> {
