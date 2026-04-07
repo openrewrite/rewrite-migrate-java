@@ -29,6 +29,8 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForObject
+  - org.openrewrite.java.migrate.lang.var.UseVarForTypeCast
+  - org.openrewrite.java.migrate.lang.var.UseVarForConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
