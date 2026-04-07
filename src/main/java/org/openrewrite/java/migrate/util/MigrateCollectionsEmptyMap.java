@@ -18,13 +18,11 @@ package org.openrewrite.java.migrate.util;
 import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.JavaType.ShallowClass;
-import org.openrewrite.java.tree.Space;
-
-import static java.util.Collections.emptyList;
 
 public class MigrateCollectionsEmptyMap extends Recipe {
     private static final MethodMatcher EMPTY_MAP = new MethodMatcher("java.util.Collections emptyMap()");
@@ -36,8 +34,10 @@ public class MigrateCollectionsEmptyMap extends Recipe {
     final String description = "Prefer `Map.of()` instead of using `Collections.emptyMap()` in Java 9 or higher.";
 
     @Override
-    public JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(EMPTY_MAP));
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -46,20 +46,15 @@ public class MigrateCollectionsEmptyMap extends Recipe {
                 if (EMPTY_MAP.matches(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Map");
-
-                    JavaType.Class classType = ShallowClass.build("java.util.Map");
-                    JavaType.Method methodType = m.getMethodType().withName("of").withDeclaringType(classType);
-                    m = m.withName(m.getName().withSimpleName("of").withType(methodType));
-                    if (m.getSelect() instanceof J.Identifier) {
-                        return m.withSelect(((J.Identifier) m.getSelect()).withSimpleName("Map").withType(classType));
-                    }
-                    return m.withSelect(new J.Identifier(
-                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), emptyList(), "Map", classType, null))
-                            .withPrefix(Space.EMPTY);
+                    return JavaTemplate.builder("Map.of()")
+                            .contextSensitive()
+                            .imports("java.util.Map")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace());
                 }
 
                 return m;
             }
-        };
+        });
     }
 }

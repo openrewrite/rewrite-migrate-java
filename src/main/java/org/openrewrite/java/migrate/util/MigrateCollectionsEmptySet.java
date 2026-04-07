@@ -18,13 +18,11 @@ package org.openrewrite.java.migrate.util;
 import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.JavaType.ShallowClass;
-import org.openrewrite.java.tree.Space;
-
-import static java.util.Collections.emptyList;
 
 public class MigrateCollectionsEmptySet extends Recipe {
     private static final MethodMatcher EMPTY_SET = new MethodMatcher("java.util.Collections emptySet()");
@@ -36,8 +34,10 @@ public class MigrateCollectionsEmptySet extends Recipe {
     final String description = "Prefer `Set.of()` instead of using `Collections.emptySet()` in Java 9 or higher.";
 
     @Override
-    public JavaIsoVisitor<ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+                new UsesMethod<>(EMPTY_SET));
+        return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -46,20 +46,15 @@ public class MigrateCollectionsEmptySet extends Recipe {
                 if (EMPTY_SET.matches(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
-
-                    JavaType.Class classType = ShallowClass.build("java.util.Set");
-                    JavaType.Method methodType = m.getMethodType().withName("of").withDeclaringType(classType);
-                    m = m.withName(m.getName().withSimpleName("of").withType(methodType));
-                    if (m.getSelect() instanceof J.Identifier) {
-                        return m.withSelect(((J.Identifier) m.getSelect()).withSimpleName("Set").withType(classType));
-                    }
-                    return m.withSelect(new J.Identifier(
-                                    Tree.randomId(), m.getPrefix(), m.getMarkers(), emptyList(), "Set", classType, null))
-                            .withPrefix(Space.EMPTY);
+                    return JavaTemplate.builder("Set.of()")
+                            .contextSensitive()
+                            .imports("java.util.Set")
+                            .build()
+                            .apply(updateCursor(m), m.getCoordinates().replace());
                 }
 
                 return m;
             }
-        };
+        });
     }
 }
