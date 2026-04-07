@@ -37,7 +37,7 @@ recipeList:
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.java.migrate.util.RemoveFinalizerFromZip
-  - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandom
+  - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
   - org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
   - org.openrewrite.java.migrate.util.StreamFindFirst
   - org.openrewrite.java.migrate.util.UseEnumSetOf
