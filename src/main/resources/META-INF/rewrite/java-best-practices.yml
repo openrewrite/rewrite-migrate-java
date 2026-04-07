@@ -48,10 +48,7 @@ recipeList:
   - org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations
   - org.openrewrite.java.migrate.lang.var.UseVarForPrimitive
   # Prefer modern Java collection factories and utilities
-  - org.openrewrite.java.migrate.util.UseEnumSetOf
-  - org.openrewrite.java.migrate.util.UseListOf
-  - org.openrewrite.java.migrate.util.UseMapOf
-  - org.openrewrite.java.migrate.util.UseSetOf
+  - org.openrewrite.java.migrate.util.JavaUtilAPIs
   # Static analysis: bug prevention
   - org.openrewrite.staticanalysis.ReplaceWeekYearWithYear
   - org.openrewrite.staticanalysis.RemoveHashCodeCallsFromArrayInstances
