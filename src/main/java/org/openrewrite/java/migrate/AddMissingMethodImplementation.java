@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -82,11 +83,12 @@ public class AddMissingMethodImplementation extends Recipe {
                     .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, classDecl))) {
                 return classDecl;
             }
-            // If the method is already available through inheritance, don't add it.
+            // If a concrete implementation is already available through inheritance, don't add it.
             if (classDecl.getType() != null) {
                 Iterator<JavaType.Method> visibleMethods = classDecl.getType().getVisibleMethods();
                 while (visibleMethods.hasNext()) {
-                    if (methodMatcher.matches(visibleMethods.next())) {
+                    JavaType.Method method = visibleMethods.next();
+                    if (!method.hasFlags(Flag.Abstract) && methodMatcher.matches(method)) {
                         return classDecl;
                     }
                 }
