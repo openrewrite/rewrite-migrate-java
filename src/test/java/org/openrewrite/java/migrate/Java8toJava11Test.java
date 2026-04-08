@@ -97,8 +97,7 @@ class Java8toJava11Test implements RewriteTest {
                   </project>
                   """,
                 spec -> spec.after(pomXml -> {
-                    assertThat(pomXml).contains("<version>3.");
-                    return pomXml;
+                    return assertThat( pomXml ).contains( "<version>3." ).actual();
                 })
               )
             ),
@@ -137,12 +136,11 @@ class Java8toJava11Test implements RewriteTest {
                   </project>
                   """,
                 spec -> spec.after(pomXml -> {
-                    assertThat(pomXml)
-                      .contains("<release>11</release>")
-                      .contains("<version>3.")
-                      .doesNotContain("<source>")
-                      .doesNotContain("<target>");
-                    return pomXml;
+                    return assertThat( pomXml )
+                            .contains( "<release>11</release>" )
+                            .contains( "<version>3." )
+                            .doesNotContain( "<source>" )
+                            .doesNotContain( "<target>" ).actual();
                 })
               )
             ),

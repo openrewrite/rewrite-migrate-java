@@ -60,13 +60,12 @@ class JavaxPersistenceToJakartaPersistenceTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> {
-                  assertThat(pom)
-                    .doesNotContain("javax.persistence")
-                    .containsPattern(
-                      "<groupId>jakarta\\.persistence</groupId>\\s*" +
-                      "<artifactId>jakarta\\.persistence-api</artifactId>\\s*" +
-                      "<version>3\\.0\\.\\d+</version>");
-                  return pom;
+                  return assertThat( pom )
+                          .doesNotContain( "javax.persistence" )
+                          .containsPattern(
+                                  "<groupId>jakarta\\.persistence</groupId>\\s*" +
+                                          "<artifactId>jakarta\\.persistence-api</artifactId>\\s*" +
+                                          "<version>3\\.0\\.\\d+</version>" ).actual();
               })
             )
           ),
@@ -126,12 +125,11 @@ class JavaxPersistenceToJakartaPersistenceTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> {
-                  assertThat(pom)
-                    .containsPattern(
-                      "<groupId>jakarta\\.persistence</groupId>\\s*" +
-                      "<artifactId>jakarta\\.persistence-api</artifactId>\\s*" +
-                      "<version>3\\.0\\.\\d+</version>");
-                  return pom;
+                  return assertThat( pom )
+                          .containsPattern(
+                                  "<groupId>jakarta\\.persistence</groupId>\\s*" +
+                                          "<artifactId>jakarta\\.persistence-api</artifactId>\\s*" +
+                                          "<version>3\\.0\\.\\d+</version>" ).actual();
               })
             )
           )

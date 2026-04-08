@@ -1336,6 +1336,44 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeToJava25
 examples:
+- description: '`EnableLombokAnnotationProcessorTest#doesNotAddLombokWhenNotPresentViaUpgradeToJava25`'
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>17</maven.compiler.release>
+          </properties>
+          <dependencies>
+              <dependency>
+                  <groupId>com.google.guava</groupId>
+                  <artifactId>guava</artifactId>
+                  <version>33.0.0-jre</version>
+              </dependency>
+          </dependencies>
+      </project>
+    after: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <properties>
+              <maven.compiler.release>25</maven.compiler.release>
+          </properties>
+          <dependencies>
+              <dependency>
+                  <groupId>com.google.guava</groupId>
+                  <artifactId>guava</artifactId>
+                  <version>33.0.0-jre</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 - description: '`UpgradeToJava25Test#updateCompilerVersion`'
   sources:
   - before: project
@@ -8980,28 +9018,9 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptySet
-examples:
-- description: '`MigrateCollectionsEmptySetTest#emptySet`'
-  sources:
-  - before: |
-      import java.util.*;
-
-      class Test {
-          Set<String> set = Collections.emptySet();
-      }
-    after: |
-      import java.util.Set;
-
-      class Test {
-          Set<String> set = Set.of();
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptyMap
 examples:
-- description: '`MigrateCollectionsEmptyMapTest#emptyMap`'
+- description: '`MigrateCollectionsEmptyMapTest#emptyList`'
   sources:
   - before: |
       import java.util.*;
@@ -9014,6 +9033,25 @@ examples:
 
       class Test {
           Map<String, String> map = Map.of();
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsEmptySet
+examples:
+- description: '`MigrateCollectionsEmptySetTest#emptyList`'
+  sources:
+  - before: |
+      import java.util.*;
+
+      class Test {
+          Set<String> set = Collections.emptySet();
+      }
+    after: |
+      import java.util.Set;
+
+      class Test {
+          Set<String> set = Set.of();
       }
     language: java
 ---

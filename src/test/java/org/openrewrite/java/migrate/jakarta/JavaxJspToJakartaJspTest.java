@@ -62,13 +62,12 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> {
-                  assertThat(pom)
-                    .doesNotContain("javax.servlet.jsp")
-                    .containsPattern(
-                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                      "<version>3\\.0\\.\\d+</version>");
-                  return pom;
+                  return assertThat( pom )
+                          .doesNotContain( "javax.servlet.jsp" )
+                          .containsPattern(
+                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                                          "<version>3\\.0\\.\\d+</version>" ).actual();
               })
             )
           ),
@@ -128,12 +127,11 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> {
-                  assertThat(pom)
-                    .containsPattern(
-                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                      "<version>3\\.0\\.\\d+</version>");
-                  return pom;
+                  return assertThat( pom )
+                          .containsPattern(
+                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                                          "<version>3\\.0\\.\\d+</version>" ).actual();
               })
             )
           )
@@ -163,12 +161,11 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> {
-                  assertThat(pom)
-                    .containsPattern(
-                      "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                      "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                      "<version>3\\.0\\.\\d+</version>");
-                  return pom;
+                  return assertThat( pom )
+                          .containsPattern(
+                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
+                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
+                                          "<version>3\\.0\\.\\d+</version>" ).actual();
               })
             )
           )
@@ -208,9 +205,8 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                 }
                 """,
               spec -> spec.after(gradle -> {
-                  assertThat(gradle)
-                    .contains("jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.0.");
-                  return gradle;
+                  return assertThat( gradle )
+                          .contains( "jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.0." ).actual();
               })
             )
           )
