@@ -151,4 +151,24 @@ class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/648")
+    @Test
+    void skipWhenIndirectSuperclassAlreadyHasMethod() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class GrandSuperClass implements I1 {
+                  public void m1() {
+                      System.out.println("m1 from grandsuper");
+                  }
+              }
+              class SuperClass extends GrandSuperClass {}
+              class SubClass extends SuperClass {}
+              """
+          )
+        );
+    }
+
 }
