@@ -22,9 +22,12 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+
+import java.util.Iterator;
 
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 
@@ -80,13 +83,15 @@ public class AddMissingMethodImplementation extends Recipe {
                     .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, classDecl))) {
                 return classDecl;
             }
-            // If a superclass already provides the method, don't add it.
-            JavaType.FullyQualified supertype = classDecl.getType() != null ? classDecl.getType().getSupertype() : null;
-            while (supertype != null) {
-                if (supertype.getMethods().stream().anyMatch(methodMatcher::matches)) {
-                    return classDecl;
+            // If a concrete implementation is already available through inheritance, don't add it.
+            if (classDecl.getType() != null) {
+                Iterator<JavaType.Method> visibleMethods = classDecl.getType().getVisibleMethods();
+                while (visibleMethods.hasNext()) {
+                    JavaType.Method method = visibleMethods.next();
+                    if (!method.hasFlags(Flag.Abstract) && methodMatcher.matches(method)) {
+                        return classDecl;
+                    }
                 }
-                supertype = supertype.getSupertype();
             }
 
             return classDecl.withBody(JavaTemplate.apply( methodTemplateString, new Cursor( getCursor(), classDecl.getBody() ), classDecl.getBody().getCoordinates().lastStatement() ));
