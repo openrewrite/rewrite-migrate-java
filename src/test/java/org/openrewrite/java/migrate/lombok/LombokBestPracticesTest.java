@@ -21,9 +21,6 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.SourceSpec;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -32,63 +29,45 @@ class LombokBestPracticesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResource("/META-INF/rewrite/lombok.yml",
-          "org.openrewrite.java.migrate.lombok.LombokBestPractices");
+        spec.recipeFromResources("org.openrewrite.java.migrate.lombok.LombokBestPractices");
     }
 
     @DocumentExample
     @Test
     void providedScope() {
         rewriteRun(
-          pomXml(
-            //language=xml
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>example</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.projectlombok</groupId>
-                          <artifactId>lombok</artifactId>
-                          <version>1.18.6</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.projectlombok</groupId>
-                          <artifactId>lombok-mapstruct-binding</artifactId>
-                          <version>0.2.0</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """,
-            spec -> spec.after(pom -> {
-                Matcher version = Pattern.compile("1.[1-9]\\d+(.\\d+)?").matcher(pom);
-                assertThat(version.find()).isTrue();
-                //language=xml
-                return """
-                  <project>
-                      <modelVersion>4.0.0</modelVersion>
-                      <groupId>com.example</groupId>
-                      <artifactId>example</artifactId>
-                      <version>1.0.0</version>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.projectlombok</groupId>
-                              <artifactId>lombok</artifactId>
-                              <version>%s</version>
-                              <scope>provided</scope>
-                          </dependency>
-                          <dependency>
-                              <groupId>org.projectlombok</groupId>
-                              <artifactId>lombok-mapstruct-binding</artifactId>
-                              <version>0.2.0</version>
-                              <scope>provided</scope>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """.formatted(version.group(0));
-            })
+          spec -> spec.expectedCyclesThatMakeChanges(2),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>example</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.6</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom ->
+                assertThat(pom)
+                  .containsPattern("1.[1-9]\\d+(.\\d+)?")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<groupId>org.projectlombok")
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
+              )
+            )
           )
         );
     }

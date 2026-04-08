@@ -40,6 +40,7 @@ recipeList:
   - org.openrewrite.maven.ExcludeDependency:
       groupId: org.projectlombok
       artifactId: lombok
+  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
