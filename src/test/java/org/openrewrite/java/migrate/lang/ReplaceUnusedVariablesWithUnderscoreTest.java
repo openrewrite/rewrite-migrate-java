@@ -175,6 +175,37 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
     }
 
     @Test
+    void replaceUnusedParenthesizedLambdaParameter() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.stream.Stream;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  void example() {
+                      Stream.of("a", "b", "c")
+                          .collect(Collectors.toMap(String::toUpperCase, (item) -> "NODATA"));
+                  }
+              }
+              """,
+            """
+              import java.util.stream.Stream;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  void example() {
+                      Stream.of("a", "b", "c")
+                          .collect(Collectors.toMap(String::toUpperCase, _ -> "NODATA"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotReplaceUsedLambdaParameter() {
         rewriteRun(
           //language=java
