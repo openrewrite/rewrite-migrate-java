@@ -70,22 +70,31 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             @Override
             public J.Lambda visitLambda(J.Lambda lambda, ExecutionContext ctx) {
                 J.Lambda l = super.visitLambda(lambda, ctx);
+                boolean willRename = false;
                 for (J param : l.getParameters().getParameters()) {
                     if (param instanceof J.VariableDeclarations) {
                         for (J.VariableDeclarations.NamedVariable namedVariable : ((J.VariableDeclarations) param).getVariables()) {
-                            renameVariableIfUnusedInContext(namedVariable, l.getBody());
+                            if (renameVariableIfUnusedInContext(namedVariable, l.getBody())) {
+                                willRename = true;
+                            }
                         }
                     }
+                }
+                if (willRename && l.getParameters().isParenthesized() &&
+                        l.getParameters().getParameters().size() == 1) {
+                    l = l.withParameters(l.getParameters().withParenthesized(false));
                 }
                 return l;
             }
 
-            private void renameVariableIfUnusedInContext(J.VariableDeclarations.NamedVariable variable, J context) {
+            private boolean renameVariableIfUnusedInContext(J.VariableDeclarations.NamedVariable variable, J context) {
                 if (!UNDERSCORE.equals(variable.getName().getSimpleName()) &&
                         VariableReferences.findRhsReferences(context, variable.getName()).isEmpty() &&
                         !usedInModifyingUnary(variable.getName(), context)) {
                     doAfterVisit(new RenameVariable<>(variable, UNDERSCORE));
+                    return true;
                 }
+                return false;
             }
 
             private boolean usedInModifyingUnary(J.Identifier identifier, J context) {
