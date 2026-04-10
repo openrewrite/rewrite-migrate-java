@@ -110,6 +110,8 @@ class UpgradeToJava25Test implements RewriteTest {
                   .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
                   .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
                   .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
+                  .contains("--add-opens java.base/java.lang=ALL-UNNAMED")
+                  .contains("-Dnet.bytebuddy.experimental=true")
                   .actual())
             )
           )

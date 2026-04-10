@@ -221,6 +221,19 @@ recipeList:
       groupId: org.mockito
       artifactId: mockito-*
       newVersion: 5.17.x
+  - org.openrewrite.java.migrate.AddSurefireArgLine:
+      argLine: >-
+        --add-opens java.base/java.lang=ALL-UNNAMED
+        --add-opens java.base/java.util=ALL-UNNAMED
+        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+        --add-opens java.base/java.text=ALL-UNNAMED
+        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens java.base/java.io=ALL-UNNAMED
+        --add-opens java.base/java.nio=ALL-UNNAMED
+        --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
+        --add-opens java.base/sun.security.action=ALL-UNNAMED
+        --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED
+        -Dnet.bytebuddy.experimental=true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

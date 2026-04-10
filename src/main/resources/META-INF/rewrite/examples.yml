@@ -205,6 +205,51 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddSurefireArgLine
+examples:
+- description: '`AddSurefireArgLineTest#surefireWithNoConfiguration`'
+  parameters:
+  - ARG_LINE
+  sources:
+  - before: project
+    language: mavenProject
+  - before: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-surefire-plugin</artifactId>
+                      <version>3.5.2</version>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    after: |
+      <project>
+          <groupId>com.mycompany.app</groupId>
+          <artifactId>my-app</artifactId>
+          <version>1</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-surefire-plugin</artifactId>
+                      <version>3.5.2</version>
+                      <configuration>
+                          <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
 examples:
 - description: '`ArrayStoreExceptionToTypeNotPresentExceptionTest#replaceCaughtException`'
@@ -8184,6 +8229,8 @@ recipeName: org.openrewrite.java.migrate.lombok.LombokBestPractices
 examples:
 - description: '`LombokBestPracticesTest#providedScope`'
   sources:
+  - before: project
+    language: mavenProject
   - before: |
       <project>
           <modelVersion>4.0.0</modelVersion>
