@@ -28,6 +28,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.VariableReferences;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,7 +47,12 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(22), new JavaIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
+                new UsesJavaVersion<>(22),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())
+        );
+        return Preconditions.check(preconditions, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, ExecutionContext ctx) {
                 J.ForEachLoop l = super.visitForEachLoop(forLoop, ctx);
