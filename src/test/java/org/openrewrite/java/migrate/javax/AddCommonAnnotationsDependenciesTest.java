@@ -49,6 +49,13 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
                   @Generated("Hello")
                   class A {
                   }
+                  """,
+                """
+                  import javax.annotation.Generated;
+
+                  @Generated("Hello")
+                  class A {
+                  }
                   """
               )
             ),
@@ -91,6 +98,13 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
             //language=java
             srcMainJava(
               java(
+                """
+                  import javax.annotation.Generated;
+
+                  @Generated("Hello")
+                  class A {
+                  }
+                  """,
                 """
                   import javax.annotation.Generated;
 
