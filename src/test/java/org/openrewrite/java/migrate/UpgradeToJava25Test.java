@@ -83,6 +83,14 @@ class UpgradeToJava25Test implements RewriteTest {
                     <properties>
                         <maven.compiler.release>17</maven.compiler.release>
                     </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>5.14.0</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
                     <build>
                         <plugins>
                             <plugin>

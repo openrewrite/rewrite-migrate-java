@@ -221,19 +221,65 @@ recipeList:
       groupId: org.mockito
       artifactId: mockito-*
       newVersion: 5.17.x
+  - org.openrewrite.java.migrate.AddSurefireArgLineForMockito
+  - org.openrewrite.java.migrate.AddSurefireArgLineForSpring
+  - org.openrewrite.java.migrate.AddSurefireArgLineForNetty
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddSurefireArgLineForMockito
+displayName: Add surefire `--add-opens` for Mockito/ByteBuddy
+description: >-
+  Adds `--add-opens` JVM arguments required by Mockito and ByteBuddy to the Maven Surefire and Failsafe plugin
+  `argLine` configuration. Only applied when the project depends on Mockito.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.mockito
+      artifactIdPattern: mockito-*
+recipeList:
   - org.openrewrite.java.migrate.AddSurefireArgLine:
       argLine: >-
         --add-opens java.base/java.lang=ALL-UNNAMED
-        --add-opens java.base/java.util=ALL-UNNAMED
         --add-opens java.base/java.lang.reflect=ALL-UNNAMED
-        --add-opens java.base/java.text=ALL-UNNAMED
-        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
-        --add-opens java.base/java.io=ALL-UNNAMED
-        --add-opens java.base/java.nio=ALL-UNNAMED
         --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
-        --add-opens java.base/sun.security.action=ALL-UNNAMED
         --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED
         -Dnet.bytebuddy.experimental=true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddSurefireArgLineForSpring
+displayName: Add surefire `--add-opens` for Spring
+description: >-
+  Adds `--add-opens` JVM arguments required by Spring Framework to the Maven Surefire and Failsafe plugin
+  `argLine` configuration. Only applied when the project depends on Spring.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.springframework
+      artifactIdPattern: spring-*
+recipeList:
+  - org.openrewrite.java.migrate.AddSurefireArgLine:
+      argLine: >-
+        --add-opens java.base/java.util=ALL-UNNAMED
+        --add-opens java.base/java.text=ALL-UNNAMED
+        --add-opens java.base/java.io=ALL-UNNAMED
+        --add-opens java.base/sun.security.action=ALL-UNNAMED
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddSurefireArgLineForNetty
+displayName: Add surefire `--add-opens` for Netty
+description: >-
+  Adds `--add-opens` JVM arguments required by Netty to the Maven Surefire and Failsafe plugin
+  `argLine` configuration. Only applied when the project depends on Netty.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: io.netty
+      artifactIdPattern: netty-*
+recipeList:
+  - org.openrewrite.java.migrate.AddSurefireArgLine:
+      argLine: >-
+        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+        --add-opens java.base/java.nio=ALL-UNNAMED
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
