@@ -221,11 +221,11 @@ recipeList:
       groupId: org.mockito
       artifactId: mockito-*
       newVersion: 5.17.x
-  - org.openrewrite.java.migrate.AddSurefireArgLineForMockito
+  - org.openrewrite.java.migrate.AddSurefireFailsafeArgLineForMockito
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.AddSurefireArgLineForMockito
+name: org.openrewrite.java.migrate.AddSurefireFailsafeArgLineForMockito
 displayName: Add surefire `--add-opens` for Mockito/ByteBuddy
 description: >-
   Adds `--add-opens` JVM arguments required by Mockito and ByteBuddy to the Maven Surefire and Failsafe plugin
@@ -235,7 +235,7 @@ preconditions:
       groupIdPattern: org.mockito
       artifactIdPattern: mockito-*
 recipeList:
-  - org.openrewrite.java.migrate.AddSurefireArgLine:
+  - org.openrewrite.java.migrate.AddSurefireFailsafeArgLine:
       argLine: >-
         --add-opens java.base/java.lang=ALL-UNNAMED
         --add-opens java.base/java.lang.reflect=ALL-UNNAMED

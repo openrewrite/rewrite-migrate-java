@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class AddSurefireArgLine extends Recipe {
+public class AddSurefireFailsafeArgLine extends Recipe {
 
     @Option(displayName = "Arg line",
             description = "The arguments to add to the surefire and failsafe plugin `argLine` configuration. " +
@@ -41,7 +41,7 @@ public class AddSurefireArgLine extends Recipe {
             example = "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED")
     String argLine;
 
-    String displayName = "Add argLine to surefire and failsafe plugins";
+    String displayName = "Add `argLine` to surefire and failsafe plugins";
 
     String description = "Adds the specified arguments to the `argLine` configuration of the Maven Surefire and Failsafe plugins, " +
             "merging with any existing argLine value without duplicating arguments.";
@@ -51,23 +51,23 @@ public class AddSurefireArgLine extends Recipe {
         return new MavenIsoVisitor<ExecutionContext>() {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-                Xml.Tag t = super.visitTag( tag, ctx );
-                if (!isPluginTag( t )) {
+                Xml.Tag t = super.visitTag(tag, ctx);
+                if (!isPluginTag(t)) {
                     return t;
                 }
-                String artifactId = t.getChildValue( "artifactId" ).orElse( "" );
-                if (!"maven-surefire-plugin".equals( artifactId ) && !"maven-failsafe-plugin".equals( artifactId )) {
+                String artifactId = t.getChildValue("artifactId").orElse("");
+                if (!"maven-surefire-plugin".equals(artifactId) && !"maven-failsafe-plugin".equals(artifactId)) {
                     return t;
                 }
-                String groupId = t.getChildValue( "groupId" ).orElse( "org.apache.maven.plugins" );
-                if (!"org.apache.maven.plugins".equals( groupId )) {
+                String groupId = t.getChildValue("groupId").orElse("org.apache.maven.plugins");
+                if (!"org.apache.maven.plugins".equals(groupId)) {
                     return t;
                 }
 
-                Optional<Xml.Tag> configTag = t.getChild( "configuration" );
+                Optional<Xml.Tag> configTag = t.getChild("configuration");
                 if (configTag.isPresent()) {
                     Xml.Tag config = configTag.get();
-                    Optional<Xml.Tag> argLineTag = config.getChild( "argLine" );
+                    Optional<Xml.Tag> argLineTag = config.getChild("argLine");
                     if (argLineTag.isPresent()) {
                         String existingValue = argLineTag.get().getValue().orElse( "" );
                         String merged = mergeArgLine( existingValue, argLine );

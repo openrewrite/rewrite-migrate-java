@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class AddSurefireArgLineTest implements RewriteTest {
+class AddSurefireFailsafeArgLineTest implements RewriteTest {
 
     private static final String ARG_LINE = "--add-opens java.base/java.lang=ALL-UNNAMED" +
             " --add-opens java.base/java.util=ALL-UNNAMED" +
@@ -31,7 +31,7 @@ class AddSurefireArgLineTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new AddSurefireArgLine(ARG_LINE));
+        spec.recipe(new AddSurefireFailsafeArgLine(ARG_LINE));
     }
 
     @DocumentExample

@@ -142,7 +142,7 @@ class UpgradeToJava25Test implements RewriteTest {
               """,
             spec -> spec.path("gradle/wrapper/gradle-wrapper.properties")
               .after(actual -> {
-                  return assertThat( actual ).containsPattern( "gradle-9\\.1\\.\\d+-bin\\.zip" ).actual();
+                  return assertThat(actual).containsPattern("gradle-9\\.1\\.\\d+-bin\\.zip").actual();
               })
           ),
           text("", spec -> spec.path("gradlew").after(a -> {

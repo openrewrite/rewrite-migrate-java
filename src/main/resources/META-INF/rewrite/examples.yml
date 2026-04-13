@@ -205,9 +205,9 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.AddSurefireArgLine
+recipeName: org.openrewrite.java.migrate.AddSurefireFailsafeArgLine
 examples:
-- description: '`AddSurefireArgLineTest#surefireWithNoConfiguration`'
+- description: '`AddSurefireFailsafeArgLineTest#surefireWithNoConfiguration`'
   parameters:
   - ARG_LINE
   sources:
