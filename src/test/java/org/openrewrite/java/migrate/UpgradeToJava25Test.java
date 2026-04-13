@@ -83,6 +83,14 @@ class UpgradeToJava25Test implements RewriteTest {
                     <properties>
                         <maven.compiler.release>17</maven.compiler.release>
                     </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>5.14.0</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
                     <build>
                         <plugins>
                             <plugin>
@@ -110,6 +118,8 @@ class UpgradeToJava25Test implements RewriteTest {
                   .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
                   .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
                   .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
+                  .contains("--add-opens java.base/java.lang=ALL-UNNAMED")
+                  .contains("-Dnet.bytebuddy.experimental=true")
                   .actual())
             )
           )
@@ -132,7 +142,7 @@ class UpgradeToJava25Test implements RewriteTest {
               """,
             spec -> spec.path("gradle/wrapper/gradle-wrapper.properties")
               .after(actual -> {
-                  return assertThat( actual ).containsPattern( "gradle-9\\.1\\.\\d+-bin\\.zip" ).actual();
+                  return assertThat(actual).containsPattern("gradle-9\\.1\\.\\d+-bin\\.zip").actual();
               })
           ),
           text("", spec -> spec.path("gradlew").after(a -> {
