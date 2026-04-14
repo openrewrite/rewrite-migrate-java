@@ -33,71 +33,34 @@ public class UpgradeDockerImageVersion extends Recipe {
             example = "11")
     Integer version;
 
+    private static final String[] DEPRECATED_IMAGES = {"openjdk", "adoptopenjdk"};
+    private static final String[] CURRENT_IMAGES = {
+            "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
+            "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
+            "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
+    };
+
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
             "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
-            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin.";
+            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin. " +
+            "Uses a single `ChangeFrom` glob capture per (image, oldVersion) to preserve any tag suffix.";
 
     @Override
     public List<Recipe> getRecipeList() {
         List<Recipe> recipes = new ArrayList<>();
-        if (version == null) { // for uninitialized version
+        if (version == null) {
             return recipes;
         }
-        // Deprecated images -> migrate to eclipse-temurin
-        String[] deprecatedImages = {"openjdk", "adoptopenjdk"};
-        String[] currentImages = {
-                "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
-                "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
-                "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
-        };
-        // Common tag suffixes to preserve when upgrading current images
-        // Longer suffixes must come before shorter ones to match correctly
-        String[] commonSuffixes = {
-                // Alpine
-                "-jdk-alpine", "-jre-alpine",
-                // Ubuntu LTS
-                "-jdk-noble", "-jre-noble",
-                "-jdk-jammy", "-jre-jammy",
-                "-jdk-focal", "-jre-focal",
-                "-jdk-bionic", "-jre-bionic",
-                // Debian
-                "-jdk-slim-bookworm", "-jre-slim-bookworm",
-                "-jdk-slim-bullseye", "-jre-slim-bullseye",
-                "-jdk-slim-buster", "-jre-slim-buster",
-                "-jdk-bookworm", "-jre-bookworm",
-                "-jdk-bullseye", "-jre-bullseye",
-                "-jdk-buster", "-jre-buster",
-                // Other Linux
-                "-jdk-centos7", "-jre-centos7",
-                "-jdk-ubi9-minimal", "-jre-ubi9-minimal",
-                // Windows
-                "-jdk-nanoserver", "-jre-nanoserver",
-                "-jdk-windowsservercore", "-jre-windowsservercore",
-                // Generic suffixes (must come last)
-                "-alpine", "-slim",
-                "-jdk", "-jre"
-        };
+        String newVer = version.toString();
         for (int oldVersion = 8; oldVersion < version; oldVersion++) {
-            // Deprecated images: match specific suffixes first to preserve them
-            for (String image : deprecatedImages) {
-                for (String suffix : commonSuffixes) {
-                    recipes.add(new ChangeFrom(image, oldVersion + suffix, null, null, "eclipse-temurin", version + suffix, null, null));
-                }
+            String oldTag = oldVersion + "*";
+            String newTag = newVer + "$1";
+            for (String image : DEPRECATED_IMAGES) {
+                recipes.add(new ChangeFrom(image, oldTag, null, null, "eclipse-temurin", newTag, null, null));
             }
-            // Deprecated images: fall back to wildcard for remaining patterns
-            for (String image : deprecatedImages) {
-                recipes.add(new ChangeFrom(image, oldVersion + "*", null, null, "eclipse-temurin", version.toString(), null, null));
-            }
-            // Current images: match specific suffixes first to preserve them
-            for (String image : currentImages) {
-                for (String suffix : commonSuffixes) {
-                    recipes.add(new ChangeFrom(image, oldVersion + suffix, null, null, null, version + suffix, null, null));
-                }
-            }
-            // Current images: fall back to wildcard for remaining patterns
-            for (String image : currentImages) {
-                recipes.add(new ChangeFrom(image, oldVersion + "*", null, null, null, version.toString(), null, null));
+            for (String image : CURRENT_IMAGES) {
+                recipes.add(new ChangeFrom(image, oldTag, null, null, null, newTag, null, null));
             }
         }
         return recipes;
