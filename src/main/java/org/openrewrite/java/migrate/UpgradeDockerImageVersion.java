@@ -17,12 +17,21 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-import org.openrewrite.docker.ChangeFrom;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.docker.trait.DockerFrom;
+import org.openrewrite.docker.tree.Docker;
+import org.openrewrite.docker.tree.Space;
+import org.openrewrite.marker.Markers;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Collections.singletonList;
+import static org.openrewrite.Tree.randomId;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -38,68 +47,79 @@ public class UpgradeDockerImageVersion extends Recipe {
             "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
             "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin.";
 
+    private static final Set<String> DEPRECATED_IMAGES = new HashSet<>(Arrays.asList(
+            "openjdk", "adoptopenjdk"));
+    private static final Set<String> CURRENT_IMAGES = new HashSet<>(Arrays.asList(
+            "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
+            "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
+            "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"));
+
     @Override
-    public List<Recipe> getRecipeList() {
-        List<Recipe> recipes = new ArrayList<>();
-        if (version == null) { // for uninitialized version
-            return recipes;
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+        if (version == null) {
+            return TreeVisitor.noop();
         }
-        // Deprecated images -> migrate to eclipse-temurin
-        String[] deprecatedImages = {"openjdk", "adoptopenjdk"};
-        String[] currentImages = {
-                "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
-                "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
-                "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
-        };
-        // Common tag suffixes to preserve when upgrading current images
-        // Longer suffixes must come before shorter ones to match correctly
-        String[] commonSuffixes = {
-                // Alpine
-                "-jdk-alpine", "-jre-alpine",
-                // Ubuntu LTS
-                "-jdk-noble", "-jre-noble",
-                "-jdk-jammy", "-jre-jammy",
-                "-jdk-focal", "-jre-focal",
-                "-jdk-bionic", "-jre-bionic",
-                // Debian
-                "-jdk-slim-bookworm", "-jre-slim-bookworm",
-                "-jdk-slim-bullseye", "-jre-slim-bullseye",
-                "-jdk-slim-buster", "-jre-slim-buster",
-                "-jdk-bookworm", "-jre-bookworm",
-                "-jdk-bullseye", "-jre-bullseye",
-                "-jdk-buster", "-jre-buster",
-                // Other Linux
-                "-jdk-centos7", "-jre-centos7",
-                "-jdk-ubi9-minimal", "-jre-ubi9-minimal",
-                // Windows
-                "-jdk-nanoserver", "-jre-nanoserver",
-                "-jdk-windowsservercore", "-jre-windowsservercore",
-                // Generic suffixes (must come last)
-                "-alpine", "-slim",
-                "-jdk", "-jre"
-        };
-        for (int oldVersion = 8; oldVersion < version; oldVersion++) {
-            // Deprecated images: match specific suffixes first to preserve them
-            for (String image : deprecatedImages) {
-                for (String suffix : commonSuffixes) {
-                    recipes.add(new ChangeFrom(image, oldVersion + suffix, null, null, "eclipse-temurin", version + suffix, null, null));
-                }
+        return new DockerFrom.Matcher().imageName("*").asVisitor((image, ctx) -> {
+            Docker.From f = image.getTree();
+            String imageName = image.getImageName();
+            String tag = image.getTag();
+            if (imageName == null || tag == null) {
+                return f;
             }
-            // Deprecated images: fall back to wildcard for remaining patterns
-            for (String image : deprecatedImages) {
-                recipes.add(new ChangeFrom(image, oldVersion + "*", null, null, "eclipse-temurin", version.toString(), null, null));
+
+            boolean isDeprecated = DEPRECATED_IMAGES.contains(imageName);
+            if (!isDeprecated && !CURRENT_IMAGES.contains(imageName)) {
+                return f;
             }
-            // Current images: match specific suffixes first to preserve them
-            for (String image : currentImages) {
-                for (String suffix : commonSuffixes) {
-                    recipes.add(new ChangeFrom(image, oldVersion + suffix, null, null, null, version + suffix, null, null));
-                }
+
+            // Parse leading version number from tag
+            int i = 0;
+            while (i < tag.length() && Character.isDigit(tag.charAt(i))) {
+                i++;
             }
-            // Current images: fall back to wildcard for remaining patterns
-            for (String image : currentImages) {
-                recipes.add(new ChangeFrom(image, oldVersion + "*", null, null, null, version.toString(), null, null));
+            if (i == 0) {
+                return f;
             }
-        }
-        return recipes;
+            int oldVersion;
+            try {
+                oldVersion = Integer.parseInt(tag.substring(0, i));
+            } catch (NumberFormatException e) {
+                return f;
+            }
+            if (oldVersion < 8 || oldVersion >= version) {
+                return f;
+            }
+
+            // Preserve suffix only when it starts with '-' (e.g. "-jdk-alpine")
+            String suffix = tag.substring(i);
+            String newTag = suffix.startsWith("-") ? version + suffix : version.toString();
+            String newImageName = isDeprecated ? "eclipse-temurin" : null;
+
+            Docker.Literal.QuoteStyle quoteStyle = image.getQuoteStyle();
+            Docker.From result = f;
+
+            // Handle single-content case (image:tag in one literal)
+            boolean singleContent = f.getImageName().getContents().size() == 1 &&
+                    f.getTag() == null && f.getDigest() == null;
+            if (singleContent) {
+                String imagePart = newImageName != null ? newImageName : imageName;
+                Docker.ArgumentContent content = new Docker.Literal(
+                        randomId(), Space.EMPTY, Markers.EMPTY,
+                        imagePart + ":" + newTag, quoteStyle);
+                return result.withImageName(f.getImageName().withContents(singletonList(content)));
+            }
+
+            if (newImageName != null) {
+                Docker.ArgumentContent content = new Docker.Literal(
+                        randomId(), Space.EMPTY, Markers.EMPTY, newImageName, quoteStyle);
+                result = result.withImageName(f.getImageName().withContents(singletonList(content)));
+            }
+
+            Docker.ArgumentContent tagContent = new Docker.Literal(
+                    randomId(), Space.EMPTY, Markers.EMPTY, newTag, quoteStyle);
+            result = result.withTag(new Docker.Argument(
+                    randomId(), Space.EMPTY, Markers.EMPTY, singletonList(tagContent)));
+            return result;
+        });
     }
 }
