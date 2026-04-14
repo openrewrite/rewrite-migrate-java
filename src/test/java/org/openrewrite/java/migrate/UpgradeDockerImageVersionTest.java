@@ -47,6 +47,9 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "eclipse-temurin, 11-jdk-focal, eclipse-temurin, 17-jdk-focal, 17",
       "amazoncorretto, 11-alpine, amazoncorretto, 17-alpine, 17",
       "azul/zulu-openjdk, 11-jdk, azul/zulu-openjdk, 17-jdk, 17",
+      // Arbitrary suffix preserved via $1 capture (previously lost through wildcard fallback)
+      "openjdk, 11-jdk-custom-suffix, eclipse-temurin, 17-jdk-custom-suffix, 17",
+      "eclipse-temurin, 11-jdk-custom-suffix, eclipse-temurin, 17-jdk-custom-suffix, 17",
     })
     @ParameterizedTest
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
