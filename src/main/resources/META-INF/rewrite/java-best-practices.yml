@@ -36,6 +36,8 @@ recipeList:
       convertStringsWithoutNewlines: true
   # Prefer Java standard library over Guava where possible
   - org.openrewrite.java.migrate.guava.NoGuava
+  # Prefer Java standard library over Joda-Time where possible
+  - org.openrewrite.java.joda.time.NoJodaTime
   # JSpecify nullability annotations best practices
   - org.openrewrite.java.jspecify.JSpecifyBestPractices
   # Local variable type inference — targeted, non-controversial uses
