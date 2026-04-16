@@ -15,9 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -35,11 +33,12 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     private final String guavaType;
     private final String javaType;
+    private final String methodName;
+    private final int minJavaVersion;
 
     @Option(displayName = "Whether to convert return type (the default value is false).",
             description = "converting the return type from Guava Type to Java Type " +
@@ -49,9 +48,23 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     @Nullable
     Boolean convertReturnType;
 
+    AbstractNoGuavaImmutableOf(String guavaType, String javaType) {
+        this(guavaType, javaType, "of", 9, null);
+    }
+
     AbstractNoGuavaImmutableOf(String guavaType, String javaType, @Nullable Boolean convertReturnType) {
+        this(guavaType, javaType, "of", 9, convertReturnType);
+    }
+
+    AbstractNoGuavaImmutableOf(String guavaType, String javaType, String methodName, int minJavaVersion) {
+        this(guavaType, javaType, methodName, minJavaVersion, null);
+    }
+
+    AbstractNoGuavaImmutableOf(String guavaType, String javaType, String methodName, int minJavaVersion, @Nullable Boolean convertReturnType) {
         this.guavaType = guavaType;
         this.javaType = javaType;
+        this.methodName = methodName;
+        this.minJavaVersion = minJavaVersion;
         this.convertReturnType = convertReturnType;
     }
 
@@ -61,12 +74,12 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     @Override
     public String getDisplayName() {
-        return "Prefer `" + getShortType(javaType) + ".of(..)` in Java 9 or higher";
+        return "Prefer `" + getShortType(javaType) + "." + methodName + "(..)` in Java " + minJavaVersion + " or higher";
     }
 
     @Override
     public String getDescription() {
-        return "Replaces `" + getShortType(guavaType) + ".of(..)` if the returned type is immediately down-cast.";
+        return "Replaces `" + getShortType(guavaType) + "." + methodName + "(..)` if the returned type is immediately down-cast.";
     }
 
     @Getter
@@ -74,9 +87,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(minJavaVersion),
                 new UsesType<>(guavaType, false));
-        final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " of(..)");
+        final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " " + methodName + "(..)");
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -91,13 +104,13 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 Object[] templateArguments;
                 List<Expression> methodArguments = mi.getArguments();
                 if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
-                    template = getShortType(javaType) + ".of()";
+                    template = getShortType(javaType) + "." + methodName + "()";
                     templateArguments = new Object[]{};
-                } else if ("com.google.common.collect.ImmutableMap".equals(guavaType)) {
-                    template = getShortType(javaType) + ".of(#{any()}, #{any()})";
+                } else if ("of".equals(methodName) && "com.google.common.collect.ImmutableMap".equals(guavaType)) {
+                    template = getShortType(javaType) + "." + methodName + "(#{any()}, #{any()})";
                     templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
                 } else {
-                    template = getShortType(javaType) + ".of(#{any()})";
+                    template = getShortType(javaType) + "." + methodName + "(#{any()})";
                     templateArguments = new Object[]{methodArguments.get(0)};
                 }
 
