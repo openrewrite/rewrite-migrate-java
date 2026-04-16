@@ -45,15 +45,11 @@ public class RenameUnderscoreIdentifier extends Recipe {
         );
     }
 
+    @lombok.RequiredArgsConstructor
     static class RenameIdentifierVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         private final String oldName;
         private final String newName;
-
-        RenameIdentifierVisitor(String oldName, String newName) {
-            this.oldName = oldName;
-            this.newName = newName;
-        }
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(
