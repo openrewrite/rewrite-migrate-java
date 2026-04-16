@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -45,7 +46,7 @@ public class RenameUnderscoreIdentifier extends Recipe {
         );
     }
 
-    @lombok.RequiredArgsConstructor
+    @RequiredArgsConstructor
     static class RenameIdentifierVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         private final String oldName;
