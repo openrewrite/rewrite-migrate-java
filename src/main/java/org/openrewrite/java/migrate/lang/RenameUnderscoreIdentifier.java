@@ -49,8 +49,8 @@ public class RenameUnderscoreIdentifier extends Recipe {
     @EqualsAndHashCode(callSuper = false)
     static class RenameIdentifierVisitor extends JavaIsoVisitor<ExecutionContext> {
 
-        private final String oldName;
-        private final String newName;
+        String oldName;
+        String newName;
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(
