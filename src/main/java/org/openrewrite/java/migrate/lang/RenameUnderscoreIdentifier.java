@@ -21,18 +21,11 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.RenameVariable;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class RenameUnderscoreIdentifier extends Recipe {
-
-    private static final String UNDERSCORE = "_";
-    private static final String DOUBLE_UNDERSCORE = "__";
 
     String displayName = "Rename `_` identifier to `__`";
 
@@ -44,76 +37,7 @@ public class RenameUnderscoreIdentifier extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 new UsesJavaVersion<>(1, 8),
-                new JavaIsoVisitor<ExecutionContext>() {
-
-                    @Override
-                    public J.VariableDeclarations visitVariableDeclarations(
-                            J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        for (J.VariableDeclarations.NamedVariable v : multiVariable.getVariables()) {
-                            if (UNDERSCORE.equals(v.getSimpleName())) {
-                                doAfterVisit(new RenameVariable<>(v, DOUBLE_UNDERSCORE));
-                            }
-                        }
-                        return super.visitVariableDeclarations(multiVariable, ctx);
-                    }
-
-                    @Override
-                    public J.MethodDeclaration visitMethodDeclaration(
-                            J.MethodDeclaration method, ExecutionContext ctx) {
-                        method = super.visitMethodDeclaration(method, ctx);
-                        if (UNDERSCORE.equals(method.getSimpleName())) {
-                            JavaType.Method type = method.getMethodType();
-                            if (type != null) {
-                                type = type.withName(DOUBLE_UNDERSCORE);
-                            }
-                            method = method.withName(method.getName().withSimpleName(DOUBLE_UNDERSCORE)
-                                            .withType(type))
-                                    .withMethodType(type);
-                        }
-                        return method;
-                    }
-
-                    @Override
-                    public J.MethodInvocation visitMethodInvocation(
-                            J.MethodInvocation method, ExecutionContext ctx) {
-                        method = super.visitMethodInvocation(method, ctx);
-                        if (UNDERSCORE.equals(method.getSimpleName())) {
-                            JavaType.Method type = method.getMethodType();
-                            if (type != null) {
-                                type = type.withName(DOUBLE_UNDERSCORE);
-                            }
-                            method = method.withName(method.getName().withSimpleName(DOUBLE_UNDERSCORE)
-                                            .withType(type))
-                                    .withMethodType(type);
-                        }
-                        return method;
-                    }
-
-                    @Override
-                    public J.MemberReference visitMemberReference(
-                            J.MemberReference memberRef, ExecutionContext ctx) {
-                        memberRef = super.visitMemberReference(memberRef, ctx);
-                        if (UNDERSCORE.equals(memberRef.getReference().getSimpleName())) {
-                            JavaType.Method type = memberRef.getMethodType();
-                            if (type != null) {
-                                type = type.withName(DOUBLE_UNDERSCORE);
-                            }
-                            memberRef = memberRef.withReference(memberRef.getReference().withSimpleName(DOUBLE_UNDERSCORE))
-                                    .withMethodType(type);
-                        }
-                        return memberRef;
-                    }
-
-                    @Override
-                    public J.ClassDeclaration visitClassDeclaration(
-                            J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        classDecl = super.visitClassDeclaration(classDecl, ctx);
-                        if (UNDERSCORE.equals(classDecl.getSimpleName())) {
-                            classDecl = classDecl.withName(classDecl.getName().withSimpleName(DOUBLE_UNDERSCORE));
-                        }
-                        return classDecl;
-                    }
-                }
+                new RenameIdentifierVisitor("_", "__")
         );
     }
 }

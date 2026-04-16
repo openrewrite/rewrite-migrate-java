@@ -20,10 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.RenameVariable;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -51,50 +47,7 @@ class RenameUnderscoreIdentifierTest implements RewriteTest {
 
             @Override
             public TreeVisitor<?, ExecutionContext> getVisitor() {
-                return new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.VariableDeclarations visitVariableDeclarations(
-                            J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        for (J.VariableDeclarations.NamedVariable v : multiVariable.getVariables()) {
-                            if ("UNDERSCORE".equals(v.getSimpleName())) {
-                                doAfterVisit(new RenameVariable<>(v, "_"));
-                            }
-                        }
-                        return super.visitVariableDeclarations(multiVariable, ctx);
-                    }
-
-                    @Override
-                    public J.MethodDeclaration visitMethodDeclaration(
-                            J.MethodDeclaration method, ExecutionContext ctx) {
-                        method = super.visitMethodDeclaration(method, ctx);
-                        if ("UNDERSCORE".equals(method.getSimpleName())) {
-                            JavaType.Method type = method.getMethodType();
-                            if (type != null) {
-                                type = type.withName("_");
-                            }
-                            method = method.withName(method.getName().withSimpleName("_")
-                                            .withType(type))
-                                    .withMethodType(type);
-                        }
-                        return method;
-                    }
-
-                    @Override
-                    public J.MethodInvocation visitMethodInvocation(
-                            J.MethodInvocation method, ExecutionContext ctx) {
-                        method = super.visitMethodInvocation(method, ctx);
-                        if ("UNDERSCORE".equals(method.getSimpleName())) {
-                            JavaType.Method type = method.getMethodType();
-                            if (type != null) {
-                                type = type.withName("_");
-                            }
-                            method = method.withName(method.getName().withSimpleName("_")
-                                            .withType(type))
-                                    .withMethodType(type);
-                        }
-                        return method;
-                    }
-                };
+                return new RenameIdentifierVisitor("UNDERSCORE", "_");
             }
         };
     }
