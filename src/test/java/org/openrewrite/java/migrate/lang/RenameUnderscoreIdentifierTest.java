@@ -47,7 +47,7 @@ class RenameUnderscoreIdentifierTest implements RewriteTest {
 
             @Override
             public TreeVisitor<?, ExecutionContext> getVisitor() {
-                return new RenameIdentifierVisitor("UNDERSCORE", "_");
+                return new RenameUnderscoreIdentifier.RenameIdentifierVisitor("UNDERSCORE", "_");
             }
         };
     }
