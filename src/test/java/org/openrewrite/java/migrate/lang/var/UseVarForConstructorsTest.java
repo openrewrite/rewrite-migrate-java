@@ -185,6 +185,33 @@ class UseVarForConstructorsTest implements RewriteTest {
     }
 
     @Test
+    void parenthesizedConstructorInitializer() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.ArrayList;
+
+              class A {
+                  void m() {
+                      ArrayList<String> list = (new ArrayList<String>());
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+
+              class A {
+                  void m() {
+                      var list = new ArrayList<String>();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotReplaceInvalidPatterns() {
         rewriteRun(
           //language=java

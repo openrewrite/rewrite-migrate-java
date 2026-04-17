@@ -21,6 +21,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
@@ -57,11 +58,11 @@ public class UseVarForConstructors extends Recipe {
                     return vd;
                 }
 
-                Expression initializer = vd.getVariables().get(0).getInitializer();
-                if (initializer == null) {
+                Expression originalInitializer = vd.getVariables().get(0).getInitializer();
+                if (originalInitializer == null) {
                     return vd;
                 }
-                initializer = initializer.unwrap();
+                Expression initializer = originalInitializer.unwrap();
 
                 // Only transform constructor calls
                 if (!(initializer instanceof J.NewClass)) {
@@ -77,7 +78,13 @@ public class UseVarForConstructors extends Recipe {
                     maybeRemoveImport((JavaType.FullyQualified) vd.getType());
                 }
 
-                return DeclarationCheck.transformToVar(vd, (J.NewClass nc) -> maybeTransferTypeArguments(vd, nc));
+                if (initializer != originalInitializer) {
+                    Expression unwrapped = initializer.withPrefix(originalInitializer.getPrefix());
+                    vd = vd.withVariables(ListUtils.mapFirst(vd.getVariables(), nv -> nv.withInitializer(unwrapped)));
+                }
+
+                J.VariableDeclarations finalVd = vd;
+                return DeclarationCheck.transformToVar(vd, (J.NewClass nc) -> maybeTransferTypeArguments(finalVd, nc));
             }
 
             private J.NewClass maybeTransferTypeArguments(J.VariableDeclarations vd, J.NewClass initializer) {
