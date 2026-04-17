@@ -395,6 +395,36 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
+        @Test
+        void parenthesizedMethodInvocationInitializer() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          List<String> strs = (List.of("one", "two"));
+                      }
+                    }
+                    """,
+                  """
+                    import java.util.List;
+
+                    class A {
+                      void m() {
+                          var strs = List.of("one", "two");
+                      }
+                    }
+                    """
+                ),
+                10
+              )
+            );
+        }
+
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/868")
         @Test
         void genericsCollectorsRegression() {

@@ -66,21 +66,26 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             }
 
             // Now we deal with generics, check for method invocations
-            Expression initializer = vd.getVariables().get(0).getInitializer();
-            boolean isMethodInvocation = initializer != null && initializer.unwrap() instanceof J.MethodInvocation;
-            if (!isMethodInvocation) {
+            Expression originalInitializer = vd.getVariables().get(0).getInitializer();
+            if (originalInitializer == null || !(originalInitializer.unwrap() instanceof J.MethodInvocation)) {
                 return vd;
             }
+            J.MethodInvocation invocation = (J.MethodInvocation) originalInitializer.unwrap();
 
             // If no type parameters and no arguments are present, we assume the type is too hard to determine
-            boolean hasNoTypeParams = ((J.MethodInvocation) initializer).getTypeParameters() == null;
-            boolean argumentsEmpty = allArgumentsEmpty((J.MethodInvocation) initializer);
+            boolean hasNoTypeParams = invocation.getTypeParameters() == null;
+            boolean argumentsEmpty = allArgumentsEmpty(invocation);
             if (hasNoTypeParams && argumentsEmpty) {
                 return vd;
             }
 
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
+            }
+
+            if (invocation != originalInitializer) {
+                J.MethodInvocation unwrapped = invocation.withPrefix(originalInitializer.getPrefix());
+                vd = vd.withVariables(ListUtils.mapFirst(vd.getVariables(), nv -> nv.withInitializer(unwrapped)));
             }
 
             // Make nested generic types explicit before converting to var
