@@ -197,6 +197,54 @@ class UpgradeToJava25Test implements RewriteTest {
                     </dependencies>
                 </project>
                 """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
+    void transitiveKotlinStdlibDoesNotCapJavaVersion() {
+        // https://github.com/moderneinc/customer-requests/issues/2236
+        // OkHttp brings kotlin-stdlib in transitively; without Kotlin sources the project should still upgrade to Java 25.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>21</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.squareup.okhttp3</groupId>
+                            <artifactId>okhttp</artifactId>
+                            <version>4.12.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.squareup.okhttp3</groupId>
+                            <artifactId>okhttp</artifactId>
+                            <version>4.12.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
             )
           )
         );
