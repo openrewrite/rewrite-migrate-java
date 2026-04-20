@@ -30,6 +30,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeBuildToJava24
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
+  - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
@@ -248,8 +249,10 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava24
 displayName: Upgrade build to Java 24 for Kotlin pre-2.3
 description: >-
-  Kotlin versions before 2.3 only support up to Java 24.
+  Kotlin versions before 2.3 only support up to Java 24. Applies only to modules that actually compile Kotlin
+  (i.e. contain `.kt` source files), so transitive `kotlin-stdlib` dependencies do not trigger the cap.
 preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
       artifactIdPattern: kotlin-stdlib*
@@ -261,10 +264,25 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava25
-displayName: Upgrade build to Java 25 (default)
+displayName: Upgrade build to Java 25 (non-Kotlin)
 description: >-
-  Upgrades build files to Java 25 for projects without Kotlin pre-2.3.
+  Upgrades build files to Java 25 for modules without Kotlin source files. This covers pure Java projects,
+  including those that only pick up `kotlin-stdlib` transitively through another dependency.
 preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource:
+      invertMarking: true
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 25
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
+displayName: Upgrade build to Java 25 for Kotlin 2.3+
+description: >-
+  Upgrades build files to Java 25 for Kotlin modules already on Kotlin 2.3 or later.
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
       artifactIdPattern: kotlin-stdlib*
