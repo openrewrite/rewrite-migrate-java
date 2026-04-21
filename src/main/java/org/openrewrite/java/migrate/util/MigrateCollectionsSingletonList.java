@@ -26,6 +26,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JavaType.ShallowClass;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import static java.util.Collections.emptyList;
 
@@ -41,7 +43,9 @@ public class MigrateCollectionsSingletonList extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes());
+                new UsesMethod<>(SINGLETON_LIST), new NoMissingTypes(),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>()));
         return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {

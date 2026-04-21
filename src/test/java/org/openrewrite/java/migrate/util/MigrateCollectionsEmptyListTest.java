@@ -81,4 +81,93 @@ class MigrateCollectionsEmptyListTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void emptyListAsMethodArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  void use(List<String> l) {}
+                  void call() {
+                      use(Collections.emptyList());
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  void use(List<String> l) {}
+                  void call() {
+                      use(List.of());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void emptyListInTernary() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  List<String> get(boolean flag, List<String> other) {
+                      return flag ? Collections.emptyList() : other;
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  List<String> get(boolean flag, List<String> other) {
+                      return flag ? List.of() : other;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void emptyListInSwitchExpression() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  List<String> get(int i) {
+                      return switch (i) {
+                          case 0 -> Collections.emptyList();
+                          default -> null;
+                      };
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  List<String> get(int i) {
+                      return switch (i) {
+                          case 0 -> List.of();
+                          default -> null;
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }

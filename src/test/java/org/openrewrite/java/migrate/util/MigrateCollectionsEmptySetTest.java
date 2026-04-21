@@ -81,4 +81,64 @@ class MigrateCollectionsEmptySetTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void emptySetInTernaryInParentheses() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  Set<String> get(Set<String> input) {
+                      return (input != null ? input : Collections.emptySet());
+                  }
+              }
+              """,
+            """
+              import java.util.Set;
+
+              class Test {
+                  Set<String> get(Set<String> input) {
+                      return (input != null ? input : Set.of());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void emptySetInSwitchExpression() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  Set<String> get(int i) {
+                      return switch (i) {
+                          case 0 -> Collections.emptySet();
+                          default -> null;
+                      };
+                  }
+              }
+              """,
+            """
+              import java.util.Set;
+
+              class Test {
+                  Set<String> get(int i) {
+                      return switch (i) {
+                          case 0 -> Set.of();
+                          default -> null;
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }

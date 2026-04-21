@@ -27,6 +27,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -44,7 +46,9 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(UNMODIFIABLE_SET));
+                new UsesMethod<>(UNMODIFIABLE_SET),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>()));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -62,7 +66,6 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
                                 args.forEach(o -> setOf.add("#{any()}"));
 
                                 return JavaTemplate.builder(setOf.toString())
-                                        .contextSensitive()
                                         .imports("java.util.Set")
                                         .build()
                                         .apply(updateCursor(m), m.getCoordinates().replace(), args.toArray());

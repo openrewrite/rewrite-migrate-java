@@ -26,6 +26,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 public class MigrateCollectionsEmptyMap extends Recipe {
     private static final MethodMatcher EMPTY_MAP = new MethodMatcher("java.util.Collections emptyMap()");
@@ -39,7 +41,9 @@ public class MigrateCollectionsEmptyMap extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(EMPTY_MAP));
+                new UsesMethod<>(EMPTY_MAP),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>()));
         return Preconditions.check(check, new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
@@ -50,7 +54,6 @@ public class MigrateCollectionsEmptyMap extends Recipe {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Map");
                     return JavaTemplate.builder("Map.of()")
-                            .contextSensitive()
                             .imports("java.util.Map")
                             .build()
                             .apply(updateCursor(m), m.getCoordinates().replace());

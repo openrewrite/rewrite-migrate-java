@@ -26,6 +26,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 public class MigrateCollectionsSingletonSet extends Recipe {
     private static final MethodMatcher SINGLETON_SET = new MethodMatcher("java.util.Collections singleton(..)", true);
@@ -39,7 +41,9 @@ public class MigrateCollectionsSingletonSet extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(SINGLETON_SET));
+                new UsesMethod<>(SINGLETON_SET),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>()));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -49,7 +53,6 @@ public class MigrateCollectionsSingletonSet extends Recipe {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
                     return JavaTemplate.builder("Set.of(#{any()})")
-                            .contextSensitive()
                             .imports("java.util.Set")
                             .build()
                             .apply(updateCursor(m), m.getCoordinates().replace(), m.getArguments().get(0));
