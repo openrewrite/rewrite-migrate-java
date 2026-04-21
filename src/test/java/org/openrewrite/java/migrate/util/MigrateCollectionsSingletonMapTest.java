@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class MigrateCollectionsSingletonMapTest implements RewriteTest {
 
@@ -99,6 +100,135 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
                 class Test {
                     Map<String, String> mapWithNullKey = Collections.singletonMap(null, "foo");
                     Map<String, String> mapWithNullValue = Collections.singletonMap("bar", null);
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void singletonMapAsArgument() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    void take(Map<String, Object> m) {}
+                    void call(String key, Object value) {
+                        take(Collections.singletonMap(key, value));
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Test {
+                    void take(Map<String, Object> m) {}
+                    void call(String key, Object value) {
+                        take(Map.of(key, value));
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void singletonMapInSwitchExpression() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    Map<String, Object> get(int i) {
+                        return switch (i) {
+                            case 0 -> Collections.singletonMap("a", "b");
+                            default -> null;
+                        };
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Test {
+                    Map<String, Object> get(int i) {
+                        return switch (i) {
+                            case 0 -> Map.of("a", "b");
+                            default -> null;
+                        };
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void doesNotModifyKotlinSources() {
+        rewriteRun(
+          version(
+            //language=kotlin
+            kotlin(
+              """
+                import java.util.Collections
+
+                class Test {
+                    fun make(key: Int, value: Int): Map<Int, Int> = Collections.singletonMap(key, value)
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void singletonMapInTernaryWithMethodCallValue() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Converter { String convert(String o) { return "x"; } }
+
+                class Test {
+                    private final Converter converter = new Converter();
+
+                    public Object beforeBodyWrite(Object body) {
+                        return body instanceof String
+                                ? Collections.singletonMap("alps", converter.convert((String) body))
+                                : body;
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Converter { String convert(String o) { return "x"; } }
+
+                class Test {
+                    private final Converter converter = new Converter();
+
+                    public Object beforeBodyWrite(Object body) {
+                        return body instanceof String
+                                ? Map.of("alps", converter.convert((String) body))
+                                : body;
+                    }
                 }
                 """
             ),

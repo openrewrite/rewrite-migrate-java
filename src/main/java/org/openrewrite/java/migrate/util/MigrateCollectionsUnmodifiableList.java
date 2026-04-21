@@ -26,6 +26,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 public class MigrateCollectionsUnmodifiableList extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_LIST = new MethodMatcher("java.util.Collections unmodifiableList(java.util.List)", true);
@@ -40,7 +42,9 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(9),
-                new UsesMethod<>(UNMODIFIABLE_LIST));
+                new UsesMethod<>(UNMODIFIABLE_LIST),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>()));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {

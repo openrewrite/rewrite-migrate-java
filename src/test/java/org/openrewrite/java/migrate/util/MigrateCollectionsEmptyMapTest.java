@@ -81,4 +81,66 @@ class MigrateCollectionsEmptyMapTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void emptyMapAsArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  void use(Map<String, String> m) {}
+                  void call() {
+                      use(Collections.emptyMap());
+                  }
+              }
+              """,
+            """
+              import java.util.Map;
+
+              class Test {
+                  void use(Map<String, String> m) {}
+                  void call() {
+                      use(Map.of());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void emptyMapInSwitchExpression() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Test {
+                  Map<String, String> get(int i) {
+                      return switch (i) {
+                          case 0 -> Collections.emptyMap();
+                          default -> null;
+                      };
+                  }
+              }
+              """,
+            """
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> get(int i) {
+                      return switch (i) {
+                          case 0 -> Map.of();
+                          default -> null;
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }

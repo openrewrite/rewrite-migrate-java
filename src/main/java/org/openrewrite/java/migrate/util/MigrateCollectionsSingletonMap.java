@@ -27,6 +27,8 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -42,7 +44,11 @@ public class MigrateCollectionsSingletonMap extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(Preconditions.and(new UsesJavaVersion<>(9), new UsesMethod<>(SINGLETON_MAP)), new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.and(
+                new UsesJavaVersion<>(9),
+                new UsesMethod<>(SINGLETON_MAP),
+                Preconditions.not(new KotlinFileChecker<>()),
+                Preconditions.not(new GroovyFileChecker<>())), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
@@ -54,7 +60,6 @@ public class MigrateCollectionsSingletonMap extends Recipe {
                     args.forEach(o -> mapOf.add("#{any()}"));
 
                     return JavaTemplate.builder(mapOf.toString())
-                            .contextSensitive()
                             .imports("java.util.Map")
                             .build()
                             .apply(
