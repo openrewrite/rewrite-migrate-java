@@ -3995,6 +3995,28 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableListCopyOf
+examples:
+- description: '`NoGuavaImmutableListCopyOfTest#replaceAssignment`'
+  sources:
+  - before: |
+      import java.util.ArrayList;
+      import java.util.List;
+      import com.google.common.collect.ImmutableList;
+
+      class Test {
+          List<String> m = ImmutableList.copyOf(new ArrayList<>());
+      }
+    after: |
+      import java.util.ArrayList;
+      import java.util.List;
+
+      class Test {
+          List<String> m = List.copyOf(new ArrayList<>());
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
 examples:
 - description: '`NoGuavaImmutableListOfTest#replaceArguments`'
@@ -4015,6 +4037,28 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableMapCopyOf
+examples:
+- description: '`NoGuavaImmutableMapCopyOfTest#replaceAssignment`'
+  sources:
+  - before: |
+      import java.util.HashMap;
+      import java.util.Map;
+      import com.google.common.collect.ImmutableMap;
+
+      class Test {
+          Map<String, String> m = ImmutableMap.copyOf(new HashMap<>());
+      }
+    after: |
+      import java.util.HashMap;
+      import java.util.Map;
+
+      class Test {
+          Map<String, String> m = Map.copyOf(new HashMap<>());
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
 examples:
 - description: '`NoGuavaImmutableMapOfTest#replaceArguments`'
@@ -4031,6 +4075,28 @@ examples:
 
       class Test {
           Map<String, String> m = Map.of("A", "B", "C", "D");
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.guava.NoGuavaImmutableSetCopyOf
+examples:
+- description: '`NoGuavaImmutableSetCopyOfTest#replaceAssignment`'
+  sources:
+  - before: |
+      import java.util.HashSet;
+      import java.util.Set;
+      import com.google.common.collect.ImmutableSet;
+
+      class Test {
+          Set<String> m = ImmutableSet.copyOf(new HashSet<>());
+      }
+    after: |
+      import java.util.HashSet;
+      import java.util.Set;
+
+      class Test {
+          Set<String> m = Set.copyOf(new HashSet<>());
       }
     language: java
 ---
@@ -7471,6 +7537,27 @@ examples:
                       // Comment retained
                   }
               }
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.RenameUnderscoreIdentifier
+examples:
+- description: '`RenameUnderscoreIdentifierTest#localVariable`'
+  sources:
+  - before: |
+      class Test {
+          int test() {
+              int UNDERSCORE = 1;
+              return UNDERSCORE;
+          }
+      }
+    after: |
+      class Test {
+          int test() {
+              int __ = 1;
+              return __;
           }
       }
     language: java
