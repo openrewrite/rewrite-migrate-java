@@ -30,6 +30,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -264,13 +265,29 @@ public class IfElseIfConstructToSwitch extends Recipe {
                                         var0.withType( originalPattern.getType() )
                                                 .withName( var0.getName().withType( originalPattern.getType() ) ) ) );
                             }
-                            return case_.withCaseLabels( singletonList( varDecl.withPrefix( label.getPrefix() ) ) );
+                            return case_.withCaseLabels( singletonList( varDecl.withPrefix( ensureLeadingSpace( label.getPrefix(), varDecl.getTypeExpression() ) ) ) );
                         }
                         // JavaTemplate couldn't resolve the type, so no VariableDeclarations was produced.
                         // Reconstruct one from the original instanceof pattern.
                         return case_.withCaseLabels( singletonList(
-                                buildVariableDeclarations( instanceOf, label.getPrefix() ) ) );
+                                buildVariableDeclarations( instanceOf, ensureLeadingSpace( label.getPrefix(), null ) ) ) );
                     })));
+        }
+
+        /**
+         * The label prefix carries the space after {@code case}. If it is empty and the
+         * type expression also has no leading space, the printed output would collapse
+         * {@code case} into the type name (e.g. {@code caseType name}). Guarantee a
+         * single space so the emitted switch case is always well-formed.
+         */
+        private Space ensureLeadingSpace(Space labelPrefix, @Nullable TypeTree typeExpression) {
+            if (!labelPrefix.getWhitespace().isEmpty()) {
+                return labelPrefix;
+            }
+            if (typeExpression != null && !typeExpression.getPrefix().getWhitespace().isEmpty()) {
+                return labelPrefix;
+            }
+            return Space.SINGLE_SPACE;
         }
 
         @SuppressWarnings("deprecation")

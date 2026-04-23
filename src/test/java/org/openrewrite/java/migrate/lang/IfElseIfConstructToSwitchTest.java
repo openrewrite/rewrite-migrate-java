@@ -21,6 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.staticanalysis.InstanceOfPatternMatch;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -933,6 +934,51 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               )
             );
         }
+    }
+
+    @Test
+    void unresolvableTypesKeepCaseSpacing() {
+        // https://github.com/openrewrite/rewrite/issues/7458
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          //language=java
+          java(
+            """
+              package com.example;
+              import com.example.missing.Http2Frame;
+              import com.example.missing.Http2ResetFrame;
+              import com.example.missing.Http2GoAwayFrame;
+              class Test {
+                  protected void incrementCounter(Http2Frame frame) {
+                      long errorCode;
+                      if (frame instanceof Http2ResetFrame resetFrame) {
+                          errorCode = resetFrame.errorCode();
+                      } else if (frame instanceof Http2GoAwayFrame goAwayFrame) {
+                          errorCode = goAwayFrame.errorCode();
+                      } else {
+                          errorCode = -1;
+                      }
+                  }
+              }
+              """,
+            """
+              package com.example;
+              import com.example.missing.Http2Frame;
+              import com.example.missing.Http2ResetFrame;
+              import com.example.missing.Http2GoAwayFrame;
+              class Test {
+                  protected void incrementCounter(Http2Frame frame) {
+                      long errorCode;
+                      switch (frame) {
+                          case Http2ResetFrame resetFrame -> errorCode = resetFrame.errorCode();
+                          case Http2GoAwayFrame goAwayFrame -> errorCode = goAwayFrame.errorCode();
+                          case null, default -> errorCode = -1;
+                      }
+                  }
+              }
+              """
+          )
+        );
     }
 
     @Nested
