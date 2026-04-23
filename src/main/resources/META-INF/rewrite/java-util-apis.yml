@@ -44,4 +44,5 @@ recipeList:
   - org.openrewrite.java.migrate.util.UseListOf
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.java.migrate.util.UseMapOf
+  - org.openrewrite.java.migrate.util.UsePredicateNot
   - org.openrewrite.java.migrate.util.UseSetOf
