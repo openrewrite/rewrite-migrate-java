@@ -69,6 +69,7 @@ recipeList:
   - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
   - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
+  - org.openrewrite.java.migrate.util.UsePredicateNot
 # Disabled as too opinionated for general use
 # https://github.com/openrewrite/rewrite-migrate-java/issues/958
 #  - org.openrewrite.java.migrate.util.UseEnumSetOf:
