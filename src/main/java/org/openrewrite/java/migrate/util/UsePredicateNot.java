@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.util;
 
 import lombok.Getter;
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -57,8 +56,12 @@ public class UsePredicateNot extends Recipe {
                         if (!PREDICATE_NEGATE.matches(m) || m.getSelect() == null) {
                             return m;
                         }
-                        J.TypeCast cast = asPredicateCast(m.getSelect());
-                        if (cast == null) {
+                        Expression unwrapped = m.getSelect().unwrap();
+                        if (!(unwrapped instanceof J.TypeCast)) {
+                            return m;
+                        }
+                        J.TypeCast cast = (J.TypeCast) unwrapped;
+                        if (!TypeUtils.isAssignableTo(PREDICATE_FQN, cast.getType())) {
                             return m;
                         }
                         maybeAddImport(PREDICATE_FQN);
@@ -66,24 +69,6 @@ public class UsePredicateNot extends Recipe {
                                 .imports(PREDICATE_FQN)
                                 .build()
                                 .apply(getCursor(), m.getCoordinates().replace(), cast.getExpression());
-                    }
-
-                    private J.@Nullable TypeCast asPredicateCast(Expression select) {
-                        Expression e = select;
-                        if (e instanceof J.Parentheses) {
-                            Object tree = ((J.Parentheses<?>) e).getTree();
-                            if (tree instanceof Expression) {
-                                e = (Expression) tree;
-                            }
-                        }
-                        if (!(e instanceof J.TypeCast)) {
-                            return null;
-                        }
-                        J.TypeCast cast = (J.TypeCast) e;
-                        if (!TypeUtils.isAssignableTo(PREDICATE_FQN, cast.getType())) {
-                            return null;
-                        }
-                        return cast;
                     }
                 }
         );
