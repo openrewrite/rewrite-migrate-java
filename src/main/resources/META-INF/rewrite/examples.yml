@@ -9556,6 +9556,25 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.UsePredicateNot
+examples:
+- description: '`UsePredicateNotTest#castOfMethodReference`'
+  sources:
+  - before: |
+      import java.util.function.Predicate;
+
+      class A {
+          Predicate<String> notEmpty = ((Predicate<String>) String::isEmpty).negate();
+      }
+    after: |
+      import java.util.function.Predicate;
+
+      class A {
+          Predicate<String> notEmpty = Predicate.not(String::isEmpty);
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.UseSetOf
 examples:
 - description: '`UseSetOfTest#anonymousHashSetWithAdd`'
