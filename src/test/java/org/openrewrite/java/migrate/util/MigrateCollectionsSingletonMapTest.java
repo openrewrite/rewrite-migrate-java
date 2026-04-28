@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,6 +30,39 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateCollectionsSingletonMap());
+    }
+
+    @DocumentExample
+    @Test
+    void singletonMapAsArgument() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    void take(Map<String, Object> m) {}
+                    void call(String key, Object value) {
+                        take(Collections.singletonMap(key, value));
+                    }
+                }
+                """,
+              """
+                import java.util.Map;
+
+                class Test {
+                    void take(Map<String, Object> m) {}
+                    void call(String key, Object value) {
+                        take(Map.of(key, value));
+                    }
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/72")
@@ -100,38 +134,6 @@ class MigrateCollectionsSingletonMapTest implements RewriteTest {
                 class Test {
                     Map<String, String> mapWithNullKey = Collections.singletonMap(null, "foo");
                     Map<String, String> mapWithNullValue = Collections.singletonMap("bar", null);
-                }
-                """
-            ),
-            9
-          )
-        );
-    }
-
-    @Test
-    void singletonMapAsArgument() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.*;
-
-                class Test {
-                    void take(Map<String, Object> m) {}
-                    void call(String key, Object value) {
-                        take(Collections.singletonMap(key, value));
-                    }
-                }
-                """,
-              """
-                import java.util.Map;
-
-                class Test {
-                    void take(Map<String, Object> m) {}
-                    void call(String key, Object value) {
-                        take(Map.of(key, value));
-                    }
                 }
                 """
             ),

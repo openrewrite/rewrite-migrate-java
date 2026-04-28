@@ -41,17 +41,11 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
     @Nullable
     Boolean invertMarking;
 
-    @Override
-    public String getDisplayName() {
-        return "Module has Kotlin source files";
-    }
+    String displayName = "Module has Kotlin source files";
 
-    @Override
-    public String getDescription() {
-        return "Marks all files in modules that contain at least one Kotlin source file (`.kt`). " +
-                "Intended as a precondition to scope recipes to projects that actually compile Kotlin, " +
-                "as opposed to projects that merely pick up `kotlin-stdlib` transitively.";
-    }
+    String description = "Marks all files in modules that contain at least one Kotlin source file (`.kt`). " +
+            "Intended as a precondition to scope recipes to projects that actually compile Kotlin, " +
+            "as opposed to projects that merely pick up `kotlin-stdlib` transitively.";
 
     @Override
     public Set<JavaProject> getInitialValue(ExecutionContext ctx) {
