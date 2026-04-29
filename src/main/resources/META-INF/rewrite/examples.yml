@@ -9209,6 +9209,31 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsSingletonMap
+examples:
+- description: '`MigrateCollectionsSingletonMapTest#singletonMapAsArgument`'
+  sources:
+  - before: |
+      import java.util.*;
+
+      class Test {
+          void take(Map<String, Object> m) {}
+          void call(String key, Object value) {
+              take(Collections.singletonMap(key, value));
+          }
+      }
+    after: |
+      import java.util.Map;
+
+      class Test {
+          void take(Map<String, Object> m) {}
+          void call(String key, Object value) {
+              take(Map.of(key, value));
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.util.MigrateCollectionsSingletonSet
 examples:
 - description: '`MigrateCollectionsSingletonSetTest#singleTonSet`'
