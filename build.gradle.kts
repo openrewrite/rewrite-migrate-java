@@ -109,6 +109,12 @@ dependencies {
     testRuntimeOnly(gradleApi())
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 tasks.withType(Javadoc::class.java) {
     exclude("**/PlanJavaMigration.java")
 }
