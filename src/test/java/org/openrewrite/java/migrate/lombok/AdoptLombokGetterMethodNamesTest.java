@@ -92,10 +92,8 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Verifies that the correct method name is chosen for a boolean field with an 'is' prefix.
-     * The corresponding method name in this case should not be `isIsFoo` but just `isFoo`.
-     */
+    /// Verifies that the correct method name is chosen for a boolean field with an 'is' prefix.
+    /// The corresponding method name in this case should not be `isIsFoo` but just `isFoo`.
     @Test
     void renamePrimitiveBooleanWithPrefixInSingleClass() {
         rewriteRun(// language=java
@@ -136,11 +134,9 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Verifies that the correct method name is chosen for a boolean field with an 'is' prefix.
-     * The corresponding method name in this case should not be `isFoo` as in the primitive case,
-     * but prefix a `get` as for any other field.
-     */
+    /// Verifies that the correct method name is chosen for a boolean field with an 'is' prefix.
+    /// The corresponding method name in this case should not be `isFoo` as in the primitive case,
+    /// but prefix a `get` as for any other field.
     @Test
     void renameClassBooleanWithPrefixInSingleClass() {
         rewriteRun(// language=java
@@ -275,9 +271,7 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods in inner classes should be renamed as well.
-     */
+    /// Methods in inner classes should be renamed as well.
     @Test
     void shouldWorkOnInnerClasses() {
         rewriteRun(// language=java
@@ -346,9 +340,7 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods on top level should be renamed just as well when there is an inner class.
-     */
+    /// Methods on top level should be renamed just as well when there is an inner class.
     @ExpectedToFail("We use `cu.getTypesInUse().getDeclaredMethods()` as a performance optimization to avoid visits")
     @Test
     void shouldWorkDespiteInnerClassesSameNameMethods() {
@@ -396,9 +388,7 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods on top level should be renamed just as well when there is an inner class.
-     */
+    /// Methods on top level should be renamed just as well when there is an inner class.
     @Test
     void shouldWorkDespiteInnerClassesDifferentNameMethods() {
         rewriteRun(// language=java
@@ -445,10 +435,8 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * If existing method names need to be rotated in a loop the recipe should still work.
-     * For now this is not planned.
-     */
+    /// If existing method names need to be rotated in a loop the recipe should still work.
+    /// For now this is not planned.
     @ExpectedToFail("Not implemented yet")
     @Test
     void shouldWorkOnCircleCasesButDoesntYet() {
@@ -490,13 +478,11 @@ class AdoptLombokGetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * If two methods are effectively the same getter then only one can be renamed.
-     * Renaming both would result in a duplicate method definition, so we cannot do this.
-     * Ideally the other effective getter would have their usages renamed but be themselves deleted...
-     * TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
-     *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
-     */
+    /// If two methods are effectively the same getter then only one can be renamed.
+    /// Renaming both would result in a duplicate method definition, so we cannot do this.
+    /// Ideally the other effective getter would have their usages renamed but be themselves deleted...
+    /// TODO: create a second cleanup recipe that identifies redundant getters (isEffectiveGetter + field already has the getter annotation)
+    ///  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
     @Test
     void twoMethodsWithSameName() {
         rewriteRun(// language=java

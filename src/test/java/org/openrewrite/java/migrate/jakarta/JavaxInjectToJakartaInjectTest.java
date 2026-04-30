@@ -112,9 +112,10 @@ class JavaxInjectToJakartaInjectTest implements RewriteTest {
               spec -> spec.after(pom -> {
                   return assertThat( pom )
                           .containsPattern(
-                                  "<groupId>jakarta\\.inject</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.inject-api</artifactId>\\s*" +
-                                          "<version>2\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.inject</groupId>\\s*\
+                                  <artifactId>jakarta\\.inject-api</artifactId>\\s*\
+                                  <version>2\\.0\\.\\d+</version>""" ).actual();
               })
             )
           )

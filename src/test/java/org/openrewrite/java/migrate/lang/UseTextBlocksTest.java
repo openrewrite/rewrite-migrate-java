@@ -25,11 +25,11 @@ import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
@@ -489,10 +489,10 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     private static Consumer<RecipeSpec> tabsAndIndents(UnaryOperator<TabsAndIndentsStyle> with, int tabSize) {
-        return spec -> spec.parser(JavaParser.fromJavaVersion().styles(singletonList(
+        return spec -> spec.parser(JavaParser.fromJavaVersion().styles(List.of(
           new NamedStyles(
-            randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", emptySet(),
-            singletonList(with.apply(buildTabsAndIndents(tabSize)))
+            randomId(), "TabsOnlyFile", "TabsOnlyFile", "tabSize is x", Set.of(),
+            List.of(with.apply(buildTabsAndIndents(tabSize)))
           )
         )));
     }
@@ -648,11 +648,9 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    /**
-     * Single escaping a quote in a string literal provides: " -> \"
-     * <p>
-     * On converting this to a text block, we can let go of the escaping for the double quote: \" -> "
-     */
+    /// Single escaping a quote in a string literal provides: " -> \"
+    ///
+    /// On converting this to a text block, we can let go of the escaping for the double quote: \" -> "
     @Test
     void singleEscapedQuote() {
         rewriteRun(
@@ -688,12 +686,10 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    /**
-     * Double escaping a quote in a string literal provides: " -> \" -> \\\"
-     * <p>
-     * On converting this to a text block, the escaped backslash should remain, but we can let go of the
-     * escaping for the double quote: \\\" -> \\"
-     */
+    /// Double escaping a quote in a string literal provides: " -> \" -> \\\"
+    ///
+    /// On converting this to a text block, the escaped backslash should remain, but we can let go of the
+    /// escaping for the double quote: \\\" -> \\"
     @Test
     void doubleEscapedQuote() {
         rewriteRun(
@@ -729,11 +725,9 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    /**
-     * Triple quotes in a string literal are escaped as: """ -> \"\"\"
-     * <p>
-     * On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
-     */
+    /// Triple quotes in a string literal are escaped as: """ -> \"\"\"
+    ///
+    /// On converting this to a text block, only one of the quotes needs to be escaped: \"\"\" -> ""\"
     @Test
     void tripleQuotes() {
         rewriteRun(
@@ -795,21 +789,19 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    /**
-     * Quote in a string literal is escaped as: " -> \"
-     * <p>
-     * On converting this to a text block, it needs to be escaped if it is the last character:
-     * <pre>
-     *             """
-     * "test\"" -> test\""""
-     * </pre>
-     * However, this is not required in case we use the newline escape (\) to put the ending delimiter on the next line:
-     * <pre>
-     *             """
-     * "test\"" -> test"\
-     *             """
-     * </pre>
-     */
+    /// Quote in a string literal is escaped as: " -> \"
+    ///
+    /// On converting this to a text block, it needs to be escaped if it is the last character:
+    /// ```
+    ///             """
+    /// "test\"" -> test\""""
+    /// ```
+    /// However, this is not required in case we use the newline escape (\) to put the ending delimiter on the next line:
+    /// ```
+    ///             """
+    /// "test\"" -> test"\
+    ///             """
+    /// ```
     @Test
     void endingQuote() {
         rewriteRun(

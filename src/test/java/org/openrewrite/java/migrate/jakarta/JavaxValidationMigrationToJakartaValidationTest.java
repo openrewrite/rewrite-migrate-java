@@ -201,9 +201,10 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
               spec -> spec.after(pom -> {
                   return assertThat( pom )
                           .containsPattern(
-                                  "<groupId>jakarta\\.validation</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.validation-api</artifactId>\\s*" +
-                                          "<version>3\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.validation</groupId>\\s*\
+                                  <artifactId>jakarta\\.validation-api</artifactId>\\s*\
+                                  <version>3\\.0\\.\\d+</version>""" ).actual();
               })
             )
           )
