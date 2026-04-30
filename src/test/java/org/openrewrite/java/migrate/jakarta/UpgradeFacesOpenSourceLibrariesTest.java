@@ -52,7 +52,7 @@ class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
               """,
             spec -> spec.after(actual -> {
                 String version = Pattern.compile("<version>(14\\.0\\.\\d+)</version>")
-                  .matcher(actual).results().reduce((_, b) -> b).orElseThrow().group(1);
+                  .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
                 return """
                   <?xml version="1.0" encoding="UTF-8"?>
                   <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
