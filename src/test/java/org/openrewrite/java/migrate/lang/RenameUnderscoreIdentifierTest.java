@@ -28,11 +28,9 @@ import static org.openrewrite.java.Assertions.javaVersion;
 
 class RenameUnderscoreIdentifierTest implements RewriteTest {
 
-    /**
-     * Setup recipe that renames {@code UNDERSCORE} to {@code _} in the LST,
-     * simulating Java 8 source code that uses {@code _} as an identifier.
-     * This is necessary because the Java 9+ parser cannot parse {@code _} as a regular identifier.
-     */
+    /// Setup recipe that renames `UNDERSCORE` to `_` in the LST,
+    /// simulating Java 8 source code that uses `_` as an identifier.
+    /// This is necessary because the Java 9+ parser cannot parse `_` as a regular identifier.
     private static Recipe renameToUnderscore() {
         return new Recipe() {
             @Override

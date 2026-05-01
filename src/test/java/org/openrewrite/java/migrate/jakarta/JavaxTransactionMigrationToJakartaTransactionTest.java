@@ -150,9 +150,10 @@ class JavaxTransactionMigrationToJakartaTransactionTest implements RewriteTest {
               spec -> spec.after(pom -> {
                   return assertThat( pom )
                           .containsPattern(
-                                  "<groupId>jakarta\\.transaction</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.transaction-api</artifactId>\\s*" +
-                                          "<version>2\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.transaction</groupId>\\s*\
+                                  <artifactId>jakarta\\.transaction-api</artifactId>\\s*\
+                                  <version>2\\.0\\.\\d+</version>""" ).actual();
               })
             )
           )

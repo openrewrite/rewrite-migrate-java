@@ -130,9 +130,10 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
                 """,
               spec -> spec.after(pom -> assertThat(pom)
                     .containsPattern(
-                      "<groupId>jakarta\\.annotation</groupId>\\s*" +
-                      "<artifactId>jakarta\\.annotation-api</artifactId>\\s*" +
-                      "<version>2\\.0\\.\\d+</version>")
+                      """
+                      <groupId>jakarta\\.annotation</groupId>\\s*\
+                      <artifactId>jakarta\\.annotation-api</artifactId>\\s*\
+                      <version>2\\.0\\.\\d+</version>""")
                     .actual())
             )
           )

@@ -65,9 +65,10 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
                   return assertThat( pom )
                           .doesNotContain( "javax.servlet.jsp" )
                           .containsPattern(
-                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                                          "<version>3\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.servlet\\.jsp</groupId>\\s*\
+                                  <artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*\
+                                  <version>3\\.0\\.\\d+</version>""" ).actual();
               })
             )
           ),
@@ -129,9 +130,10 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
               spec -> spec.after(pom -> {
                   return assertThat( pom )
                           .containsPattern(
-                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                                          "<version>3\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.servlet\\.jsp</groupId>\\s*\
+                                  <artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*\
+                                  <version>3\\.0\\.\\d+</version>""" ).actual();
               })
             )
           )
@@ -163,9 +165,10 @@ class JavaxJspToJakartaJspTest implements RewriteTest {
               spec -> spec.after(pom -> {
                   return assertThat( pom )
                           .containsPattern(
-                                  "<groupId>jakarta\\.servlet\\.jsp</groupId>\\s*" +
-                                          "<artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*" +
-                                          "<version>3\\.0\\.\\d+</version>" ).actual();
+                                  """
+                                  <groupId>jakarta\\.servlet\\.jsp</groupId>\\s*\
+                                  <artifactId>jakarta\\.servlet\\.jsp-api</artifactId>\\s*\
+                                  <version>3\\.0\\.\\d+</version>""" ).actual();
               })
             )
           )

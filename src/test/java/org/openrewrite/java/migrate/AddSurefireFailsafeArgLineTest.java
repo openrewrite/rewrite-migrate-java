@@ -25,9 +25,10 @@ import static org.openrewrite.maven.Assertions.pomXml;
 
 class AddSurefireFailsafeArgLineTest implements RewriteTest {
 
-    private static final String ARG_LINE = "--add-opens java.base/java.lang=ALL-UNNAMED" +
-            " --add-opens java.base/java.util=ALL-UNNAMED" +
-            " --add-opens java.base/java.lang.reflect=ALL-UNNAMED";
+    private static final String ARG_LINE = """
+            --add-opens java.base/java.lang=ALL-UNNAMED\
+             --add-opens java.base/java.util=ALL-UNNAMED\
+             --add-opens java.base/java.lang.reflect=ALL-UNNAMED""";
 
     @Override
     public void defaults(RecipeSpec spec) {

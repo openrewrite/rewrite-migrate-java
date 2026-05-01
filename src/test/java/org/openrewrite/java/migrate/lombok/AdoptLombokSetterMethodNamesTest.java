@@ -256,13 +256,11 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * If two methods are effectively the same setter then only one can be renamed.
-     * Renaming both would result in a duplicate method definition, so we cannot do this.
-     * Ideally the other effective setter would have their usages renamed but be themselves deleted...
-     * TODO: create a second cleanup recipe that identifies redundant Setters (isEffectiveSetter + field already has the setter annotation)
-     *  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
-     */
+    /// If two methods are effectively the same setter then only one can be renamed.
+    /// Renaming both would result in a duplicate method definition, so we cannot do this.
+    /// Ideally the other effective setter would have their usages renamed but be themselves deleted...
+    /// TODO: create a second cleanup recipe that identifies redundant Setters (isEffectiveSetter + field already has the setter annotation)
+    ///  and redirects their usage (ChangeMethodName with both flags true) and then deletes them.
     @Test
     void shouldNotRenameTwoToTheSame() {
         rewriteRun(// language=java
@@ -299,9 +297,7 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods in inner classes should be renamed as well.
-     */
+    /// Methods in inner classes should be renamed as well.
     @Test
     void shouldWorkOnInnerClasses() {
         rewriteRun(// language=java
@@ -374,9 +370,7 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods on top level should be renamed just as well when there is an inner class.
-     */
+    /// Methods on top level should be renamed just as well when there is an inner class.
     @ExpectedToFail("We use `cu.getTypesInUse().getDeclaredMethods()` as a performance optimization to avoid visits")
     @Test
     void shouldWorkDespiteInnerClassesSameNameMethods() {
@@ -424,9 +418,7 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * Methods on top level should be renamed just as well when there is an inner class.
-     */
+    /// Methods on top level should be renamed just as well when there is an inner class.
     @Test
     void shouldWorkDespiteInnerClassesDifferentNameMethods() {
         rewriteRun(// language=java
@@ -473,10 +465,8 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
         );
     }
 
-    /**
-     * If existing method names need to be rotated in a loop the recipe should still work.
-     * For now this is not planned.
-     */
+    /// If existing method names need to be rotated in a loop the recipe should still work.
+    /// For now this is not planned.
     @ExpectedToFail("Not implemented yet")
     @Test
     void shouldWorkOnCircleCasesButDoesntYet() {
