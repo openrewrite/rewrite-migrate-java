@@ -52,6 +52,8 @@ recipeList:
   # Prefer modern Java collection factories and utilities
   - org.openrewrite.java.migrate.util.JavaUtilAPIs
   # Static analysis: bug prevention
+  - org.openrewrite.staticanalysis.EqualsAvoidsNull
+  - org.openrewrite.staticanalysis.MissingOverrideAnnotation
   - org.openrewrite.staticanalysis.ReplaceWeekYearWithYear
   - org.openrewrite.staticanalysis.RemoveHashCodeCallsFromArrayInstances
   - org.openrewrite.staticanalysis.RemoveToStringCallsFromArrayInstances
@@ -60,9 +62,11 @@ recipeList:
   - org.openrewrite.staticanalysis.RemoveCallsToObjectFinalize
   - org.openrewrite.staticanalysis.URLEqualsHashCodeRecipes
   # Static analysis: modernization and cleanup
+  - org.openrewrite.staticanalysis.LambdaBlockToExpression
   - org.openrewrite.staticanalysis.ReplaceLambdaWithMethodReference
   - org.openrewrite.staticanalysis.UseDiamondOperator
   - org.openrewrite.staticanalysis.UnnecessaryParentheses
+  - org.openrewrite.staticanalysis.RemoveRedundantNullCheckBeforeInstanceof
   - org.openrewrite.staticanalysis.ReplaceStringBuilderWithString
   - org.openrewrite.staticanalysis.UseCollectionInterfaces
   - org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator
