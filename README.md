@@ -106,7 +106,7 @@ Beyond Java and Jakarta EE version migrations, this module also includes recipes
 
 - **Guava** — Replace Guava utilities with Java standard library equivalents
 - **Lombok** — Best practices and modernization
-- **JSpecify** — Adopt JSpecify nullability annotations
+- **JSpecify** — Adopt [JSpecify](https://jspecify.dev/) nullability annotations
 - **DataNucleus** — Upgrade DataNucleus versions
 
 ## Contributing
