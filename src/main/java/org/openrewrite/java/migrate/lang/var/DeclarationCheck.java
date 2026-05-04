@@ -254,20 +254,20 @@ final class DeclarationCheck {
         if (method == null) {
             return false;
         }
-        AtomicBoolean reassigned = new AtomicBoolean(false);
-        new JavaIsoVisitor<AtomicBoolean>() {
+        return new JavaIsoVisitor<AtomicBoolean>() {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
-                if (!found.get() && assignment.getVariable() instanceof J.Identifier) {
-                    JavaType.Variable fieldType = ((J.Identifier) assignment.getVariable()).getFieldType();
-                    if (variableType.equals(fieldType)) {
-                        found.set(true);
-                    }
+                if (found.get()) {
+                    return assignment;
+                }
+                if (assignment.getVariable() instanceof J.Identifier &&
+                        variableType.equals(((J.Identifier) assignment.getVariable()).getFieldType())) {
+                    found.set(true);
+                    return assignment;
                 }
                 return super.visitAssignment(assignment, found);
             }
-        }.visit(method, reassigned);
-        return reassigned.get();
+        }.reduce(method, new AtomicBoolean(false)).get();
     }
 
     public static J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {
