@@ -19,10 +19,12 @@ import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 
 import static java.util.Collections.emptyList;
@@ -231,6 +233,41 @@ final class DeclarationCheck {
         }
 
         return invocation.getMethodType().hasFlags(Flag.Static);
+    }
+
+    /**
+     * Determine whether the variable declared in {@code vd} is later reassigned within the
+     * enclosing method. Reassignments matter when the declared type differs from the
+     * initializer's concrete type, since switching to {@code var} narrows the inferred type
+     * and may break subsequent assignments of supertype values.
+     *
+     * @param cursor location of the visitor
+     * @param vd     variable definition at hand
+     * @return true iff the variable is reassigned within the enclosing method
+     */
+    public static boolean isReassigned(Cursor cursor, J.VariableDeclarations vd) {
+        JavaType.Variable variableType = vd.getVariables().get(0).getVariableType();
+        if (variableType == null) {
+            return false;
+        }
+        J.MethodDeclaration method = cursor.firstEnclosing(J.MethodDeclaration.class);
+        if (method == null) {
+            return false;
+        }
+        AtomicBoolean reassigned = new AtomicBoolean(false);
+        new JavaIsoVisitor<AtomicBoolean>() {
+            @Override
+            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
+                if (!found.get() && assignment.getVariable() instanceof J.Identifier) {
+                    JavaType.Variable fieldType = ((J.Identifier) assignment.getVariable()).getFieldType();
+                    if (variableType.equals(fieldType)) {
+                        found.set(true);
+                    }
+                }
+                return super.visitAssignment(assignment, found);
+            }
+        }.visit(method, reassigned);
+        return reassigned.get();
     }
 
     public static J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {

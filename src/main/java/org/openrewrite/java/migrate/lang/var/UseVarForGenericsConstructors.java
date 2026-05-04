@@ -27,6 +27,7 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,14 @@ public class UseVarForGenericsConstructors extends Recipe {
             // Therefore, skip variable declarations with generic wildcards.
             boolean genericHasBounds = anyTypeHasBounds(leftTypes);
             if (genericHasBounds) {
+                return vd;
+            }
+
+            // Switching to var narrows the variable type to the initializer's concrete type, which can break later
+            // reassignments that rely on the declared (super)type. Skip when types differ and the variable is reassigned.
+            Expression initializer = variable.getInitializer();
+            if (initializer != null && !TypeUtils.isOfType(vd.getType(), initializer.unwrap().getType()) &&
+                    DeclarationCheck.isReassigned(getCursor(), vd)) {
                 return vd;
             }
 
