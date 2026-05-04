@@ -206,6 +206,49 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
     }
 
     @Test
+    void replaceUnusedTypedLambdaParameterKeepsParentheses() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package com.helloworld;
+
+              public class Main {
+                  interface Handler {
+                      String handle(RequestContext context);
+                  }
+
+                  static class RequestContext {}
+
+                  Handler route() {
+                      return (RequestContext rc) -> {
+                          return "result";
+                      };
+                  }
+              }
+              """,
+            """
+              package com.helloworld;
+
+              public class Main {
+                  interface Handler {
+                      String handle(RequestContext context);
+                  }
+
+                  static class RequestContext {}
+
+                  Handler route() {
+                      return (RequestContext _) -> {
+                          return "result";
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotReplaceUsedLambdaParameter() {
         rewriteRun(
           //language=java
