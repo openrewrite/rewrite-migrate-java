@@ -78,16 +78,21 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
             public J.Lambda visitLambda(J.Lambda lambda, ExecutionContext ctx) {
                 J.Lambda l = super.visitLambda(lambda, ctx);
                 boolean willRename = false;
+                boolean hasTypedParameter = false;
                 for (J param : l.getParameters().getParameters()) {
                     if (param instanceof J.VariableDeclarations) {
-                        for (J.VariableDeclarations.NamedVariable namedVariable : ((J.VariableDeclarations) param).getVariables()) {
+                        J.VariableDeclarations vd = (J.VariableDeclarations) param;
+                        if (vd.getTypeExpression() != null) {
+                            hasTypedParameter = true;
+                        }
+                        for (J.VariableDeclarations.NamedVariable namedVariable : vd.getVariables()) {
                             if (renameVariableIfUnusedInContext(namedVariable, l.getBody())) {
                                 willRename = true;
                             }
                         }
                     }
                 }
-                if (willRename && l.getParameters().isParenthesized() &&
+                if (willRename && !hasTypedParameter && l.getParameters().isParenthesized() &&
                         l.getParameters().getParameters().size() == 1) {
                     l = l.withParameters(l.getParameters().withParenthesized(false));
                 }
