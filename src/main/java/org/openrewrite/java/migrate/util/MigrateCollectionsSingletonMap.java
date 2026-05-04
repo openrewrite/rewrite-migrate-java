@@ -40,7 +40,9 @@ public class MigrateCollectionsSingletonMap extends Recipe {
     final String displayName = "Prefer `Map.of(..)`";
 
     @Getter
-    final String description = "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher.";
+    final String description = "Prefer `Map.of(..)` instead of using `Collections.singletonMap()` in Java 9 or higher. " +
+            "Note that the resulting `Map` is not behaviorally equivalent: `Map.of(..)` throws `NullPointerException` when probed with `containsKey(null)`, `containsValue(null)`, or `get(null)`, " +
+            "whereas `Collections.singletonMap(..)` returns `false`/`null`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
