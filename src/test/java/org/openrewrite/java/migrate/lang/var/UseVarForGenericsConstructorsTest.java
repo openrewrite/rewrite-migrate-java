@@ -170,6 +170,33 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             );
         }
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1077")
+        @Test
+        void reassignedToSupertype() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.HashSet;
+                  import java.util.Set;
+
+                  class A {
+                      Set<String> transfer(Set<String> in) {
+                          return in;
+                      }
+
+                      void m() {
+                          Set<String> currentFacts = new HashSet<>();
+                          for (int i = 0; i < 3; i++) {
+                              currentFacts = transfer(currentFacts);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
         @Test
         void javaLowerThan10() {
             //language=java

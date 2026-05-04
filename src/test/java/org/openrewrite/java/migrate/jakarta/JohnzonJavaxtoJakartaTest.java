@@ -68,7 +68,8 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
                   Matcher version = Pattern.compile("<johnzon.version>([0-9]+\\.[0-9]+\\.[0-9]+)</johnzon.version>")
                     .matcher(actual);
 
-                  Matcher jsonApiVersion = Pattern.compile("2.1.\\d+").matcher(actual);
+                  Matcher jsonApiVersion = Pattern.compile("(?s)<artifactId>jakarta\\.json-api</artifactId>\\s*<version>(2\\.1\\.\\d+)</version>")
+                    .matcher(actual);
                   assertThat(jsonApiVersion.find()).describedAs("Expected jakarta.json-api 2.1.x version in %s", actual).isTrue();
 
                   assertThat(version.find()).isTrue();
@@ -94,7 +95,7 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
                         </dependency>
                     </dependencies>
                 </project>
-                """.formatted(version.group(1), jsonApiVersion.group(0));
+                """.formatted(version.group(1), jsonApiVersion.group(1));
               })
             ),
             srcMainJava(

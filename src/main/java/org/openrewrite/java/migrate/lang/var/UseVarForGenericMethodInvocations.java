@@ -79,6 +79,13 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
+            // Switching to var narrows the variable type to the initializer's concrete type, which can break later
+            // reassignments that rely on the declared (super)type. Skip when types differ and the variable is reassigned.
+            if (!TypeUtils.isOfType(vd.getType(), invocation.getType()) &&
+                    DeclarationCheck.isReassigned(getCursor(), vd)) {
+                return vd;
+            }
+
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
