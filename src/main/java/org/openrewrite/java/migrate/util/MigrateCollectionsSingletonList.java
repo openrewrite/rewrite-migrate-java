@@ -38,7 +38,9 @@ public class MigrateCollectionsSingletonList extends Recipe {
     final String displayName = "Prefer `List.of(..)`";
 
     @Getter
-    final String description = "Prefer `List.of(..)` instead of using `Collections.singletonList()` in Java 9 or higher.";
+    final String description = "Prefer `List.of(..)` instead of using `Collections.singletonList()` in Java 9 or higher. " +
+            "Note that the resulting `List` is not behaviorally equivalent: `List.of(..)` throws `NullPointerException` when probed with `contains(null)`, `indexOf(null)`, or `lastIndexOf(null)`, " +
+            "whereas `Collections.singletonList(..)` returns `false`/`-1`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
