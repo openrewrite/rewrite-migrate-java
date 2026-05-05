@@ -321,6 +321,51 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     }
 
     @Test
+    void doNotMigrateMainInvokedAsStaticFromAnotherFile() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Main {
+                  public static void main(String[] args) {}
+              }
+              """
+          ),
+          java(
+            """
+              class MainTest {
+                  void test() {
+                      Main.main(new String[] {});
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotMigrateMainInvokedAsStaticFromSameFile() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      System.out.println("Hello!");
+                  }
+              }
+
+              class Runner {
+                  void executeMain() {
+                      Application.main(new String[] {});
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotMigrateMainWithNonDefaultConstructor() {
         //language=java
         rewriteRun(
