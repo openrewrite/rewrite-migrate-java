@@ -53,7 +53,9 @@ class UseMapOfTest implements RewriteTest {
               import java.util.Map;
 
               class Test {
-                  Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
+                  Map<String, String> m = Map.of(
+                      "stru", "menta",
+                      "mod", "erne");
               }
               """
           )
@@ -143,7 +145,17 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
                   Map<String, Integer> values() {
-                      return Map.of("a", 1, "b", 2, "c", 3, "d", 4, "e", 5, "f", 6, "g", 7, "h", 8, "i", 9, "j", 10);
+                      return Map.of(
+                          "a", 1,
+                          "b", 2,
+                          "c", 3,
+                          "d", 4,
+                          "e", 5,
+                          "f", 6,
+                          "g", 7,
+                          "h", 8,
+                          "i", 9,
+                          "j", 10);
                   }
               }
               """
@@ -176,9 +188,10 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
               private static final String BLAH ="ss";
-              
+
               void foo() {
-                  Map.of(BLAH, "foo");
+                  Map.of(
+                          BLAH, "foo");
                   }
               }
               """

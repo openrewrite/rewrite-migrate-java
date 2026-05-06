@@ -84,14 +84,19 @@ public class UseMapOf extends Recipe {
                                         .imports("java.util.Map")
                                         .build()
                                         .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
-                                if (useEntries && applied instanceof J.MethodInvocation) {
-                                    J.MethodInvocation mapOfEntries = (J.MethodInvocation) applied;
-                                    List<Expression> entryArgs = mapOfEntries.getArguments();
-                                    List<Expression> withPrefixes = new ArrayList<>(entryArgs.size());
-                                    for (int i = 0; i < entryArgs.size(); i++) {
-                                        withPrefixes.add(entryArgs.get(i).withPrefix(putStatements.get(i).getPrefix()));
+                                if (applied instanceof J.MethodInvocation) {
+                                    J.MethodInvocation mapCall = (J.MethodInvocation) applied;
+                                    List<Expression> mapArgs = mapCall.getArguments();
+                                    List<Expression> withPrefixes = new ArrayList<>(mapArgs.size());
+                                    int step = useEntries ? 1 : 2;
+                                    for (int i = 0; i < mapArgs.size(); i++) {
+                                        Expression arg = mapArgs.get(i);
+                                        if (i % step == 0) {
+                                            arg = arg.withPrefix(putStatements.get(i / step).getPrefix());
+                                        }
+                                        withPrefixes.add(arg);
                                     }
-                                    return mapOfEntries.withArguments(withPrefixes);
+                                    return mapCall.withArguments(withPrefixes);
                                 }
                                 return applied;
                             }
