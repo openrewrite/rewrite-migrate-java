@@ -57,21 +57,29 @@ public class UseMapOf extends Recipe {
                         if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
+                                List<Statement> putStatements = ((J.Block) statement).getStatements();
                                 List<Expression> args = new ArrayList<>();
-                                StringJoiner mapOf = new StringJoiner(", ", "Map.of(", ")");
-                                for (Statement stat : ((J.Block) statement).getStatements()) {
+                                boolean useEntries = putStatements.size() > 10;
+                                StringJoiner template = useEntries ?
+                                        new StringJoiner(", ", "Map.ofEntries(", ")") :
+                                        new StringJoiner(", ", "Map.of(", ")");
+                                for (Statement stat : putStatements) {
                                     if (!(stat instanceof J.MethodInvocation) || !MAP_PUT.matches((Expression) stat)) {
                                         return n;
                                     }
                                     J.MethodInvocation put = (J.MethodInvocation) stat;
                                     args.addAll(put.getArguments());
-                                    mapOf.add("#{any()}");
-                                    mapOf.add("#{any()}");
+                                    if (useEntries) {
+                                        template.add("Map.entry(#{any()}, #{any()})");
+                                    } else {
+                                        template.add("#{any()}");
+                                        template.add("#{any()}");
+                                    }
                                 }
 
                                 maybeRemoveImport("java.util.HashMap");
                                 maybeAddImport("java.util.Map");
-                                return JavaTemplate.builder(mapOf.toString())
+                                return JavaTemplate.builder(template.toString())
                                         .contextSensitive()
                                         .imports("java.util.Map")
                                         .build()
