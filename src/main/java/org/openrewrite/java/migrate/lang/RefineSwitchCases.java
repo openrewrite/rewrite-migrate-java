@@ -131,7 +131,10 @@ public class RefineSwitchCases extends Recipe {
                 List<J.Case> cases = new ArrayList<>();
                 Statement caseBody = if_.getThenPart();
                 if (caseBody instanceof J.Block && ((J.Block) caseBody).getStatements().size() == 1) {
-                    caseBody = ((J.Block) caseBody).getStatements().get(0);
+                    Statement single = ((J.Block) caseBody).getStatements().get(0);
+                    if (single instanceof Expression || single instanceof J.Throw) {
+                        caseBody = single;
+                    }
                 }
                 cases.add(case_.withId(Tree.randomId()).withGuard(if_.getIfCondition().getTree().withPrefix(Space.SINGLE_SPACE)).withBody(caseBody));
                 if (if_.getElsePart() == null) {
