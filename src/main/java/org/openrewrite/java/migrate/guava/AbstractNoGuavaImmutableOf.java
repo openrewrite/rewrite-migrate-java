@@ -97,6 +97,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 if (!IMMUTABLE_MATCHER.matches(mi) || !isParentTypeDownCast(mi)) {
                     return mi;
                 }
+                if ("copyOf".equals(methodName) && !isArgumentCompatibleWithJavaCopyOf(mi)) {
+                    return mi;
+                }
                 maybeRemoveImport(guavaType);
                 maybeAddImport(javaType);
 
@@ -230,6 +233,16 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     isParentTypeDownCast = isParentTypeMatched(arrayType);
                 }
                 return isParentTypeDownCast;
+            }
+
+            private boolean isArgumentCompatibleWithJavaCopyOf(J.MethodInvocation mi) {
+                List<Expression> arguments = mi.getArguments();
+                if (arguments.isEmpty() || arguments.get(0) instanceof J.Empty) {
+                    return true;
+                }
+                JavaType argType = arguments.get(0).getType();
+                String requiredType = "java.util.Map".equals(javaType) ? "java.util.Map" : "java.util.Collection";
+                return TypeUtils.isAssignableTo(requiredType, argType);
             }
 
             private boolean isParentTypeMatched(@Nullable JavaType type) {

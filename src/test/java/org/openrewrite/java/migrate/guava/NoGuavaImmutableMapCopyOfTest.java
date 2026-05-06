@@ -318,6 +318,28 @@ class NoGuavaImmutableMapCopyOfTest implements RewriteTest {
     }
 
     @Test
+    void doNotChangeIterableEntryArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.Map;
+                import com.google.common.collect.ImmutableMap;
+
+                class Test {
+                    Map<String, String> copy(Iterable<Map.Entry<String, String>> entries) {
+                        return ImmutableMap.copyOf(entries);
+                    }
+                }
+                """
+            ),
+            21
+          )
+        );
+    }
+
+    @Test
     void doChangeAssignFromImmutableMapToMap() {
         rewriteRun(
           spec -> spec.recipe(new NoGuavaImmutableMapCopyOf(true)),

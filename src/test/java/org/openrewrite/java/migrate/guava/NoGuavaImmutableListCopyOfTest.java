@@ -318,6 +318,51 @@ class NoGuavaImmutableListCopyOfTest implements RewriteTest {
     }
 
     @Test
+    void doNotChangeIterableArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    List<String> copy(Iterable<String> values) {
+                        return ImmutableList.copyOf(values);
+                    }
+                }
+                """
+            ),
+            21
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeIteratorArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.Iterator;
+                import java.util.List;
+                import com.google.common.collect.ImmutableList;
+
+                class Test {
+                    List<String> copy(Iterator<String> values) {
+                        return ImmutableList.copyOf(values);
+                    }
+                }
+                """
+            ),
+            21
+          )
+        );
+    }
+
+    @Test
     void doChangeAssignFromImmutableListToList() {
         rewriteRun(
           spec -> spec.recipe(new NoGuavaImmutableListCopyOf(true)),

@@ -318,6 +318,28 @@ class NoGuavaImmutableSetCopyOfTest implements RewriteTest {
     }
 
     @Test
+    void doNotChangeIterableArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import java.util.Set;
+                import com.google.common.collect.ImmutableSet;
+
+                class Test {
+                    Set<String> copy(Iterable<String> values) {
+                        return ImmutableSet.copyOf(values);
+                    }
+                }
+                """
+            ),
+            21
+          )
+        );
+    }
+
+    @Test
     void doChangeAssignFromImmutableSetToSet() {
         rewriteRun(
           spec -> spec.recipe(new NoGuavaImmutableSetCopyOf(true)),
