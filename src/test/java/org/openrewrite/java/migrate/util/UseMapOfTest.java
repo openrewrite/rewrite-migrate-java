@@ -93,7 +93,18 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
                   Map<String, Integer> values() {
-                      return Map.ofEntries(Map.entry("a", 1), Map.entry("b", 2), Map.entry("c", 3), Map.entry("d", 4), Map.entry("e", 5), Map.entry("f", 6), Map.entry("g", 7), Map.entry("h", 8), Map.entry("i", 9), Map.entry("j", 10), Map.entry("k", 11));
+                      return Map.ofEntries(
+                          Map.entry("a", 1),
+                          Map.entry("b", 2),
+                          Map.entry("c", 3),
+                          Map.entry("d", 4),
+                          Map.entry("e", 5),
+                          Map.entry("f", 6),
+                          Map.entry("g", 7),
+                          Map.entry("h", 8),
+                          Map.entry("i", 9),
+                          Map.entry("j", 10),
+                          Map.entry("k", 11));
                   }
               }
               """

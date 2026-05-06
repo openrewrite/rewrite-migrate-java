@@ -79,11 +79,21 @@ public class UseMapOf extends Recipe {
 
                                 maybeRemoveImport("java.util.HashMap");
                                 maybeAddImport("java.util.Map");
-                                return JavaTemplate.builder(template.toString())
+                                J applied = JavaTemplate.builder(template.toString())
                                         .contextSensitive()
                                         .imports("java.util.Map")
                                         .build()
                                         .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                                if (useEntries && applied instanceof J.MethodInvocation) {
+                                    J.MethodInvocation mapOfEntries = (J.MethodInvocation) applied;
+                                    List<Expression> entryArgs = mapOfEntries.getArguments();
+                                    List<Expression> withPrefixes = new ArrayList<>(entryArgs.size());
+                                    for (int i = 0; i < entryArgs.size(); i++) {
+                                        withPrefixes.add(entryArgs.get(i).withPrefix(putStatements.get(i).getPrefix()));
+                                    }
+                                    return mapOfEntries.withArguments(withPrefixes);
+                                }
+                                return applied;
                             }
                         }
 
