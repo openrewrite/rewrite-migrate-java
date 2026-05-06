@@ -190,8 +190,7 @@ class UseMapOfTest implements RewriteTest {
               private static final String BLAH ="ss";
 
               void foo() {
-                  Map.of(
-                          BLAH, "foo");
+                  Map.of(BLAH, "foo");
                   }
               }
               """

@@ -84,7 +84,7 @@ public class UseMapOf extends Recipe {
                                         .imports("java.util.Map")
                                         .build()
                                         .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
-                                if (applied instanceof J.MethodInvocation) {
+                                if (putStatements.size() > 1 && applied instanceof J.MethodInvocation) {
                                     J.MethodInvocation mapCall = (J.MethodInvocation) applied;
                                     List<Expression> mapArgs = mapCall.getArguments();
                                     List<Expression> withPrefixes = new ArrayList<>(mapArgs.size());
