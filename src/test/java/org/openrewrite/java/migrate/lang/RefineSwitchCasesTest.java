@@ -221,6 +221,51 @@ class RefineSwitchCasesTest implements RewriteTest {
         );
     }
 
+    @Test
+    void keepBlockWhenInnerStatementIsIf() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void handle(Object value) {
+                      switch (value) {
+                          case String s -> {
+                              if (s.isEmpty()) {
+                                  if (s.hashCode() > 0) {
+                                      use(s);
+                                  }
+                              }
+                          }
+                          default -> {
+                          }
+                      }
+                  }
+
+                  void use(Object value) {}
+              }
+              """,
+            """
+              class Test {
+                  void handle(Object value) {
+                      switch (value) {
+                          case String s when s.isEmpty() -> {
+                              if (s.hashCode() > 0) {
+                                  use(s);
+                              }
+                          }
+                          case String s -> {}
+                          default -> {}
+                      }
+                  }
+
+                  void use(Object value) {}
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NoChange{
         @Test
