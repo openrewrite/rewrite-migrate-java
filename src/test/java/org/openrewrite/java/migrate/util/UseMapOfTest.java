@@ -163,6 +163,48 @@ class UseMapOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1092")
+    @Test
+    void doNotChangeWhenNullValue() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> m = new HashMap<>() {{
+                      put("key", "value");
+                      put("nullable", null);
+                  }};
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1092")
+    @Test
+    void doNotChangeWhenNullKey() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> m = new HashMap<>() {{
+                      put(null, "value");
+                      put("key", "other");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/566")
     @Test
     void changeDoubleBraceInitForNonStringTypes() {
