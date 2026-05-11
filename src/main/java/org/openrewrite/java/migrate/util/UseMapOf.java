@@ -68,6 +68,11 @@ public class UseMapOf extends Recipe {
                                         return n;
                                     }
                                     J.MethodInvocation put = (J.MethodInvocation) stat;
+                                    for (Expression arg : put.getArguments()) {
+                                        if (J.Literal.isLiteralValue(arg, null)) {
+                                            return n;
+                                        }
+                                    }
                                     args.addAll(put.getArguments());
                                     if (useEntries) {
                                         template.add("Map.entry(#{any()}, #{any()})");
