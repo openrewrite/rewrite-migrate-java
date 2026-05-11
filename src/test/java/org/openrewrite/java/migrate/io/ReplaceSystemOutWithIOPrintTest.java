@@ -53,6 +53,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -75,6 +77,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -99,6 +103,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -122,6 +128,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       String message = "Hello World";
@@ -145,6 +153,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println();
@@ -170,6 +180,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -198,6 +210,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       String name = "John";
@@ -239,6 +253,34 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
                       PrintStream ps = new PrintStream(System.out);
                       ps.print("Should not change");
                       ps.println("Should not change");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void addsImportForRegularClassWithPackage() {
+        rewriteRun(
+          java(
+            """
+              package com.helloworld;
+
+              public class Main {
+                  public void greet() {
+                      System.out.println("hello");
+                  }
+              }
+              """,
+            """
+              package com.helloworld;
+
+              import java.io.IO;
+
+              public class Main {
+                  public void greet() {
+                      IO.println("hello");
                   }
               }
               """
