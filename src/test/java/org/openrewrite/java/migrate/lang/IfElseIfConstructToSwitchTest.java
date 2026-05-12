@@ -937,6 +937,148 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void voidMethodInvocationsWithChainedInstanceOfPatternMatch() {
+        rewriteRun(
+          spec -> spec.recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Container {
+                  public void add(Object o) {}
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Reference {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Element {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Qualifier {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      if (obj instanceof Reference) {
+                          container.add((Reference) obj);
+                      } else if (obj instanceof Element) {
+                          container.add((Element) obj);
+                      } else {
+                          container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """,
+            """
+              package com.example;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      switch (obj) {
+                          case Reference reference -> container.add(reference);
+                          case Element element -> container.add(element);
+                          case null, default -> container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void unresolvableTypesWithVoidMethodInvocationsAndExistingPatterns() {
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          //language=java
+          java(
+            """
+              package com.example;
+              import com.example.missing.Container;
+              import com.example.missing.Reference;
+              import com.example.missing.Element;
+              import com.example.missing.Qualifier;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      if (obj instanceof Reference reference) {
+                          container.add(reference);
+                      } else if (obj instanceof Element element) {
+                          container.add(element);
+                      } else {
+                          container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """,
+            """
+              package com.example;
+              import com.example.missing.Container;
+              import com.example.missing.Reference;
+              import com.example.missing.Element;
+              import com.example.missing.Qualifier;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      switch (obj) {
+                          case Reference reference -> container.add(reference);
+                          case Element element -> container.add(element);
+                          case null, default -> container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void unresolvableTypesWithVoidMethodInvocationsUnchanged() {
+        // When types are unresolvable, InstanceOfPatternMatch can't add pattern variables,
+        // so IfElseIfConstructToSwitch leaves the if-chain unchanged rather than producing
+        // a broken switch with leaked JavaTemplate placeholders.
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none())
+            .recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
+          //language=java
+          java(
+            """
+              package com.example;
+              import com.example.missing.Container;
+              import com.example.missing.Reference;
+              import com.example.missing.Element;
+              import com.example.missing.Qualifier;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      if (obj instanceof Reference) {
+                          container.add((Reference) obj);
+                      } else if (obj instanceof Element) {
+                          container.add((Element) obj);
+                      } else {
+                          container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void unresolvableTypesKeepCaseSpacing() {
         // https://github.com/openrewrite/rewrite/issues/7458
         rewriteRun(

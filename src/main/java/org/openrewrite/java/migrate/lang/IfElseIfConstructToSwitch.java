@@ -221,7 +221,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             switchBody.append("}\n");
 
-            J.Switch result = JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
+            J.Switch result = JavaTemplate.builder(switchBody.toString())
+                    .contextSensitive()
+                    .build()
+                    .apply(cursor, if_.getCoordinates().replace(), arguments)
+                    .withPrefix(if_.getPrefix());
             return fixTypeAttribution(result);
         }
 
