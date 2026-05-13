@@ -53,10 +53,11 @@ public class MigrateCollectionsEmptyMap extends Recipe {
                 if (EMPTY_MAP.matches(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Map");
-                    return JavaTemplate.builder("Map.of()")
+                    J.MethodInvocation result = JavaTemplate.builder("Map.of()")
                             .imports("java.util.Map")
                             .build()
                             .apply(updateCursor(m), m.getCoordinates().replace());
+                    return result.withTypeParameters(m.getPadding().getTypeParameters());
                 }
 
                 return m;
