@@ -1041,13 +1041,14 @@ recipeList:
       attributeName: xmlns:jxb
       oldValue: http://java.sun.com/xml/ns/jaxb
       newValue: https://jakarta.ee/xml/ns/jaxb
-  # Update version
+  # Update version (covers JAXB 1.x and 2.x bindings authored before Jakarta EE 9)
   - org.openrewrite.xml.ChangeTagAttribute:
       #language=xpath
       elementName: "//*[namespace-uri() = 'https://jakarta.ee/xml/ns/jaxb' and local-name() = 'bindings']"
       attributeName: version
-      oldValue: 1.0
-      newValue: 3.0
+      oldValue: "1\\.0|2\\.[0-2]"
+      newValue: "3.0"
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlSoapToJakartaXmlSoap
