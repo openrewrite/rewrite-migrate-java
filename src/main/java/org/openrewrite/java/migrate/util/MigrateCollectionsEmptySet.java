@@ -53,10 +53,11 @@ public class MigrateCollectionsEmptySet extends Recipe {
                 if (EMPTY_SET.matches(m)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
-                    return JavaTemplate.builder("Set.of()")
+                    J.MethodInvocation result = JavaTemplate.builder("Set.of()")
                             .imports("java.util.Set")
                             .build()
                             .apply(updateCursor(m), m.getCoordinates().replace());
+                    return result.withTypeParameters(m.getPadding().getTypeParameters());
                 }
 
                 return m;
