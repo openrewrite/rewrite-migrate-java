@@ -17,6 +17,8 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
@@ -102,6 +104,31 @@ class UpdateXJCBindingsToJakartaEE implements RewriteTest {
                                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
                   </jxb:bindings>
                   """,
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="3.0"
+                                xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/moderneinc/customer-requests/issues/2359")
+        @ParameterizedTest
+        @ValueSource(strings = {"2.0", "2.1", "2.2"})
+        void versionTwoX(String oldVersion) {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <jxb:bindings version="%s"
+                                xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+                                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                  </jxb:bindings>
+                  """.formatted(oldVersion),
                 """
                   <?xml version="1.0" encoding="UTF-8"?>
                   <jxb:bindings version="3.0"

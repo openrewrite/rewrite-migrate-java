@@ -111,6 +111,35 @@ class MigrateCollectionsEmptyMapTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1097")
+    @Test
+    void preserveExplicitTypeArgumentsInTernary() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Collections;
+              import java.util.Map;
+
+              class Main<K, V> {
+                  Map<K, V> get(final Map<K, V> input) {
+                      return input == null ? Collections.<K, V>emptyMap() : input;
+                  }
+              }
+              """,
+            """
+              import java.util.Map;
+
+              class Main<K, V> {
+                  Map<K, V> get(final Map<K, V> input) {
+                      return input == null ? Map.<K, V>of() : input;
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void emptyMapInSwitchExpression() {
         rewriteRun(
