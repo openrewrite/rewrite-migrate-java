@@ -17,11 +17,17 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
+
+import static java.util.Collections.singletonList;
 import static org.openrewrite.java.Assertions.java;
 
 class InternalBindPackagesTest implements RewriteTest {
@@ -29,8 +35,17 @@ class InternalBindPackagesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "sun.internal.newClass"))
+            .classpath(singletonList(resourceJar("sun.internal.newClass.jar"))))
           .recipeFromResources("org.openrewrite.java.migrate.InternalBindPackages");
+    }
+
+    private static Path resourceJar(String name) {
+        URL url = InternalBindPackagesTest.class.getClassLoader().getResource("META-INF/rewrite/classpath/" + name);
+        try {
+            return Paths.get(Objects.requireNonNull(url, "Resource not found: " + name).toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @DocumentExample
