@@ -24,10 +24,9 @@ import org.openrewrite.test.RewriteTest;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 
-import static java.util.Collections.singletonList;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
@@ -40,14 +39,14 @@ class IBMSemeruTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion()
-            .classpath(singletonList(resourceJar("sun.internal.new.jar"))))
+            .classpath(List.of(resourceJar("sun.internal.new.jar"))))
           .recipeFromResource("/META-INF/rewrite/ibm-java.yml", "org.openrewrite.java.migrate.IBMSemeru");
     }
 
     private static Path resourceJar(String name) {
         URL url = IBMSemeruTest.class.getClassLoader().getResource("META-INF/rewrite/classpath/" + name);
         try {
-            return Paths.get(Objects.requireNonNull(url, "Resource not found: " + name).toURI());
+            return Path.of(Objects.requireNonNull(url, "Resource not found: " + name).toURI());
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }

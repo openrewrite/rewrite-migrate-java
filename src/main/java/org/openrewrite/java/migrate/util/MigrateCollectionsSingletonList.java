@@ -53,7 +53,7 @@ public class MigrateCollectionsSingletonList extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_LIST.matches(m) &&
-                        !(J.Literal.isLiteralValue(m.getArguments().get(0), null))) {
+                        !J.Literal.isLiteralValue(m.getArguments().get(0), null)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.List");
 

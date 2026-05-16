@@ -4686,6 +4686,8 @@ examples:
           }
       }
     after: |
+      import java.io.IO;
+
       class Example {
           void test() {
               IO.print("Hello");
@@ -7818,27 +7820,6 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.lang.UseTextBlocks
-examples:
-- description: '`UseTextBlocksTest#regular`'
-  sources:
-  - before: |
-      class Test {
-          String query = "SELECT * FROM\n" +
-                  "my_table\n" +
-                  "WHERE something = 1;";
-      }
-    after: |
-      class Test {
-          String query = """
-                  SELECT * FROM
-                  my_table
-                  WHERE something = 1;\
-                  """;
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.lang.UseVar
 examples:
 - description: '`Applicable#forString`'
@@ -9576,7 +9557,9 @@ examples:
       import java.util.Map;
 
       class Test {
-          Map<String, String> m = Map.of("stru", "menta", "mod", "erne");
+          Map<String, String> m = Map.of(
+              "stru", "menta",
+              "mod", "erne");
       }
     language: java
 ---

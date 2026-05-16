@@ -51,7 +51,7 @@ public class MigrateCollectionsSingletonSet extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (SINGLETON_SET.matches(m) &&
-                        !(J.Literal.isLiteralValue(m.getArguments().get(0), null))) {
+                        !J.Literal.isLiteralValue(m.getArguments().get(0), null)) {
                     maybeRemoveImport("java.util.Collections");
                     maybeAddImport("java.util.Set");
                     return JavaTemplate.builder("Set.of(#{any()})")

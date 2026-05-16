@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -64,12 +65,8 @@ class FindLocaleDateTimeFormatsTest implements RewriteTest {
         );
     }
 
-    @CsvSource(textBlock = """
-      DateFormat.getTimeInstance(DateFormat.SHORT)
-      DateFormat.getDateTimeInstance()
-      DateFormat.getInstance()
-      """)
     @ParameterizedTest
+    @ValueSource(strings = {"DateFormat.getTimeInstance(DateFormat.SHORT)", "DateFormat.getDateTimeInstance()", "DateFormat.getInstance()"})
     void findDateFormatMethods(String methodCall) {
         rewriteRun(
           java(

@@ -32,6 +32,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
@@ -122,7 +123,7 @@ public class UseRequiredArgsConstructor extends Recipe {
         }
 
         String args = Stream.of(accessPart.isEmpty() ? null : "access = " + accessPart, onConstructorPart.isEmpty() ? null : onConstructorPart)
-                .filter(s -> s != null)
+                .filter(Objects::nonNull)
                 .collect(joining(", "));
 
         return "@" + annotationName + (args.isEmpty() ? "" : "(" + args + ")");

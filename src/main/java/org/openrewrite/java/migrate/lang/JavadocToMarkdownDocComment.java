@@ -556,7 +556,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                         if (i > 0) {
                             sb.append( ", " );
                         }
-                        sb.append(printJ((J) pt.getTypeParameters().get(i)));
+                        sb.append(printJ(pt.getTypeParameters().get(i)));
                     }
                     sb.append('>');
                 }

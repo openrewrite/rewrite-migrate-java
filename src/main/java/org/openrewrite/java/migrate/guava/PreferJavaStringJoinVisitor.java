@@ -95,7 +95,7 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
     }
 
     private List<Expression> appendArguments(List<Expression> firstArgs, List<Expression> secondArgs) {
-        ArrayList<Expression> args = new ArrayList<>(firstArgs);
+        List<Expression> args = new ArrayList<>(firstArgs);
         if (!secondArgs.isEmpty()) {
             Expression e = secondArgs.remove(0);
             args.add(e.withPrefix(e.getPrefix().withWhitespace(" ")));

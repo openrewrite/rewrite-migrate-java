@@ -158,7 +158,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     parameterizedType.getTypeParameters().forEach(
                             expression -> {
                                 if (expression instanceof J.ParameterizedType && TypeUtils.isOfClassType(expression.getType(), guavaType)) {
-                                    jRightPaddedList.add(JRightPadded.build(((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType))));
+                                    jRightPaddedList.add(JRightPadded.build((J.ParameterizedType) createNewTypeExpression((TypeTree) expression, newType)));
                                 } else {
                                     jRightPaddedList.add(JRightPadded.build(expression));
                                 }
