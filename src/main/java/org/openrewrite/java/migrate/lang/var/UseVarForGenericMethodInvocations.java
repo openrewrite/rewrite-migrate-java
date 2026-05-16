@@ -117,7 +117,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             }
 
             // Add explicit type parameters when the method is generic and the return type's type parameter matches a type parameter from the declaring class
-            if (mi.getTypeParameters() == null && mi.getMethodType() != null && containsGenericTypeVariable(mi.getMethodType().getReturnType())) {
+            if (mi.getTypeParameters() == null && mi.getMethodType() != null && containsGenericTypeVariable(mi.getMethodType().getReturnType()) && !containsWildcard(leftTypeParams)) {
                 // Create JRightPadded list from leftTypeParams
                 List<JRightPadded<Expression>> typeParamsList = new ArrayList<>();
                 for (Expression typeParam : leftTypeParams) {
@@ -139,6 +139,15 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 }
                 return arg;
             }));
+        }
+
+        private static boolean containsWildcard(List<Expression> typeParams) {
+            for (Expression typeParam : typeParams) {
+                if (typeParam instanceof J.Wildcard) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private boolean containsGenericTypeVariable(JavaType type) {

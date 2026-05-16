@@ -425,6 +425,32 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
+        @Test
+        void wildcardTypeParameterNoExplicitTypeArgument() {
+            //language=java
+            rewriteRun(
+              version(
+                java(
+                  """
+                    class A {
+                      void m(ClassLoader cl) throws Exception {
+                          Class<?> recipeClass = cl.loadClass("java.lang.String");
+                      }
+                    }
+                    """,
+                  """
+                    class A {
+                      void m(ClassLoader cl) throws Exception {
+                          var recipeClass = cl.loadClass("java.lang.String");
+                      }
+                    }
+                    """
+                ),
+                10
+              )
+            );
+        }
+
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/868")
         @Test
         void genericsCollectorsRegression() {
