@@ -270,6 +270,51 @@ final class DeclarationCheck {
         }.reduce(method, new AtomicBoolean(false)).get();
     }
 
+    /**
+     * Determine whether the method invocation's resolved parameter types reveal that target type inference
+     * widened a generic argument. For example, in {@code List<I> x = singletonList(c)} where {@code c} is a
+     * {@code C extends I}, the parameter type for {@code T} is resolved to {@code I} (widened from {@code C}).
+     * Switching to {@code var} drops the target type, so javac re-infers {@code List<C>} and breaks any usage
+     * that requires the declared supertype.
+     */
+    public static boolean targetTypeInferenceWidens(J.MethodInvocation invocation) {
+        JavaType.Method methodType = invocation.getMethodType();
+        if (methodType == null) {
+            return false;
+        }
+        List<JavaType> parameterTypes = methodType.getParameterTypes();
+        List<Expression> arguments = invocation.getArguments();
+        if (parameterTypes.isEmpty() || arguments.isEmpty()) {
+            return false;
+        }
+        int lastParamIndex = parameterTypes.size() - 1;
+        JavaType varargComponentType = null;
+        if (methodType.hasFlags(Flag.Varargs)) {
+            JavaType last = parameterTypes.get(lastParamIndex);
+            varargComponentType = last instanceof JavaType.Array ? ((JavaType.Array) last).getElemType() : last;
+        }
+        for (int i = 0; i < arguments.size(); i++) {
+            Expression argument = arguments.get(i);
+            if (argument instanceof J.Empty || J.Literal.isLiteralValue(argument, null)) {
+                continue;
+            }
+            JavaType parameterType = varargComponentType != null && i >= lastParamIndex ?
+                    varargComponentType :
+                    i < parameterTypes.size() ? parameterTypes.get(i) : null;
+            // Only flag when the parameter type is a bare class (not parameterized) that is a strict
+            // supertype of the argument's type. That pattern indicates a type variable like `<T>` that
+            // target inference widened from the argument's concrete type to the variable's declared type.
+            JavaType argumentType = argument.getType();
+            if (parameterType instanceof JavaType.FullyQualified &&
+                    !(parameterType instanceof JavaType.Parameterized) &&
+                    !TypeUtils.isOfType(parameterType, argumentType) &&
+                    TypeUtils.isAssignableTo(parameterType, argumentType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static J.VariableDeclarations transformToVar(J.VariableDeclarations vd) {
         return transformToVar(vd, it -> it);
     }
