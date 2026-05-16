@@ -86,6 +86,10 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
+            if (DeclarationCheck.targetTypeInferenceWidens(invocation)) {
+                return vd;
+            }
+
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }

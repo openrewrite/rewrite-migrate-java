@@ -135,6 +135,37 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             }
 
             @Test
+            void declaredSupertypeWidensTypeArgument() {
+                // Switching to var narrows List<I> to List<C>, which breaks
+                // a later usage that requires the declared (super)type.
+                //language=java
+                rewriteRun(
+                  version(
+                    java(
+                      """
+                          package com.example.app;
+
+                          import java.util.List;
+
+                          class A {
+                            interface I {}
+                            static class C implements I {}
+
+                            void process(List<I> items) {}
+
+                            void m() {
+                                C c = new C();
+                                List<I> items = List.of(c);
+                                process(items);
+                            }
+                          }
+                        """),
+                    10
+                  )
+                );
+            }
+
+            @Test
             void forEmptyJDKFactoryMethod() {
                 // TODO: this could be `var strs = List.<String>of();`
                 //language=java
