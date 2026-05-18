@@ -23,6 +23,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
@@ -55,6 +56,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
                 new UsesJavaVersion<>(21),
+                new NoMissingTypes(),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );

@@ -937,8 +937,106 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
-    void unresolvableTypesKeepCaseSpacing() {
+    void voidMethodInvocationsWithChainedInstanceOfPatternMatch() {
+        rewriteRun(
+          spec -> spec.recipes(new InstanceOfPatternMatch(), new IfElseIfConstructToSwitch()),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Container {
+                  public void add(Object o) {}
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Reference {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Element {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              public class Qualifier {}
+              """
+          ),
+          //language=java
+          java(
+            """
+              package com.example;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      if (obj instanceof Reference) {
+                          container.add((Reference) obj);
+                      } else if (obj instanceof Element) {
+                          container.add((Element) obj);
+                      } else {
+                          container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """,
+            """
+              package com.example;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      switch (obj) {
+                          case Reference reference -> container.add(reference);
+                          case Element element -> container.add(element);
+                          case null, default -> container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWhenInstanceofTypeMissing() {
+        // Missing type info on the instanceof's type can cause JavaTemplate to mis-parse
+        // the generated switch, leaking parameter stubs. Stay conservative when types are unknown.
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          //language=java
+          java(
+            """
+              package com.example;
+              import com.example.missing.Container;
+              import com.example.missing.Reference;
+              import com.example.missing.Element;
+              import com.example.missing.Qualifier;
+              class Test {
+                  private void addTo(Container container, Object obj) {
+                      if (obj instanceof Reference reference) {
+                          container.add(reference);
+                      } else if (obj instanceof Element element) {
+                          container.add(element);
+                      } else {
+                          container.add((Qualifier) obj);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWhenInstanceofTypeUnresolvable() {
         // https://github.com/openrewrite/rewrite/issues/7458
+        // Previously converted to switch even with unresolvable types; now conservative to
+        // avoid mis-parsed templates leaking JavaTemplate parameter stubs.
         rewriteRun(
           spec -> spec.typeValidationOptions(TypeValidation.none()),
           //language=java
@@ -957,22 +1055,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                           errorCode = goAwayFrame.errorCode();
                       } else {
                           errorCode = -1;
-                      }
-                  }
-              }
-              """,
-            """
-              package com.example;
-              import com.example.missing.Http2Frame;
-              import com.example.missing.Http2ResetFrame;
-              import com.example.missing.Http2GoAwayFrame;
-              class Test {
-                  protected void incrementCounter(Http2Frame frame) {
-                      long errorCode;
-                      switch (frame) {
-                          case Http2ResetFrame resetFrame -> errorCode = resetFrame.errorCode();
-                          case Http2GoAwayFrame goAwayFrame -> errorCode = goAwayFrame.errorCode();
-                          case null, default -> errorCode = -1;
                       }
                   }
               }
