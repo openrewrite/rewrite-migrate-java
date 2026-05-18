@@ -114,7 +114,7 @@ public class RemoveTemporalAnnotation extends Recipe {
                         }
 
                         // Remove @Temporal annotation
-                        return (J.VariableDeclarations) new RemoveAnnotation("javax.persistence.Temporal").getVisitor().visit(multiVariable, ctx);
+                        return (J.VariableDeclarations) new RemoveAnnotation("javax.persistence.Temporal").getVisitor().visit(multiVariable, ctx, getCursor().getParentOrThrow());
                     }
                 }
         );
