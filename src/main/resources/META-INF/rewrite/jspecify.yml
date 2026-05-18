@@ -62,7 +62,7 @@ recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: org.jspecify
       artifactId: jspecify
-      version: 1.0.0
+      version: latest.release
       onlyIfUsing: javax.annotation.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
