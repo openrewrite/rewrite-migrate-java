@@ -31,6 +31,7 @@ import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -174,6 +175,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
             })) {
                 return false;
             }
+            // Missing type information on the instanceof's type can cause JavaTemplate to mis-parse
+            // the generated Java 21 switch and leak parameter stubs into the output.
+            if (patternMatchers.keySet().stream().anyMatch(instanceOf -> !TypeUtils.isWellFormedType(((TypeTree) instanceOf.getClazz()).getType()))) {
+                return false;
+            }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
             boolean hasLastElseBlock = else_ != null;
 
@@ -221,11 +227,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             }
             switchBody.append("}\n");
 
-            J.Switch result = JavaTemplate.builder(switchBody.toString())
-                    .contextSensitive()
-                    .build()
-                    .apply(cursor, if_.getCoordinates().replace(), arguments)
-                    .withPrefix(if_.getPrefix());
+            J.Switch result = JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
             return fixTypeAttribution(result);
         }
 
