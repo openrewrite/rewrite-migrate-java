@@ -23,6 +23,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.NoMissingTypes;
 import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
@@ -31,7 +32,6 @@ import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
-import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -56,6 +56,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         TreeVisitor<?, ExecutionContext> preconditions = Preconditions.and(
                 new UsesJavaVersion<>(21),
+                new NoMissingTypes(),
                 Preconditions.not(new KotlinFileChecker<>()),
                 Preconditions.not(new GroovyFileChecker<>())
         );
@@ -173,11 +174,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 J clazz = instanceOf.getClazz();
                 return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
             })) {
-                return false;
-            }
-            // Missing type information on the instanceof's type can cause JavaTemplate to mis-parse
-            // the generated Java 21 switch and leak parameter stubs into the output.
-            if (patternMatchers.keySet().stream().anyMatch(instanceOf -> !TypeUtils.isWellFormedType(((TypeTree) instanceOf.getClazz()).getType()))) {
                 return false;
             }
             boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
