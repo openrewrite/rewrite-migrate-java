@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
+import org.openrewrite.marker.GitProvenance;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -34,74 +35,141 @@ class FindJavaVersionTest implements RewriteTest {
         spec.recipe(new FindJavaVersion());
     }
 
+    private static GitProvenance gitProvenance(String origin) {
+        return new GitProvenance(randomId(), origin, "main", "abc123", null, null, null);
+    }
+
     @DocumentExample
     @Test
-    void twoClassesInSameProjectLeadToTwoRows() {
-        var project = new JavaProject(randomId(), "demo", null);
+    void multiModuleRepositoryCollapsesToOneRow() {
+        // All modules in a multi-module repository share one GitProvenance, so the recipe
+        // emits a single row identifying the repository as a whole.
+        var git = gitProvenance("https://github.com/example/demo.git");
+        var moduleA = new JavaProject(randomId(), "module-a", null);
+        var moduleB = new JavaProject(randomId(), "module-b", null);
         var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
-          spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
-              assertThat(rows).containsExactly(
-                new JavaVersionTable.Row("demo", "17", "8"),
-                new JavaVersionTable.Row("demo", "17", "8")
-              );
-          }),
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).containsExactly(
+              new JavaVersionTable.Row("17", "8")
+            )),
           //language=java
           java(
             """
               class A {
               }
               """,
-            spec -> spec.markers(project, jv)),
+            spec -> spec.markers(git, moduleA, jv)),
           //language=java
           java(
             """
               class B {
               }
               """,
-            spec -> spec.markers(project, jv))
+            spec -> spec.markers(git, moduleB, jv))
         );
     }
 
     @Test
-    void identicalJavaVersionMarkersAcrossProjectsAreEachReported() {
-        // Reproduces customer-requests#2409: across multiple projects with the same JDK,
-        // every project must appear as its own row in the data table. Previously a
-        // recipe-instance HashSet deduplicated by JavaVersion content, so identical
-        // markers in different projects were silently dropped.
-        var projectA = new JavaProject(randomId(), "project-a", null);
-        var projectB = new JavaProject(randomId(), "project-b", null);
-        var projectC = new JavaProject(randomId(), "project-c", null);
+    void heterogeneousVersionsInOneRepoPickLowestTarget() {
+        // When modules in the same repo target different JDKs, the row reports the lowest
+        // target — the migration floor for the repository.
+        var git = gitProvenance("https://github.com/example/mixed.git");
+        var legacy = new JavaProject(randomId(), "legacy-module", null);
+        var modern = new JavaProject(randomId(), "modern-module", null);
+        var java8 = new JavaVersion(randomId(), "Sam", "Shelter", "8", "8");
+        var java17 = new JavaVersion(randomId(), "Sam", "Shelter", "17", "17");
+        rewriteRun(
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).containsExactly(
+              new JavaVersionTable.Row("8", "8")
+            )),
+          //language=java
+          java(
+            """
+              class Legacy {
+              }
+              """,
+            spec -> spec.markers(git, legacy, java8)),
+          //language=java
+          java(
+            """
+              class Modern {
+              }
+              """,
+            spec -> spec.markers(git, modern, java17))
+        );
+    }
+
+    @Test
+    void identicalJavaVersionMarkersAcrossRepositoriesAreEachReported() {
+        // Reproduces customer-requests#2409: across multiple repositories with the same JDK,
+        // every repository must contribute its own row in the data table. Previously a
+        // recipe-instance HashSet deduplicated by JavaVersion content, so identical markers
+        // in different repositories were silently dropped.
+        var gitA = gitProvenance("https://github.com/example/repo-a.git");
+        var gitB = gitProvenance("https://github.com/example/repo-b.git");
+        var gitC = gitProvenance("https://github.com/example/repo-c.git");
+        var project = new JavaProject(randomId(), "service", null);
         var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
-          spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
-              assertThat(rows).containsExactlyInAnyOrder(
-                new JavaVersionTable.Row("project-a", "17", "8"),
-                new JavaVersionTable.Row("project-b", "17", "8"),
-                new JavaVersionTable.Row("project-c", "17", "8")
-              );
-          }),
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).containsExactly(
+              new JavaVersionTable.Row("17", "8"),
+              new JavaVersionTable.Row("17", "8"),
+              new JavaVersionTable.Row("17", "8")
+            )),
           //language=java
           java(
             """
               class A {
               }
               """,
-            spec -> spec.markers(projectA, jv)),
+            spec -> spec.markers(gitA, project, jv)),
           //language=java
           java(
             """
               class B {
               }
               """,
-            spec -> spec.markers(projectB, jv)),
+            spec -> spec.markers(gitB, project, jv)),
           //language=java
           java(
             """
               class C {
               }
               """,
-            spec -> spec.markers(projectC, jv))
+            spec -> spec.markers(gitC, project, jv))
+        );
+    }
+
+    @Test
+    void withoutGitProvenanceFallsBackToPerProject() {
+        // When no GitProvenance is available (local non-git source trees, some test setups),
+        // the recipe falls back to one row per JavaProject so distinct modules are not silently merged.
+        var projectOne = new JavaProject(randomId(), "module-a", null);
+        var projectTwo = new JavaProject(randomId(), "module-b", null);
+        var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
+        rewriteRun(
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).containsExactly(
+              new JavaVersionTable.Row("17", "8"),
+              new JavaVersionTable.Row("17", "8")
+            )),
+          //language=java
+          java(
+            """
+              class A {
+              }
+              """,
+            spec -> spec.markers(projectOne, jv)),
+          //language=java
+          java(
+            """
+              class B {
+              }
+              """,
+            spec -> spec.markers(projectTwo, jv))
         );
     }
 }

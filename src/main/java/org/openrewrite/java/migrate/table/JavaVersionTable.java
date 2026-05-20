@@ -28,10 +28,6 @@ public class JavaVersionTable extends DataTable<JavaVersionTable.Row> {
 
     @Value
     public static class Row {
-        @Column(displayName = "Project name",
-                description = "The name of the project that produced the LST.")
-        String projectName;
-
         @Column(displayName = "Source compatibility",
                 description = "The major version of Java used to compile the source code")
         String sourceVersion;
