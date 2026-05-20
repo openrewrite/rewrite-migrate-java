@@ -15,43 +15,91 @@
  */
 package org.openrewrite.java.migrate.search;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
+import org.openrewrite.SourceFile;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.marker.GitProvenance;
+import org.openrewrite.marker.Markers;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-@EqualsAndHashCode(callSuper = false)
-@Value
-public class FindJavaVersion extends Recipe {
+import static java.util.Collections.emptyList;
+
+public class FindJavaVersion extends ScanningRecipe<Map<String, JavaVersionTable.Row>> {
 
     transient JavaVersionTable table = new JavaVersionTable(this);
-    transient Set<JavaVersion> seen = new HashSet<>();
 
-    String displayName = "Find Java versions in use";
+    @Getter
+    final String displayName = "Find Java versions in use";
 
-    String description = "Finds Java versions in use.";
+    @Getter
+    final String description = "Finds Java versions in use, emitting one row per git repository " +
+            "(the lowest source/target compatibility across modules in that repository).";
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+    public Map<String, JavaVersionTable.Row> getInitialValue(ExecutionContext ctx) {
+        return new LinkedHashMap<>();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Map<String, JavaVersionTable.Row> acc) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
-            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                cu.getMarkers().findFirst(JavaVersion.class)
-                        .filter(seen::add)
-                        .map(jv -> new JavaVersionTable.Row(
+            public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                if (tree instanceof JavaSourceFile) {
+                    Markers markers = tree.getMarkers();
+                    markers.findFirst(JavaVersion.class).ifPresent(jv -> {
+                        // Prefer the git origin as the dedup key: every module in a multi-module repo
+                        // shares one GitProvenance, so they collapse to a single row. Fall back to the
+                        // JavaProject UUID (one row per module) when no git provenance is available,
+                        // and finally to the JavaVersion UUID so disconnected source files still
+                        // produce one row per file rather than silently merging.
+                        // Prefixes keep the three key namespaces from colliding.
+                        String key = markers.findFirst(GitProvenance.class)
+                                .map(GitProvenance::getOrigin)
+                                .map(origin -> "origin:" + origin)
+                                .orElseGet(() -> markers.findFirst(JavaProject.class)
+                                        .map(jp -> "project:" + jp.getId())
+                                        .orElseGet(() -> "version:" + jv.getId()));
+
+                        JavaVersionTable.Row candidate = new JavaVersionTable.Row(
                                 Integer.toString(jv.getMajorVersion()),
-                                Integer.toString(jv.getMajorReleaseVersion())))
-                        .ifPresent(row -> table.insertRow(ctx, row));
-                return cu;
+                                Integer.toString(jv.getMajorReleaseVersion()));
+                        acc.merge(key, candidate, FindJavaVersion::lower);
+                    });
+                }
+                return tree;
             }
         };
+    }
+
+    @Override
+    public Collection<? extends SourceFile> generate(Map<String, JavaVersionTable.Row> acc, ExecutionContext ctx) {
+        for (JavaVersionTable.Row row : acc.values()) {
+            table.insertRow(ctx, row);
+        }
+        return emptyList();
+    }
+
+    // Lower target compatibility wins; tiebreak on lower source compatibility.
+    // The retained row is the migration floor for the repository.
+    private static JavaVersionTable.Row lower(JavaVersionTable.Row a, JavaVersionTable.Row b) {
+        int aTarget = Integer.parseInt(a.getTargetVersion());
+        int bTarget = Integer.parseInt(b.getTargetVersion());
+        if (aTarget != bTarget) {
+            return aTarget < bTarget ? a : b;
+        }
+        int aSource = Integer.parseInt(a.getSourceVersion());
+        int bSource = Integer.parseInt(b.getSourceVersion());
+        return aSource <= bSource ? a : b;
     }
 }
