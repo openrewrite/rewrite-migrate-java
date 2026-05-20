@@ -21,19 +21,16 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.java.tree.J;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class FindJavaVersion extends Recipe {
 
     transient JavaVersionTable table = new JavaVersionTable(this);
-    transient Set<JavaVersion> seen = new HashSet<>();
 
     String displayName = "Find Java versions in use";
 
@@ -45,11 +42,15 @@ public class FindJavaVersion extends Recipe {
             @Override
             public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
                 cu.getMarkers().findFirst(JavaVersion.class)
-                        .filter(seen::add)
-                        .map(jv -> new JavaVersionTable.Row(
-                                Integer.toString(jv.getMajorVersion()),
-                                Integer.toString(jv.getMajorReleaseVersion())))
-                        .ifPresent(row -> table.insertRow(ctx, row));
+                        .ifPresent(jv -> {
+                            String projectName = cu.getMarkers().findFirst(JavaProject.class)
+                                    .map(JavaProject::getProjectName)
+                                    .orElse("");
+                            table.insertRow(ctx, new JavaVersionTable.Row(
+                                    projectName,
+                                    Integer.toString(jv.getMajorVersion()),
+                                    Integer.toString(jv.getMajorReleaseVersion())));
+                        });
                 return cu;
             }
         };

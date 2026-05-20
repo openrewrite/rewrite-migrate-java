@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.test.RecipeSpec;
@@ -35,12 +36,14 @@ class FindJavaVersionTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void twoClassesWithSameMarkerLeadToOneRow() {
+    void twoClassesInSameProjectLeadToTwoRows() {
+        var project = new JavaProject(randomId(), "demo", null);
         var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
         rewriteRun(
           spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
               assertThat(rows).containsExactly(
-                new JavaVersionTable.Row("17", "8")
+                new JavaVersionTable.Row("demo", "17", "8"),
+                new JavaVersionTable.Row("demo", "17", "8")
               );
           }),
           //language=java
@@ -49,14 +52,56 @@ class FindJavaVersionTest implements RewriteTest {
               class A {
               }
               """,
-            spec -> spec.markers(jv)),
+            spec -> spec.markers(project, jv)),
           //language=java
           java(
             """
               class B {
               }
               """,
-            spec -> spec.markers(jv))
+            spec -> spec.markers(project, jv))
+        );
+    }
+
+    @Test
+    void identicalJavaVersionMarkersAcrossProjectsAreEachReported() {
+        // Reproduces customer-requests#2409: across multiple projects with the same JDK,
+        // every project must appear as its own row in the data table. Previously a
+        // recipe-instance HashSet deduplicated by JavaVersion content, so identical
+        // markers in different projects were silently dropped.
+        var projectA = new JavaProject(randomId(), "project-a", null);
+        var projectB = new JavaProject(randomId(), "project-b", null);
+        var projectC = new JavaProject(randomId(), "project-c", null);
+        var jv = new JavaVersion(randomId(), "Sam", "Shelter", "17", "8");
+        rewriteRun(
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows -> {
+              assertThat(rows).containsExactlyInAnyOrder(
+                new JavaVersionTable.Row("project-a", "17", "8"),
+                new JavaVersionTable.Row("project-b", "17", "8"),
+                new JavaVersionTable.Row("project-c", "17", "8")
+              );
+          }),
+          //language=java
+          java(
+            """
+              class A {
+              }
+              """,
+            spec -> spec.markers(projectA, jv)),
+          //language=java
+          java(
+            """
+              class B {
+              }
+              """,
+            spec -> spec.markers(projectB, jv)),
+          //language=java
+          java(
+            """
+              class C {
+              }
+              """,
+            spec -> spec.markers(projectC, jv))
         );
     }
 }
