@@ -31,11 +31,10 @@ import org.openrewrite.marker.Markers;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 
-public class FindJavaVersion extends ScanningRecipe<Map<Object, JavaVersionTable.Row>> {
+public class FindJavaVersion extends ScanningRecipe<Map<String, JavaVersionTable.Row>> {
 
     transient JavaVersionTable table = new JavaVersionTable(this);
 
@@ -47,12 +46,12 @@ public class FindJavaVersion extends ScanningRecipe<Map<Object, JavaVersionTable
             "(the lowest source/target compatibility across modules in that repository).";
 
     @Override
-    public Map<Object, JavaVersionTable.Row> getInitialValue(ExecutionContext ctx) {
+    public Map<String, JavaVersionTable.Row> getInitialValue(ExecutionContext ctx) {
         return new LinkedHashMap<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Map<Object, JavaVersionTable.Row> acc) {
+    public TreeVisitor<?, ExecutionContext> getScanner(Map<String, JavaVersionTable.Row> acc) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree preVisit(Tree tree, ExecutionContext ctx) {
@@ -64,15 +63,13 @@ public class FindJavaVersion extends ScanningRecipe<Map<Object, JavaVersionTable
                         // JavaProject UUID (one row per module) when no git provenance is available,
                         // and finally to the JavaVersion UUID so disconnected source files still
                         // produce one row per file rather than silently merging.
-                        Optional<GitProvenance> gp = markers.findFirst(GitProvenance.class);
-                        Object key;
-                        if (gp.isPresent() && gp.get().getOrigin() != null) {
-                            key = gp.get().getOrigin();
-                        } else {
-                            key = markers.findFirst(JavaProject.class)
-                                    .<Object>map(JavaProject::getId)
-                                    .orElseGet(jv::getId);
-                        }
+                        // Prefixes keep the three key namespaces from colliding.
+                        String key = markers.findFirst(GitProvenance.class)
+                                .map(GitProvenance::getOrigin)
+                                .map(origin -> "origin:" + origin)
+                                .orElseGet(() -> markers.findFirst(JavaProject.class)
+                                        .map(jp -> "project:" + jp.getId())
+                                        .orElseGet(() -> "version:" + jv.getId()));
 
                         JavaVersionTable.Row candidate = new JavaVersionTable.Row(
                                 Integer.toString(jv.getMajorVersion()),
@@ -86,7 +83,7 @@ public class FindJavaVersion extends ScanningRecipe<Map<Object, JavaVersionTable
     }
 
     @Override
-    public Collection<? extends SourceFile> generate(Map<Object, JavaVersionTable.Row> acc, ExecutionContext ctx) {
+    public Collection<? extends SourceFile> generate(Map<String, JavaVersionTable.Row> acc, ExecutionContext ctx) {
         for (JavaVersionTable.Row row : acc.values()) {
             table.insertRow(ctx, row);
         }
