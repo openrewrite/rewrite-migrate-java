@@ -34,6 +34,9 @@ recipeList:
   # Text blocks for strings without newlines (upgrade chain only does convertStringsWithoutNewlines: false)
   - org.openrewrite.java.migrate.lang.UseTextBlocks:
       convertStringsWithoutNewlines: true
+  # Prefer String.formatted() over String.format()
+  - org.openrewrite.java.migrate.lang.StringFormatted:
+      addParentheses: false
   # Prefer Java standard library over Guava where possible
   - org.openrewrite.java.migrate.guava.NoGuava
   # Prefer Java standard library over Joda-Time where possible
