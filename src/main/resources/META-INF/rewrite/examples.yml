@@ -9025,7 +9025,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.search.FindJavaVersion
 examples:
-- description: '`FindJavaVersionTest#twoClassesWithSameMarkerLeadToOneRow`'
+- description: '`FindJavaVersionTest#multiModuleRepositoryCollapsesToOneRow`'
   sources:
   - before: |
       class A {
