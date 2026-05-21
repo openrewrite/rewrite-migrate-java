@@ -36,7 +36,7 @@ recipeList:
       convertStringsWithoutNewlines: true
   # Prefer String.formatted() over String.format()
   - org.openrewrite.java.migrate.lang.StringFormatted:
-      addParentheses: false
+      addParentheses: true
   # Prefer Java standard library over Guava where possible
   - org.openrewrite.java.migrate.guava.NoGuava
   # Prefer Java standard library over Joda-Time where possible
