@@ -81,13 +81,6 @@ class UpgradeToJava17Test implements RewriteTest {
                            return String.format("Hello %s", "world");
                        }
                     }
-                    """,
-                  """
-                    class A {
-                       public String test() {
-                           return "Hello %s".formatted("world");
-                       }
-                    }
                     """
                 )
               )
@@ -137,14 +130,6 @@ class UpgradeToJava17Test implements RewriteTest {
                     class A {
                        public String test() {
                            return String.format("Hello %s", "world");
-                       }
-                    }
-                    """,
-                  //language=java
-                  """
-                    class A {
-                       public String test() {
-                           return "Hello %s".formatted("world");
                        }
                     }
                     """,
