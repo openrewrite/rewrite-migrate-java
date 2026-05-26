@@ -1308,12 +1308,6 @@ examples:
              return String.format("Hello %s", "world");
          }
       }
-    after: |
-      class A {
-         public String test() {
-             return "Hello %s".formatted("world");
-         }
-      }
     language: java
   - before: project
     language: mavenProject
