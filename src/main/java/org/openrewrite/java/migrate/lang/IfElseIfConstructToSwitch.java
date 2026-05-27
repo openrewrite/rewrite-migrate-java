@@ -118,6 +118,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     return;
                 }
             }
+            if (!potentialCandidate) {
+                return;
+            }
             potentialCandidate = validatePotentialCandidate();
         }
 

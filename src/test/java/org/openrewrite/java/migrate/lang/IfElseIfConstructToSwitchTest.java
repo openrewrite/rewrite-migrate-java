@@ -905,6 +905,32 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         }
 
         @Test
+        void noSwitchBlockWithTrailingNonEqualsBinaryCheck() {
+            // https://github.com/openrewrite/rewrite-migrate-java/issues/1108
+            // The trailing `else if (o != null)` is not a recognised null check and must not be silently dropped.
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  public class A {
+                      void test(Object o) {
+                          if (o instanceof String s) {
+                              System.out.println(s);
+                          } else if (o instanceof Integer i) {
+                              System.out.println(i);
+                          } else if (o instanceof Boolean b) {
+                              System.out.println(b);
+                          } else if (o != null) {
+                              System.out.println(o);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void noSwitchBlockWhenElseBlockReturns() {
             rewriteRun(
               //language=java
