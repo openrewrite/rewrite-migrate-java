@@ -26,6 +26,8 @@ import org.openrewrite.java.RenameVariable;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -40,7 +42,11 @@ public class RenameUnderscoreIdentifier extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesJavaVersion<>(1, 8),
+                Preconditions.and(
+                        new UsesJavaVersion<>(1, 8),
+                        Preconditions.not(new KotlinFileChecker<>()),
+                        Preconditions.not(new GroovyFileChecker<>())
+                ),
                 new RenameIdentifierVisitor("_", "__")
         );
     }
