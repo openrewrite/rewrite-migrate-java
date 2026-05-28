@@ -514,4 +514,76 @@ class ReplaceUnusedVariablesWithUnderscoreTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotReplaceWhenLambdaParamIsAssignmentTarget() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.function.BinaryOperator;
+
+              class Test {
+                  void test() {
+                      BinaryOperator<String> op = (a, b) -> a = "value";
+                  }
+              }
+              """,
+            """
+              import java.util.function.BinaryOperator;
+
+              class Test {
+                  void test() {
+                      BinaryOperator<String> op = (a, _) -> a = "value";
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceWhenSecondLambdaParamIsAssignmentTarget() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.function.BinaryOperator;
+
+              class Test {
+                  void test() {
+                      BinaryOperator<String> op = (a, b) -> b = "value";
+                  }
+              }
+              """,
+            """
+              import java.util.function.BinaryOperator;
+
+              class Test {
+                  void test() {
+                      BinaryOperator<String> op = (_, b) -> b = "value";
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceWhenSingleLambdaParamIsAssignmentTarget() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.function.UnaryOperator;
+
+              class Test {
+                  void test() {
+                      UnaryOperator<String> op = a -> a = "value";
+                  }
+              }
+              """
+          )
+        );
+    }
 }
