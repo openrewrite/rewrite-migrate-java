@@ -25,6 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class RenameUnderscoreIdentifierTest implements RewriteTest {
 
@@ -266,6 +267,25 @@ class RenameUnderscoreIdentifierTest implements RewriteTest {
                   void test() {
                       Stream.of("a", "b")
                           .collect(Collectors.toMap(String::toUpperCase, __ -> "val"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void kotlinFileNotChanged() {
+        rewriteRun(
+          spec -> spec.recipe(new RenameUnderscoreIdentifier())
+            .allSources(s -> s.markers(javaVersion(8))),
+          //language=kotlin
+          kotlin(
+            """
+              class Test {
+                  fun test() {
+                      val pairs = listOf(1 to "a", 2 to "b")
+                      pairs.forEach { _, _ -> println("ignored") }
                   }
               }
               """
