@@ -28,6 +28,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,8 @@ public class UseMapOf extends Recipe {
                     public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                         J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
                         J.Block body = n.getBody();
-                        if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1) {
+                        if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1 &&
+                                TypeUtils.isOfClassType(n.getClazz() != null ? n.getClazz().getType() : null, "java.util.HashMap")) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
                                 List<Statement> putStatements = ((J.Block) statement).getStatements();

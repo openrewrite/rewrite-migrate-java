@@ -205,6 +205,49 @@ class UseMapOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1112")
+    @Test
+    void doNotChangeLinkedHashMap() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.LinkedHashMap;
+              import java.util.Map;
+
+              class Test {
+                  static final Map<String, String> ORDERED = new LinkedHashMap<>() {{
+                      put("a", "1");
+                      put("b", "2");
+                      put("c", "3");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1112")
+    @Test
+    void doNotChangeTreeMap() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Map;
+              import java.util.TreeMap;
+
+              class Test {
+                  static final Map<String, String> SORTED = new TreeMap<>() {{
+                      put("a", "1");
+                      put("b", "2");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/566")
     @Test
     void changeDoubleBraceInitForNonStringTypes() {
