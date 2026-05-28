@@ -995,6 +995,27 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1110")
+    @Test
+    void supplementaryCharacterAsSurrogatePair() {
+        // The Java parser currently returns a corrupted value/valueSource for string literals containing
+        // supplementary characters encoded as surrogate pairs. Until that is fixed upstream, the recipe
+        // must bail out rather than emit a broken text block that drops or re-escapes content.
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks()),
+          java(
+            """
+             class Test {
+               String json =
+                   "{\\n"
+                       + "  \\"euro\\": 1,\\n"
+                       + "  \\"ligature\\": 2,\\n"
+                       + "  \\"\\ud834\\udd20\\": 3\\n"
+                       + "}";
+             }""",
+            src -> src.markers(javaVersion(17))));
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/555")
     @Test
     void textBlockTrailingEscape() {

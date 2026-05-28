@@ -247,7 +247,11 @@ public class UseTextBlocks extends Recipe {
             J.Literal l = (J.Literal) expr;
             return TypeUtils.isString(l.getType()) &&
                    l.getValueSource() != null &&
-                   !l.getValueSource().startsWith("\"\"\"");
+                   !l.getValueSource().startsWith("\"\"\"") &&
+                   // Defend against literals whose value still looks like the source (e.g. parser failed to
+                   // decode supplementary characters encoded as surrogate pairs); skipping prevents emitting
+                   // a broken text block that drops or re-escapes content.
+                   !l.getValueSource().equals(l.getValue());
         }
         return false;
     }
