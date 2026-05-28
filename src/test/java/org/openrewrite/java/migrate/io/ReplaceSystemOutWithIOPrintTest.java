@@ -53,8 +53,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -77,8 +75,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -103,8 +99,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -128,8 +122,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       String message = "Hello World";
@@ -153,8 +145,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       IO.println();
@@ -180,8 +170,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -210,8 +198,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
-              import java.io.IO;
-
               class Example {
                   void test() {
                       String name = "John";
@@ -261,7 +247,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
-    void addsImportForRegularClassWithPackage() {
+    void doesNotAddImportForRegularClassWithPackage() {
         rewriteRun(
           java(
             """
@@ -275,8 +261,6 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               """,
             """
               package com.helloworld;
-
-              import java.io.IO;
 
               public class Main {
                   public void greet() {
