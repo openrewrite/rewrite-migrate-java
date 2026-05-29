@@ -4680,8 +4680,6 @@ examples:
           }
       }
     after: |
-      import java.io.IO;
-
       class Example {
           void test() {
               IO.print("Hello");
