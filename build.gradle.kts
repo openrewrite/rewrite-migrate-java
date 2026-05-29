@@ -56,6 +56,7 @@ dependencies {
 
     implementation(platform("org.openrewrite:rewrite-bom:${rewriteVersion}"))
     implementation("org.openrewrite:rewrite-java")
+    implementation("org.openrewrite:rewrite-kotlin")
     implementation("org.openrewrite:rewrite-properties")
     implementation("org.openrewrite:rewrite-xml")
     implementation("org.openrewrite:rewrite-json")
@@ -80,7 +81,6 @@ dependencies {
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
     testImplementation("org.openrewrite:rewrite-test")
-    testImplementation("org.openrewrite:rewrite-kotlin")
     testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
     testImplementation("org.assertj:assertj-core:latest.release")
