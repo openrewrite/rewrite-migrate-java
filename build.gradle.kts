@@ -36,6 +36,7 @@ recipeDependencies {
     testParserClasspath("javax.validation:validation-api:2.0.1.Final")
     testParserClasspath("org.apache.ws.security:wss4j:1.6.19")
     testParserClasspath("org.apache.wss4j:wss4j-ws-security-common:2.0.0")
+    testParserClasspath("org.apache.wss4j:wss4j-ws-security-dom:2.0.0")
     testParserClasspath("org.glassfish:jakarta.faces:2.3.19")
     testParserClasspath("org.glassfish:jakarta.faces:3.0.3")
 }

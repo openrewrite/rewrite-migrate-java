@@ -30,7 +30,8 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "wss4j-1.6.19", "wss4j-ws-security-common-2.0.0"))
+            .classpathFromResources(new InMemoryExecutionContext(),
+              "wss4j-1.6.19", "wss4j-ws-security-common-2.0.0", "wss4j-ws-security-dom-2.0.0"))
           .recipe(Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
             .build()
@@ -61,6 +62,41 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
                       WSSecurityException x = new WSSecurityException(1,"");
                       CryptoBase base = null;
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void messageTokenTypesRouteToTheirRealWss4j2xPackages() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import org.apache.ws.security.message.token.UsernameToken;
+              import org.apache.ws.security.message.token.BinarySecurity;
+              import org.apache.ws.security.message.token.Timestamp;
+              import org.apache.ws.security.message.token.KerberosContext;
+
+              class Test {
+                  UsernameToken token;
+                  BinarySecurity bs;
+                  Timestamp ts;
+                  KerberosContext ctx;
+              }
+              """,
+            """
+              import org.apache.wss4j.common.kerberos.KerberosContext;
+              import org.apache.wss4j.common.token.BinarySecurity;
+              import org.apache.wss4j.dom.message.token.Timestamp;
+              import org.apache.wss4j.dom.message.token.UsernameToken;
+
+              class Test {
+                  UsernameToken token;
+                  BinarySecurity bs;
+                  Timestamp ts;
+                  KerberosContext ctx;
               }
               """
           )
