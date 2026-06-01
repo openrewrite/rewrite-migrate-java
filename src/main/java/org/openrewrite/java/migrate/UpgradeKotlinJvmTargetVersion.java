@@ -115,7 +115,9 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                 J.Assignment a = super.visitAssignment(assignment, ctx);
-                if (!isInsideKotlinCompilerBlock(getCursor())) {
+                // A string `jvmTarget` is only valid in the legacy `kotlinOptions` block; bumping one inside
+                // `compilerOptions` would leave a non-compiling String assignment to a `Property<JvmTarget>`.
+                if (!"kotlinOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
                     return a;
                 }
                 Expression variable = a.getVariable();
@@ -161,7 +163,13 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                 }
                 Expression rhs = a.getAssignment();
                 if (rhs instanceof J.Literal) {
-                    return bumpLiteralAssignment(a, (J.Literal) rhs, newVersion, target);
+                    // A string-literal `jvmTarget` is only valid in the legacy `kotlinOptions` block. Inside
+                    // `compilerOptions` it is `Property<JvmTarget>` and a String assignment does not compile, so
+                    // leave such (already-invalid) input untouched — `UseJvmTargetProviderSyntax` converts it.
+                    if ("kotlinOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
+                        return bumpLiteralAssignment(a, (J.Literal) rhs, newVersion, target);
+                    }
+                    return a;
                 }
                 if (rhs instanceof J.FieldAccess) {
                     J.FieldAccess fa = (J.FieldAccess) rhs;
@@ -200,21 +208,34 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
         };
     }
 
-    // Gradle build scripts lack type attribution, so there is no trait that models "inside the compilerOptions
-    // block" — walk the cursor ancestry and match the enclosing DSL block by name (matchUnknownTypes=true), the
-    // same approach `org.openrewrite.gradle.UpdateJavaCompatibility` uses for `java { }` / `sourceCompatibility`.
     private static boolean isInsideKotlinCompilerBlock(Cursor cursor) {
+        return enclosingKotlinCompilerBlock(cursor) != null;
+    }
+
+    /**
+     * The simple name of the nearest enclosing Kotlin compile-config DSL block (`kotlinOptions` or
+     * `compilerOptions`), or {@code null} if there is none. Gradle build scripts lack type attribution, so the
+     * enclosing block is matched by name (matchUnknownTypes=true), the same approach
+     * `org.openrewrite.gradle.UpdateJavaCompatibility` uses for `java { }` / `sourceCompatibility`.
+     * <p>
+     * The distinction matters: `jvmTarget` is a `String` in the legacy `kotlinOptions` DSL but a
+     * `Property<JvmTarget>` in `compilerOptions`, so a string-literal value is only valid under `kotlinOptions`.
+     */
+    private static @Nullable String enclosingKotlinCompilerBlock(Cursor cursor) {
         Iterator<Object> path = cursor.getPath();
         while (path.hasNext()) {
             Object o = path.next();
             if (o instanceof J.MethodInvocation) {
                 J.MethodInvocation mi = (J.MethodInvocation) o;
-                if (KOTLIN_OPTIONS.matches(mi, true) || COMPILER_OPTIONS.matches(mi, true)) {
-                    return true;
+                if (KOTLIN_OPTIONS.matches(mi, true)) {
+                    return "kotlinOptions";
+                }
+                if (COMPILER_OPTIONS.matches(mi, true)) {
+                    return "compilerOptions";
                 }
             }
         }
-        return false;
+        return null;
     }
 
     private static J.Assignment bumpLiteralAssignment(J.Assignment a, J.Literal literal, String newVersion, int target) {

@@ -233,6 +233,56 @@ class UpgradeKotlinJvmTargetVersionTest implements RewriteTest {
     }
 
     @Test
+    void doNotBumpStringJvmTargetInsideCompilerOptions() {
+        // A String `jvmTarget` is invalid inside `compilerOptions` (it is a `Property<JvmTarget>`). Bumping the
+        // number would leave a still-non-compiling String assignment, so leave this already-invalid input alone;
+        // `UseJvmTargetProviderSyntax` is responsible for converting it to the provider form.
+        rewriteRun(
+          buildGradleKts(
+            """
+              plugins {
+                  kotlin("jvm") version "1.9.24"
+              }
+              kotlin {
+                  compilerOptions {
+                      jvmTarget = "11"
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void bumpStringJvmTargetInsideLegacyKotlinOptions() {
+        // In the legacy `kotlinOptions` block `jvmTarget` is a String, so bumping the string value is correct.
+        rewriteRun(
+          buildGradleKts(
+            """
+              plugins {
+                  kotlin("jvm") version "1.9.24"
+              }
+              tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+                  kotlinOptions {
+                      jvmTarget = "11"
+                  }
+              }
+              """,
+            """
+              plugins {
+                  kotlin("jvm") version "1.9.24"
+              }
+              tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+                  kotlinOptions {
+                      jvmTarget = "21"
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotChangeGradleKotlinDslJvmTargetOutsideKotlinBlock() {
         rewriteRun(
           buildGradleKts(
