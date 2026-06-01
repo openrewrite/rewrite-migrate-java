@@ -294,6 +294,42 @@ class RefineSwitchCasesTest implements RewriteTest {
         }
 
         @Test
+        void enumConstantLabelWithGuardlessCondition() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Reproducer {
+                      enum EnumOptions {
+                          OPTION_ONE,
+                          OPTION_TWO
+                      }
+
+                      boolean checkMethod() {
+                          return true;
+                      }
+
+                      void handleOptionOne() {
+                      }
+
+                      void buildMenu(EnumOptions item) {
+                          switch (item) {
+                              case OPTION_ONE -> {
+                                  if (checkMethod()) {
+                                      handleOptionOne();
+                                  }
+                              }
+                              case OPTION_TWO -> {
+                              }
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void notFormattedWhenNotChanged() {
             rewriteRun(
               //language=java

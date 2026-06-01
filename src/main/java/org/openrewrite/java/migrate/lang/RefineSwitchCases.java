@@ -66,8 +66,11 @@ public class RefineSwitchCases extends Recipe {
                                 List<Statement> caseStatements = ((J.Block) case_.getBody()).getStatements();
                                 if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.If) {
                                     J.If if_ = (J.If) caseStatements.get(0);
-                                    if (extractLabelVariables(case_)
-                                            .containsAll(extractConditionVariables(if_.getIfCondition().getTree()))) {
+                                    // Guards (`when`) are only valid on pattern case labels, not on
+                                    // constant labels such as enum constants, so require bound variables
+                                    Set<String> labelVariables = extractLabelVariables(case_);
+                                    if (!labelVariables.isEmpty() &&
+                                            labelVariables.containsAll(extractConditionVariables(if_.getIfCondition().getTree()))) {
                                         // Replace case with multiple cases
                                         return createGuardedCases(case_, if_);
                                     }
