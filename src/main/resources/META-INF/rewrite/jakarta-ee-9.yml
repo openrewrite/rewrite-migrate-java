@@ -1383,8 +1383,6 @@ description: >-
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  # Route message.token classes to their real WSS4J 2.x locations before the recursive
-  # ChangePackage below, which would otherwise misroute them to a namespace that does not exist.
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.ws.security.message.token.BinarySecurity
       newFullyQualifiedTypeName: org.apache.wss4j.common.token.BinarySecurity
