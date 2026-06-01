@@ -986,6 +986,10 @@ recipeList:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind
       recursive: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.xml.bind.marshaller.NamespacePrefixMapper
+      newFullyQualifiedTypeName: org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper
+      ignoreDefinition: true
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.codehaus.mojo
       artifactId: jaxb2-maven-plugin
