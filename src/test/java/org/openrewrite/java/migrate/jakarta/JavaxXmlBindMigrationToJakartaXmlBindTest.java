@@ -53,6 +53,24 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
       public @interface XmlElement {}
       """;
 
+    @Language("java")
+    private static final String SUN_NAMESPACE_PREFIX_MAPPER_STUB = """
+      package com.sun.xml.bind.marshaller;
+      public abstract class NamespacePrefixMapper {
+          public abstract String[] getPreDeclaredNamespaceUris();
+          public abstract String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix);
+      }
+      """;
+
+    @Language("java")
+    private static final String GLASSFISH_NAMESPACE_PREFIX_MAPPER_STUB = """
+      package org.glassfish.jaxb.runtime.marshaller;
+      public abstract class NamespacePrefixMapper {
+          public abstract String[] getPreDeclaredNamespaceUris();
+          public abstract String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix);
+      }
+      """;
+
     @DocumentExample
     @Test
     void dontRetainJaxbApiWhenJacksonNotPresent() {
@@ -208,6 +226,47 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   .contains("jaxb-api")
                   .contains("jackson-module-jaxb-annotations")
                   .actual())
+          )
+        );
+    }
+
+    @Test
+    void migrateNamespacePrefixMapper() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(SUN_NAMESPACE_PREFIX_MAPPER_STUB, GLASSFISH_NAMESPACE_PREFIX_MAPPER_STUB)),
+          //language=java
+          java(
+            """
+              import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+
+              public class MyPrefixMapper extends NamespacePrefixMapper {
+                  @Override
+                  public String[] getPreDeclaredNamespaceUris() {
+                      return new String[0];
+                  }
+
+                  @Override
+                  public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+                      return suggestion;
+                  }
+              }
+              """,
+            """
+              import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
+
+              public class MyPrefixMapper extends NamespacePrefixMapper {
+                  @Override
+                  public String[] getPreDeclaredNamespaceUris() {
+                      return new String[0];
+                  }
+
+                  @Override
+                  public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+                      return suggestion;
+                  }
+              }
+              """
           )
         );
     }
