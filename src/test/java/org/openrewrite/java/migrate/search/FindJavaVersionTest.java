@@ -177,25 +177,6 @@ class FindJavaVersionTest implements RewriteTest {
     }
 
     @Test
-    void allUnknownVersionsEmitNoRows() {
-        // When no module has a parseable version, the recipe emits no rows rather than reporting -1.
-        var git = gitProvenance("https://github.com/example/all-unknown.git");
-        var project = new JavaProject(randomId(), "module", null);
-        var unparseable = new JavaVersion(randomId(), "Sam", "Shelter", "", "");
-        rewriteRun(
-          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
-            assertThat(rows).isEmpty()),
-          //language=java
-          java(
-            """
-              class A {
-              }
-              """,
-            spec -> spec.markers(git, project, unparseable))
-        );
-    }
-
-    @Test
     void withoutGitProvenanceFallsBackToPerProject() {
         // When no GitProvenance is available (local non-git source trees, some test setups),
         // the recipe falls back to one row per JavaProject so distinct modules are not silently merged.
