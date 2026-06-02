@@ -144,6 +144,58 @@ class FindJavaVersionTest implements RewriteTest {
     }
 
     @Test
+    void unknownVersionMarkersAreSkipped() {
+        // A JavaVersion whose source/target compatibility cannot be parsed reports -1 (for example a
+        // build configured solely through a Java toolchain or an unresolved property). Such markers
+        // must not contribute a "-1" row, nor drag the reported version of sibling modules down: -1
+        // sorts below every real version and would otherwise win the lower() reduction.
+        var git = gitProvenance("https://github.com/example/toolchain.git");
+        var known = new JavaProject(randomId(), "known-module", null);
+        var unknown = new JavaProject(randomId(), "unknown-module", null);
+        var java17 = new JavaVersion(randomId(), "Sam", "Shelter", "17", "17");
+        var unparseable = new JavaVersion(randomId(), "Sam", "Shelter", "", "");
+        rewriteRun(
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).containsExactly(
+              new JavaVersionTable.Row("17", "17")
+            )),
+          //language=java
+          java(
+            """
+              class Known {
+              }
+              """,
+            spec -> spec.markers(git, known, java17)),
+          //language=java
+          java(
+            """
+              class Unknown {
+              }
+              """,
+            spec -> spec.markers(git, unknown, unparseable))
+        );
+    }
+
+    @Test
+    void allUnknownVersionsEmitNoRows() {
+        // When no module has a parseable version, the recipe emits no rows rather than reporting -1.
+        var git = gitProvenance("https://github.com/example/all-unknown.git");
+        var project = new JavaProject(randomId(), "module", null);
+        var unparseable = new JavaVersion(randomId(), "Sam", "Shelter", "", "");
+        rewriteRun(
+          spec -> spec.dataTable(JavaVersionTable.Row.class, rows ->
+            assertThat(rows).isEmpty()),
+          //language=java
+          java(
+            """
+              class A {
+              }
+              """,
+            spec -> spec.markers(git, project, unparseable))
+        );
+    }
+
+    @Test
     void withoutGitProvenanceFallsBackToPerProject() {
         // When no GitProvenance is available (local non-git source trees, some test setups),
         // the recipe falls back to one row per JavaProject so distinct modules are not silently merged.
