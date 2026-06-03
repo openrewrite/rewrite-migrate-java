@@ -58,6 +58,17 @@ public class FindJavaVersion extends ScanningRecipe<Map<String, JavaVersionTable
                 if (tree instanceof JavaSourceFile) {
                     Markers markers = tree.getMarkers();
                     markers.findFirst(JavaVersion.class).ifPresent(jv -> {
+                        int sourceVersion = jv.getMajorVersion();
+                        int targetVersion = jv.getMajorReleaseVersion();
+                        // A JavaVersion whose source/target compatibility could not be parsed reports -1
+                        // (for example a build that sets the version only through a Java toolchain, or an
+                        // unresolved property placeholder). -1 is not a real Java version, and because it
+                        // sorts below every real version it would win the lower() reduction and mask the
+                        // actual versions of every other module in the repository, so skip it entirely.
+                        if (sourceVersion < 0 || targetVersion < 0) {
+                            return;
+                        }
+
                         // Prefer the git origin as the dedup key: every module in a multi-module repo
                         // shares one GitProvenance, so they collapse to a single row. Fall back to the
                         // JavaProject UUID (one row per module) when no git provenance is available,
@@ -72,8 +83,8 @@ public class FindJavaVersion extends ScanningRecipe<Map<String, JavaVersionTable
                                         .orElseGet(() -> "version:" + jv.getId()));
 
                         JavaVersionTable.Row candidate = new JavaVersionTable.Row(
-                                Integer.toString(jv.getMajorVersion()),
-                                Integer.toString(jv.getMajorReleaseVersion()));
+                                Integer.toString(sourceVersion),
+                                Integer.toString(targetVersion));
                         acc.merge(key, candidate, FindJavaVersion::lower);
                     });
                 }
