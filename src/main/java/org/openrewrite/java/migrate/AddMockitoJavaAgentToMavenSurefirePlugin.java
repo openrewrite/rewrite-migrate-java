@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.intellij.lang.annotations.Language;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -60,15 +61,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     @Language("xml")
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG = "<execution><goals>"+ MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL + "</goals></execution>";
 
-    @Override
-    public String getDisplayName() {
-        return "Add Mockito Java Agent to Maven Surefire Plugin";
-    }
+    @Getter
+    final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
 
-    @Override
-    public String getDescription() {
-        return "Adds required configuration to specifically enable the Mockito/Bytebuddy Java agent in the Maven Surefire plugin for Java 21 compatibility.";
-    }
+    @Getter
+    final String description = "Adds required configuration to specifically enable the Mockito/Bytebuddy Java agent in the Maven Surefire plugin for Java 21 compatibility.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
