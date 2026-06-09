@@ -496,6 +496,134 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
+    @Test
+    public void codeTagConverted() {
+        rewriteRun(
+          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
+          java(
+            """
+              class Test {
+                  /**
+                   * <pre><code> public class TolkienCharacter {
+                   *   String name;
+                   *   double height;
+                   * }
+                   * </code></pre>
+                   */
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """,
+            """
+              class Test {
+                  /// ```
+                  /// public class TolkienCharacter {
+                  ///   String name;
+                  ///   double height;
+                  /// }
+                  /// ```
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """)
+        );
+    }
+
+    @Test
+    public void codeTagWithEmptyLanguageConverted() {
+        rewriteRun(
+          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
+          java(
+            """
+              class Test {
+                  /**
+                   * <pre><code class=''> public class TolkienCharacter {
+                   *   String name;
+                   *   double height;
+                   * }
+                   * </code></pre>
+                   */
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """,
+            """
+              class Test {
+                  /// ```
+                  /// public class TolkienCharacter {
+                  ///   String name;
+                  ///   double height;
+                  /// }
+                  /// ```
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """)
+        );
+    }
+
+    @Test
+    public void codeTagLanguageNotConverted() {
+        rewriteRun(
+          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
+          java(
+            """
+              class Test {
+                  /**
+                   * <pre><code class='java'> public class TolkienCharacter {
+                   *   String name;
+                   *   double height;
+                   * }
+                   * </code></pre>
+                   */
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """,
+            """
+              class Test {
+                  /// ```java
+                  /// public class TolkienCharacter {
+                  ///   String name;
+                  ///   double height;
+                  /// }
+                  /// ```
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """)
+        );
+    }
+
+    @Test
+    public void codeTagClosedInline() {
+        rewriteRun(
+          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
+          java(
+            """
+              class Test {
+                  /**
+                   * <pre><code class='java'> // assertion will pass
+                   * assertThat("abc").contains("ab");</code></pre>
+                   */
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """,
+            """
+              class Test {
+                  /// ```java
+                  /// // assertion will pass
+                  /// assertThat("abc").contains("ab");
+                  /// ```
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """)
+        );
+    }
+
+
     @Nested
     class Jep467FlagshipExamples {
 
