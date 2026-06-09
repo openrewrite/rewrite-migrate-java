@@ -46,11 +46,8 @@ import static java.util.Collections.emptyList;
 
 public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
-    private static final XPathMatcher MAVEN_SUREFIRE_PLUGIN_MATCHER = new XPathMatcher(
-            "/project/build/plugins/plugin[artifactId='maven-surefire-plugin']");
-
-    private static final XPathMatcher MAVEN_SUREFIRE_PLUGIN_CONFIGURATION_MATCHER = new XPathMatcher(
-            "/project/build/plugins/plugin[artifactId='maven-surefire-plugin']/configuration");
+    private static final String MAVEN_PLUGINS_GROUP_ID = "org.apache.maven.plugins";
+    private static final String MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID = "maven-surefire-plugin";
 
     @Language("xpath")
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER = "/project/build/plugins/plugin[artifactId='maven-dependency-plugin']/executions/execution";
@@ -125,29 +122,39 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
+                // `isPluginTag` matches any `plugin` under a `plugins` element, so this covers both
+                // `build/plugins` and `build/pluginManagement/plugins` declarations.
+                if (!isPluginTag(MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID)) {
+                    return t;
+                }
 
+                String argLineJavaAgentParam = getArgLineJavaAgentArgument();
                 //noinspection unchecked
-                final List<Content> tagContents = (List<Content>) t.getContent();
-                if (MAVEN_SUREFIRE_PLUGIN_MATCHER.matches(getCursor()) && !t.getChild("configuration").isPresent()) {
-                    return autoFormat(t.withContent(ListUtils.concat(tagContents,
-                            buildConfigurationTag(getArgLineJavaAgentArgument(), false))), ctx);
-                } else if (MAVEN_SUREFIRE_PLUGIN_CONFIGURATION_MATCHER.matches(getCursor())) {
-                    String argLineJavaAgentParam = getArgLineJavaAgentArgument();
-                    List<Xml.Tag> argLineTagChildren = t.getChildren("argLine");
-                    if (argLineTagChildren.size() == 1) {
-                        Xml.Tag argLineTag = argLineTagChildren.get(0);
-                        String existingArgLineValue = argLineTag.getValue().orElse("@{argLine}");
+                List<Content> pluginContents = (List<Content>) t.getContent();
+                Optional<Xml.Tag> configuration = t.getChild("configuration");
+                if (!configuration.isPresent()) {
+                    return autoFormat(t.withContent(ListUtils.concat(pluginContents,
+                            buildConfigurationTag(argLineJavaAgentParam, false))), ctx);
+                }
 
-                        if (!existingArgLineValue.contains(argLineJavaAgentParam)) {
-                            List<Content> nonArgLineTags = ListUtils.filter(tagContents, content -> content != argLineTag);
-                            Xml.Tag configurationTagWithExistingArgParams = buildConfigurationTag(existingArgLineValue + " " + argLineJavaAgentParam, true);
-                            return autoFormat(t.withContent(
-                                    ListUtils.concatAll(nonArgLineTags, configurationTagWithExistingArgParams.getContent())), ctx);
-                        }
-                    } else if(argLineTagChildren.isEmpty()) {
-                        return autoFormat(t.withContent(
-                                ListUtils.concatAll(tagContents, buildConfigurationTag(argLineJavaAgentParam, false).getContent())), ctx);
+                Xml.Tag config = configuration.get();
+                //noinspection unchecked
+                List<Content> configContents = (List<Content>) config.getContent();
+                List<Xml.Tag> argLineTagChildren = config.getChildren("argLine");
+                if (argLineTagChildren.size() == 1) {
+                    Xml.Tag argLineTag = argLineTagChildren.get(0);
+                    String existingArgLineValue = argLineTag.getValue().orElse("@{argLine}");
+
+                    if (!existingArgLineValue.contains(argLineJavaAgentParam)) {
+                        List<Content> nonArgLineTags = ListUtils.filter(configContents, content -> content != argLineTag);
+                        Xml.Tag mergedConfiguration = buildConfigurationTag(existingArgLineValue + " " + argLineJavaAgentParam, true);
+                        Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(nonArgLineTags, mergedConfiguration.getContent()));
+                        return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                     }
+                } else if (argLineTagChildren.isEmpty()) {
+                    Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(configContents,
+                            buildConfigurationTag(argLineJavaAgentParam, false).getContent()));
+                    return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                 }
                 return t;
             }
