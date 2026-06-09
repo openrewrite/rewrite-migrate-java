@@ -516,7 +516,8 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
               """,
             """
               class Test {
-                  /// ``` public class TolkienCharacter {
+                  /// ```
+                  /// public class TolkienCharacter {
                   ///   String name;
                   ///   double height;
                   /// }
@@ -548,7 +549,8 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
               """,
             """
               class Test {
-                  /// ``` public class TolkienCharacter {
+                  /// ```
+                  /// public class TolkienCharacter {
                   ///   String name;
                   ///   double height;
                   /// }
@@ -580,10 +582,39 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
               """,
             """
               class Test {
-                  /// ```java public class TolkienCharacter {
+                  /// ```java
+                  /// public class TolkienCharacter {
                   ///   String name;
                   ///   double height;
                   /// }
+                  /// ```
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """)
+        );
+    }
+
+    @Test
+    public void codeTagClosedInline() {
+        rewriteRun(
+          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
+          java(
+            """
+              class Test {
+                  /**
+                   * <pre><code class='java'> // assertion will pass
+                   * assertThat("abc").contains("ab");</code></pre>
+                   */
+                  public void withErrorMessageForFields() {
+                  }
+              }
+              """,
+            """
+              class Test {
+                  /// ```java
+                  /// // assertion will pass
+                  /// assertThat("abc").contains("ab");
                   /// ```
                   public void withErrorMessageForFields() {
                   }

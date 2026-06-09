@@ -238,7 +238,12 @@ public class JavadocToMarkdownDocComment extends Recipe {
             String name = element.getName().toLowerCase();
             if (inPre && !"pre".equals(name)) {
                 if ("code".equals(name)) {
+                    // Place the fence (and optional language) on its own line so the
+                    // code content starts fresh; otherwise the first code line would be
+                    // consumed as the fenced code block's info string.
                     currentLine.append(extractCodeLanguage(element));
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
                     return;
                 }
                 renderHtmlStartElement(element);
@@ -351,6 +356,13 @@ public class JavadocToMarkdownDocComment extends Recipe {
             switch (name) {
                 case "pre":
                     inPre = false;
+                    // Flush any trailing inline code (e.g. `...);</code></pre>`) so the
+                    // closing fence sits on its own line, as Markdown requires. Only flush
+                    // real content; a whitespace-only line means the fence is already alone.
+                    if (!currentLine.toString().trim().isEmpty()) {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder();
+                    }
                     currentLine.append("```");
                     break;
                 case "code":
