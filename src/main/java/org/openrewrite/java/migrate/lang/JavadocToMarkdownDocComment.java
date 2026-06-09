@@ -237,6 +237,10 @@ public class JavadocToMarkdownDocComment extends Recipe {
         private void convertStartElement(Javadoc.StartElement element) {
             String name = element.getName().toLowerCase();
             if (inPre && !"pre".equals(name)) {
+                if ("code".equals(name)) {
+                    currentLine.append(extractCodeLanguage(element));
+                    return;
+                }
                 renderHtmlStartElement(element);
                 return;
             }
@@ -293,6 +297,31 @@ public class JavadocToMarkdownDocComment extends Recipe {
             }
         }
 
+        private String extractCodeLanguage(Javadoc.StartElement element) {
+            return element.getAttributes().stream()
+                    .filter(attr -> attr instanceof Javadoc.Attribute)
+                    .map(attr -> (Javadoc.Attribute) attr)
+                    .filter(a -> "class".equalsIgnoreCase(a.getName()))
+                    .filter(a -> a.getValue() != null)
+                    .map(a -> renderInline(a.getValue()).trim())
+                    .map(JavadocToMarkdownConverter::stripAttributeQuotes)
+                    .findFirst()
+                    .orElse("");
+        }
+
+        private static String stripAttributeQuotes(String value) {
+            if (value.length() < 2) {
+                return value;
+            }
+
+            char first = value.charAt(0);
+            char last = value.charAt(value.length() - 1);
+            if ((first == '\'' && last == '\'') || (first == '"' && last == '"')) {
+                return value.substring(1, value.length() - 1);
+            }
+            return value;
+        }
+
         private void renderHtmlStartElement(Javadoc.StartElement element) {
             currentLine.append('<').append(element.getName());
             for (Javadoc attr : element.getAttributes()) {
@@ -314,7 +343,9 @@ public class JavadocToMarkdownDocComment extends Recipe {
         private void convertEndElement(Javadoc.EndElement element) {
             String name = element.getName().toLowerCase();
             if (inPre && !"pre".equals(name)) {
-                currentLine.append("</").append(element.getName()).append('>');
+                if (!"code".equals(name)) {
+                    currentLine.append("</").append(element.getName()).append('>');
+                }
                 return;
             }
             switch (name) {
