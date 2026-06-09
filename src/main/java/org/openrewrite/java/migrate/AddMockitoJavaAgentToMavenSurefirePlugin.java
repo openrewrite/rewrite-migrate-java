@@ -38,9 +38,10 @@ import org.openrewrite.xml.XmlIsoVisitor;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.Collections.emptyList;
 
 public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
@@ -75,7 +76,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             private final String CONFIGURATION_TAG_TEMPLATE = "<configuration><!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
 
             private String getArgLineJavaAgentArgument() {
-                String mockitoCoreVersion = getResolutionResult().getDependencies().getOrDefault(Scope.Test, new ArrayList<>()).stream()
+                String mockitoCoreVersion = getResolutionResult().getDependencies().getOrDefault(Scope.Test, emptyList()).stream()
                         .filter(dependency -> dependency.getGroupId().equals("org.mockito") && dependency.getArtifactId()
                                 .equals("mockito-core")).findFirst().map(ResolvedDependency::getVersion).get();
 
@@ -127,14 +128,14 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                String argLineJavaAgentParam = getArgLineJavaAgentArgument();
-                Xml.Tag configurationTag = buildConfigurationTag(argLineJavaAgentParam, false);
 
                 //noinspection unchecked
                 final List<Content> tagContents = (List<Content>) t.getContent();
                 if (MAVEN_SUREFIRE_PLUGIN_MATCHER.matches(getCursor()) && !t.getChild("configuration").isPresent()) {
-                    return autoFormat(t.withContent(ListUtils.concat(tagContents, configurationTag)), ctx);
+                    return autoFormat(t.withContent(ListUtils.concat(tagContents,
+                            buildConfigurationTag(getArgLineJavaAgentArgument(), false))), ctx);
                 } else if (MAVEN_SUREFIRE_PLUGIN_CONFIGURATION_MATCHER.matches(getCursor())) {
+                    String argLineJavaAgentParam = getArgLineJavaAgentArgument();
                     List<Xml.Tag> argLineTagChildren = t.getChildren("argLine");
                     if (argLineTagChildren.size() == 1) {
                         Xml.Tag argLineTag = argLineTagChildren.get(0);
@@ -148,7 +149,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         }
                     } else if(argLineTagChildren.isEmpty()) {
                         return autoFormat(t.withContent(
-                                ListUtils.concatAll(tagContents, configurationTag.getContent())), ctx);
+                                ListUtils.concatAll(tagContents, buildConfigurationTag(argLineJavaAgentParam, false).getContent())), ctx);
                     }
                 }
                 return t;
