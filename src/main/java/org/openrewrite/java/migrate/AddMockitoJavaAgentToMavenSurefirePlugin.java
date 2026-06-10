@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.intellij.lang.annotations.Language;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -95,7 +96,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 } else if (mavenDependencyPlugin.get().getExecutions().stream().noneMatch(execution -> execution.getGoals() != null)) {
                     doAfterVisit(new AddOrUpdateChildTag(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER, "<goals>" + MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL + "</goals>", false).getVisitor());
                 } else if (mavenDependencyPlugin.get().getExecutions().stream().noneMatch(execution -> execution.getGoals() != null && execution.getGoals().contains("properties"))) {
-                    doAfterVisit(new AppendChildTagToParentVisitor(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER + "/goals", MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL));
+                    doAfterVisit(new AppendChildTagToParentVisitor(
+                            new XPathMatcher(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER + "/goals"),
+                            Xml.Tag.build(MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL)));
                 }
             }
 
@@ -141,6 +144,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 //noinspection unchecked
                 List<Content> configContents = (List<Content>) config.getContent();
                 List<Xml.Tag> argLineTagChildren = config.getChildren("argLine");
+                if (argLineTagChildren.isEmpty()) {
+                    Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(configContents,
+                            buildConfigurationTag(argLineJavaAgentParam, false).getContent()));
+                    return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
+                }
                 if (argLineTagChildren.size() == 1) {
                     Xml.Tag argLineTag = argLineTagChildren.get(0);
                     String existingArgLineValue = argLineTag.getValue().orElse("@{argLine}");
@@ -151,23 +159,16 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(nonArgLineTags, mergedConfiguration.getContent()));
                         return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                     }
-                } else if (argLineTagChildren.isEmpty()) {
-                    Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(configContents,
-                            buildConfigurationTag(argLineJavaAgentParam, false).getContent()));
-                    return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                 }
                 return t;
             }
         });
     }
-    public static class AppendChildTagToParentVisitor extends XmlIsoVisitor<ExecutionContext> {
+
+    @RequiredArgsConstructor
+    private static class AppendChildTagToParentVisitor extends XmlIsoVisitor<ExecutionContext> {
         private final XPathMatcher parentXPathMatcher;
         private final Xml.Tag newChildTag;
-
-        public AppendChildTagToParentVisitor(String parentXPath, @Language("xml") String newChildTag) {
-            this.parentXPathMatcher = new XPathMatcher(parentXPath);
-            this.newChildTag = Xml.Tag.build(newChildTag);
-        }
 
         @Override
         public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
