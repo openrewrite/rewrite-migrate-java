@@ -40,8 +40,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -76,8 +74,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -137,8 +133,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -183,8 +177,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -246,8 +238,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -297,8 +287,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -361,8 +349,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -407,8 +393,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -467,8 +451,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -516,8 +498,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -579,8 +559,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>1.0</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <modules>
                 <module>test-module1</module>
@@ -603,8 +581,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test-module1</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test-module1</name>
 
               <parent>
                 <groupId>org.sample</groupId>
@@ -639,8 +615,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test-module1</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test-module1</name>
 
               <parent>
                 <groupId>org.sample</groupId>
@@ -700,8 +674,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -724,8 +696,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -784,8 +754,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -831,8 +799,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -894,8 +860,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -944,8 +908,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1008,8 +970,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1048,8 +1008,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1112,8 +1070,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1175,8 +1131,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1238,8 +1192,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1282,8 +1234,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>1.0</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <modules>
                 <module>test-module1</module>
@@ -1323,8 +1273,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test-module1</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test-module1</name>
 
               <parent>
                 <groupId>org.sample</groupId>
@@ -1370,8 +1318,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>1.0</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <modules>
                 <module>test-module1</module>
@@ -1420,8 +1366,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test-module1</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test-module1</name>
 
               <parent>
                 <groupId>org.sample</groupId>
@@ -1452,8 +1396,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test-module1</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test-module1</name>
 
               <parent>
                 <groupId>org.sample</groupId>
@@ -1513,8 +1455,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
@@ -1560,8 +1500,6 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
               <groupId>org.sample</groupId>
               <artifactId>test</artifactId>
               <version>${revision}</version>
-              <packaging>jar</packaging>
-              <name>test</name>
 
               <parent>
                 <groupId>org.springframework.boot</groupId>
