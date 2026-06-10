@@ -67,7 +67,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -170,7 +171,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -221,7 +223,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -280,7 +283,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -332,7 +336,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -386,7 +391,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -434,7 +440,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -491,7 +498,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -542,7 +550,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -571,7 +580,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                 <relativePath/>
               </parent>
 
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("pom.xml")
         ),
         pomXml(
@@ -608,7 +618,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -656,7 +667,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("test-module1/pom.xml")
         )
       )
@@ -689,7 +701,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   <scope>test</scope>
                 </dependency>
               </dependencies>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -737,7 +750,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -792,7 +806,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -843,7 +858,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -901,7 +917,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -953,7 +970,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -1001,7 +1019,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -1053,7 +1072,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -1114,7 +1134,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -1175,7 +1196,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -1217,7 +1239,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
@@ -1263,7 +1286,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugins>
                 </pluginManagement>
               </build>
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("pom.xml")
         ),
         pomXml(
@@ -1300,7 +1324,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("test-module1/pom.xml")
         )
       )
@@ -1356,7 +1381,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugins>
                 </pluginManagement>
               </build>
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("pom.xml")
         ),
         pomXml(
@@ -1389,7 +1415,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -1437,7 +1464,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugin>
                 </plugins>
               </build>
-            </project>""",
+            </project>
+            """,
           spec -> spec.path("test-module1/pom.xml")
         )
       )
@@ -1493,7 +1521,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugins>
                 </pluginManagement>
               </build>
-            </project>""",
+            </project>
+            """,
           """
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -1545,7 +1574,8 @@ public class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest
                   </plugins>
                 </pluginManagement>
               </build>
-            </project>"""
+            </project>
+            """
         )
       )
     );
