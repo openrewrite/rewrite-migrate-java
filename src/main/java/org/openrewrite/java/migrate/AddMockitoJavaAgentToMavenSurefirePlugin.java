@@ -160,11 +160,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                     }
                 }
-                // Any remaining case needs no surefire change: either the single argLine already
-                // contains the agent, or there are multiple <argLine> tags. Multiple tags are an
-                // ambiguous configuration, since surefire's argLine is single-valued and only the
-                // first tag is honored; appending another would be silently ignored, so we leave
-                // the configuration untouched rather than guess which argLine to augment.
+                // No surefire change needed: the single argLine already contains the agent, or
+                // there are multiple <argLine> tags (an invalid configuration, since surefire's
+                // argLine is single-valued) that we leave untouched.
                 return t;
             }
         });
