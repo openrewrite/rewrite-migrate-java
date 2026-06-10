@@ -172,7 +172,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
         @Override
         public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-            if (parentXPathMatcher.matches(getCursor()) && !tag.print(getCursor()).contains(newChildTag.print(getCursor()))) {
+            if (parentXPathMatcher.matches(getCursor()) &&
+                    tag.getChildren(newChildTag.getName()).stream().noneMatch(child -> child.getValue().equals(newChildTag.getValue()))) {
                 return autoFormat(AddToTagVisitor.addToTag(tag, newChildTag, getCursor()), ctx);
             }
             return super.visitTag(tag, ctx);
