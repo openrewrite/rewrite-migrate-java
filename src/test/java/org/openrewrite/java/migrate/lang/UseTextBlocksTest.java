@@ -130,7 +130,36 @@ class UseTextBlocksTest implements RewriteTest {
                       String query = \"""
                           SELECT * FROM   \\s
                           my_table   \\s
-                          WHERE something = 1; \""";
+                          WHERE something = 1;\\s\\
+                          \""";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1132")
+    void preserveTrailingSpaceOnLastLine() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                String message =
+                    "Connection failed:\\n"
+                        + " connect timed out\\n"
+                        + "Transfer id: ";
+              }
+              """,
+            """
+              class Test {
+                String message =
+                    \"""
+                    Connection failed:
+                     connect timed out
+                    Transfer id:\\s\\
+                    \""";
               }
               """
           )
