@@ -170,8 +170,14 @@ public class UseTextBlocks extends Recipe {
                 content = content.replace("\\", "\\\\");
                 // escape triple quotes
                 content = content.replace("\"\"\"", "\"\"\\\"");
-                // preserve trailing spaces
+                // preserve trailing spaces before a newline
                 content = content.replace(" \n", "\\s\n");
+                // preserve a trailing space on the final content line, which a text block would otherwise strip,
+                // silently changing the string's value
+                boolean endsWithTrailingSpace = content.endsWith(" ");
+                if (endsWithTrailingSpace) {
+                    content = content.substring(0, content.length() - 1) + "\\s";
+                }
                 // handle preceding indentation
                 content = content.replace("\n", "\n" + indentation);
                 // handle line continuations
@@ -181,8 +187,9 @@ public class UseTextBlocks extends Recipe {
                 content = "\n" + indentation + content;
 
                 // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
-                // need to escape ending quote in the content
-                if (isEndsWithSpecialCharacters(sb.toString())) {
+                // need to escape ending quote in the content. A trailing space additionally requires a line
+                // continuation so the closing delimiter does not introduce a spurious newline.
+                if (isEndsWithSpecialCharacters(sb.toString()) || endsWithTrailingSpace) {
                     content = content + "\\\n" + indentation;
                 }
 
