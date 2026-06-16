@@ -26,6 +26,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -34,8 +35,9 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.Collections;
 import java.util.Iterator;
+
+import static java.util.Collections.singletonList;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -121,8 +123,8 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                     return a;
                 }
                 Expression variable = a.getVariable();
-                if (!(variable instanceof J.Identifier)
-                        || !"jvmTarget".equals(((J.Identifier) variable).getSimpleName())) {
+                if (!(variable instanceof J.Identifier) ||
+                        !"jvmTarget".equals(((J.Identifier) variable).getSimpleName())) {
                     return a;
                 }
                 Expression rhs = a.getAssignment();
@@ -140,7 +142,7 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                 }
                 // Preserve the original quote style (Groovy allows both ' and ").
                 String original = literal.getValueSource();
-                char quote = original != null && !original.isEmpty() ? original.charAt(0) : '\'';
+                char quote = StringUtils.isNotEmpty( original ) ? original.charAt(0) : '\'';
                 return a.withAssignment(literal
                         .withValue(newVersion)
                         .withValueSource(quote + newVersion + quote));
@@ -157,8 +159,8 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                     return a;
                 }
                 Expression variable = a.getVariable();
-                if (!(variable instanceof J.Identifier)
-                        || !"jvmTarget".equals(((J.Identifier) variable).getSimpleName())) {
+                if (!(variable instanceof J.Identifier) ||
+                        !"jvmTarget".equals(((J.Identifier) variable).getSimpleName())) {
                     return a;
                 }
                 Expression rhs = a.getAssignment();
@@ -200,7 +202,7 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                     J.FieldAccess fa = (J.FieldAccess) arg;
                     J.FieldAccess bumped = bumpedJvmTargetFieldAccess(fa, newVersion, target);
                     if (bumped != fa) {
-                        return mi.withArguments(Collections.singletonList(bumped));
+                        return mi.withArguments(singletonList(bumped));
                     }
                 }
                 return mi;
@@ -257,8 +259,8 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
      * return a new FieldAccess with the bumped enum name. Returns the original instance unchanged otherwise.
      */
     private static J.FieldAccess bumpedJvmTargetFieldAccess(J.FieldAccess fa, String newVersion, int target) {
-        if (!(fa.getTarget() instanceof J.Identifier)
-                || !"JvmTarget".equals(((J.Identifier) fa.getTarget()).getSimpleName())) {
+        if (!(fa.getTarget() instanceof J.Identifier) ||
+                !"JvmTarget".equals(((J.Identifier) fa.getTarget()).getSimpleName())) {
             return fa;
         }
         String enumName = fa.getSimpleName();

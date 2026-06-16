@@ -22,6 +22,7 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.search.UsesJavaVersion;
@@ -304,8 +305,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
         private String extractCodeLanguage(Javadoc.StartElement element) {
             return element.getAttributes().stream()
-                    .filter(attr -> attr instanceof Javadoc.Attribute)
-                    .map(attr -> (Javadoc.Attribute) attr)
+                    .filter(Javadoc.Attribute.class::isInstance)
+                    .map(Javadoc.Attribute.class::cast)
                     .filter(a -> "class".equalsIgnoreCase(a.getName()))
                     .filter(a -> a.getValue() != null)
                     .map(a -> renderInline(a.getValue()).trim())
@@ -359,7 +360,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     // Flush any trailing inline code (e.g. `...);</code></pre>`) so the
                     // closing fence sits on its own line, as Markdown requires. Only flush
                     // real content; a whitespace-only line means the fence is already alone.
-                    if (!currentLine.toString().trim().isEmpty()) {
+                    if (!StringUtils.isBlank( currentLine.toString() )) {
                         lines.add(currentLine.toString());
                         currentLine = new StringBuilder();
                     }

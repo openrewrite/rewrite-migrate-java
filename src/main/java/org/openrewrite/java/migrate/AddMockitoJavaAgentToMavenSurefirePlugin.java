@@ -72,8 +72,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             private String getArgLineJavaAgentArgument() {
                 String mockitoCoreVersion = getResolutionResult().getDependencies().getOrDefault(Scope.Test, emptyList()).stream()
-                        .filter(dependency -> dependency.getGroupId().equals("org.mockito") && dependency.getArtifactId()
-                                .equals("mockito-core")).findFirst().map(ResolvedDependency::getVersion).get();
+                        .filter(dependency -> "org.mockito".equals(dependency.getGroupId()) && "mockito-core"
+                                .equals(dependency.getArtifactId())).findFirst().map(ResolvedDependency::getVersion).get();
 
                 return new LatestRelease(null).compare(null, mockitoCoreVersion, "5.14.0") >= 0 ?
                         "-javaagent:${org.mockito:mockito-core:jar}" : "-javaagent:${net.bytebuddy:byte-buddy-agent:jar}";
@@ -85,8 +85,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             private void maybeAddMavenDependencyPluginWithPropertiesGoal() {
                 Optional<Plugin> mavenDependencyPlugin = getResolutionResult().getPom().getPlugins().stream()
-                        .filter(plugin -> plugin.getGroupId().equals("org.apache.maven.plugins")
-                                && plugin.getArtifactId().equals("maven-dependency-plugin")).findFirst();
+                        .filter(plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) &&
+                                "maven-dependency-plugin".equals(plugin.getArtifactId())).findFirst();
 
                 if (!mavenDependencyPlugin.isPresent()) {
                     doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-dependency-plugin", null, null, null,
@@ -105,8 +105,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 if (getResolutionResult().getPom().getPluginManagement().stream().anyMatch(
-                        plugin -> plugin.getGroupId().equals("org.apache.maven.plugins") && plugin.getArtifactId()
-                                .equals("maven-surefire-plugin") && plugin.getConfigurationStringValue("argLine") != null && plugin.getConfigurationStringValue("argLine").contains(getArgLineJavaAgentArgument()))) {
+                        plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-surefire-plugin"
+                                .equals(plugin.getArtifactId()) && plugin.getConfigurationStringValue("argLine") != null && plugin.getConfigurationStringValue("argLine").contains(getArgLineJavaAgentArgument()))) {
                     return document;
                 }
 

@@ -497,7 +497,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
     @Test
-    public void codeTagConverted() {
+    void codeTagConverted() {
         rewriteRun(
           spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
@@ -525,12 +525,13 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   public void withErrorMessageForFields() {
                   }
               }
-              """)
+              """
+          )
         );
     }
 
     @Test
-    public void codeTagWithEmptyLanguageConverted() {
+    void codeTagWithEmptyLanguageConverted() {
         rewriteRun(
           spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
@@ -558,12 +559,13 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   public void withErrorMessageForFields() {
                   }
               }
-              """)
+              """
+          )
         );
     }
 
     @Test
-    public void codeTagLanguageNotConverted() {
+    void codeTagLanguageNotConverted() {
         rewriteRun(
           spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
@@ -591,12 +593,13 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   public void withErrorMessageForFields() {
                   }
               }
-              """)
+              """
+          )
         );
     }
 
     @Test
-    public void codeTagClosedInline() {
+    void codeTagClosedInline() {
         rewriteRun(
           spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
@@ -619,7 +622,8 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   public void withErrorMessageForFields() {
                   }
               }
-              """)
+              """
+          )
         );
     }
 
