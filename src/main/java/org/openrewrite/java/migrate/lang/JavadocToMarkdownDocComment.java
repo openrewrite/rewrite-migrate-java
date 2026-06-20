@@ -548,7 +548,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 if (target.isEmpty()) {
                     return "#" + name;
                 }
-                return target + "#" + name;
+                return target + "." + name;
             }
             if (tree instanceof J.MemberReference) {
                 J.MemberReference mr = (J.MemberReference) tree;
