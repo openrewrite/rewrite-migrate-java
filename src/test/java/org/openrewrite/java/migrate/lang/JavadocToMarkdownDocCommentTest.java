@@ -628,6 +628,50 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
 
+    @Test
+    void javadocWithFqnLinkClass() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * See {@link java.util.List} for details.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// See [java.util.List] for details.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithFqnLinkMethod() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * See {@link java.util.List#get(int)} for details.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// See [java.util.List#get(int)] for details.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Jep467FlagshipExamples {
 
