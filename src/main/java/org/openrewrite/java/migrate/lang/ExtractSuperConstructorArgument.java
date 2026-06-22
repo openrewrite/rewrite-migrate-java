@@ -71,37 +71,29 @@ public class ExtractSuperConstructorArgument extends Recipe {
                 if (superCall == null || superCall.getMethodType() == null) {
                     return md;
                 }
+                JavaType.Method ctorType = superCall.getMethodType();
                 List<Expression> args = superCall.getArguments();
-                List<JavaType> paramTypes = superCall.getMethodType().getParameterTypes();
-                List<String> paramNames = superCall.getMethodType().getParameterNames();
+                List<JavaType> paramTypes = ctorType.getParameterTypes();
+                List<String> paramNames = ctorType.getParameterNames();
                 if (paramTypes.size() != args.size()) {
                     return md;
                 }
 
-                // Only act when at least one argument actually does work worth surfacing
-                boolean anyComplex = false;
-                for (Expression arg : args) {
-                    if (arg instanceof J.MethodInvocation || arg instanceof J.NewClass) {
-                        anyComplex = true;
-                        break;
-                    }
-                }
-                if (!anyComplex) {
-                    return md;
-                }
-
-                // Plan the extraction: everything but trivial, side-effect-free arguments is hoisted, in order
+                // Plan the extraction: hoist everything but trivial, side-effect-free arguments, in order.
+                // Only act when at least one extracted argument actually does work worth surfacing.
                 Set<String> usedNames = new LinkedHashSet<>();
                 String[] names = new String[args.size()];
                 Set<String> imports = new LinkedHashSet<>();
                 StringBuilder declarations = new StringBuilder();
                 List<Expression> declarationArgs = new ArrayList<>();
+                boolean anyComplex = false;
                 for (int i = 0; i < args.size(); i++) {
                     Expression arg = args.get(i);
                     if (isInlineSafe(arg)) {
                         continue;
                     }
-                    String typeName = denotableTypeName(paramTypes.get(i));
+                    JavaType paramType = paramTypes.get(i);
+                    String typeName = denotableTypeName(paramType);
                     if (typeName == null) {
                         // Cannot safely name this parameter's type; bail rather than partially extract and risk reordering
                         return md;
@@ -110,9 +102,13 @@ public class ExtractSuperConstructorArgument extends Recipe {
                     names[i] = name;
                     declarations.append(typeName).append(' ').append(name).append(" = #{any()};\n");
                     declarationArgs.add(arg);
-                    if (paramTypes.get(i) instanceof JavaType.FullyQualified) {
-                        imports.add(((JavaType.FullyQualified) paramTypes.get(i)).getFullyQualifiedName());
+                    if (paramType instanceof JavaType.FullyQualified) {
+                        imports.add(((JavaType.FullyQualified) paramType).getFullyQualifiedName());
                     }
+                    anyComplex |= arg instanceof J.MethodInvocation || arg instanceof J.NewClass;
+                }
+                if (!anyComplex) {
+                    return md;
                 }
 
                 // 1. Declare the extracted arguments right before the `super(..)` call, preserving their order
@@ -207,8 +203,9 @@ public class ExtractSuperConstructorArgument extends Recipe {
             }
 
             private boolean isValidBaseName(@Nullable String name) {
+                // Reject synthetic parameter names (`arg0`, `arg1`, ...) from constructors compiled without `-parameters`
                 return name != null && !name.isEmpty() && Character.isJavaIdentifierStart(name.charAt(0)) &&
-                       !"arg0".equals(name);
+                       !name.matches("arg\\d+");
             }
 
             private String uniqueName(String base, Set<String> usedNames) {
