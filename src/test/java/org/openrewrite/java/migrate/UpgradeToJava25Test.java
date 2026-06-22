@@ -290,6 +290,106 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void commentExplainsKotlin2xModuleLeftAtJava24() {
+        // Running only the comment step on a Kotlin module that ended at Java 24 (e.g. a 2.0-2.2 module whose Kotlin
+        // upgrade could not be applied): it is explained just like a Kotlin 1.x cap, naming the kotlin-stdlib found.
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <!-- Capped at Java 24: this module compiles Kotlin and depends on kotlin-stdlib 2.2.0, and Kotlin before 2.3 cannot target Java 25 bytecode. Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, then re-run "Migrate to Java 25" to move this module to Java 25. -->
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
+    void commentIsRemovedOnceKotlinModuleReachesJava25() {
+        // Self-healing: a module that earlier carried the cap comment but has since reached Java 25 (its Kotlin was
+        // upgraded) has the now-stale comment removed, even though the named kotlin-stdlib version has changed.
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <!-- Capped at Java 24: this module compiles Kotlin and depends on kotlin-stdlib 2.2.0, and Kotlin before 2.3 cannot target Java 25 bytecode. Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, then re-run "Migrate to Java 25" to move this module to Java 25. -->
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
     void transitiveKotlinStdlibDoesNotCapJavaVersion() {
         // https://github.com/moderneinc/customer-requests/issues/2236
         // OkHttp brings kotlin-stdlib in transitively; without Kotlin sources the project should still upgrade to Java 25.

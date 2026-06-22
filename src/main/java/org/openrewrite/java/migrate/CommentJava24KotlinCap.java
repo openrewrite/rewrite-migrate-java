@@ -40,6 +40,10 @@ public class CommentJava24KotlinCap extends Recipe {
 
     private static final String KOTLIN_GROUP = "org.jetbrains.kotlin";
 
+    // Stable prefix shared by every emitted comment; used to recognise (and remove) a previously added comment even
+    // after the named `kotlin-stdlib` version has changed.
+    private static final String COMMENT_PREFIX = " Capped at Java 24:";
+
     private static final Set<String> JAVA_VERSION_PROPERTIES = new HashSet<>(Arrays.asList(
             "maven.compiler.release",
             "maven.compiler.source",
@@ -51,8 +55,10 @@ public class CommentJava24KotlinCap extends Recipe {
     String description = "Adds an explanatory comment to Maven `pom.xml` files in modules that were held at Java 24 " +
             "because they compile Kotlin and depend on `kotlin-stdlib` older than 2.3, which cannot target Java 25 " +
             "bytecode. The comment names the `kotlin-stdlib` version found and the next step needed to reach Java 25. " +
-            "Intended to run scoped behind the same preconditions as `UpgradeBuildToJava24ForKotlin1x`, right after the version " +
-            "is capped.";
+            "Self-healing: the comment is added while the module is at Java 24 and removed again once the module " +
+            "reaches a higher Java version (for instance after its Kotlin was upgraded to 2.3), so it only ever remains " +
+            "on modules that truly stay at Java 24 — whether a Kotlin 1.x cap or a 2.0-2.2 module whose Kotlin upgrade " +
+            "could not be applied. Intended to run last, scoped to modules that compile Kotlin.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -63,10 +69,13 @@ public class CommentJava24KotlinCap extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                if ("properties".equals(t.getName()) && capsJavaAt24(t)) {
-                    String text = comment();
-                    if (!alreadyCommented(t, text)) {
-                        return addCommentAsFirstChild(t, text);
+                if ("properties".equals(t.getName())) {
+                    if (capsJavaAt24(t)) {
+                        if (!hasCapComment(t)) {
+                            return addCommentAsFirstChild(t, comment());
+                        }
+                    } else if (hasCapComment(t)) {
+                        return removeCapComment(t);
                     }
                 }
                 return t;
@@ -91,7 +100,7 @@ public class CommentJava24KotlinCap extends Recipe {
 
             private String comment() {
                 if (commentText == null) {
-                    commentText = " Capped at Java 24: this module compiles Kotlin and depends on " + kotlinStdlibCoordinate() +
+                    commentText = COMMENT_PREFIX + " this module compiles Kotlin and depends on " + kotlinStdlibCoordinate() +
                             ", and Kotlin before 2.3 cannot target Java 25 bytecode. " +
                             "Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, " +
                             "then re-run \"Migrate to Java 25\" to move this module to Java 25. ";
@@ -110,13 +119,13 @@ public class CommentJava24KotlinCap extends Recipe {
                 return "kotlin-stdlib (older than 2.3)";
             }
 
-            private boolean alreadyCommented(Xml.Tag tag, String text) {
+            private boolean hasCapComment(Xml.Tag tag) {
                 List<? extends Content> content = tag.getContent();
                 if (content == null) {
                     return false;
                 }
                 for (Content c : content) {
-                    if (c instanceof Xml.Comment && text.equals(((Xml.Comment) c).getText())) {
+                    if (c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX)) {
                         return true;
                     }
                 }
@@ -128,6 +137,12 @@ public class CommentJava24KotlinCap extends Recipe {
                 String prefix = content == null || content.isEmpty() ? "" : content.get(0).getPrefix();
                 Xml.Comment comment = new Xml.Comment(Tree.randomId(), prefix, Markers.EMPTY, text);
                 return tag.withContent(ListUtils.concat(comment, content));
+            }
+
+            @SuppressWarnings("unchecked")
+            private Xml.Tag removeCapComment(Xml.Tag tag) {
+                return tag.withContent(ListUtils.map((List<Content>) tag.getContent(), c ->
+                        c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX) ? null : c));
             }
         };
     }
