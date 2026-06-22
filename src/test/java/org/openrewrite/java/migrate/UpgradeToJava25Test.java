@@ -163,9 +163,9 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
-    void kotlin1xCapsJavaVersionAt24WithoutBumpingKotlin() {
+    void kotlin1xCapsJavaVersionAt24WithComment() {
         // Kotlin 1.x is left untouched: crossing the K2 compiler default introduced in Kotlin 2.0 is source-breaking,
-        // so the module stays on Kotlin 1.x and is capped at Java 24 rather than upgraded to Java 25.
+        // so the module stays on Kotlin 1.x and is capped at Java 24 (with an explanatory comment) rather than upgraded.
         rewriteRun(
           mavenProject("project",
             pomXml(
@@ -193,6 +193,7 @@ class UpgradeToJava25Test implements RewriteTest {
                     <artifactId>my-app</artifactId>
                     <version>1</version>
                     <properties>
+                        <!-- Capped at Java 24: this module compiles Kotlin and depends on kotlin-stdlib 1.9.24, and Kotlin before 2.3 cannot target Java 25 bytecode. Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, then re-run "Migrate to Java 25" to move this module to Java 25. -->
                         <maven.compiler.release>24</maven.compiler.release>
                     </properties>
                     <dependencies>
@@ -240,6 +241,8 @@ class UpgradeToJava25Test implements RewriteTest {
                 assertThat(actual)
                   .contains("<maven.compiler.release>25</maven.compiler.release>")
                   .containsPattern("kotlin-stdlib</artifactId>\\s*<version>2\\.3\\.")
+                  // The module reaches Java 25, so no "capped at Java 24" comment should be left behind.
+                  .doesNotContain("Capped at Java 24")
                   .actual())
             ),
             other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
