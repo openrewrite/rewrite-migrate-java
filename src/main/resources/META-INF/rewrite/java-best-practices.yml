@@ -34,6 +34,8 @@ recipeList:
   # Instance main methods (JEP 512); not moved into the version upgrade as it does not yet work for Spring Boot
   # https://github.com/spring-projects/spring-boot/issues/35785
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
+  # Hoist complex super(..)/this(..) arguments into locals (JEP 513); opt-in, as it restyles working code
+  - org.openrewrite.java.migrate.lang.ExtractExplicitConstructorInvocationArguments
   # Text blocks for strings without newlines (upgrade chain only does convertStringsWithoutNewlines: false)
   - org.openrewrite.java.migrate.lang.UseTextBlocks:
       convertStringsWithoutNewlines: true
