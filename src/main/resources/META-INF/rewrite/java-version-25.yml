@@ -237,7 +237,9 @@ description: >-
   This recipe upgrades modules that compile Kotlin (i.e. contain `.kt` source files) and are already on Kotlin 2.0, 2.1,
   or 2.2 up to the latest Kotlin 2.3, so they can subsequently be migrated to Java 25. Modules on Kotlin 1.x are left
   untouched, as crossing the K2 compiler default introduced in Kotlin 2.0 is a source-breaking change that should not be
-  applied automatically.
+  applied automatically. As a safety net the module is also floored at Java 24: if the Kotlin upgrade cannot be applied
+  (for instance because the version is managed externally by a parent or BOM), the module still lands on Java 24 rather
+  than being left behind, and is raised the rest of the way to Java 25 only once it actually reaches Kotlin 2.3.
 tags:
   - java25
   - kotlin
@@ -259,6 +261,8 @@ recipeList:
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: org.jetbrains.kotlin.*
       newVersion: 2.3.x
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 24
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

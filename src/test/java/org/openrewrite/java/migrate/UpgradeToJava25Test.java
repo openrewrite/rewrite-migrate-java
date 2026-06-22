@@ -251,6 +251,45 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void kotlin2xIsFlooredAtJava24AsSafetyNet() {
+        // Running only the Kotlin step: it bumps Kotlin to 2.3 and floors the module at Java 24. Were the Kotlin bump
+        // to fail (e.g. the version is managed by a parent or BOM), this floor still lands the module on Java 24 rather
+        // than leaving it behind. The full UpgradeToJava25 then raises it to Java 25 once Kotlin actually reaches 2.3.
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeKotlinForJava25"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>24</maven.compiler.release>")
+                  .containsPattern("kotlin-stdlib</artifactId>\\s*<version>2\\.3\\.")
+                  .doesNotContain("Capped at Java 24")
+                  .actual())
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
     void transitiveKotlinStdlibDoesNotCapJavaVersion() {
         // https://github.com/moderneinc/customer-requests/issues/2236
         // OkHttp brings kotlin-stdlib in transitively; without Kotlin sources the project should still upgrade to Java 25.
