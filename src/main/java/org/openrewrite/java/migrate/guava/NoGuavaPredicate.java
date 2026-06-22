@@ -43,6 +43,9 @@ public class NoGuavaPredicate extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J preVisit(J java, ExecutionContext ctx) {
+                        // Apply both sub-recipes once over the whole tree; without this preVisit
+                        // re-runs them on every descendant node, making the recipe quadratic.
+                        stopAfterPreVisit();
                         J j = (J) new ChangeMethodName(
                                 "com.google.common.base.Predicate apply(..)",
                                 "test",
