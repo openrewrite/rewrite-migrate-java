@@ -314,6 +314,192 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
     }
 
     @Test
+    void doNotClobberLocalClassConstructorInvocation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Base {
+                  Base(String s) {
+                  }
+              }
+
+              class Parent {
+                  Parent(String name) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      super(value.trim());
+                      class Local extends Base {
+                          Local() {
+                              super("literal");
+                          }
+                      }
+                  }
+              }
+              """,
+            """
+              class Base {
+                  Base(String s) {
+                  }
+              }
+
+              class Parent {
+                  Parent(String name) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      String name = value.trim();
+                      super(name);
+                      class Local extends Base {
+                          Local() {
+                              super("literal");
+                          }
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotExtractFromVarargsConstructor() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(String... values) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      super(value.trim(), value.strip());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void insertDeclarationsAfterExistingStatementsBeforeSuper() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(int value) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      System.out.println("before");
+                      super(Integer.parseInt(value));
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(int value) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      System.out.println("before");
+                      int value1 = Integer.parseInt(value);
+                      super(value1);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void extractStaticFieldArgumentToPreserveOrder() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(int a, int b) {
+                  }
+              }
+
+              class Child extends Parent {
+                  static final int CONST = 1;
+
+                  Child(String value) {
+                      super(CONST, Integer.parseInt(value));
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(int a, int b) {
+                  }
+              }
+
+              class Child extends Parent {
+                  static final int CONST = 1;
+
+                  Child(String value) {
+                      int a = CONST;
+                      int b = Integer.parseInt(value);
+                      super(a, b);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void avoidNameCollisionWithLaterDeclaredVariable() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(int value) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      super(Integer.parseInt(value));
+                      int value1 = 5;
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(int value) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      int value2 = Integer.parseInt(value);
+                      super(value2);
+                      int value1 = 5;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void extractThisDelegationArgument() {
         rewriteRun(
           //language=java

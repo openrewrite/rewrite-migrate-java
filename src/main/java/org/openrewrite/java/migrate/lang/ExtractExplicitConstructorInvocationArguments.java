@@ -136,6 +136,13 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                 }
                 return (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx2) {
+                        // Do not descend into nested/local classes; their own `super(..)`/`this(..)` calls
+                        // are handled by their own constructor visits, not this one's argument list.
+                        return classDecl;
+                    }
+
+                    @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
                         mi = super.visitMethodInvocation(mi, ctx2);
                         if (isExplicitConstructorInvocation(mi)) {
