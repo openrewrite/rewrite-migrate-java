@@ -28,7 +28,8 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.UpgradeBuildToJava24
+  - org.openrewrite.java.migrate.UpgradeKotlinForJava25
+  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
@@ -43,6 +44,9 @@ recipeList:
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
   - org.openrewrite.java.migrate.MigrateZipErrorToZipException
   - org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
+  # Run last, once every module has reached its final Java version: comment the Kotlin modules that truly stayed at
+  # Java 24 (a Kotlin 1.x cap, or a 2.0-2.2 module whose Kotlin upgrade could not be applied).
+  - org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -229,20 +233,77 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava24
-displayName: Upgrade build to Java 24 for Kotlin pre-2.3
+name: org.openrewrite.java.migrate.UpgradeKotlinForJava25
+displayName: Upgrade Kotlin to 2.3 for Java 25 compatibility
 description: >-
-  Kotlin versions before 2.3 only support up to Java 24. Applies only to modules that actually compile Kotlin
+  Only Kotlin 2.3 and later can target Java 25 bytecode, so modules on an older Kotlin are otherwise capped at Java 24.
+  This recipe upgrades modules that compile Kotlin (i.e. contain `.kt` source files) and are already on Kotlin 2.0, 2.1,
+  or 2.2 up to the latest Kotlin 2.3, so they can subsequently be migrated to Java 25. Modules on Kotlin 1.x are left
+  untouched, as crossing the K2 compiler default introduced in Kotlin 2.0 is a source-breaking change that should not be
+  applied automatically. As a safety net the module is also floored at Java 24: if the Kotlin upgrade cannot be applied
+  (for instance because the version is managed externally by a parent or BOM), the module still lands on Java 24 rather
+  than being left behind, and is raised the rest of the way to Java 25 only once it actually reaches Kotlin 2.3.
+tags:
+  - java25
+  - kotlin
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.jetbrains.kotlin
+      artifactIdPattern: kotlin-stdlib*
+      version: "[2.0,2.3)"
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.jetbrains.kotlin
+      artifactId: "*"
+      newVersion: 2.3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jetbrains.kotlin
+      artifactId: kotlin-maven-plugin
+      newVersion: 2.3.x
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: org.jetbrains.kotlin.*
+      newVersion: 2.3.x
+  # Safety-net floor: if the Kotlin bump above could not be applied (e.g. the version is managed by a parent or BOM),
+  # the module still lands on Java 24 rather than being left behind; it reaches Java 25 only once it is on Kotlin 2.3.
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 24
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
+displayName: Upgrade build to Java 24 for Kotlin 1.x
+description: >-
+  Kotlin versions before 2.3 only support up to Java 24, and Kotlin 1.x cannot be safely upgraded automatically because
+  crossing the K2 compiler default introduced in Kotlin 2.0 is a source-breaking change. Such modules are therefore
+  capped at Java 24 and annotated with an explanation. Modules already on Kotlin 2.0-2.2 are instead bumped to Kotlin 2.3
+  by `UpgradeKotlinForJava25` so they can reach Java 25. Applies only to modules that actually compile Kotlin
   (i.e. contain `.kt` source files), so transitive `kotlin-stdlib` dependencies do not trigger the cap.
 preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
       artifactIdPattern: kotlin-stdlib*
-      version: "[0,2.3)"
+      version: "[0,2.0)"
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 24
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24
+displayName: Comment Kotlin modules capped at Java 24
+description: >-
+  Adds an explanatory comment to Kotlin modules that remain at Java 24 after the Java 25 migration, because Kotlin before
+  2.3 cannot target Java 25 bytecode. This covers both a Kotlin 1.x cap (which cannot be upgraded automatically) and a
+  Kotlin 2.0-2.2 module whose upgrade to 2.3 could not be applied. Scoped to modules that actually compile Kotlin
+  (i.e. contain `.kt` source files); the comment is self-healing, so a module that does reach Java 25 has it removed.
+tags:
+  - java25
+  - kotlin
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
+recipeList:
   - org.openrewrite.java.migrate.CommentJava24KotlinCap
 
 ---
