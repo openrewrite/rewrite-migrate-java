@@ -69,7 +69,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                         </plugins>
@@ -119,7 +119,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                     <includes>
                                         <include>**/*Test.java</include>
                                     </includes>
@@ -170,8 +170,66 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>-Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void prependsArgLineReferenceToPreserveJacocoCoverage() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <argLine>-Dfoo=bar</argLine>
+                                </configuration>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>jacoco-maven-plugin</artifactId>
+                                <version>0.8.12</version>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <argLine>@{argLine} -Dfoo=bar --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                </configuration>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.jacoco</groupId>
+                                <artifactId>jacoco-maven-plugin</artifactId>
+                                <version>0.8.12</version>
                             </plugin>
                         </plugins>
                     </build>
@@ -199,7 +257,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                         </plugins>
@@ -244,7 +302,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-failsafe-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                         </plugins>
@@ -294,7 +352,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                             <plugin>
@@ -302,7 +360,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-failsafe-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                         </plugins>
@@ -367,7 +425,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                     <artifactId>maven-surefire-plugin</artifactId>
                                     <version>3.5.2</version>
                                     <configuration>
-                                        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                        <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                     </configuration>
                                 </plugin>
                             </plugins>
@@ -429,6 +487,54 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
     }
 
     @Test
+    void doesNotDuplicateExistingArgLineReference() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <argLine>@{argLine} -Xmx512m</argLine>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <argLine>@{argLine} -Xmx512m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
     void surefireWithImplicitGroupId() {
         rewriteRun(
           mavenProject("project",
@@ -459,7 +565,7 @@ class AddSurefireFailsafeArgLineTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+                                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
                                 </configuration>
                             </plugin>
                         </plugins>
