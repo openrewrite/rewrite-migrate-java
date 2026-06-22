@@ -239,6 +239,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 24
+  - org.openrewrite.java.migrate.CommentJava24KotlinCap
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

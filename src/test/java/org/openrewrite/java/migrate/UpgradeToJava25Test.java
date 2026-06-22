@@ -185,6 +185,7 @@ class UpgradeToJava25Test implements RewriteTest {
                     <artifactId>my-app</artifactId>
                     <version>1</version>
                     <properties>
+                        <!-- Capped at Java 24: this module compiles Kotlin and depends on kotlin-stdlib 2.2.0, and Kotlin before 2.3 cannot target Java 25 bytecode. Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, then re-run "Migrate to Java 25" to move this module to Java 25. -->
                         <maven.compiler.release>24</maven.compiler.release>
                     </properties>
                     <dependencies>
