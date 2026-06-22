@@ -28,6 +28,7 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.migrate.UpgradeKotlinForJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava24
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
@@ -226,6 +227,38 @@ recipeList:
       artifactId: mockito-*
       newVersion: 5.17.x
   - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeKotlinForJava25
+displayName: Upgrade Kotlin to 2.3 for Java 25 compatibility
+description: >-
+  Only Kotlin 2.3 and later can target Java 25 bytecode, so modules on an older Kotlin are otherwise capped at Java 24.
+  This recipe upgrades modules that compile Kotlin (i.e. contain `.kt` source files) and are already on Kotlin 2.0, 2.1,
+  or 2.2 up to the latest Kotlin 2.3, so they can subsequently be migrated to Java 25. Modules on Kotlin 1.x are left
+  untouched, as crossing the K2 compiler default introduced in Kotlin 2.0 is a source-breaking change that should not be
+  applied automatically.
+tags:
+  - java25
+  - kotlin
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.jetbrains.kotlin
+      artifactIdPattern: kotlin-stdlib*
+      version: "[2.0,2.3)"
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.jetbrains.kotlin
+      artifactId: "*"
+      newVersion: 2.3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jetbrains.kotlin
+      artifactId: kotlin-maven-plugin
+      newVersion: 2.3.x
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: org.jetbrains.kotlin.*
+      newVersion: 2.3.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

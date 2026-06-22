@@ -163,8 +163,59 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
-    void kotlinOlderThan2_3CapsJavaVersionAt24() {
+    void kotlin1xCapsJavaVersionAt24WithoutBumpingKotlin() {
+        // Kotlin 1.x is left untouched: crossing the K2 compiler default introduced in Kotlin 2.0 is source-breaking,
+        // so the module stays on Kotlin 1.x and is capped at Java 24 rather than upgraded to Java 25.
         rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>1.9.24</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>1.9.24</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
+    void kotlin2xUpgradedToLatest2_3AndJava25() {
+        // Kotlin 2.0-2.2 is already on the K2 compiler, so bumping to the latest 2.3 is safe and unblocks Java 25.
+        // The Kotlin bump happens in the first cycle; the Java 25 upgrade then applies once the module is on 2.3.
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(2),
           mavenProject("project",
             pomXml(
               //language=xml
@@ -185,23 +236,11 @@ class UpgradeToJava25Test implements RewriteTest {
                     </dependencies>
                 </project>
                 """,
-              """
-                <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                        <maven.compiler.release>24</maven.compiler.release>
-                    </properties>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.jetbrains.kotlin</groupId>
-                            <artifactId>kotlin-stdlib</artifactId>
-                            <version>2.2.0</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  .containsPattern("kotlin-stdlib</artifactId>\\s*<version>2\\.3\\.")
+                  .actual())
             ),
             other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
           )
