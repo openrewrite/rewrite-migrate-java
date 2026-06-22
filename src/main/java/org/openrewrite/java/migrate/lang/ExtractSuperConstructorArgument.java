@@ -42,20 +42,20 @@ import static org.openrewrite.java.VariableNameUtils.GenerationStrategy.INCREMEN
 public class ExtractSuperConstructorArgument extends Recipe {
 
     @Getter
-    final String displayName = "Extract complex `super(..)` arguments into local variables";
+    final String displayName = "Extract complex `super(..)` and `this(..)` arguments into local variables";
 
     @Getter
-    final String description = "[JEP 513](https://openjdk.org/jeps/513) allows statements before an explicit `super(..)` constructor " +
-                              "invocation. When a `super(..)` call computes one of its arguments through a method invocation or object " +
-                              "creation, this recipe extracts the non-trivial arguments into local variables declared right before the " +
-                              "`super(..)` call, surfacing the work done before construction.\n\n" +
+    final String description = "[JEP 513](https://openjdk.org/jeps/513) allows statements before an explicit `super(..)` or " +
+                              "`this(..)` constructor invocation. When such a call computes one of its arguments through a method " +
+                              "invocation or object creation, this recipe extracts the non-trivial arguments into local variables " +
+                              "declared right before the call, surfacing the work done before construction.\n\n" +
                               "This is a strictly behavior-preserving transformation: argument expressions are already evaluated " +
-                              "before the super constructor body runs, and a super argument can never reference the instance under " +
+                              "before the delegate constructor body runs, and such an argument can never reference the instance under " +
                               "construction, so hoisting them into preceding statements changes neither the order of side effects nor " +
                               "the set of legal references. Arguments are extracted in their original left-to-right order, and trivial " +
                               "arguments (literals and local variable references, which have no side effects) are left in place. " +
-                              "Statements that follow `super(..)` are deliberately *not* moved, as reordering them relative to the " +
-                              "super constructor's side effects could change behavior.";
+                              "Statements that follow the constructor invocation are deliberately *not* moved, as reordering them " +
+                              "relative to the delegate constructor's side effects could change behavior.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -67,7 +67,7 @@ public class ExtractSuperConstructorArgument extends Recipe {
                     return md;
                 }
 
-                J.MethodInvocation superCall = findExplicitSuperCall(md.getBody().getStatements());
+                J.MethodInvocation superCall = findExplicitConstructorInvocation(md.getBody().getStatements());
                 if (superCall == null || superCall.getMethodType() == null) {
                     return md;
                 }
@@ -111,7 +111,7 @@ public class ExtractSuperConstructorArgument extends Recipe {
                     return md;
                 }
 
-                // 1. Declare the extracted arguments right before the `super(..)` call, preserving their order
+                // 1. Declare the extracted arguments right before the constructor invocation, preserving their order
                 JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString()).contextSensitive();
                 for (String fqn : imports) {
                     declarationTemplate.imports(fqn);
@@ -138,7 +138,7 @@ public class ExtractSuperConstructorArgument extends Recipe {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
                         mi = super.visitMethodInvocation(mi, ctx2);
-                        if (isExplicitSuperCall(mi)) {
+                        if (isExplicitConstructorInvocation(mi)) {
                             return JavaTemplate.builder(argumentList.toString()).contextSensitive().build()
                                     .apply(getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
                         }
@@ -147,17 +147,18 @@ public class ExtractSuperConstructorArgument extends Recipe {
                 }.visitNonNull(md, ctx, getCursor().getParentOrThrow());
             }
 
-            private J.@Nullable MethodInvocation findExplicitSuperCall(List<Statement> statements) {
+            private J.@Nullable MethodInvocation findExplicitConstructorInvocation(List<Statement> statements) {
                 for (Statement statement : statements) {
-                    if (statement instanceof J.MethodInvocation && isExplicitSuperCall((J.MethodInvocation) statement)) {
+                    if (statement instanceof J.MethodInvocation && isExplicitConstructorInvocation((J.MethodInvocation) statement)) {
                         return (J.MethodInvocation) statement;
                     }
                 }
                 return null;
             }
 
-            private boolean isExplicitSuperCall(J.MethodInvocation mi) {
-                return mi.getSelect() == null && "super".equals(mi.getSimpleName());
+            private boolean isExplicitConstructorInvocation(J.MethodInvocation mi) {
+                return mi.getSelect() == null &&
+                       ("super".equals(mi.getSimpleName()) || "this".equals(mi.getSimpleName()));
             }
 
             /**

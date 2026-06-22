@@ -314,7 +314,7 @@ class ExtractSuperConstructorArgumentTest implements RewriteTest {
     }
 
     @Test
-    void leaveThisDelegationAlone() {
+    void extractThisDelegationArgument() {
         rewriteRun(
           //language=java
           java(
@@ -325,6 +325,17 @@ class ExtractSuperConstructorArgumentTest implements RewriteTest {
 
                   Child(String value) {
                       this(Integer.parseInt(value));
+                  }
+              }
+              """,
+            """
+              class Child {
+                  Child(int value) {
+                  }
+
+                  Child(String value) {
+                      int value1 = Integer.parseInt(value);
+                      this(value1);
                   }
               }
               """
