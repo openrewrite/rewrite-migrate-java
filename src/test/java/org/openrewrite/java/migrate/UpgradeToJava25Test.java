@@ -108,6 +108,11 @@ class UpgradeToJava25Test implements RewriteTest {
                                 <artifactId>maven-failsafe-plugin</artifactId>
                                 <version>2.22.2</version>
                             </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-pmd-plugin</artifactId>
+                                <version>3.21.0</version>
+                            </plugin>
                         </plugins>
                     </build>
                 </project>
@@ -118,6 +123,7 @@ class UpgradeToJava25Test implements RewriteTest {
                   .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
                   .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
                   .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
+                  .containsPattern("maven-pmd-plugin</artifactId>\\s*<version>3\\.28\\.")
                   .contains("<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>")
                   .actual())
             )
