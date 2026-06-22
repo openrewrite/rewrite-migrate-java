@@ -261,6 +261,8 @@ recipeList:
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: org.jetbrains.kotlin.*
       newVersion: 2.3.x
+  # Safety-net floor: if the Kotlin bump above could not be applied (e.g. the version is managed by a parent or BOM),
+  # the module still lands on Java 24 rather than being left behind; it reaches Java 25 only once it is on Kotlin 2.3.
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 24
 
