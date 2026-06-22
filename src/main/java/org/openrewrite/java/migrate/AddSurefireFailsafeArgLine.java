@@ -44,7 +44,11 @@ public class AddSurefireFailsafeArgLine extends Recipe {
     String displayName = "Add `argLine` to surefire and failsafe plugins";
 
     String description = "Adds the specified arguments to the `argLine` configuration of the Maven Surefire and Failsafe plugins, " +
-            "merging with any existing argLine value without duplicating arguments.";
+            "merging with any existing argLine value without duplicating arguments. " +
+            "The `@{argLine}` [late property reference](https://maven.apache.org/surefire/maven-surefire-plugin/faq.html) is prepended " +
+            "so that an agent injected by another plugin during the build, such as the JaCoCo coverage agent from " +
+            "`jacoco-maven-plugin:prepare-agent`, is preserved rather than overwritten. It is not added when the existing " +
+            "`argLine` already references the `argLine` property.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -81,7 +85,7 @@ public class AddSurefireFailsafeArgLine extends Recipe {
                         return t.withContent( ListUtils.map( (List<Content>) t.getContent(), c ->
                                 c == config ? updatedConfig : c ) );
                     }
-                    Xml.Tag newArgLine = Xml.Tag.build( "<argLine>" + argLine + "</argLine>" );
+                    Xml.Tag newArgLine = Xml.Tag.build( "<argLine>" + newArgLineValue() + "</argLine>" );
                     Xml.Tag updatedConfig = config.withContent(
                             ListUtils.concat( newArgLine, (List<Content>) config.getContent() ) );
                     t = t.withContent( ListUtils.map( (List<Content>) t.getContent(), c ->
@@ -89,9 +93,14 @@ public class AddSurefireFailsafeArgLine extends Recipe {
                     return autoFormat( t, ctx );
                 }
                 Xml.Tag newConfig = Xml.Tag.build(
-                        "<configuration>\n<argLine>" + argLine + "</argLine>\n</configuration>" );
+                        "<configuration>\n<argLine>" + newArgLineValue() + "</argLine>\n</configuration>" );
                 t = t.withContent( ListUtils.concat( (List<Content>) t.getContent(), newConfig ) );
                 return autoFormat( t, ctx );
+            }
+
+            // Value for a freshly created argLine: prepend the `@{argLine}` reference unless one is already present.
+            private String newArgLineValue() {
+                return argLine.contains("{argLine}") ? argLine : ARG_LINE_REFERENCE + " " + argLine;
             }
 
             private boolean isPluginTag(Xml.Tag tag) {
@@ -103,6 +112,15 @@ public class AddSurefireFailsafeArgLine extends Recipe {
     }
 
     private static final Pattern ARG_PATTERN = Pattern.compile("(--add-opens\\s+\\S+|-\\S+(?:\\s+(?!-)\\S+)*)");
+
+    /**
+     * Surefire's late property reference. Prepended to a newly written or merged {@code argLine} so that an
+     * {@code -javaagent} injected into the {@code argLine} property by an earlier plugin in the build (most notably
+     * the JaCoCo coverage agent set by {@code jacoco-maven-plugin:prepare-agent}) is preserved instead of overwritten.
+     * Unlike {@code ${argLine}}, the {@code @{...}} form is resolved when Surefire executes rather than at POM
+     * interpolation, so it picks up the value set during the build and resolves to an empty string when unset.
+     */
+    static final String ARG_LINE_REFERENCE = "@{argLine}";
 
     static String mergeArgLine(String existing, String toAdd) {
         // Parse compound args like "--add-opens module/pkg=target" as single units
@@ -118,10 +136,19 @@ public class AddSurefireFailsafeArgLine extends Recipe {
                 existingArgs.add(normalized);
             }
         }
-        if (argsToAdd.isEmpty()) {
+        // Prepend `@{argLine}` unless the existing value already references the `argLine` property (e.g. `${argLine}`)
+        boolean needsArgLineReference = !existing.contains("{argLine}");
+        if (argsToAdd.isEmpty() && !needsArgLineReference) {
             return existing;
         }
-        StringBuilder result = new StringBuilder(existing);
+        StringBuilder result = new StringBuilder();
+        if (needsArgLineReference) {
+            result.append(ARG_LINE_REFERENCE);
+            if (!existing.isEmpty()) {
+                result.append(' ');
+            }
+        }
+        result.append(existing);
         for (String arg : argsToAdd) {
             result.append(' ').append(arg);
         }
