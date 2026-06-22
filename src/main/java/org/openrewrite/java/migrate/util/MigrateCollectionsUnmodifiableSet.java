@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class MigrateCollectionsUnmodifiableSet extends Recipe {
-    private static final MethodMatcher UNMODIFIABLE_SET = new MethodMatcher("java.util.Collections unmodifiableSet(java.util.Set)", true);
-    private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)", true);
+    private static final MethodMatcher UNMODIFIABLE_SET = new MethodMatcher("java.util.Collections unmodifiableSet(java.util.Set)");
+    private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)");
 
     @Getter
     final String displayName = "Prefer `Set.of(..)`";

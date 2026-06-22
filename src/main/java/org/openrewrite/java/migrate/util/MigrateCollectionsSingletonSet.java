@@ -30,7 +30,7 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 public class MigrateCollectionsSingletonSet extends Recipe {
-    private static final MethodMatcher SINGLETON_SET = new MethodMatcher("java.util.Collections singleton(..)", true);
+    private static final MethodMatcher SINGLETON_SET = new MethodMatcher("java.util.Collections singleton(..)");
 
     @Getter
     final String displayName = "Prefer `Set.of(..)`";

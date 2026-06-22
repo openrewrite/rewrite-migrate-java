@@ -49,17 +49,17 @@ public class FindLocaleDateTimeFormats extends Recipe {
 
     // DateFormat factory methods that return locale-sensitive formatters
     private static final MethodMatcher DATE_FORMAT_GET_TIME_INSTANCE =
-            new MethodMatcher("java.text.DateFormat getTimeInstance(..)", true);
+            new MethodMatcher("java.text.DateFormat getTimeInstance(..)");
     private static final MethodMatcher DATE_FORMAT_GET_DATE_TIME_INSTANCE =
-            new MethodMatcher("java.text.DateFormat getDateTimeInstance(..)", true);
+            new MethodMatcher("java.text.DateFormat getDateTimeInstance(..)");
     private static final MethodMatcher DATE_FORMAT_GET_INSTANCE =
-            new MethodMatcher("java.text.DateFormat getInstance(..)", true);
+            new MethodMatcher("java.text.DateFormat getInstance(..)");
 
     // DateTimeFormatter factory methods that return locale-sensitive formatters
     private static final MethodMatcher DTF_OF_LOCALIZED_TIME =
-            new MethodMatcher("java.time.format.DateTimeFormatter ofLocalizedTime(..)", true);
+            new MethodMatcher("java.time.format.DateTimeFormatter ofLocalizedTime(..)");
     private static final MethodMatcher DTF_OF_LOCALIZED_DATE_TIME =
-            new MethodMatcher("java.time.format.DateTimeFormatter ofLocalizedDateTime(..)", true);
+            new MethodMatcher("java.time.format.DateTimeFormatter ofLocalizedDateTime(..)");
 
     private static final List<MethodMatcher> ALL_MATCHERS = Arrays.asList(
             DATE_FORMAT_GET_TIME_INSTANCE,

@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class MigrateCollectionsSingletonMap extends Recipe {
-    private static final MethodMatcher SINGLETON_MAP = new MethodMatcher("java.util.Collections singletonMap(..)", true);
+    private static final MethodMatcher SINGLETON_MAP = new MethodMatcher("java.util.Collections singletonMap(..)");
 
     @Getter
     final String displayName = "Prefer `Map.of(..)`";

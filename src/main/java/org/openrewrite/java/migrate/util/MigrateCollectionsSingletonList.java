@@ -32,7 +32,7 @@ import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import static java.util.Collections.emptyList;
 
 public class MigrateCollectionsSingletonList extends Recipe {
-    private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)", true);
+    private static final MethodMatcher SINGLETON_LIST = new MethodMatcher("java.util.Collections singletonList(..)");
 
     @Getter
     final String displayName = "Prefer `List.of(..)`";

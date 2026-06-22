@@ -32,7 +32,7 @@ import org.openrewrite.marker.Markers;
 import static org.openrewrite.Tree.randomId;
 
 public class ChangeDefaultKeyStore extends Recipe {
-    private static final MethodMatcher KEYSTORE_METHOD_REF = new MethodMatcher("java.security.KeyStore getDefaultType()", true);
+    private static final MethodMatcher KEYSTORE_METHOD_REF = new MethodMatcher("java.security.KeyStore getDefaultType()");
 
     @Getter
     final String displayName = "Return String `jks` when  `KeyStore.getDefaultType()` is called";

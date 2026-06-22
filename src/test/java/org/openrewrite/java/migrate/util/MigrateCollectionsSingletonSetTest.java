@@ -88,6 +88,36 @@ class MigrateCollectionsSingletonSetTest implements RewriteTest {
         );
     }
 
+    @Test
+    void staticImport() {
+        // The recipe must still fire when `singleton` is statically imported and the declaring
+        // type `java.util.Collections` is never referenced directly.
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Set;
+
+                import static java.util.Collections.singleton;
+
+                class Test {
+                    Set<String> set = singleton("Hello");
+                }
+                """,
+              """
+                import java.util.Set;
+
+                class Test {
+                    Set<String> set = Set.of("Hello");
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/571")
     @Test
     void shouldNotConvertLiteralNull() {
