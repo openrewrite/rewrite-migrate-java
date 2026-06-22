@@ -29,7 +29,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeKotlinForJava25
-  - org.openrewrite.java.migrate.UpgradeBuildToJava24
+  - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
@@ -268,7 +268,7 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeBuildToJava24
+name: org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
 displayName: Upgrade build to Java 24 for Kotlin 1.x
 description: >-
   Kotlin versions before 2.3 only support up to Java 24, and Kotlin 1.x cannot be safely upgraded automatically because

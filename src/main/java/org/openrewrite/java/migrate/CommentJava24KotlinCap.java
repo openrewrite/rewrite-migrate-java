@@ -51,7 +51,7 @@ public class CommentJava24KotlinCap extends Recipe {
     String description = "Adds an explanatory comment to Maven `pom.xml` files in modules that were held at Java 24 " +
             "because they compile Kotlin and depend on `kotlin-stdlib` older than 2.3, which cannot target Java 25 " +
             "bytecode. The comment names the `kotlin-stdlib` version found and the next step needed to reach Java 25. " +
-            "Intended to run scoped behind the same preconditions as `UpgradeBuildToJava24`, right after the version " +
+            "Intended to run scoped behind the same preconditions as `UpgradeBuildToJava24ForKotlin1x`, right after the version " +
             "is capped.";
 
     @Override
