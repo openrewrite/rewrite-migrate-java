@@ -34,7 +34,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
-  - org.openrewrite.java.migrate.lang.ExtractSuperConstructorArgument
+  - org.openrewrite.java.migrate.lang.ExtractExplicitConstructorInvocationArguments
   - org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
   - org.openrewrite.java.migrate.util.MigrateInflaterDeflaterToClose
   - org.openrewrite.java.migrate.util.MigrateStringReaderToReaderOf

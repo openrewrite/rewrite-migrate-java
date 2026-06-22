@@ -26,13 +26,13 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
 @EnabledForJreRange(min = JAVA_25)
-class ExtractSuperConstructorArgumentTest implements RewriteTest {
+class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .allSources(src -> src.markers(javaVersion(25)))
-          .recipe(new ExtractSuperConstructorArgument());
+          .recipe(new ExtractExplicitConstructorInvocationArguments());
     }
 
     @DocumentExample

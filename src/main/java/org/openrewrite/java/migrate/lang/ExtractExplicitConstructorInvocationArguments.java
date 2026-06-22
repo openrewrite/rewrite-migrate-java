@@ -39,7 +39,7 @@ import java.util.Set;
 
 import static org.openrewrite.java.VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER;
 
-public class ExtractSuperConstructorArgument extends Recipe {
+public class ExtractExplicitConstructorInvocationArguments extends Recipe {
 
     @Getter
     final String displayName = "Extract complex `super(..)` and `this(..)` arguments into local variables";
