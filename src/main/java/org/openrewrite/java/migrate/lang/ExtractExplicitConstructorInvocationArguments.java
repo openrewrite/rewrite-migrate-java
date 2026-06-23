@@ -82,14 +82,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                 // Only act when at least one argument actually does work worth surfacing. This is the
                 // cheapest decisive check, so make it first and bail before any name generation, scope
                 // scanning, or templating that an unaffected constructor would not need.
-                boolean anyComplex = false;
-                for (Expression arg : args) {
-                    if (arg instanceof J.MethodInvocation || arg instanceof J.NewClass) {
-                        anyComplex = true;
-                        break;
-                    }
-                }
-                if (!anyComplex) {
+                if (args.stream().noneMatch(arg -> arg instanceof J.MethodInvocation || arg instanceof J.NewClass)) {
                     return md;
                 }
 
@@ -154,8 +147,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
                         mi = super.visitMethodInvocation(mi, ctx2);
                         if (isExplicitConstructorInvocation(mi)) {
-                            return JavaTemplate.builder(argumentList.toString()).build()
-                                    .apply(getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
+                            return JavaTemplate.apply(argumentList.toString(), getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
                         }
                         return mi;
                     }
