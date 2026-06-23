@@ -212,7 +212,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
 
             private boolean isValidBaseName(@Nullable String name) {
                 // Reject synthetic parameter names (`arg0`, `arg1`, ...) from constructors compiled without `-parameters`
-                return name != null && !name.isEmpty() && Character.isJavaIdentifierStart(name.charAt(0)) &&
+                return StringUtils.isNotEmpty( name ) && Character.isJavaIdentifierStart(name.charAt(0)) &&
                        !name.matches("arg\\d+");
             }
 
