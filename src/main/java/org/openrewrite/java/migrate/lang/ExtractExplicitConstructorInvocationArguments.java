@@ -79,14 +79,26 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     return md;
                 }
 
+                // Only act when at least one argument actually does work worth surfacing. This is the
+                // cheapest decisive check, so make it first and bail before any name generation, scope
+                // scanning, or templating that an unaffected constructor would not need.
+                boolean anyComplex = false;
+                for (Expression arg : args) {
+                    if (arg instanceof J.MethodInvocation || arg instanceof J.NewClass) {
+                        anyComplex = true;
+                        break;
+                    }
+                }
+                if (!anyComplex) {
+                    return md;
+                }
+
                 // Plan the extraction: hoist everything but trivial, side-effect-free arguments, in order.
-                // Only act when at least one extracted argument actually does work worth surfacing.
                 Set<String> usedNames = new LinkedHashSet<>();
                 String[] names = new String[args.size()];
                 Set<String> imports = new LinkedHashSet<>();
                 StringBuilder declarations = new StringBuilder();
                 List<Expression> declarationArgs = new ArrayList<>();
-                boolean anyComplex = false;
                 for (int i = 0; i < args.size(); i++) {
                     Expression arg = args.get(i);
                     if (isInlineSafe(arg)) {
@@ -105,14 +117,10 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     if (paramType instanceof JavaType.FullyQualified) {
                         imports.add(((JavaType.FullyQualified) paramType).getFullyQualifiedName());
                     }
-                    anyComplex |= arg instanceof J.MethodInvocation || arg instanceof J.NewClass;
-                }
-                if (!anyComplex) {
-                    return md;
                 }
 
                 // 1. Declare the extracted arguments right before the constructor invocation, preserving their order
-                JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString()).contextSensitive();
+                JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString());
                 for (String fqn : imports) {
                     declarationTemplate.imports(fqn);
                     maybeAddImport(fqn);
@@ -146,7 +154,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
                         mi = super.visitMethodInvocation(mi, ctx2);
                         if (isExplicitConstructorInvocation(mi)) {
-                            return JavaTemplate.builder(argumentList.toString()).contextSensitive().build()
+                            return JavaTemplate.builder(argumentList.toString()).build()
                                     .apply(getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
                         }
                         return mi;

@@ -18,9 +18,17 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.condition.JRE.JAVA_25;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
@@ -495,6 +503,162 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void extractWithSourcePathParameterType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package foo;
+              public class Widget {
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package foo;
+
+              class Parent {
+                  Parent(Widget w) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(Widget w) {
+                      super(identity(w));
+                  }
+
+                  static Widget identity(Widget w) {
+                      return w;
+                  }
+              }
+              """,
+            """
+              package foo;
+
+              class Parent {
+                  Parent(Widget w) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(Widget w) {
+                      Widget w1 = identity(w);
+                      super(w1);
+                  }
+
+                  static Widget identity(Widget w) {
+                      return w;
+                  }
+              }
+              """,
+            // Even with a context-free template, the rewritten reference must carry both its type and
+            // its binding to the freshly created local; otherwise downstream type-aware recipes break.
+            spec -> spec.afterRecipe(cu -> {
+                List<J.Identifier> refs = new ArrayList<>();
+                new JavaIsoVisitor<Integer>() {
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, Integer p) {
+                        if ("super".equals(mi.getSimpleName())) {
+                            for (Expression a : mi.getArguments()) {
+                                if (a instanceof J.Identifier) {
+                                    refs.add((J.Identifier) a);
+                                }
+                            }
+                        }
+                        return super.visitMethodInvocation(mi, p);
+                    }
+                }.visit(cu, 0);
+                assertThat(refs).hasSize(1);
+                assertThat(refs.get(0).getType()).as("type").isNotNull();
+                assertThat(refs.get(0).getFieldType()).as("fieldType (variable binding)").isNotNull();
+            })
+          )
+        );
+    }
+
+    @Test
+    void extractWithSourcePathWideningSupertype() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package foo;
+              public class Base {
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package foo;
+              public class Derived extends Base {
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package foo;
+
+              class Parent {
+                  Parent(Base b) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      super(makeDerived());
+                  }
+
+                  static Derived makeDerived() {
+                      return new Derived();
+                  }
+              }
+              """,
+            """
+              package foo;
+
+              class Parent {
+                  Parent(Base b) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      Base b = makeDerived();
+                      super(b);
+                  }
+
+                  static Derived makeDerived() {
+                      return new Derived();
+                  }
+              }
+              """,
+            // The extracted variable is declared with a widening supertype ('Base') that lives in a sibling
+            // source and is referenced nowhere else in this unit. A context-free template still resolves it
+            // via the shared type cache, so the declared type must be a real FQ type, not Unknown.
+            spec -> spec.afterRecipe(cu -> {
+                List<J.VariableDeclarations> decls = new ArrayList<>();
+                new JavaIsoVisitor<Integer>() {
+                    @Override
+                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, Integer p) {
+                        if ("b".equals(vd.getVariables().get(0).getSimpleName())) {
+                            decls.add(vd);
+                        }
+                        return super.visitVariableDeclarations(vd, p);
+                    }
+                }.visit(cu, 0);
+                assertThat(decls).hasSize(1);
+                assertThat(decls.get(0).getTypeExpression().getType()).as("declared type 'Base'").isNotNull();
+                assertThat(TypeUtils.asFullyQualified(decls.get(0).getTypeExpression().getType()))
+                  .as("declared type is a resolved FQ type, not Unknown").isNotNull();
+            })
           )
         );
     }
