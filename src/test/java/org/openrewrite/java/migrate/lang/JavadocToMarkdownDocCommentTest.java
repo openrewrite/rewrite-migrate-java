@@ -672,6 +672,108 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
+    @Test
+    void javadocWithGenericTypeParameter() {
+        rewriteRun(
+          java(
+            """
+              public class A<T> {
+                  /**
+                   * A container.
+                   *
+                   * @param <T> the type of the value
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A<T> {
+                  /// A container.
+                  ///
+                  /// @param <T> the type of the value
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithVarargsLink() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * See {@link String#format(String, Object...)} for formatting.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// See [String#format(String, Object...)] for formatting.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithTrailingBr() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Optional;
+              public class A {
+                  /**
+                   * Verifies that the actual {@link Optional} contains the given value.<br>
+                   * <p>
+                   * More details here.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              import java.util.Optional;
+              public class A {
+                  /// Verifies that the actual [Optional] contains the given value.
+                  ///
+                  /// More details here.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void compiledByJava23TargetingOlderBytecodeConverts() {
+        // JDK 23 compiler, but producing Java 8 bytecode: Markdown doc comments are still valid.
+        rewriteRun(
+          version(
+            java(
+              """
+                public class A {
+                    /** Returns the name. */
+                    public String getName() {
+                        return "name";
+                    }
+                }
+                """,
+              """
+                public class A {
+                    /// Returns the name.
+                    public String getName() {
+                        return "name";
+                    }
+                }
+                """
+            ), 23, 8, 8)
+        );
+    }
+
     @Nested
     class Jep467FlagshipExamples {
 

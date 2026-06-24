@@ -23,11 +23,14 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaPrinter;
-import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.marker.Varargs;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -48,7 +51,25 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesJavaVersion<>(23), new JavaIsoVisitor<ExecutionContext>() {
+        // Markdown documentation comments (JEP 467) are recognized by the JDK that compiles the
+        // source (Java 23+), independent of the -source/--release bytecode level. So gate on the
+        // compiling JDK (JavaVersion.createdBy) rather than UsesJavaVersion, which checks the
+        // source compatibility / bytecode level.
+        TreeVisitor<?, ExecutionContext> compiledByJava23OrLater = new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public @Nullable J visit(@Nullable Tree tree, ExecutionContext ctx) {
+                if (tree instanceof JavaSourceFile) {
+                    JavaSourceFile cu = (JavaSourceFile) tree;
+                    if (cu.getMarkers().findFirst(JavaVersion.class)
+                            .filter(v -> v.getMajorCreatedByVersion() >= 23)
+                            .isPresent()) {
+                        return SearchResult.found(cu);
+                    }
+                }
+                return (J) tree;
+            }
+        };
+        return Preconditions.check(compiledByJava23OrLater, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 String spaceWhitespace = space.getWhitespace();
@@ -285,6 +306,12 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     lines.add(currentLine.toString());
                     currentLine = new StringBuilder();
                     break;
+                case "br":
+                    // <br> is a line break; doc comments are already line-based, so end the
+                    // current line rather than leaking a literal <br> into the Markdown.
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    break;
                 case "li":
                     if (!listStack.isEmpty()) {
                         String listType = listStack.peek();
@@ -410,13 +437,24 @@ public class JavadocToMarkdownDocComment extends Recipe {
             convert(param.getSpaceBeforeName());
             J name = param.getName();
             if (name != null) {
-                currentLine.append(printJ(name));
+                currentLine.append(printParamName(name));
             }
             Javadoc.Reference nameRef = param.getNameReference();
             if (nameRef != null && nameRef.getTree() != null && name == null) {
-                currentLine.append(printJ(nameRef.getTree()));
+                currentLine.append(printParamName(nameRef.getTree()));
             }
             convert(param.getDescription());
+        }
+
+        /**
+         * Print a {@code @param} name, restoring the angle brackets around type parameters
+         * (e.g. {@code <T>}) that the Javadoc parser strips off the {@link J.TypeParameter}.
+         */
+        private static String printParamName(J name) {
+            if (name instanceof J.TypeParameter) {
+                return "<" + printJ(name) + ">";
+            }
+            return printJ(name);
         }
 
         private void convertReturn(Javadoc.Return ret) {
@@ -607,7 +645,9 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 return sb.toString();
             }
             if (tree instanceof J.ArrayType) {
-                return printJ(((J.ArrayType) tree).getElementType()) + "[]";
+                J.ArrayType arrayType = (J.ArrayType) tree;
+                String suffix = arrayType.getMarkers().findFirst(Varargs.class).isPresent() ? "..." : "[]";
+                return printJ(arrayType.getElementType()) + suffix;
             }
             if (tree instanceof J.Primitive) {
                 return ((J.Primitive) tree).getType().getKeyword();
