@@ -36,6 +36,9 @@ recipeList:
   - org.openrewrite.java.migrate.lang.MigrateMainMethodToInstanceMain
   # Hoist complex super(..)/this(..) arguments into locals (JEP 513); opt-in, as it restyles working code
   - org.openrewrite.java.migrate.lang.ExtractExplicitConstructorInvocationArguments
+  # Replace unused for-each/catch/lambda variables with underscore (JEP 456); opt-in, as automatically stripping
+  # names of unused variables removes context some teams prefer to keep, so it is not part of the version upgrade
+  - org.openrewrite.java.migrate.lang.ReplaceUnusedVariablesWithUnderscore
   # Text blocks for strings without newlines (upgrade chain only does convertStringsWithoutNewlines: false)
   - org.openrewrite.java.migrate.lang.UseTextBlocks:
       convertStringsWithoutNewlines: true
