@@ -165,6 +165,56 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
     @Test
+    void javadocWithLineBreakBeforeParagraph() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * Verifies the value.<br>
+                   * <p>
+                   * More details.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// Verifies the value.
+                  ///
+                  /// More details.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithLineBreak() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * First line.<br>
+                   * Second line.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// First line.
+                  /// Second line.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void javadocWithEmphasis() {
         rewriteRun(
           java(
