@@ -226,4 +226,141 @@ class UseSetOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void proseAddChainCollapsedIntoHashSetConstructor() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      tags.add("alpha");
+                      tags.add("beta");
+                      tags.add("gamma");
+                  }
+              }
+              """,
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>(Set.of("alpha", "beta", "gamma"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseSingleAddBelowThresholdLeftAlone() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      tags.add("alpha");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseInterveningStatementStopsAccumulation() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      tags.add("alpha");
+                      System.out.println("debug");
+                      tags.add("beta");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseArgReferencingTargetIsBail() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      tags.add("first");
+                      tags.add("size:" + tags.size());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseNullArgIsBail() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      tags.add("alpha");
+                      tags.add(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseRawSetLeftAlone() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set tags = new HashSet();
+                      tags.add("alpha");
+                      tags.add("beta");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
