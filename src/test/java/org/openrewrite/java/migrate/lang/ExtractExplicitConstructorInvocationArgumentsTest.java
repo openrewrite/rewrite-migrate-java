@@ -560,14 +560,14 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
             // Even with a context-free template, the rewritten reference must carry both its type and
             // its binding to the freshly created local; otherwise downstream type-aware recipes break.
             spec -> spec.afterRecipe(cu -> {
-                List<J.Identifier> refs = new ArrayList<>();
+                var refs = new ArrayList<J.Identifier>();
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, Integer p) {
                         if ("super".equals(mi.getSimpleName())) {
                             for (Expression a : mi.getArguments()) {
-                                if (a instanceof J.Identifier) {
-                                    refs.add((J.Identifier) a);
+                                if (a instanceof J.Identifier identifier) {
+                                    refs.add(identifier);
                                 }
                             }
                         }
@@ -575,8 +575,8 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
                     }
                 }.visit(cu, 0);
                 assertThat(refs).hasSize(1);
-                assertThat(refs.get(0).getType()).as("type").isNotNull();
-                assertThat(refs.get(0).getFieldType()).as("fieldType (variable binding)").isNotNull();
+                assertThat(refs.getFirst().getType()).as("type").isNotNull();
+                assertThat(refs.getFirst().getFieldType()).as("fieldType (variable binding)").isNotNull();
             })
           )
         );
@@ -644,19 +644,19 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
             // source and is referenced nowhere else in this unit. A context-free template still resolves it
             // via the shared type cache, so the declared type must be a real FQ type, not Unknown.
             spec -> spec.afterRecipe(cu -> {
-                List<J.VariableDeclarations> decls = new ArrayList<>();
+                var decls = new ArrayList<J.VariableDeclarations>();
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, Integer p) {
-                        if ("b".equals(vd.getVariables().get(0).getSimpleName())) {
+                        if ("b".equals(vd.getVariables().getFirst().getSimpleName())) {
                             decls.add(vd);
                         }
                         return super.visitVariableDeclarations(vd, p);
                     }
                 }.visit(cu, 0);
                 assertThat(decls).hasSize(1);
-                assertThat(decls.get(0).getTypeExpression().getType()).as("declared type 'Base'").isNotNull();
-                assertThat(TypeUtils.asFullyQualified(decls.get(0).getTypeExpression().getType()))
+                assertThat(decls.getFirst().getTypeExpression().getType()).as("declared type 'Base'").isNotNull();
+                assertThat(TypeUtils.asFullyQualified(decls.getFirst().getTypeExpression().getType()))
                   .as("declared type is a resolved FQ type, not Unknown").isNotNull();
             })
           )
