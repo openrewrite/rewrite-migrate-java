@@ -128,6 +128,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         private final List<String> lines = new ArrayList<>();
         private StringBuilder currentLine = new StringBuilder();
         private boolean inPre = false;
+        private boolean suppressNextLineBreak = false;
         private final Deque<String> listStack = new ArrayDeque<>();
         private final Deque<Integer> listCounterStack = new ArrayDeque<>();
 
@@ -153,11 +154,17 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertNode(Javadoc node) {
+            // A `<br>` already ended the current line; an immediately following physical
+            // line break is the same break, so don't let it add a spurious blank line.
+            boolean afterBr = suppressNextLineBreak;
+            suppressNextLineBreak = false;
             if (node instanceof Javadoc.Text) {
                 currentLine.append(decodeHtmlEntities(((Javadoc.Text) node).getText()));
             } else if (node instanceof Javadoc.LineBreak) {
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder();
+                if (!afterBr) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                }
             } else if (node instanceof Javadoc.Literal) {
                 convertLiteral((Javadoc.Literal) node);
             } else if (node instanceof Javadoc.Link) {
@@ -265,6 +272,15 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     lines.add(currentLine.toString());
                     lines.add("");
                     currentLine = new StringBuilder();
+                    break;
+                case "br":
+                    // Line break: end the current line. Suppress the physical line break that
+                    // usually follows so the two collapse into a single break rather than a
+                    // blank line; a redundant break before a `<p>` is absorbed when blank lines
+                    // are collapsed.
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    suppressNextLineBreak = true;
                     break;
                 case "em":
                 case "i":
