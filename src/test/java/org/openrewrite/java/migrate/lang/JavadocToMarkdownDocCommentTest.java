@@ -93,6 +93,34 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
     @Test
+    void genericTypeParameter() {
+        rewriteRun(
+          java(
+            """
+              public class A<T> {
+                  /**
+                   * A box.
+                   *
+                   * @param <T> the type of the contained value
+                   * @param value the value to store
+                   */
+                  public <U> void m(U value) {}
+              }
+              """,
+            """
+              public class A<T> {
+                  /// A box.
+                  ///
+                  /// @param <T> the type of the contained value
+                  /// @param value the value to store
+                  public <U> void m(U value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void javadocWithCodeTag() {
         rewriteRun(
           java(
@@ -157,6 +185,56 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   /// First paragraph.
                   ///
                   /// Second paragraph.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithLineBreakBeforeParagraph() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * Verifies the value.<br>
+                   * <p>
+                   * More details.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// Verifies the value.
+                  ///
+                  /// More details.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocWithLineBreak() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * First line.<br>
+                   * Second line.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// First line.
+                  /// Second line.
                   public void m() {}
               }
               """

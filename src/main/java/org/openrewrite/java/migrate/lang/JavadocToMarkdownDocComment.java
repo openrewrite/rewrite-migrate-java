@@ -149,6 +149,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         private final List<String> lines = new ArrayList<>();
         private StringBuilder currentLine = new StringBuilder();
         private boolean inPre = false;
+        private boolean suppressNextLineBreak = false;
         private final Deque<String> listStack = new ArrayDeque<>();
         private final Deque<Integer> listCounterStack = new ArrayDeque<>();
 
@@ -174,11 +175,17 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertNode(Javadoc node) {
+            // A `<br>` already ended the current line; an immediately following physical
+            // line break is the same break, so don't let it add a spurious blank line.
+            boolean afterBr = suppressNextLineBreak;
+            suppressNextLineBreak = false;
             if (node instanceof Javadoc.Text) {
                 currentLine.append(decodeHtmlEntities(((Javadoc.Text) node).getText()));
             } else if (node instanceof Javadoc.LineBreak) {
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder();
+                if (!afterBr) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                }
             } else if (node instanceof Javadoc.Literal) {
                 convertLiteral((Javadoc.Literal) node);
             } else if (node instanceof Javadoc.Link) {
@@ -287,6 +294,15 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     lines.add("");
                     currentLine = new StringBuilder();
                     break;
+                case "br":
+                    // Line break: end the current line. Suppress the physical line break that
+                    // usually follows so the two collapse into a single break rather than a
+                    // blank line; a redundant break before a `<p>` is absorbed when blank lines
+                    // are collapsed.
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    suppressNextLineBreak = true;
+                    break;
                 case "em":
                 case "i":
                     currentLine.append('_');
@@ -303,12 +319,6 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 case "ol":
                     listStack.push("ol");
                     listCounterStack.push(1);
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
-                    break;
-                case "br":
-                    // <br> is a line break; doc comments are already line-based, so end the
-                    // current line rather than leaking a literal <br> into the Markdown.
                     lines.add(currentLine.toString());
                     currentLine = new StringBuilder();
                     break;
@@ -436,25 +446,22 @@ public class JavadocToMarkdownDocComment extends Recipe {
             currentLine.append("@param");
             convert(param.getSpaceBeforeName());
             J name = param.getName();
-            if (name != null) {
-                currentLine.append(printParamName(name));
+            if (name == null) {
+                Javadoc.Reference nameRef = param.getNameReference();
+                if (nameRef != null) {
+                    name = nameRef.getTree();
+                }
             }
-            Javadoc.Reference nameRef = param.getNameReference();
-            if (nameRef != null && nameRef.getTree() != null && name == null) {
-                currentLine.append(printParamName(nameRef.getTree()));
+            if (name != null) {
+                if (name instanceof J.TypeParameter) {
+                    // Generic type parameters (e.g. `@param <T>`) are parsed as a J.TypeParameter
+                    // with the surrounding angle brackets stripped, so re-add them here.
+                    currentLine.append('<').append(printJ(name)).append('>');
+                } else {
+                    currentLine.append(printJ(name));
+                }
             }
             convert(param.getDescription());
-        }
-
-        /**
-         * Print a {@code @param} name, restoring the angle brackets around type parameters
-         * (e.g. {@code <T>}) that the Javadoc parser strips off the {@link J.TypeParameter}.
-         */
-        private static String printParamName(J name) {
-            if (name instanceof J.TypeParameter) {
-                return "<" + printJ(name) + ">";
-            }
-            return printJ(name);
         }
 
         private void convertReturn(Javadoc.Return ret) {
