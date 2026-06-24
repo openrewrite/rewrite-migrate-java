@@ -93,6 +93,34 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
     @Test
+    void genericTypeParameter() {
+        rewriteRun(
+          java(
+            """
+              public class A<T> {
+                  /**
+                   * A box.
+                   *
+                   * @param <T> the type of the contained value
+                   * @param value the value to store
+                   */
+                  public <U> void m(U value) {}
+              }
+              """,
+            """
+              public class A<T> {
+                  /// A box.
+                  ///
+                  /// @param <T> the type of the contained value
+                  /// @param value the value to store
+                  public <U> void m(U value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void javadocWithCodeTag() {
         rewriteRun(
           java(
