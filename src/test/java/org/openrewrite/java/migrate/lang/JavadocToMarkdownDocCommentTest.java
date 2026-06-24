@@ -750,6 +750,54 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
+    @Test
+    void javadocWithVarargsLink() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * See {@link String#format(String, Object...)} for formatting.
+                   */
+                  public void m() {}
+              }
+              """,
+            """
+              public class A {
+                  /// See [String#format(String, Object...)] for formatting.
+                  public void m() {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void compiledByJava23TargetingOlderBytecodeConverts() {
+        // JDK 23 compiler, but producing Java 8 bytecode: Markdown doc comments are still valid.
+        rewriteRun(
+          version(
+            java(
+              """
+                public class A {
+                    /** Returns the name. */
+                    public String getName() {
+                        return "name";
+                    }
+                }
+                """,
+              """
+                public class A {
+                    /// Returns the name.
+                    public String getName() {
+                        return "name";
+                    }
+                }
+                """
+            ), 23, 8, 8)
+        );
+    }
+
     @Nested
     class Jep467FlagshipExamples {
 
