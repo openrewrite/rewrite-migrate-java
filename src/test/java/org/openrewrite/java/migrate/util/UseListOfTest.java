@@ -226,4 +226,211 @@ class UseListOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void prosePreservesCommentsOnAddStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      // the boss
+                      names.add("Bob");
+                      names.add("alice");
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>(List.of(
+                              // the boss
+                              "Bob",
+                              "alice"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseAddChainCollapsedIntoArrayListConstructor() {
+        // The mutable-ArrayList output preserves the ability to .add() / .sort() / etc. afterwards.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      names.add("Bob");
+                      names.add("alice");
+                      names.add("Charlie");
+                      names.sort(null);
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>(List.of(
+                              "Bob",
+                              "alice",
+                              "Charlie"));
+                      names.sort(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseSingleAddBelowThresholdLeftAlone() {
+        // A single add is below the threshold — the rewrite would be more noise than benefit.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      names.add("Bob");
+                      names.sort(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseInterveningStatementStopsAccumulation() {
+        // Anything other than a recognised add(x) between the decl and a later add breaks the chain.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      names.add("Bob");
+                      System.out.println("debug");
+                      names.add("alice");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseArgReferencingTargetIsBail() {
+        // names.add(names.size() + "") depends on names being mutated step-by-step.
+        // Collapsing into List.of(...) would evaluate all args against the pre-add state and break semantics.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      names.add("first");
+                      names.add("size:" + names.size());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseNullArgIsBail() {
+        // List.of(...) rejects null at runtime.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      names.add("Bob");
+                      names.add(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseRawListLeftAlone() {
+        // Raw LHS — ParameterizeRawCollection (or hand-edit) should run first.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List names = new ArrayList();
+                      names.add("Bob");
+                      names.add("alice");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseArrayListWithCapacityArgLeftAlone() {
+        // new ArrayList<>(10) has a capacity hint that we'd be silently dropping.
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>(10);
+                      names.add("Bob");
+                      names.add("alice");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
