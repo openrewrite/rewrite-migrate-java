@@ -442,7 +442,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.enterprise.concurrent
       artifactId: jakarta.enterprise.concurrent-api
-      newVersion: 3.0.x
+      newVersion: 2.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.enterprise
       oldArtifactId: cdi-api
