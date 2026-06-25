@@ -205,6 +205,48 @@ class UseMapOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1148")
+    @Test
+    void doNotChangeConcreteHashMapField() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(25))),
+          java(
+            """
+              import java.util.HashMap;
+
+              class Main {
+                  private static final HashMap<String, String> VALUES = new HashMap<String, String>() {{
+                      put("key", "value");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1148")
+    @Test
+    void doNotChangeConcreteHashMapLocalVariable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+
+              class Main {
+                  void m() {
+                      HashMap<String, Integer> ages = new HashMap<>() {{
+                          put("Bob", 42);
+                          put("alice", 30);
+                      }};
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1112")
     @Test
     void doNotChangeLinkedHashMap() {
@@ -276,6 +318,232 @@ class UseMapOfTest implements RewriteTest {
 
               void foo() {
                   Map.of(BLAH, "foo");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseChainCollapsedIntoHashMapConstructorMapOf() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                      ages.put("alice", 30);
+                      ages.put("Charlie", 51);
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>(Map.of(
+                              "Bob", 42,
+                              "alice", 30,
+                              "Charlie", 51));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void prosePreservesCommentsOnPutStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      // Bob is the boss
+                      ages.put("Bob", 42);
+                      ages.put("alice", 30);
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>(Map.of(
+                              // Bob is the boss
+                              "Bob", 42,
+                              "alice", 30));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseChainOverTenPairsUsesMapOfEntries() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> codes = new HashMap<>();
+                      codes.put("a", 1);
+                      codes.put("b", 2);
+                      codes.put("c", 3);
+                      codes.put("d", 4);
+                      codes.put("e", 5);
+                      codes.put("f", 6);
+                      codes.put("g", 7);
+                      codes.put("h", 8);
+                      codes.put("i", 9);
+                      codes.put("j", 10);
+                      codes.put("k", 11);
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> codes = new HashMap<>(Map.ofEntries(
+                              Map.entry("a", 1),
+                              Map.entry("b", 2),
+                              Map.entry("c", 3),
+                              Map.entry("d", 4),
+                              Map.entry("e", 5),
+                              Map.entry("f", 6),
+                              Map.entry("g", 7),
+                              Map.entry("h", 8),
+                              Map.entry("i", 9),
+                              Map.entry("j", 10),
+                              Map.entry("k", 11)));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseSinglePutBelowThresholdLeftAlone() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseInterveningStatementStopsAccumulation() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                      System.out.println("debug");
+                      ages.put("alice", 30);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseValueReferencingTargetIsBail() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> counts = new HashMap<>();
+                      counts.put("first", 1);
+                      counts.put("size", counts.size());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseNullKeyOrValueIsBail() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                      ages.put("alice", null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseRawMapLeftAlone() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map ages = new HashMap();
+                      ages.put("Bob", 42);
+                      ages.put("alice", 30);
                   }
               }
               """

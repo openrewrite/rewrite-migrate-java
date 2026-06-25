@@ -20,6 +20,8 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -31,18 +33,33 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UseMapOf extends Recipe {
     private static final MethodMatcher NEW_HASH_MAP = new MethodMatcher("java.util.HashMap <constructor>()", true);
     private static final MethodMatcher MAP_PUT = new MethodMatcher("java.util.Map put(..)", true);
 
+    private static final String PROSE_REWRITES_KEY = "use-map-of.prose-rewrites";
+
     @Getter
     final String displayName = "Prefer `Map.of(..)`";
 
     @Getter
-    final String description = "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher.";
+    final String description = "Prefer `Map.of(..)` instead of using `java.util.Map#put(..)` in Java 10 or higher. " +
+            "Two input shapes are recognised:\n\n" +
+            "- Anonymous-class initialization (`new HashMap<>() {{ put(k, v); ... }}`), which is replaced " +
+            "wholesale with `Map.of(k, v, ...)` (or `Map.ofEntries(...)` past ten entries) — immutable result.\n" +
+            "- A `new HashMap<>()` declaration followed by a chain of `target.put(k, v)` statements, " +
+            "which is collapsed to `new HashMap<>(Map.of(..))` (or `new HashMap<>(Map.ofEntries(..))`) — " +
+            "preserving the mutable `HashMap`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -54,11 +71,52 @@ public class UseMapOf extends Recipe {
                     @Override
                     public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                         J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
+
+                        // Prose-pattern: see if visitBlock decided this initializer should be wrapped
+                        // with `new HashMap<>(Map.of(..))` or `new HashMap<>(Map.ofEntries(..))`.
+                        Map<UUID, List<J.MethodInvocation>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
+                        if (rewrites != null) {
+                            List<J.MethodInvocation> puts = rewrites.get(n.getId());
+                            if (puts != null) {
+                                boolean useEntries = puts.size() > 10;
+                                List<Expression> args = new ArrayList<>();
+                                StringJoiner inner = useEntries ?
+                                        new StringJoiner(", ", "Map.ofEntries(", ")") :
+                                        new StringJoiner(", ", "Map.of(", ")");
+                                for (J.MethodInvocation put : puts) {
+                                    args.addAll(put.getArguments());
+                                    if (useEntries) {
+                                        inner.add("Map.entry(#{any()}, #{any()})");
+                                    } else {
+                                        inner.add("#{any()}");
+                                        inner.add("#{any()}");
+                                    }
+                                }
+                                String src = "new HashMap<>(" + inner + ")";
+                                maybeAddImport("java.util.Map");
+                                J applied = JavaTemplate.builder(src)
+                                        .contextSensitive()
+                                        .imports("java.util.HashMap", "java.util.Map")
+                                        .build()
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                                // Reattach each put's prefix so the entries land one-per-line and any
+                                // leading comments survive, then autoformat to nest the indentation.
+                                return autoFormat(reattachPairPrefixes(applied, puts, useEntries), ctx);
+                            }
+                        }
+
+                        // Anonymous-class form (original UseMapOf logic, unchanged).
                         J.Block body = n.getBody();
                         if (NEW_HASH_MAP.matches(n) && body != null && body.getStatements().size() == 1 &&
                                 TypeUtils.isOfClassType(n.getClazz() != null ? n.getClazz().getType() : null, "java.util.HashMap")) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
+                                // Skip when the result is assigned to a concrete `HashMap` declared type rather
+                                // than `Map`: the immutable `Map.of(..)` is not assignable to `HashMap`, and
+                                // `HashMap`-only methods may be invoked on the variable later (issue #1148).
+                                if (isAssignedToConcreteHashMap()) {
+                                    return n;
+                                }
                                 List<Statement> putStatements = ((J.Block) statement).getStatements();
                                 List<Expression> args = new ArrayList<>();
                                 boolean useEntries = putStatements.size() > 10;
@@ -110,6 +168,193 @@ public class UseMapOf extends Recipe {
                         }
 
                         return n;
+                    }
+
+                    /**
+                     * Re-applies the absorbed put statements' prefixes to the generated
+                     * {@code new HashMap<>(Map.of(..))} / {@code new HashMap<>(Map.ofEntries(..))} so each
+                     * pair keeps its own line and any leading comments. {@code puts} holds one invocation
+                     * per pair, in order; for {@code Map.of} every other argument (the keys, at even
+                     * indices) takes a prefix, while for {@code Map.ofEntries} every {@code Map.entry(..)}
+                     * argument does.
+                     */
+                    private J reattachPairPrefixes(J applied, List<J.MethodInvocation> puts, boolean useEntries) {
+                        if (!(applied instanceof J.NewClass)) {
+                            return applied;
+                        }
+                        J.NewClass nc = (J.NewClass) applied;
+                        if (nc.getArguments().size() != 1 || !(nc.getArguments().get(0) instanceof J.MethodInvocation)) {
+                            return applied;
+                        }
+                        J.MethodInvocation mapCall = (J.MethodInvocation) nc.getArguments().get(0);
+                        List<Expression> mapArgs = mapCall.getArguments();
+                        int step = useEntries ? 1 : 2;
+                        List<Expression> withPrefixes = new ArrayList<>(mapArgs.size());
+                        for (int i = 0; i < mapArgs.size(); i++) {
+                            Expression arg = mapArgs.get(i);
+                            if (i % step == 0) {
+                                arg = arg.withPrefix(puts.get(i / step).getPrefix());
+                            }
+                            withPrefixes.add(arg);
+                        }
+                        return nc.withArguments(Collections.singletonList(mapCall.withArguments(withPrefixes)));
+                    }
+
+                    /**
+                     * Returns {@code true} when the {@code new HashMap<>() {{ ... }}} currently being visited is
+                     * the initializer of a variable whose declared type is the concrete {@code java.util.HashMap}
+                     * rather than the {@code Map} interface. In that case the immutable {@code Map.of(..)} result
+                     * would not be assignable, and {@code HashMap}-specific methods may be used later, so the
+                     * rewrite is skipped (issue #1148).
+                     */
+                    private boolean isAssignedToConcreteHashMap() {
+                        Object parent = getCursor().getParentTreeCursor().getValue();
+                        return parent instanceof J.VariableDeclarations.NamedVariable &&
+                                TypeUtils.isOfClassType(((J.VariableDeclarations.NamedVariable) parent).getType(), "java.util.HashMap");
+                    }
+
+                    @Override
+                    public J visitBlock(J.Block block, ExecutionContext ctx) {
+                        Map<UUID, List<J.MethodInvocation>> rewrites = new HashMap<>();
+                        Set<UUID> absorbedPutIds = new HashSet<>();
+                        identifyProseRewrites(block, rewrites, absorbedPutIds);
+
+                        if (!rewrites.isEmpty()) {
+                            getCursor().putMessage(PROSE_REWRITES_KEY, rewrites);
+                        }
+
+                        J.Block b = (J.Block) super.visitBlock(block, ctx);
+
+                        // Post-pass: drop the now-absorbed `put(..)` statements from the block.
+                        return b.withStatements(ListUtils.filter(b.getStatements(), s -> !absorbedPutIds.contains(s.getId())));
+                    }
+
+                    /**
+                     * Walk the block's statements looking for:
+                     * <pre>
+                     *     Map&lt;K, V&gt; name = new HashMap&lt;&gt;();
+                     *     name.put(k1, v1);
+                     *     name.put(k2, v2);
+                     *     ...
+                     * </pre>
+                     * For each such sequence with at least two puts, record
+                     * (initializer UUID, the absorbed {@code put(..)} invocations in order) in
+                     * {@code rewrites} and the absorbed put statement UUIDs in {@code absorbedPutIds}.
+                     */
+                    private void identifyProseRewrites(
+                            J.Block block,
+                            Map<UUID, List<J.MethodInvocation>> rewrites,
+                            Set<UUID> absorbedPutIds) {
+                        List<Statement> stmts = block.getStatements();
+                        int i = 0;
+                        while (i < stmts.size()) {
+                            Statement stmt = stmts.get(i);
+                            if (!(stmt instanceof J.VariableDeclarations)) {
+                                i++;
+                                continue;
+                            }
+                            J.VariableDeclarations decl = (J.VariableDeclarations) stmt;
+                            String targetName = matchingTargetName(decl);
+                            if (targetName == null) {
+                                i++;
+                                continue;
+                            }
+                            J.NewClass initializer = (J.NewClass) decl.getVariables().get(0).getInitializer();
+
+                            List<J.MethodInvocation> puts = new ArrayList<>();
+                            List<UUID> absorbedHere = new ArrayList<>();
+                            int j = i + 1;
+                            while (j < stmts.size()) {
+                                Statement next = stmts.get(j);
+                                List<Expression> kv = matchPutCallOn(next, targetName);
+                                if (kv == null) {
+                                    break;
+                                }
+                                if (expressionReferences(kv.get(0), targetName) ||
+                                        expressionReferences(kv.get(1), targetName)) {
+                                    break;
+                                }
+                                puts.add((J.MethodInvocation) next);
+                                absorbedHere.add(next.getId());
+                                j++;
+                            }
+                            if (puts.size() >= 2 && initializer != null) {
+                                rewrites.put(initializer.getId(), puts);
+                                absorbedPutIds.addAll(absorbedHere);
+                                i = j;
+                            } else {
+                                i++;
+                            }
+                        }
+                    }
+
+                    /**
+                     * Returns the variable name if {@code decl} is a single-variable, parameterized
+                     * {@code Map<K, V>} declaration whose initializer is a no-arg {@code new HashMap<>()}
+                     * with no anonymous-class body. Returns {@code null} otherwise.
+                     */
+                    private String matchingTargetName(J.VariableDeclarations decl) {
+                        if (decl.getVariables().size() != 1) {
+                            return null;
+                        }
+                        if (!(decl.getTypeExpression() instanceof J.ParameterizedType)) {
+                            return null;
+                        }
+                        J.VariableDeclarations.NamedVariable nv = decl.getVariables().get(0);
+                        if (!(nv.getInitializer() instanceof J.NewClass)) {
+                            return null;
+                        }
+                        J.NewClass nc = (J.NewClass) nv.getInitializer();
+                        if (!NEW_HASH_MAP.matches(nc)) {
+                            return null;
+                        }
+                        if (nc.getBody() != null) {
+                            return null;
+                        }
+                        return nv.getSimpleName();
+                    }
+
+                    /**
+                     * If {@code stmt} is {@code targetName.put(k, v)} matching {@link #MAP_PUT},
+                     * returns [key, value] as a list; otherwise {@code null}. Returns {@code null}
+                     * if either argument is the {@code null} literal, since {@code Map.of(..)} and
+                     * {@code Map.entry(..)} reject nulls.
+                     */
+                    private List<Expression> matchPutCallOn(Statement stmt, String targetName) {
+                        if (!(stmt instanceof J.MethodInvocation)) {
+                            return null;
+                        }
+                        J.MethodInvocation mi = (J.MethodInvocation) stmt;
+                        if (!MAP_PUT.matches(mi)) {
+                            return null;
+                        }
+                        if (mi.getArguments().size() != 2) {
+                            return null;
+                        }
+                        if (!(mi.getSelect() instanceof J.Identifier)) {
+                            return null;
+                        }
+                        if (!targetName.equals(((J.Identifier) mi.getSelect()).getSimpleName())) {
+                            return null;
+                        }
+                        for (Expression arg : mi.getArguments()) {
+                            if (arg instanceof J.Literal && ((J.Literal) arg).getValue() == null) {
+                                return null;
+                            }
+                        }
+                        return mi.getArguments();
+                    }
+
+                    private boolean expressionReferences(Expression expr, String name) {
+                        return new JavaIsoVisitor<AtomicBoolean>() {
+                            @Override
+                            public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean f) {
+                                if (name.equals(id.getSimpleName())) {
+                                    f.set(true);
+                                }
+                                return id;
+                            }
+                        }.reduce(expr, new AtomicBoolean(false)).get();
                     }
                 });
     }
