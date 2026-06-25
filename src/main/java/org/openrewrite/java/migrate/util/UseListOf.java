@@ -32,6 +32,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,20 +72,25 @@ public class UseListOf extends Recipe {
 
                         // Prose-pattern: see if visitBlock (above us on the cursor) decided this
                         // initializer should be wrapped with `new ArrayList<>(List.of(..))`.
-                        Map<UUID, List<Expression>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
+                        Map<UUID, List<J.MethodInvocation>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
                         if (rewrites != null) {
-                            List<Expression> proseArgs = rewrites.get(n.getId());
-                            if (proseArgs != null) {
+                            List<J.MethodInvocation> adds = rewrites.get(n.getId());
+                            if (adds != null) {
+                                List<Expression> args = new ArrayList<>();
                                 StringJoiner joiner = new StringJoiner(", ", "new ArrayList<>(List.of(", "))");
-                                for (int k = 0; k < proseArgs.size(); k++) {
+                                for (J.MethodInvocation add : adds) {
+                                    args.add(add.getArguments().get(0));
                                     joiner.add("#{any()}");
                                 }
                                 maybeAddImport("java.util.List");
-                                return JavaTemplate.builder(joiner.toString())
+                                J applied = JavaTemplate.builder(joiner.toString())
                                         .contextSensitive()
                                         .imports("java.util.ArrayList", "java.util.List")
                                         .build()
-                                        .apply(updateCursor(n), n.getCoordinates().replace(), proseArgs.toArray());
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                                // Reattach each add's prefix so the elements land one-per-line and any
+                                // leading comments survive, then autoformat to nest the indentation.
+                                return autoFormat(reattachElementPrefixes(applied, adds), ctx);
                             }
                         }
 
@@ -120,6 +126,28 @@ public class UseListOf extends Recipe {
                         return n;
                     }
 
+                    /**
+                     * Re-applies the absorbed add statements' prefixes to the generated
+                     * {@code new ArrayList<>(List.of(..))} so each element keeps its own line and any
+                     * leading comments. {@code adds} holds one invocation per element, in order.
+                     */
+                    private J reattachElementPrefixes(J applied, List<J.MethodInvocation> adds) {
+                        if (!(applied instanceof J.NewClass)) {
+                            return applied;
+                        }
+                        J.NewClass nc = (J.NewClass) applied;
+                        if (nc.getArguments().size() != 1 || !(nc.getArguments().get(0) instanceof J.MethodInvocation)) {
+                            return applied;
+                        }
+                        J.MethodInvocation listCall = (J.MethodInvocation) nc.getArguments().get(0);
+                        List<Expression> listArgs = listCall.getArguments();
+                        List<Expression> withPrefixes = new ArrayList<>(listArgs.size());
+                        for (int i = 0; i < listArgs.size(); i++) {
+                            withPrefixes.add(listArgs.get(i).withPrefix(adds.get(i).getPrefix()));
+                        }
+                        return nc.withArguments(Collections.singletonList(listCall.withArguments(withPrefixes)));
+                    }
+
                     @Override
                     public J visitBlock(J.Block block, ExecutionContext ctx) {
                         // Pre-pass: scan the ORIGINAL block to identify which initializers to
@@ -127,7 +155,7 @@ public class UseListOf extends Recipe {
                         // through super.visitBlock unless a child visitor rebuilds the node,
                         // and nothing else in this recipe touches the targeted initializers
                         // before visitNewClass fires.
-                        Map<UUID, List<Expression>> rewrites = new HashMap<>();
+                        Map<UUID, List<J.MethodInvocation>> rewrites = new HashMap<>();
                         Set<UUID> absorbedAddIds = new HashSet<>();
                         identifyProseRewrites(block, rewrites, absorbedAddIds);
 
@@ -150,12 +178,12 @@ public class UseListOf extends Recipe {
                      *     ...
                      * </pre>
                      * For each such sequence with at least two adds, record
-                     * (initializer UUID, [args]) in {@code rewrites} and the absorbed add
-                     * statement UUIDs in {@code absorbedAddIds}.
+                     * (initializer UUID, the absorbed {@code add(..)} invocations in order) in
+                     * {@code rewrites} and the absorbed add statement UUIDs in {@code absorbedAddIds}.
                      */
                     private void identifyProseRewrites(
                             J.Block block,
-                            Map<UUID, List<Expression>> rewrites,
+                            Map<UUID, List<J.MethodInvocation>> rewrites,
                             Set<UUID> absorbedAddIds) {
                         List<Statement> stmts = block.getStatements();
                         int i = 0;
@@ -174,7 +202,7 @@ public class UseListOf extends Recipe {
                             J.NewClass initializer = (J.NewClass) decl.getVariables().get(0).getInitializer();
                             // (matchingTargetName already verified the initializer is a J.NewClass)
 
-                            List<Expression> args = new ArrayList<>();
+                            List<J.MethodInvocation> adds = new ArrayList<>();
                             List<UUID> absorbedHere = new ArrayList<>();
                             int j = i + 1;
                             while (j < stmts.size()) {
@@ -183,12 +211,12 @@ public class UseListOf extends Recipe {
                                 if (arg == null || expressionReferences(arg, targetName)) {
                                     break;
                                 }
-                                args.add(arg);
+                                adds.add((J.MethodInvocation) next);
                                 absorbedHere.add(next.getId());
                                 j++;
                             }
-                            if (args.size() >= 2 && initializer != null) {
-                                rewrites.put(initializer.getId(), args);
+                            if (adds.size() >= 2 && initializer != null) {
+                                rewrites.put(initializer.getId(), adds);
                                 absorbedAddIds.addAll(absorbedHere);
                                 i = j;
                             } else {

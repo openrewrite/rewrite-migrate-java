@@ -32,6 +32,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,20 +72,25 @@ public class UseSetOf extends Recipe {
 
                         // Prose-pattern: see if visitBlock (above us on the cursor) decided this
                         // initializer should be wrapped with `new HashSet<>(Set.of(..))`.
-                        Map<UUID, List<Expression>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
+                        Map<UUID, List<J.MethodInvocation>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
                         if (rewrites != null) {
-                            List<Expression> proseArgs = rewrites.get(n.getId());
-                            if (proseArgs != null) {
+                            List<J.MethodInvocation> adds = rewrites.get(n.getId());
+                            if (adds != null) {
+                                List<Expression> args = new ArrayList<>();
                                 StringJoiner joiner = new StringJoiner(", ", "new HashSet<>(Set.of(", "))");
-                                for (int k = 0; k < proseArgs.size(); k++) {
+                                for (J.MethodInvocation add : adds) {
+                                    args.add(add.getArguments().get(0));
                                     joiner.add("#{any()}");
                                 }
                                 maybeAddImport("java.util.Set");
-                                return JavaTemplate.builder(joiner.toString())
+                                J applied = JavaTemplate.builder(joiner.toString())
                                         .contextSensitive()
                                         .imports("java.util.HashSet", "java.util.Set")
                                         .build()
-                                        .apply(updateCursor(n), n.getCoordinates().replace(), proseArgs.toArray());
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                                // Reattach each add's prefix so the elements land one-per-line and any
+                                // leading comments survive, then autoformat to nest the indentation.
+                                return autoFormat(reattachElementPrefixes(applied, adds), ctx);
                             }
                         }
 
@@ -120,9 +126,31 @@ public class UseSetOf extends Recipe {
                         return n;
                     }
 
+                    /**
+                     * Re-applies the absorbed add statements' prefixes to the generated
+                     * {@code new HashSet<>(Set.of(..))} so each element keeps its own line and any
+                     * leading comments. {@code adds} holds one invocation per element, in order.
+                     */
+                    private J reattachElementPrefixes(J applied, List<J.MethodInvocation> adds) {
+                        if (!(applied instanceof J.NewClass)) {
+                            return applied;
+                        }
+                        J.NewClass nc = (J.NewClass) applied;
+                        if (nc.getArguments().size() != 1 || !(nc.getArguments().get(0) instanceof J.MethodInvocation)) {
+                            return applied;
+                        }
+                        J.MethodInvocation setCall = (J.MethodInvocation) nc.getArguments().get(0);
+                        List<Expression> setArgs = setCall.getArguments();
+                        List<Expression> withPrefixes = new ArrayList<>(setArgs.size());
+                        for (int i = 0; i < setArgs.size(); i++) {
+                            withPrefixes.add(setArgs.get(i).withPrefix(adds.get(i).getPrefix()));
+                        }
+                        return nc.withArguments(Collections.singletonList(setCall.withArguments(withPrefixes)));
+                    }
+
                     @Override
                     public J visitBlock(J.Block block, ExecutionContext ctx) {
-                        Map<UUID, List<Expression>> rewrites = new HashMap<>();
+                        Map<UUID, List<J.MethodInvocation>> rewrites = new HashMap<>();
                         Set<UUID> absorbedAddIds = new HashSet<>();
                         identifyProseRewrites(block, rewrites, absorbedAddIds);
 
@@ -138,7 +166,7 @@ public class UseSetOf extends Recipe {
 
                     private void identifyProseRewrites(
                             J.Block block,
-                            Map<UUID, List<Expression>> rewrites,
+                            Map<UUID, List<J.MethodInvocation>> rewrites,
                             Set<UUID> absorbedAddIds) {
                         List<Statement> stmts = block.getStatements();
                         int i = 0;
@@ -156,7 +184,7 @@ public class UseSetOf extends Recipe {
                             }
                             J.NewClass initializer = (J.NewClass) decl.getVariables().get(0).getInitializer();
 
-                            List<Expression> args = new ArrayList<>();
+                            List<J.MethodInvocation> adds = new ArrayList<>();
                             List<UUID> absorbedHere = new ArrayList<>();
                             int j = i + 1;
                             while (j < stmts.size()) {
@@ -165,12 +193,12 @@ public class UseSetOf extends Recipe {
                                 if (arg == null || expressionReferences(arg, targetName)) {
                                     break;
                                 }
-                                args.add(arg);
+                                adds.add((J.MethodInvocation) next);
                                 absorbedHere.add(next.getId());
                                 j++;
                             }
-                            if (args.size() >= 2 && initializer != null) {
-                                rewrites.put(initializer.getId(), args);
+                            if (adds.size() >= 2 && initializer != null) {
+                                rewrites.put(initializer.getId(), adds);
                                 absorbedAddIds.addAll(absorbedHere);
                                 i = j;
                             } else {

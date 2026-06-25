@@ -228,6 +228,41 @@ class UseListOfTest implements RewriteTest {
     }
 
     @Test
+    void prosePreservesCommentsOnAddStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>();
+                      // the boss
+                      names.add("Bob");
+                      names.add("alice");
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new ArrayList<>(List.of(
+                              // the boss
+                              "Bob",
+                              "alice"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void proseAddChainCollapsedIntoArrayListConstructor() {
         // The mutable-ArrayList output preserves the ability to .add() / .sort() / etc. afterwards.
         //language=java
@@ -253,7 +288,10 @@ class UseListOfTest implements RewriteTest {
 
               class Test {
                   void m() {
-                      List<String> names = new ArrayList<>(List.of("Bob", "alice", "Charlie"));
+                      List<String> names = new ArrayList<>(List.of(
+                              "Bob",
+                              "alice",
+                              "Charlie"));
                       names.sort(null);
                   }
               }

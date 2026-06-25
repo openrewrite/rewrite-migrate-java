@@ -228,6 +228,41 @@ class UseSetOfTest implements RewriteTest {
     }
 
     @Test
+    void prosePreservesCommentsOnAddStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>();
+                      // primary
+                      tags.add("alpha");
+                      tags.add("beta");
+                  }
+              }
+              """,
+            """
+              import java.util.HashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new HashSet<>(Set.of(
+                              // primary
+                              "alpha",
+                              "beta"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void proseAddChainCollapsedIntoHashSetConstructor() {
         //language=java
         rewriteRun(
@@ -251,7 +286,10 @@ class UseSetOfTest implements RewriteTest {
 
               class Test {
                   void m() {
-                      Set<String> tags = new HashSet<>(Set.of("alpha", "beta", "gamma"));
+                      Set<String> tags = new HashSet<>(Set.of(
+                              "alpha",
+                              "beta",
+                              "gamma"));
                   }
               }
               """
