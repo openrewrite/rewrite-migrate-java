@@ -307,7 +307,45 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
                   void m() {
-                      Map<String, Integer> ages = new HashMap<>(Map.of("Bob", 42, "alice", 30, "Charlie", 51));
+                      Map<String, Integer> ages = new HashMap<>(Map.of(
+                              "Bob", 42,
+                              "alice", 30,
+                              "Charlie", 51));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void prosePreservesCommentsOnPutStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      // Bob is the boss
+                      ages.put("Bob", 42);
+                      ages.put("alice", 30);
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>(Map.of(
+                              // Bob is the boss
+                              "Bob", 42,
+                              "alice", 30));
                   }
               }
               """
@@ -347,7 +385,18 @@ class UseMapOfTest implements RewriteTest {
 
               class Test {
                   void m() {
-                      Map<String, Integer> codes = new HashMap<>(Map.ofEntries(Map.entry("a", 1), Map.entry("b", 2), Map.entry("c", 3), Map.entry("d", 4), Map.entry("e", 5), Map.entry("f", 6), Map.entry("g", 7), Map.entry("h", 8), Map.entry("i", 9), Map.entry("j", 10), Map.entry("k", 11)));
+                      Map<String, Integer> codes = new HashMap<>(Map.ofEntries(
+                              Map.entry("a", 1),
+                              Map.entry("b", 2),
+                              Map.entry("c", 3),
+                              Map.entry("d", 4),
+                              Map.entry("e", 5),
+                              Map.entry("f", 6),
+                              Map.entry("g", 7),
+                              Map.entry("h", 8),
+                              Map.entry("i", 9),
+                              Map.entry("j", 10),
+                              Map.entry("k", 11)));
                   }
               }
               """

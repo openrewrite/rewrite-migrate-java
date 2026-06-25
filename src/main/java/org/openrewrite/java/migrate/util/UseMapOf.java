@@ -33,6 +33,7 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,17 +74,17 @@ public class UseMapOf extends Recipe {
 
                         // Prose-pattern: see if visitBlock decided this initializer should be wrapped
                         // with `new HashMap<>(Map.of(..))` or `new HashMap<>(Map.ofEntries(..))`.
-                        Map<UUID, List<Expression>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
+                        Map<UUID, List<J.MethodInvocation>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
                         if (rewrites != null) {
-                            List<Expression> proseArgs = rewrites.get(n.getId());
-                            if (proseArgs != null) {
-                                // proseArgs is [k1, v1, k2, v2, ...]
-                                int pairCount = proseArgs.size() / 2;
-                                boolean useEntries = pairCount > 10;
+                            List<J.MethodInvocation> puts = rewrites.get(n.getId());
+                            if (puts != null) {
+                                boolean useEntries = puts.size() > 10;
+                                List<Expression> args = new ArrayList<>();
                                 StringJoiner inner = useEntries ?
                                         new StringJoiner(", ", "Map.ofEntries(", ")") :
                                         new StringJoiner(", ", "Map.of(", ")");
-                                for (int p = 0; p < pairCount; p++) {
+                                for (J.MethodInvocation put : puts) {
+                                    args.addAll(put.getArguments());
                                     if (useEntries) {
                                         inner.add("Map.entry(#{any()}, #{any()})");
                                     } else {
@@ -93,11 +94,14 @@ public class UseMapOf extends Recipe {
                                 }
                                 String src = "new HashMap<>(" + inner + ")";
                                 maybeAddImport("java.util.Map");
-                                return JavaTemplate.builder(src)
+                                J applied = JavaTemplate.builder(src)
                                         .contextSensitive()
                                         .imports("java.util.HashMap", "java.util.Map")
                                         .build()
-                                        .apply(updateCursor(n), n.getCoordinates().replace(), proseArgs.toArray());
+                                        .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
+                                // Reattach each put's prefix so the entries land one-per-line and any
+                                // leading comments survive, then autoformat to nest the indentation.
+                                return autoFormat(reattachPairPrefixes(applied, puts, useEntries), ctx);
                             }
                         }
 
@@ -160,9 +164,39 @@ public class UseMapOf extends Recipe {
                         return n;
                     }
 
+                    /**
+                     * Re-applies the absorbed put statements' prefixes to the generated
+                     * {@code new HashMap<>(Map.of(..))} / {@code new HashMap<>(Map.ofEntries(..))} so each
+                     * pair keeps its own line and any leading comments. {@code puts} holds one invocation
+                     * per pair, in order; for {@code Map.of} every other argument (the keys, at even
+                     * indices) takes a prefix, while for {@code Map.ofEntries} every {@code Map.entry(..)}
+                     * argument does.
+                     */
+                    private J reattachPairPrefixes(J applied, List<J.MethodInvocation> puts, boolean useEntries) {
+                        if (!(applied instanceof J.NewClass)) {
+                            return applied;
+                        }
+                        J.NewClass nc = (J.NewClass) applied;
+                        if (nc.getArguments().size() != 1 || !(nc.getArguments().get(0) instanceof J.MethodInvocation)) {
+                            return applied;
+                        }
+                        J.MethodInvocation mapCall = (J.MethodInvocation) nc.getArguments().get(0);
+                        List<Expression> mapArgs = mapCall.getArguments();
+                        int step = useEntries ? 1 : 2;
+                        List<Expression> withPrefixes = new ArrayList<>(mapArgs.size());
+                        for (int i = 0; i < mapArgs.size(); i++) {
+                            Expression arg = mapArgs.get(i);
+                            if (i % step == 0) {
+                                arg = arg.withPrefix(puts.get(i / step).getPrefix());
+                            }
+                            withPrefixes.add(arg);
+                        }
+                        return nc.withArguments(Collections.singletonList(mapCall.withArguments(withPrefixes)));
+                    }
+
                     @Override
                     public J visitBlock(J.Block block, ExecutionContext ctx) {
-                        Map<UUID, List<Expression>> rewrites = new HashMap<>();
+                        Map<UUID, List<J.MethodInvocation>> rewrites = new HashMap<>();
                         Set<UUID> absorbedPutIds = new HashSet<>();
                         identifyProseRewrites(block, rewrites, absorbedPutIds);
 
@@ -185,12 +219,12 @@ public class UseMapOf extends Recipe {
                      *     ...
                      * </pre>
                      * For each such sequence with at least two puts, record
-                     * (initializer UUID, [k1, v1, k2, v2, ...]) in {@code rewrites} and the
-                     * absorbed put statement UUIDs in {@code absorbedPutIds}.
+                     * (initializer UUID, the absorbed {@code put(..)} invocations in order) in
+                     * {@code rewrites} and the absorbed put statement UUIDs in {@code absorbedPutIds}.
                      */
                     private void identifyProseRewrites(
                             J.Block block,
-                            Map<UUID, List<Expression>> rewrites,
+                            Map<UUID, List<J.MethodInvocation>> rewrites,
                             Set<UUID> absorbedPutIds) {
                         List<Statement> stmts = block.getStatements();
                         int i = 0;
@@ -208,9 +242,8 @@ public class UseMapOf extends Recipe {
                             }
                             J.NewClass initializer = (J.NewClass) decl.getVariables().get(0).getInitializer();
 
-                            List<Expression> args = new ArrayList<>();
+                            List<J.MethodInvocation> puts = new ArrayList<>();
                             List<UUID> absorbedHere = new ArrayList<>();
-                            int pairs = 0;
                             int j = i + 1;
                             while (j < stmts.size()) {
                                 Statement next = stmts.get(j);
@@ -222,13 +255,12 @@ public class UseMapOf extends Recipe {
                                         expressionReferences(kv.get(1), targetName)) {
                                     break;
                                 }
-                                args.addAll(kv);
+                                puts.add((J.MethodInvocation) next);
                                 absorbedHere.add(next.getId());
-                                pairs++;
                                 j++;
                             }
-                            if (pairs >= 2 && initializer != null) {
-                                rewrites.put(initializer.getId(), args);
+                            if (puts.size() >= 2 && initializer != null) {
+                                rewrites.put(initializer.getId(), puts);
                                 absorbedPutIds.addAll(absorbedHere);
                                 i = j;
                             } else {
