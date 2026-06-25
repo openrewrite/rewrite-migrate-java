@@ -111,6 +111,12 @@ public class UseMapOf extends Recipe {
                                 TypeUtils.isOfClassType(n.getClazz() != null ? n.getClazz().getType() : null, "java.util.HashMap")) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
+                                // Skip when the result is assigned to a concrete `HashMap` declared type rather
+                                // than `Map`: the immutable `Map.of(..)` is not assignable to `HashMap`, and
+                                // `HashMap`-only methods may be invoked on the variable later (issue #1148).
+                                if (isAssignedToConcreteHashMap()) {
+                                    return n;
+                                }
                                 List<Statement> putStatements = ((J.Block) statement).getStatements();
                                 List<Expression> args = new ArrayList<>();
                                 boolean useEntries = putStatements.size() > 10;
@@ -192,6 +198,19 @@ public class UseMapOf extends Recipe {
                             withPrefixes.add(arg);
                         }
                         return nc.withArguments(Collections.singletonList(mapCall.withArguments(withPrefixes)));
+                    }
+
+                    /**
+                     * Returns {@code true} when the {@code new HashMap<>() {{ ... }}} currently being visited is
+                     * the initializer of a variable whose declared type is the concrete {@code java.util.HashMap}
+                     * rather than the {@code Map} interface. In that case the immutable {@code Map.of(..)} result
+                     * would not be assignable, and {@code HashMap}-specific methods may be used later, so the
+                     * rewrite is skipped (issue #1148).
+                     */
+                    private boolean isAssignedToConcreteHashMap() {
+                        Object parent = getCursor().getParentTreeCursor().getValue();
+                        return parent instanceof J.VariableDeclarations.NamedVariable &&
+                                TypeUtils.isOfClassType(((J.VariableDeclarations.NamedVariable) parent).getType(), "java.util.HashMap");
                     }
 
                     @Override

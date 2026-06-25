@@ -205,6 +205,48 @@ class UseMapOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1148")
+    @Test
+    void doNotChangeConcreteHashMapField() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(25))),
+          java(
+            """
+              import java.util.HashMap;
+
+              class Main {
+                  private static final HashMap<String, String> VALUES = new HashMap<String, String>() {{
+                      put("key", "value");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1148")
+    @Test
+    void doNotChangeConcreteHashMapLocalVariable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+
+              class Main {
+                  void m() {
+                      HashMap<String, Integer> ages = new HashMap<>() {{
+                          put("Bob", 42);
+                          put("alice", 30);
+                      }};
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1112")
     @Test
     void doNotChangeLinkedHashMap() {
