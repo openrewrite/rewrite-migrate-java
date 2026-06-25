@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -32,6 +33,64 @@ class OptionalNotPresentToIsEmptyTest implements RewriteTest {
         spec
           .recipe(new OptionalNotPresentToIsEmpty())
           .parser(JavaParser.fromJavaVersion());
+    }
+
+    @Test
+    void doNotChangeNonJdkOptionalMisattributedToJdk() {
+        // When a third-party `Optional` is off the recipe classpath, `bar.isPresent()` can be misattributed
+        // to `java.util.Optional` (here via the `java.util.*` import), which would otherwise fool the
+        // `MethodMatcher` into emitting an uncompilable `isEmpty()` call. See issue #1146.
+        //language=java
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                package com.example.app;
+                import java.util.*;
+                import com.bazaarvoice.jolt.common.Optional;
+                class App {
+                    boolean notPresent(Optional<String> bar){
+                        return !bar.isPresent();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeNonJdkOptional() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                package com.bazaarvoice.jolt.common;
+                public class Optional<T> {
+                    public boolean isPresent() { return true; }
+                }
+                """
+            ),
+            11
+          ),
+          version(
+            java(
+              """
+                package com.example.app;
+                import com.bazaarvoice.jolt.common.Optional;
+                class App {
+                    boolean notPresent(Optional<String> bar){
+                        return !bar.isPresent();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
     }
 
     @DocumentExample

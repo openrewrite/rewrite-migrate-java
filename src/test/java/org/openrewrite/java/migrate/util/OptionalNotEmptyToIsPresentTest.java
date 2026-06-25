@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -56,6 +57,32 @@ class OptionalNotEmptyToIsPresentTest implements RewriteTest {
                 class App {
                     boolean notEmpty(Optional<String> bar){
                         return bar.isPresent();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeNonJdkOptionalMisattributedToJdk() {
+        // When a third-party `Optional` is off the recipe classpath, `bar.isEmpty()` can be misattributed
+        // to `java.util.Optional` (here via the `java.util.*` import), which would otherwise fool the
+        // `MethodMatcher` into emitting an uncompilable `isPresent()` call. See issue #1146.
+        //language=java
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          version(
+            java(
+              """
+                package com.example.app;
+                import java.util.*;
+                import com.bazaarvoice.jolt.common.Optional;
+                class App {
+                    boolean notEmpty(Optional<String> bar){
+                        return !bar.isEmpty();
                     }
                 }
                 """

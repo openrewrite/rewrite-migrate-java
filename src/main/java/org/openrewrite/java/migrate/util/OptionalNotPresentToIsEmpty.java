@@ -49,6 +49,21 @@ public class OptionalNotPresentToIsEmpty extends Recipe {
                 new UsesMethod<>(optionalIsPresentMatcher));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
+            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                // A type whose method invocations are misattributed to `java.util.Optional` (e.g. when a
+                // third-party `Optional` is off the recipe classpath) can fool the `MethodMatcher`, producing
+                // an uncompilable `isEmpty()` call. Skip the file when the simple name `Optional` is bound to
+                // some other explicitly imported type.
+                for (J.Import anImport : cu.getImports()) {
+                    if (!anImport.isStatic() && "Optional".equals(anImport.getClassName()) &&
+                            !"java.util.Optional".equals(anImport.getTypeName())) {
+                        return cu;
+                    }
+                }
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
+            @Override
             public J visitStatement(Statement s, ExecutionContext ctx) {
                 if (s instanceof J.Unary) {
                     J.Unary unary = (J.Unary) s;
