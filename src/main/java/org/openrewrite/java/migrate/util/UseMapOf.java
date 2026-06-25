@@ -20,6 +20,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -171,16 +172,8 @@ public class UseMapOf extends Recipe {
 
                         J.Block b = (J.Block) super.visitBlock(block, ctx);
 
-                        if (absorbedPutIds.isEmpty()) {
-                            return b;
-                        }
-                        List<Statement> filtered = new ArrayList<>(b.getStatements().size());
-                        for (Statement s : b.getStatements()) {
-                            if (!absorbedPutIds.contains(s.getId())) {
-                                filtered.add(s);
-                            }
-                        }
-                        return b.withStatements(filtered);
+                        // Post-pass: drop the now-absorbed `put(..)` statements from the block.
+                        return b.withStatements(ListUtils.filter(b.getStatements(), s -> !absorbedPutIds.contains(s.getId())));
                     }
 
                     /**
@@ -302,8 +295,7 @@ public class UseMapOf extends Recipe {
                     }
 
                     private boolean expressionReferences(Expression expr, String name) {
-                        AtomicBoolean found = new AtomicBoolean(false);
-                        new JavaIsoVisitor<AtomicBoolean>() {
+                        return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
                             public J.Identifier visitIdentifier(J.Identifier id, AtomicBoolean f) {
                                 if (name.equals(id.getSimpleName())) {
@@ -311,8 +303,7 @@ public class UseMapOf extends Recipe {
                                 }
                                 return id;
                             }
-                        }.visit(expr, found);
-                        return found.get();
+                        }.reduce(expr, new AtomicBoolean(false)).get();
                     }
                 });
     }
