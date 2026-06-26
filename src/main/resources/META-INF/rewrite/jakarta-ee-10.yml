@@ -465,6 +465,7 @@ description: Update Jakarta EE XML Web Services Dependencies for EE 10.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.ReplaceJakartaJwsWithJakartaXmlWs
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
@@ -481,6 +482,33 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newVersion: 4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.ReplaceJakartaJwsWithJakartaXmlWs
+displayName: Replace `jakarta.jws-api` with `jakarta.xml.ws-api`
+description: >-
+  Starting with Jakarta EE 10, the standalone `jakarta.jws-api` artifact was retired
+  and its content was merged into `jakarta.xml.ws-api`. This recipe replaces a declared
+  `jakarta.jws:jakarta.jws-api` dependency in place with `jakarta.xml.ws:jakarta.xml.ws-api`,
+  and adds `jakarta.xml.ws:jakarta.xml.ws-api` directly when `jakarta.jws` was only
+  available transitively.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: jakarta.jws
+      oldArtifactId: jakarta.jws-api
+      newGroupId: jakarta.xml.ws
+      newArtifactId: jakarta.xml.ws-api
+      newVersion: 4.0.x
+  # Fallback for when jakarta.jws-api was only available transitively; ChangeDependency
+  # above handles the in-place replacement of a declared dependency.
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      version: 4.0.x
+      onlyIfUsing: jakarta.jws..*
+      acceptTransitive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
