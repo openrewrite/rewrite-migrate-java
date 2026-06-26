@@ -83,4 +83,63 @@ class JavaxEjbToJakartaEjbTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void upgradeMavenEjbPluginWithPropertyCoupledEjbVersion() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                <groupId>com.example</groupId>
+                <artifactId>my-ejb</artifactId>
+                <version>1.0</version>
+                <properties>
+                  <jee.ejb.api>3.2</jee.ejb.api>
+                  <maven.ejb.version>2.5</maven.ejb.version>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>javax.ejb</groupId>
+                    <artifactId>javax.ejb-api</artifactId>
+                    <version>${jee.ejb.api}</version>
+                    <scope>provided</scope>
+                  </dependency>
+                </dependencies>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-ejb-plugin</artifactId>
+                      <version>${maven.ejb.version}</version>
+                      <configuration>
+                        <ejbVersion>${jee.ejb.api}</ejbVersion>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """,
+            spec -> spec.after(pom -> {
+                // javax.ejb-api replaced by jakarta.ejb-api, and the shared property bumped to 4.x
+                assertThat(pom)
+                  .doesNotContain("javax.ejb")
+                  .contains("jakarta.ejb-api");
+                assertThat(pom).containsPattern("<jee\\.ejb\\.api>4\\.");
+
+                // maven-ejb-plugin version property updated to 3.2.x or higher
+                // (UpgradePluginVersion updates the property value; the tag still holds ${maven.ejb.version})
+                assertThat(pom).containsPattern("<maven\\.ejb\\.version>3\\.[2-9]\\.");
+
+                // ejbVersion must be the literal "4.0" — decoupled from ${jee.ejb.api}.
+                // If it were still ${jee.ejb.api}, a future bump of that property would silently
+                // break the plugin config; the two values must be independent after migration.
+                assertThat(pom)
+                  .contains("<ejbVersion>4.0</ejbVersion>")
+                  .doesNotContain("<ejbVersion>${jee.ejb.api}</ejbVersion>");
+                return pom;
+            })
+          )
+        );
+    }
 }
