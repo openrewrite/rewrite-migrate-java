@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class ReplaceJakartaJwsWithJakartaXmlWsTest implements RewriteTest {
@@ -50,21 +51,12 @@ class ReplaceJakartaJwsWithJakartaXmlWsTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>0.0.1-SNAPSHOT</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>jakarta.xml.ws</groupId>
-                          <artifactId>jakarta.xml.ws-api</artifactId>
-                          <version>4.0.3</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(pom -> assertThat(pom)
+              .doesNotContain("jakarta.jws")
+              .contains("jakarta.xml.ws-api")
+              // Verify the dependency was upgraded to a 4.x version, without pinning the exact patch
+              .contains("<version>4")
+              .actual())
           )
         );
     }
