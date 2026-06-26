@@ -509,6 +509,8 @@ recipeList:
       version: 4.0.x
       onlyIfUsing: jakarta.jws..*
       acceptTransitive: true
+  - org.openrewrite.maven.RemoveDuplicateDependencies
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
