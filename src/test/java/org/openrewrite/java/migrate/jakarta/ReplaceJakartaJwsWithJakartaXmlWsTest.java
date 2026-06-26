@@ -17,10 +17,14 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class ReplaceJakartaJwsWithJakartaXmlWsTest implements RewriteTest {
@@ -93,6 +97,46 @@ class ReplaceJakartaJwsWithJakartaXmlWsTest implements RewriteTest {
               // Verify the dependency was upgraded to a 4.x version, without pinning the exact patch
               .contains("<version>4")
               .actual())
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaXmlWsApiWhenJwsIsOnlyTransitive() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jakarta.jws-api")),
+          mavenProject(
+            "demo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import jakarta.jws.WebService;
+
+                  @WebService
+                  public class HelloService {
+                      public String sayHello(String name) {
+                          return "Hello, " + name;
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsOnlyOnce("jakarta.xml.ws-api")
+                .contains("<version>4")
+                .actual())
+            )
           )
         );
     }
