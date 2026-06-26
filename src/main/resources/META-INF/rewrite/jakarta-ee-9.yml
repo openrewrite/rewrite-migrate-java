@@ -364,6 +364,16 @@ recipeList:
       version: 4.0.x
       onlyIfUsing: javax.ejb..*
       acceptTransitive: true
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-ejb-plugin
+      newVersion: 3.2.x
+  # After https://github.com/openrewrite/rewrite/issues/3810 is resolved, can use ChangePluginConfiguration to target specific config without replacing entire block
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: /project/build/plugins/plugin/configuration/ejbVersion
+      oldValue: "3\\.\\d"
+      newValue: "4.0"
+      regex: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ejb
       newPackageName: jakarta.ejb
