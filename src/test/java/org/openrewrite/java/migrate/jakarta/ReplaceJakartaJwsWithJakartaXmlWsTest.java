@@ -62,6 +62,42 @@ class ReplaceJakartaJwsWithJakartaXmlWsTest implements RewriteTest {
     }
 
     @Test
+    void avoidDuplicateWsApi() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>0.0.1-SNAPSHOT</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.jws</groupId>
+                          <artifactId>jakarta.jws-api</artifactId>
+                          <version>3.0.0</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>jakarta.xml.ws</groupId>
+                          <artifactId>jakarta.xml.ws-api</artifactId>
+                          <version>3.0.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .doesNotContain("jakarta.jws")
+              // Verify only one entry of `jakarta.xml.ws-api` exists
+              .containsOnlyOnce("jakarta.xml.ws-api")
+              // Verify the dependency was upgraded to a 4.x version, without pinning the exact patch
+              .contains("<version>4")
+              .actual())
+          )
+        );
+    }
+
+    @Test
     void noChangeWhenJakartaJwsApiNotPresent() {
         rewriteRun(
           //language=xml
