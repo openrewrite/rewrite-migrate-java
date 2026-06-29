@@ -77,8 +77,7 @@ class JavaxEjbToJakartaEjbTest implements RewriteTest {
                 assertThat(pom).containsPattern(
                   "maven-ejb-plugin</artifactId>\\s+<version>3\\.2\\.[1-9]");
                 // ejbVersion updated to 4.0
-                assertThat(pom).contains("<ejbVersion>4.0</ejbVersion>");
-                return pom;
+                return assertThat(pom).contains("<ejbVersion>4.0</ejbVersion>").actual();
             })
           )
         );
@@ -134,10 +133,10 @@ class JavaxEjbToJakartaEjbTest implements RewriteTest {
                 // ejbVersion must be the literal "4.0" — decoupled from ${jee.ejb.api}.
                 // If it were still ${jee.ejb.api}, a future bump of that property would silently
                 // break the plugin config; the two values must be independent after migration.
-                assertThat(pom)
+                return assertThat(pom)
                   .contains("<ejbVersion>4.0</ejbVersion>")
-                  .doesNotContain("<ejbVersion>${jee.ejb.api}</ejbVersion>");
-                return pom;
+                  .doesNotContain("<ejbVersion>${jee.ejb.api}</ejbVersion>")
+                  .actual();
             })
           )
         );
