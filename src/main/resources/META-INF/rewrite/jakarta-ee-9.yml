@@ -364,6 +364,11 @@ recipeList:
       version: 4.0.x
       onlyIfUsing: javax.ejb..*
       acceptTransitive: true
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-ejb-plugin
+      newVersion: 3.2.x
+  - org.openrewrite.java.migrate.jakarta.UpgradeMavenEjbPluginConfiguration
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ejb
       newPackageName: jakarta.ejb
