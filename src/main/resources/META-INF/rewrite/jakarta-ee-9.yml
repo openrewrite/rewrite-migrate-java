@@ -71,6 +71,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxEEApiToJakarta
   - org.openrewrite.java.migrate.jakarta.RemoveJakartaAnnotationDependencyWhenManagedBySpringBoot
   - org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
+  - org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta9
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1596,3 +1597,15 @@ recipeList:
       newGroupId: org.restlet
       oldArtifactId: '*'
       newVersion: 2.6.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta9
+displayName: Update Plugins for Jakarta EE 9
+description: Update plugins to be compatible with Jakarta EE 9.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-ear-plugin
+      newVersion: 3.3.x
