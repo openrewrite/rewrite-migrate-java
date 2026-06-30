@@ -27,6 +27,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JakartaEE10
   - org.openrewrite.java.migrate.jakarta.Faces4xMigrationToFaces41x
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
+  - org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta11
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
@@ -47,3 +48,15 @@ recipeList:
       groupId: jakarta.servlet.jsp
       artifactId: jakarta.servlet.jsp-api
       newVersion: 4.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta11
+displayName: Update Plugins for Jakarta EE 11
+description: Update plugins to be compatible with Jakarta EE 11.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-ear-plugin
+      newVersion: 3.4.x
