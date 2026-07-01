@@ -168,6 +168,11 @@ public class UseTextBlocks extends Recipe {
                 content = sb.toString();
                 // escape backslashes
                 content = content.replace("\\", "\\\\");
+                // re-escape tab and form feed characters as escape sequences. A literal tab or form feed is
+                // indistinguishable from incidental leading whitespace, so javac may strip it during text block
+                // whitespace processing (JLS 3.10.6), silently changing the string's value.
+                content = content.replace("\t", "\\t");
+                content = content.replace("\f", "\\f");
                 // escape triple quotes
                 content = content.replace("\"\"\"", "\"\"\\\"");
                 // preserve trailing spaces before a newline
