@@ -179,6 +179,43 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
         );
     }
 
+    @Test
+    void jakartaEE10UpdatesWebXmlToVersion6AfterJavaxReplacement() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+              <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+                       version="4.0">
+                  <display-name>example-project</display-name>
+                  <context-param>
+                      <param-name>javax.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+              </web-app>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+                       version="6.0">
+                  <display-name>example-project</display-name>
+                  <context-param>
+                      <param-name>jakarta.faces.PROJECT_STAGE</param-name>
+                      <param-value>Production</param-value>
+                  </context-param>
+              </web-app>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/web.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
         @Test
