@@ -78,6 +78,9 @@ public class UseEnumSetOf extends Recipe {
                             }
 
                             if (args.get(0) instanceof J.Empty) {
+                                if (isStaticField(parent)) {
+                                    return mi;
+                                }
                                 JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
                                 JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
                                 return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
@@ -118,6 +121,11 @@ public class UseEnumSetOf extends Recipe {
                     }
                 }
                 return false;
+            }
+
+            private boolean isStaticField(Cursor parent) {
+                return parent.getValue() instanceof J.VariableDeclarations &&
+                        ((J.VariableDeclarations) parent.getValue()).hasModifier(J.Modifier.Type.Static);
             }
 
             private boolean isArrayParameter(final List<Expression> args) {
