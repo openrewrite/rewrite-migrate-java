@@ -78,11 +78,6 @@ public class UseEnumSetOf extends Recipe {
                             }
 
                             if (args.get(0) instanceof J.Empty) {
-                                // Skip the empty `Set.of()` -> `EnumSet.noneOf(E.class)` conversion for static
-                                // field initializers: `EnumSet.noneOf` reflectively reads the enum's constants
-                                // during class initialization, which can re-enter a not-yet-initialized enum and
-                                // throw a misleading `ClassCastException` when two enums have a circular static
-                                // dependency (issue #1157).
                                 if (isStaticField(parent)) {
                                     return mi;
                                 }
