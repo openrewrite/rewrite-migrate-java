@@ -197,6 +197,8 @@ tags:
   - faces
   - jsf
 preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/web.xml'
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
@@ -215,14 +217,16 @@ recipeList:
       oldValue: (?s).*xml/ns/javaee.*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd
       regex: true
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/web.xml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "jakarta.sql."
-      replace: "javax.sql."
-      filePattern: '**/web.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "jakarta\\.sql\\."
+      newValue: "javax.sql."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesEcmaScript
