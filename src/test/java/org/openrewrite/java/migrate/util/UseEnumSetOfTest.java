@@ -182,6 +182,45 @@ class UseEnumSetOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1157")
+    @Test
+    void dontConvertEmptySetOfInStaticField() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              package com.helloworld;
+
+              import java.util.Set;
+
+              public enum ConfigType {
+                ENUM,
+                BOOLEAN,
+                INTEGER;
+
+                public static final Set<ConfigProperty> SUBSCRIBE_TO_ALL = Set.<ConfigProperty>of();
+              }
+              """,
+            spec -> spec.markers(javaVersion(25))),
+          java(
+            """
+              package com.helloworld;
+
+              import static com.helloworld.ConfigType.BOOLEAN;
+              import static com.helloworld.ConfigType.ENUM;
+              import static com.helloworld.ConfigType.INTEGER;
+
+              public enum ConfigProperty {
+                TRIAL_TYPE(ENUM),
+                IS_TRIAL_ENABLED(BOOLEAN),
+                MIN_ACCOUNT_AGE_MINUTES(INTEGER);
+
+                ConfigProperty(final ConfigType type) {}
+              }
+              """,
+            spec -> spec.markers(javaVersion(25))));
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/958")
     @Test
     void retainEmptySetOf() {

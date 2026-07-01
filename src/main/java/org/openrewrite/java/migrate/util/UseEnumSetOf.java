@@ -78,6 +78,14 @@ public class UseEnumSetOf extends Recipe {
                             }
 
                             if (args.get(0) instanceof J.Empty) {
+                                // Skip the empty `Set.of()` -> `EnumSet.noneOf(E.class)` conversion for static
+                                // field initializers: `EnumSet.noneOf` reflectively reads the enum's constants
+                                // during class initialization, which can re-enter a not-yet-initialized enum and
+                                // throw a misleading `ClassCastException` when two enums have a circular static
+                                // dependency (issue #1157).
+                                if (isStaticField(parent)) {
+                                    return mi;
+                                }
                                 JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
                                 JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
                                 return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
@@ -118,6 +126,11 @@ public class UseEnumSetOf extends Recipe {
                     }
                 }
                 return false;
+            }
+
+            private boolean isStaticField(Cursor parent) {
+                return parent.getValue() instanceof J.VariableDeclarations &&
+                        ((J.VariableDeclarations) parent.getValue()).hasModifier(J.Modifier.Type.Static);
             }
 
             private boolean isArrayParameter(final List<Expression> args) {
