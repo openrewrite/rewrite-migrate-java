@@ -302,6 +302,12 @@ public class UseMapOf extends Recipe {
                         if (!NEW_HASH_MAP.matches(nc)) {
                             return null;
                         }
+                        // Skip `HashMap` subclasses like `LinkedHashMap`/`TreeMap`: `Map.of(..)` makes no
+                        // iteration-order guarantee, so absorbing their `put(..)` chain would silently drop
+                        // the ordering contract the original code relied on (issue #1163, matching #1113).
+                        if (!TypeUtils.isOfClassType(nc.getClazz() != null ? nc.getClazz().getType() : null, "java.util.HashMap")) {
+                            return null;
+                        }
                         if (nc.getBody() != null) {
                             return null;
                         }
