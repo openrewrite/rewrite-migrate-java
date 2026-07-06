@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.intellij.lang.annotations.Language;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -102,11 +103,36 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
             }
 
+            private @Nullable String surefireArgLineWithAgent(List<Plugin> plugins) {
+                return plugins.stream()
+                        .filter(plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) &&
+                                "maven-surefire-plugin".equals(plugin.getArtifactId()))
+                        .map(plugin -> plugin.getConfigurationStringValue("argLine"))
+                        .filter(argLine -> argLine != null && argLine.contains(getArgLineJavaAgentArgument()))
+                        .findFirst().orElse(null);
+            }
+
+            private boolean mavenDependencyPluginHasPropertiesGoal() {
+                return getResolutionResult().getPom().getPlugins().stream()
+                        .filter(plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) &&
+                                "maven-dependency-plugin".equals(plugin.getArtifactId()))
+                        .flatMap(plugin -> plugin.getExecutions().stream())
+                        .anyMatch(execution -> execution.getGoals() != null && execution.getGoals().contains("properties"));
+            }
+
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                if (getResolutionResult().getPom().getPluginManagement().stream().anyMatch(
-                        plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-surefire-plugin"
-                                .equals(plugin.getArtifactId()) && plugin.getConfigurationStringValue("argLine") != null && plugin.getConfigurationStringValue("argLine").contains(getArgLineJavaAgentArgument()))) {
+                // When a parent pom manages the surefire plugin with the agent, leave the whole reactor alone.
+                if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
+                    return document;
+                }
+                // When the surefire plugin (possibly inherited from a parent's `build/plugins`) already carries
+                // the agent, the supporting `maven-dependency-plugin` properties goal is present, and any
+                // `@{argLine}` reference can already resolve, there is nothing left to add; adding an `argLine`
+                // property here would be redundant (see #1164).
+                String pluginArgLine = surefireArgLineWithAgent(getResolutionResult().getPom().getPlugins());
+                if (pluginArgLine != null && mavenDependencyPluginHasPropertiesGoal() &&
+                        (!pluginArgLine.contains("@{argLine}") || getResolutionResult().getPom().getProperties().containsKey("argLine"))) {
                     return document;
                 }
 
