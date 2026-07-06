@@ -122,14 +122,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                // When a parent pom manages the surefire plugin with the agent, leave the whole reactor alone.
                 if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
                     return document;
                 }
-                // When the surefire plugin (possibly inherited from a parent's `build/plugins`) already carries
-                // the agent, the supporting `maven-dependency-plugin` properties goal is present, and any
-                // `@{argLine}` reference can already resolve, there is nothing left to add; adding an `argLine`
-                // property here would be redundant (see #1164).
+                // Nothing to add when the surefire agent, the properties goal, and any `@{argLine}` property
+                // are already present, whether declared here or inherited from a parent's `build/plugins` (#1164).
                 String pluginArgLine = surefireArgLineWithAgent(getResolutionResult().getPom().getPlugins());
                 if (pluginArgLine != null && mavenDependencyPluginHasPropertiesGoal() &&
                         (!pluginArgLine.contains("@{argLine}") || getResolutionResult().getPom().getProperties().containsKey("argLine"))) {
