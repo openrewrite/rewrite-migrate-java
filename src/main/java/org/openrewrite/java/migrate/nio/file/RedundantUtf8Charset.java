@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class RedundantUtf8Charset extends Recipe {
     }
 
     @Getter
-    final String displayName = "Remove redundant `StandardCharsets.UTF_8` from `java.nio.file.Files` calls";
+    final String displayName = "Remove redundant `StandardCharsets.UTF_8` from `java.nio.file.Files` method calls";
 
     @Getter
     final String description = "The character based `java.nio.file.Files` methods always default to UTF-8, so passing " +
@@ -76,9 +76,7 @@ public class RedundantUtf8Charset extends Recipe {
                             List<JavaType> parameterTypes = new ArrayList<>(methodType.getParameterTypes());
                             List<String> parameterNames = new ArrayList<>(methodType.getParameterNames());
                             parameterTypes.remove(i);
-                            if (i < parameterNames.size()) {
-                                parameterNames.remove(i);
-                            }
+                            parameterNames.remove(i);
                             methodType = methodType.withParameterTypes(parameterTypes).withParameterNames(parameterNames);
                         }
                         return mi.withArguments(newArguments)
