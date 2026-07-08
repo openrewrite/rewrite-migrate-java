@@ -560,6 +560,54 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1158")
+    @Test
+    void keepTabEscapeToAvoidIncidentalWhitespaceStripping() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Main {
+                  String s =
+                      ""
+                          + "\\tb";
+              }
+              """,
+            """
+              class Main {
+                  String s =
+                      \"""
+                      \\tb\""";
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1158")
+    @Test
+    void keepFormFeedEscapeToAvoidIncidentalWhitespaceStripping() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Main {
+                  String s =
+                      ""
+                          + "\\fb";
+              }
+              """,
+            """
+              class Main {
+                  String s =
+                      \"""
+                      \\fb\""";
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/195")
     @Test
     void newlinesAlignment() {

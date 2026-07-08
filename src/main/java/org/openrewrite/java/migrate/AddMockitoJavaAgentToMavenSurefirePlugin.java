@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.intellij.lang.annotations.Language;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -49,6 +50,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
     private static final String MAVEN_PLUGINS_GROUP_ID = "org.apache.maven.plugins";
     private static final String MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID = "maven-surefire-plugin";
+    private static final String MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID = "maven-dependency-plugin";
 
     @Language("xpath")
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER = "/project/build/plugins/plugin[artifactId='maven-dependency-plugin']/executions/execution";
@@ -85,28 +87,46 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             private void maybeAddMavenDependencyPluginWithPropertiesGoal() {
                 Optional<Plugin> mavenDependencyPlugin = getResolutionResult().getPom().getPlugins().stream()
-                        .filter(plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) &&
-                                "maven-dependency-plugin".equals(plugin.getArtifactId())).findFirst();
+                        .filter(plugin -> isMavenPlugin(plugin, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID)).findFirst();
 
                 if (!mavenDependencyPlugin.isPresent()) {
-                    doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-dependency-plugin", null, null, null,
+                    doAfterVisit(new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, null, null, null,
                             "<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>", "**/pom.xml").getVisitor());
                 } else if (mavenDependencyPlugin.get().getExecutions().isEmpty()) {
-                    doAfterVisit(new ChangePluginExecutions("org.apache.maven.plugins", "maven-dependency-plugin", MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG).getVisitor());
+                    doAfterVisit(new ChangePluginExecutions(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG).getVisitor());
                 } else if (mavenDependencyPlugin.get().getExecutions().stream().noneMatch(execution -> execution.getGoals() != null)) {
                     doAfterVisit(new AddOrUpdateChildTag(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER, "<goals>" + MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL + "</goals>", false).getVisitor());
-                } else if (mavenDependencyPlugin.get().getExecutions().stream().noneMatch(execution -> execution.getGoals() != null && execution.getGoals().contains("properties"))) {
+                } else if (!hasPropertiesGoal(mavenDependencyPlugin.get())) {
                     doAfterVisit(new AppendChildTagToParentVisitor(
                             new XPathMatcher(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER + "/goals"),
                             Xml.Tag.build(MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL)));
                 }
             }
 
+            private @Nullable String surefireArgLineWithAgent(List<Plugin> plugins) {
+                String agentArgument = getArgLineJavaAgentArgument();
+                return plugins.stream()
+                        .filter(plugin -> isMavenPlugin(plugin, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID))
+                        .map(plugin -> plugin.getConfigurationStringValue("argLine"))
+                        .filter(argLine -> argLine != null && argLine.contains(agentArgument))
+                        .findFirst().orElse(null);
+            }
+
+            private boolean mavenDependencyPluginHasPropertiesGoal() {
+                return getResolutionResult().getPom().getPlugins().stream()
+                        .anyMatch(plugin -> isMavenPlugin(plugin, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID) && hasPropertiesGoal(plugin));
+            }
+
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                if (getResolutionResult().getPom().getPluginManagement().stream().anyMatch(
-                        plugin -> "org.apache.maven.plugins".equals(plugin.getGroupId()) && "maven-surefire-plugin"
-                                .equals(plugin.getArtifactId()) && plugin.getConfigurationStringValue("argLine") != null && plugin.getConfigurationStringValue("argLine").contains(getArgLineJavaAgentArgument()))) {
+                if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
+                    return document;
+                }
+                // Nothing to add when the surefire agent, the properties goal, and any `@{argLine}` property
+                // are already present, whether declared here or inherited from a parent's `build/plugins` (#1164).
+                String pluginArgLine = surefireArgLineWithAgent(getResolutionResult().getPom().getPlugins());
+                if (pluginArgLine != null && mavenDependencyPluginHasPropertiesGoal() &&
+                        (!pluginArgLine.contains("@{argLine}") || getResolutionResult().getPom().getProperties().containsKey("argLine"))) {
                     return document;
                 }
 
@@ -166,6 +186,20 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 return t;
             }
         });
+    }
+
+    /**
+     * Matches a plugin under the {@code org.apache.maven.plugins} group, tolerating an implied (omitted) groupId,
+     * which Maven defaults to that group for {@code maven-*-plugin} declarations.
+     */
+    private static boolean isMavenPlugin(Plugin plugin, String artifactId) {
+        return artifactId.equals(plugin.getArtifactId()) &&
+                (plugin.getGroupId() == null || MAVEN_PLUGINS_GROUP_ID.equals(plugin.getGroupId()));
+    }
+
+    private static boolean hasPropertiesGoal(Plugin plugin) {
+        return plugin.getExecutions().stream()
+                .anyMatch(execution -> execution.getGoals() != null && execution.getGoals().contains("properties"));
     }
 
     @RequiredArgsConstructor

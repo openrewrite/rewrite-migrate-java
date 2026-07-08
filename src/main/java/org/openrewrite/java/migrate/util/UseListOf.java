@@ -31,16 +31,10 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.Collections.singletonList;
 
 public class UseListOf extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("java.util.ArrayList <constructor>()", true);
@@ -145,7 +139,7 @@ public class UseListOf extends Recipe {
                         for (int i = 0; i < listArgs.size(); i++) {
                             withPrefixes.add(listArgs.get(i).withPrefix(adds.get(i).getPrefix()));
                         }
-                        return nc.withArguments(Collections.singletonList(listCall.withArguments(withPrefixes)));
+                        return nc.withArguments(singletonList(listCall.withArguments(withPrefixes)));
                     }
 
                     @Override
@@ -277,7 +271,7 @@ public class UseListOf extends Recipe {
                             return null;
                         }
                         Expression arg = mi.getArguments().get(0);
-                        if (arg instanceof J.Literal && ((J.Literal) arg).getValue() == null) {
+                        if (J.Literal.isLiteralValue( arg, null )) {
                             return null;
                         }
                         return arg;

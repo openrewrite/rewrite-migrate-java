@@ -172,6 +172,98 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
+examples:
+- description: '`AddMockitoJavaAgentToMavenSurefirePluginTest#addsMockitoAgentArgAndPropertiesGoalToMavenPlugins`'
+  sources:
+  - before: test-project
+    language: mavenProject
+  - before: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.sample</groupId>
+        <artifactId>test</artifactId>
+        <version>${revision}</version>
+
+        <parent>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-parent</artifactId>
+          <version>3.5.4</version>
+          <relativePath/>
+        </parent>
+
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+          </dependency>
+        </dependencies>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    after: |
+      <project>
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.sample</groupId>
+        <artifactId>test</artifactId>
+        <version>${revision}</version>
+
+        <parent>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-parent</artifactId>
+          <version>3.5.4</version>
+          <relativePath/>
+        </parent>
+        <properties>
+          <argLine></argLine>
+        </properties>
+
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+          </dependency>
+        </dependencies>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+              <executions>
+                <execution>
+                  <goals>
+                    <goal>properties</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <!--suppress MavenModelInspection -->
+                <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.AddStaticVariableOnProducerSessionBean
 examples:
 - description: '`AddStaticVariableOnProducerSessionBeanTest#addStaticOnProducesMarkedStateless`'
@@ -1228,6 +1320,60 @@ examples:
         <groupId>com.mycompany.app</groupId>
         <artifactId>my-app</artifactId>
         <version>1</version>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.UpgradeKotlinJvmTargetVersion
+examples:
+- description: '`UpgradeKotlinJvmTargetVersionTest#upgradesKotlinMavenPluginJvmTarget`'
+  parameters:
+  - '21'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>org.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.jetbrains.kotlin</groupId>
+                      <artifactId>kotlin-maven-plugin</artifactId>
+                      <version>1.9.24</version>
+                      <configuration>
+                          <jvmTarget>11</jvmTarget>
+                          <args>
+                              <arg>-Xjsr305=strict</arg>
+                          </args>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>org.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0.0</version>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.jetbrains.kotlin</groupId>
+                      <artifactId>kotlin-maven-plugin</artifactId>
+                      <version>1.9.24</version>
+                      <configuration>
+                          <jvmTarget>21</jvmTarget>
+                          <args>
+                              <arg>-Xjsr305=strict</arg>
+                          </args>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
       </project>
     path: pom.xml
     language: xml
@@ -5329,6 +5475,40 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxEjbToJakartaEjb
+examples:
+- description: '`JavaxEjbToJakartaEjbTest#upgradeMavenEjbPlugin`'
+  sources:
+  - before: |
+      <project>
+        <groupId>com.example</groupId>
+        <artifactId>my-ejb</artifactId>
+        <version>1.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+            <version>3.2.2</version>
+            <scope>provided</scope>
+          </dependency>
+        </dependencies>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-ejb-plugin</artifactId>
+              <version>2.5</version>
+              <configuration>
+                <ejbVersion>3.0</ejbVersion>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
 examples:
 - description: '`JavaxFacesConfigXmlToJakartaFacesConfigXmlTest#migrateSun`'
@@ -6131,6 +6311,28 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.ReplaceJakartaJwsWithJakartaXmlWs
+examples:
+- description: '`ReplaceJakartaJwsWithJakartaXmlWsTest#replacesJakartaJwsApiInPlaceWithJakartaXmlWsApi`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+          <dependencies>
+              <dependency>
+                  <groupId>jakarta.jws</groupId>
+                  <artifactId>jakarta.jws-api</artifactId>
+                  <version>3.0.0</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.ServletCookieBehaviorChangeRFC6265
@@ -7189,6 +7391,40 @@ examples:
 
       class Test {
           Record record;
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.ExtractExplicitConstructorInvocationArguments
+examples:
+- description: '`ExtractExplicitConstructorInvocationArgumentsTest#extractMethodInvocationArgument`'
+  sources:
+  - before: |
+      import java.util.Objects;
+
+      class Parent {
+          Parent(String name) {
+          }
+      }
+
+      class Child extends Parent {
+          Child(String name) {
+              super(Objects.requireNonNull(name));
+          }
+      }
+    after: |
+      import java.util.Objects;
+
+      class Parent {
+          Parent(String name) {
+          }
+      }
+
+      class Child extends Parent {
+          Child(String name) {
+              String name1 = Objects.requireNonNull(name);
+              super(name1);
+          }
       }
     language: java
 ---
@@ -8952,6 +9188,34 @@ examples:
               URL url1 = new URL(spec);
               URL url2 = new URI(spec, null, "localhost", -1, "file", null, null).toURL();
               URL url3 = new URI(spec, null, "localhost", 8080, "file", null, null).toURL();
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.nio.file.RedundantUtf8Charset
+examples:
+- description: '`RedundantUtf8CharsetTest#readString`'
+  sources:
+  - before: |
+      import java.io.IOException;
+      import java.nio.charset.StandardCharsets;
+      import java.nio.file.Files;
+      import java.nio.file.Path;
+
+      class Test {
+          String read(Path path) throws IOException {
+              return Files.readString(path, StandardCharsets.UTF_8);
+          }
+      }
+    after: |
+      import java.io.IOException;
+      import java.nio.file.Files;
+      import java.nio.file.Path;
+
+      class Test {
+          String read(Path path) throws IOException {
+              return Files.readString(path);
           }
       }
     language: java

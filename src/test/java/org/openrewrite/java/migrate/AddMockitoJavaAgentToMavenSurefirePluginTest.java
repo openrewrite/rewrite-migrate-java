@@ -1373,6 +1373,140 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
   }
 
   @Test
+  void makesNoChangesWhenParentPomDeclaresSurefirePluginWithAgentConfiguration() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+              <packaging>pom</packaging>
+
+              <modules>
+                <module>test-module1</module>
+              </modules>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-Xmx204m -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("pom.xml")
+        ),
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test-module1</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.sample</groupId>
+                <artifactId>test</artifactId>
+                <version>1.0</version>
+                <relativePath>../pom.xml</relativePath>
+              </parent>
+            </project>
+            """,
+          spec -> spec.path("test-module1/pom.xml")
+        )
+      )
+    );
+  }
+
+  @Test
+  void makesNoChangesWhenAgentConfiguredOnPluginsWithImpliedGroupId() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-Xmx204m -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
   void augmentsSurefirePluginDeclaredInPluginManagement() {
     rewriteRun(
       mavenProject("test-project",
