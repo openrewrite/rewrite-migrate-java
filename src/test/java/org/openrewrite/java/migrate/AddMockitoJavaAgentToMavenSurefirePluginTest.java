@@ -1614,4 +1614,131 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
       )
     );
   }
+
+  @Test
+  void addsSurefireAgentToModuleWhenParentReactorPomManagesPluginsWithoutDeclaringThem() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+              <packaging>pom</packaging>
+
+              <modules>
+                <module>test-module1</module>
+              </modules>
+
+              <dependencyManagement>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                    <version>5.14.0</version>
+                    <scope>test</scope>
+                  </dependency>
+                </dependencies>
+              </dependencyManagement>
+
+              <build>
+                <pluginManagement>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-dependency-plugin</artifactId>
+                      <version>3.11.0</version>
+                    </plugin>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-surefire-plugin</artifactId>
+                      <version>3.5.6</version>
+                    </plugin>
+                  </plugins>
+                </pluginManagement>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("pom.xml")
+        ),
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test-module1</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.sample</groupId>
+                <artifactId>test</artifactId>
+                <version>1.0</version>
+                <relativePath>../pom.xml</relativePath>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test-module1</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.sample</groupId>
+                <artifactId>test</artifactId>
+                <version>1.0</version>
+                <relativePath>../pom.xml</relativePath>
+              </parent>
+              <properties>
+                <argLine></argLine>
+              </properties>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("test-module1/pom.xml")
+        )
+      )
+    );
+  }
 }

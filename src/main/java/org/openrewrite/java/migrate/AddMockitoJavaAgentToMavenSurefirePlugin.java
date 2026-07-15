@@ -136,7 +136,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 if (FindPlugin.find(document, "org.apache.maven.plugins", "maven-surefire-plugin").isEmpty()) {
                     doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-surefire-plugin", null,
                             String.format(CONFIGURATION_TAG_TEMPLATE, "@{argLine} " + getArgLineJavaAgentArgument()), null,
-                            null, null).getVisitor());
+                            null, "**/pom.xml").getVisitor());
                     return document;
                 }
                 return super.visitDocument(document, ctx);
