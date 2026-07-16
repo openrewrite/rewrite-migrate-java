@@ -25,16 +25,25 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.javaee7
+  - org.openrewrite.java.migrate.javaee8.MigrateToServlet3x
+  - org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
+  - org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javaee8.MigrateToServlet3x
+displayName: Update Java EE Servlet Dependencies to 3.x
+description: Update Java EE Servlet Dependencies to 3.x.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.servlet
       oldArtifactId: servlet-api
       newGroupId: javax.servlet
       newArtifactId: javax.servlet-api
       newVersion: 3.x
-  - org.openrewrite.java.migrate.javaee7
-  - org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
-  - org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
-
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
