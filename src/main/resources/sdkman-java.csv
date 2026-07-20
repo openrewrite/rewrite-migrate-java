@@ -4,6 +4,7 @@
 11.0.30-sapmchn
 11.0.31-albba
 11.0.31-amzn
+11.0.31-bisheng
 11.0.31-kona
 11.0.31-librca
 11.0.31-ms
@@ -18,6 +19,7 @@
 17.0.18-bisheng
 17.0.19-albba
 17.0.19-amzn
+17.0.19-bisheng
 17.0.19-kona
 17.0.19-librca
 17.0.19-ms
@@ -33,6 +35,7 @@
 21.0.10-bisheng
 21.0.11-albba
 21.0.11-amzn
+21.0.11-bisheng
 21.0.11-graal
 21.0.11-jbr
 21.0.11-kona
@@ -85,13 +88,17 @@
 26.ea.35-open
 27.ea.24-open
 27.ea.25-open
+27.ea.30-open
+27.ea.31-open
 6.0.119-zulu
 7.0.352-zulu
+8.0.232-amzn
 8.0.282-trava
 8.0.472-amzn
 8.0.482-bisheng
 8.0.482.1-sem
 8.0.492-albba
+8.0.492-bisheng
 8.0.492-kona
 8.0.492-librca
 8.0.492-tem
