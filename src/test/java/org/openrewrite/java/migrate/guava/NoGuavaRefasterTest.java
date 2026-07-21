@@ -128,11 +128,12 @@ class NoGuavaRefasterTest implements RewriteTest {
               }
               """,
             """
+              import static java.lang.String.valueOf;
               import static java.util.Objects.requireNonNull;
 
               class A {
                   Object foo(Object obj, StringBuilder description) {
-                      return requireNonNull(obj, String.valueOf(description));
+                      return requireNonNull(obj, valueOf(description));
                   }
               }
               """
