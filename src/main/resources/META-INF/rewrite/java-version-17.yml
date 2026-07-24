@@ -365,6 +365,7 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
+  - org.openrewrite.java.migrate.AddMapstructAnnotationProcessorPath
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly

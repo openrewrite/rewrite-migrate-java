@@ -522,6 +522,44 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
+    void addsMapstructProcessorWhenLombokAndMapstructUsedWithoutAnnotationProcessorPaths() {
+        rewriteRun(
+          spec -> spec.cycles(3).expectedCyclesThatMakeChanges(2),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.example</groupId>
+                <artifactId>sample-service</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok</artifactId>
+                    <version>1.18.30</version>
+                    <scope>provided</scope>
+                  </dependency>
+                  <dependency>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct</artifactId>
+                    <version>1.5.5.Final</version>
+                  </dependency>
+                </dependencies>
+              </project>
+              """,
+            spec -> spec.after(actual -> {
+                assertThat(actual)
+                  .as("mapstruct-processor is added to the annotation processor paths, matching the upgraded mapstruct version")
+                  .containsPattern(Pattern.compile("<artifactId>mapstruct-processor</artifactId>\\s*<version>1\\.6\\.\\d+(\\.\\w+)?</version>"))
+                  .contains("<artifactId>lombok-mapstruct-binding</artifactId>");
+                return actual;
+            })
+          )
+        );
+    }
+
+    @Test
     void upgradeMapstructAndAnnotationPaths() {
         rewriteRun(
           pomXml(
