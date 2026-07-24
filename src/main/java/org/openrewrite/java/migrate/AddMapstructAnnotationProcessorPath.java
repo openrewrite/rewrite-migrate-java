@@ -34,16 +34,10 @@ public class AddMapstructAnnotationProcessorPath extends ScanningRecipe<AddMapst
     private static final String MAPSTRUCT_ARTIFACT = "mapstruct";
     private static final String MAPSTRUCT_PROCESSOR_ARTIFACT = "mapstruct-processor";
 
-    @Override
-    public String getDisplayName() {
-        return "Add `mapstruct-processor` to the `maven-compiler-plugin` annotation processor paths";
-    }
+    String displayName = "Add `mapstruct-processor` to the `maven-compiler-plugin` annotation processor paths";
 
-    @Override
-    public String getDescription() {
-        return "Add the `mapstruct-processor` annotation processor path, matching the version of the `mapstruct` dependency, " +
-                "so that MapStruct mappers are generated when annotation processing is configured explicitly.";
-    }
+    String description = "Add the `mapstruct-processor` annotation processor path, matching the version of the `mapstruct` dependency, " +
+            "so that MapStruct mappers are generated when annotation processing is configured explicitly.";
 
     public static class Accumulator {
         @Nullable
