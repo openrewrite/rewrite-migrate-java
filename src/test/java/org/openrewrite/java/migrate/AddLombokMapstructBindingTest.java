@@ -164,6 +164,11 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                                             <artifactId>lombok-mapstruct-binding</artifactId>
                                             <version>0.2.0</version>
                                         </path>
+                                        <path>
+                                            <groupId>org.mapstruct</groupId>
+                                            <artifactId>mapstruct-processor</artifactId>
+                                            <version>1.6.3</version>
+                                        </path>
                                     </annotationProcessorPaths>
                                 </configuration>
                                 <version>3.14.1</version>
@@ -189,6 +194,82 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                   </project>
                   """
               )
+            )
+          )
+        );
+    }
+
+    @Test
+    void addMapstructProcessorForMaven() {
+        rewriteRun(
+          mavenProject("project",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct</artifactId>
+                            <version>1.6.3</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.42</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct</artifactId>
+                            <version>1.6.3</version>
+                        </dependency>
+                    </dependencies>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <configuration>
+                                    <annotationProcessorPaths>
+                                        <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok-mapstruct-binding</artifactId>
+                                            <version>0.2.0</version>
+                                        </path>
+                                        <path>
+                                            <groupId>org.mapstruct</groupId>
+                                            <artifactId>mapstruct-processor</artifactId>
+                                            <version>1.6.3</version>
+                                        </path>
+                                    </annotationProcessorPaths>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
             )
           )
         );
@@ -243,6 +324,11 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                                             <groupId>org.projectlombok</groupId>
                                             <artifactId>lombok-mapstruct-binding</artifactId>
                                             <version>0.2.0</version>
+                                        </path>
+                                        <path>
+                                            <groupId>org.mapstruct</groupId>
+                                            <artifactId>mapstruct-processor</artifactId>
+                                            <version>1.6.3</version>
                                         </path>
                                     </annotationProcessorPaths>
                                 </configuration>
