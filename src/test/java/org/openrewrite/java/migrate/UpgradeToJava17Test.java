@@ -548,13 +548,12 @@ class UpgradeToJava17Test implements RewriteTest {
                 </dependencies>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                assertThat(actual)
-                  .as("mapstruct-processor is added to the annotation processor paths, matching the upgraded mapstruct version")
-                  .containsPattern(Pattern.compile("<artifactId>mapstruct-processor</artifactId>\\s*<version>1\\.6\\.\\d+(\\.\\w+)?</version>"))
-                  .contains("<artifactId>lombok-mapstruct-binding</artifactId>");
-                return actual;
-            })
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .as("mapstruct-processor is added to the annotation processor paths, matching the upgraded mapstruct version")
+                .containsPattern(Pattern.compile("<artifactId>mapstruct-processor</artifactId>\\s*<version>1\\.6\\.\\d+(\\.\\w+)?</version>"))
+                .contains("<artifactId>lombok-mapstruct-binding</artifactId>")
+                .actual())
           )
         );
     }
