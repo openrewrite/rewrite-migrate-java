@@ -68,6 +68,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
   - org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
   - org.openrewrite.java.migrate.guava.PreferIntegerParseUnsignedInt
+  - org.openrewrite.java.migrate.guava.PreferIntegerRemainderUnsigned
   - org.openrewrite.java.migrate.guava.PreferJavaStringJoin
   - org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
   - org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
@@ -414,12 +415,15 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerRemainderUnsigned
 displayName: Prefer `Integer#remainderUnsigned`
-description: Prefer `java.lang.Integer#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedInts#remainderUnsigned`.
+description: Prefer `java.lang.Integer#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedInts#remainder`.
 tags:
   - guava
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.primitives.UnsignedInts remainder(int, int)
+      newMethodName: remainderUnsigned
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.UnsignedInts remainderUnsigned(int, int)
       fullyQualifiedTargetTypeName: java.lang.Integer
@@ -437,10 +441,10 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.primitives.UnsignedLongs compare(int, int)
+      methodPattern: com.google.common.primitives.UnsignedLongs compare(long, long)
       newMethodName: compareUnsigned
   - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.primitives.UnsignedLongs compareUnsigned(int, int)
+      methodPattern: com.google.common.primitives.UnsignedLongs compareUnsigned(long, long)
       fullyQualifiedTargetTypeName: java.lang.Long
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -455,38 +459,41 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.primitives.UnsignedLongs divide(int, int)
+      methodPattern: com.google.common.primitives.UnsignedLongs divide(long, long)
       newMethodName: divideUnsigned
   - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.primitives.UnsignedLongs divideUnsigned(int, int)
+      methodPattern: com.google.common.primitives.UnsignedLongs divideUnsigned(long, long)
       fullyQualifiedTargetTypeName: java.lang.Long
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongParseUnsignedLong
-displayName: Prefer `Long#parseUnsignedInt`
-description: Prefer `java.lang.Long#parseUnsignedInt` instead of using `com.google.common.primitives.UnsignedLongs#parseUnsignedInt`.
+displayName: Prefer `Long#parseUnsignedLong`
+description: Prefer `java.lang.Long#parseUnsignedLong` instead of using `com.google.common.primitives.UnsignedLongs#parseUnsignedLong`.
 tags:
   - guava
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.primitives.UnsignedInts parseUnsignedLong(String, ..)
+      methodPattern: com.google.common.primitives.UnsignedLongs parseUnsignedLong(String, ..)
       fullyQualifiedTargetTypeName: java.lang.Long
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongRemainderUnsigned
 displayName: Prefer `Long#remainderUnsigned`
-description: Prefer `java.lang.Long#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#remainderUnsigned`.
+description: Prefer `java.lang.Long#remainderUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#remainder`.
 tags:
   - guava
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.google.common.primitives.UnsignedLongs remainder(long, long)
+      newMethodName: remainderUnsigned
   - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.primitives.UnsignedLongs remainderUnsigned(int, int)
+      methodPattern: com.google.common.primitives.UnsignedLongs remainderUnsigned(long, long)
       fullyQualifiedTargetTypeName: java.lang.Long
 
 ---
