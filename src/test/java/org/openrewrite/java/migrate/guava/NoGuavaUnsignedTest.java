@@ -61,6 +61,30 @@ class NoGuavaUnsignedTest implements RewriteTest {
     }
 
     @Test
+    void radixOverloads() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.UnsignedInts;
+              import com.google.common.primitives.UnsignedLongs;
+
+              class Test {
+                  int i = UnsignedInts.parseUnsignedInt("ff", 16);
+                  long l = UnsignedLongs.parseUnsignedLong("ff", 16);
+              }
+              """,
+            """
+              class Test {
+                  int i = Integer.parseUnsignedInt("ff", 16);
+                  long l = Long.parseUnsignedLong("ff", 16);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void unsignedLongs() {
         //language=java
         rewriteRun(
