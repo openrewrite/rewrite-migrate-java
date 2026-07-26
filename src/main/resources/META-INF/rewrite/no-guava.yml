@@ -363,9 +363,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerCompareUnsigned
 displayName: Prefer `Integer#compareUnsigned`
-description: >-
-  Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare` or
-  `com.google.common.primitives.UnsignedInts#compareUnsigned`.
+description: Prefer `java.lang.Integer#compareUnsigned` instead of using `com.google.common.primitives.UnsignedInts#compare`.
 tags:
   - guava
 preconditions:
@@ -382,9 +380,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferIntegerDivideUnsigned
 displayName: Prefer `Integer#divideUnsigned`
-description: >-
-  Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide` or
-  `com.google.common.primitives.UnsignedInts#divideUnsigned`.
+description: Prefer `java.lang.Integer#divideUnsigned` instead of using `com.google.common.primitives.UnsignedInts#divide`.
 tags:
   - guava
 preconditions:
@@ -432,9 +428,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
 displayName: Prefer `Long#compareUnsigned`
-description: >-
-  Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare` or
-  `com.google.common.primitives.UnsignedLongs#compareUnsigned`.
+description: Prefer `java.lang.Long#compareUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#compare`.
 tags:
   - guava
 preconditions:
@@ -450,9 +444,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferLongDivideUnsigned
 displayName: Prefer `Long#divideUnsigned`
-description: >-
-  Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide` or
-  `com.google.common.primitives.UnsignedLongs#divideUnsigned`.
+description: Prefer `java.lang.Long#divideUnsigned` instead of using `com.google.common.primitives.UnsignedLongs#divide`.
 tags:
   - guava
 preconditions:
@@ -500,7 +492,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathAddExact
 displayName: Prefer `Math#addExact`
-description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd` or `com.google.common.math.IntMath#addExact`.
+description: Prefer `java.lang.Math#addExact` instead of using `com.google.common.math.IntMath#checkedAdd`.
 tags:
   - guava
 preconditions:
@@ -517,9 +509,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathSubtractExact
 displayName: Prefer `Math#subtractExact`
-description: >-
-  Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.primitives.IntMath#checkedSubtract`
-  or `com.google.common.primitives.IntMath#subtractExact`.
+description: Prefer `java.lang.Math#subtractExact` instead of using `com.google.common.math.IntMath#checkedSubtract`.
 tags:
   - guava
 preconditions:
@@ -536,9 +526,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
 displayName: Prefer `Math#multiplyExact`
-description: >-
-  Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.primitives.IntMath#checkedMultiply`
-  or `com.google.common.primitives.IntMath#multiplyExact`.
+description: Prefer `java.lang.Math#multiplyExact` instead of using `com.google.common.math.IntMath#checkedMultiply`.
 tags:
   - guava
 preconditions:
