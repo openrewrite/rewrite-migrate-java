@@ -214,7 +214,7 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-app
-      oldValue: (?s).*xml/ns/javaee.*
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd
       regex: true
   - org.openrewrite.xml.ChangeTagValue:
