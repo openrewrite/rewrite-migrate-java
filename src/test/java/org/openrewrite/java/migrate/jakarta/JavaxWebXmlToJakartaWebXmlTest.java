@@ -67,6 +67,33 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
     }
 
     @Test
+    void migrateJ2ee() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app version="2.4"
+                       xmlns="http://java.sun.com/xml/ns/j2ee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                                           http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+              </web-app>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app version="5.0"
+                       xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
+              </web-app>
+              """,
+            sourceSpecs -> sourceSpecs.path("web.xml")
+          )
+        );
+    }
+
+    @Test
     void migrateWithSQLDataSource() {
         rewriteRun(
           //language=xml
