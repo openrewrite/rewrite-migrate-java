@@ -33,7 +33,7 @@ public class StringRules {
     public static class RedundantCall {
         @BeforeTemplate
         public String before(String string) {
-            return Refaster.anyOf(string.substring(0, string.length()), string.substring(0), string.toString());
+            return Refaster.anyOf(string.substring(0, string.length()), string.substring(0), string);
         }
 
         @AfterTemplate

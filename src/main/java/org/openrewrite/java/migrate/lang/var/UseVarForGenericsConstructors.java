@@ -92,7 +92,7 @@ public class UseVarForGenericsConstructors extends Recipe {
             }
 
             J.VariableDeclarations finalVd = vd;
-            return DeclarationCheck.<J.NewClass>transformToVar(vd, it -> {
+            return DeclarationCheck.transformToVar(vd, it -> {
                 // If left is defined but right is not, copy types from typeExpression to initializer
                 if (rightTypes.isEmpty() && !leftTypes.isEmpty() && finalVd.getTypeExpression() instanceof J.ParameterizedType && it.getClazz() instanceof J.ParameterizedType) {
                     J.ParameterizedType typedInitializerClazz = ((J.ParameterizedType) it.getClazz())

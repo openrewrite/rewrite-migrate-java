@@ -38,7 +38,7 @@ import java.util.Set;
 @Value
 public class AdoptLombokGetterMethodNames extends ScanningRecipe<List<AdoptLombokGetterMethodNames.RenameRecord>> {
 
-    private final static String DO_NOT_RENAME = "DO_NOT_RENAME";
+    private static final String DO_NOT_RENAME = "DO_NOT_RENAME";
 
     String displayName = "Rename getter methods to fit Lombok";
 

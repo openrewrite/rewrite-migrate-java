@@ -82,7 +82,7 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                                     originalSwitch.set(nextStatementSwitch);
                                     return vd
                                             .withVariables(singletonList(originalVariable.getPadding().withInitializer(
-                                                    JLeftPadded.<Expression>build(newSwitchExpression).withBefore(Space.SINGLE_SPACE))))
+                                                    JLeftPadded.build(newSwitchExpression).withBefore(Space.SINGLE_SPACE))))
                                             .withComments(ListUtils.concatAll(vd.getComments(), nextStatementSwitch.getComments()));
                                 }
                             }

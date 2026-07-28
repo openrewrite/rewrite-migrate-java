@@ -89,11 +89,11 @@ public class IfElseIfConstructToSwitch extends Recipe {
         });
     }
 
-    private static class SwitchCandidate {
+    private static final class SwitchCandidate {
         private final Map<J.InstanceOf, Statement> patternMatchers = new LinkedHashMap<>();
-        private @Nullable Expression nullCheckedParameter = null;
-        private @Nullable Statement nullCheckedStatement = null;
-        private @Nullable Statement else_ = null;
+        private @Nullable Expression nullCheckedParameter;
+        private @Nullable Statement nullCheckedStatement;
+        private @Nullable Statement else_;
         private final Cursor cursor;
         private final J.If if_;
 

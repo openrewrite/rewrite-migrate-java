@@ -265,12 +265,8 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 }
 
                 // Should have no arguments (single-byte read)
-                if (!mi.getArguments().isEmpty() &&
-                        !(mi.getArguments().size() == 1 && mi.getArguments().get(0) instanceof J.Empty)) {
-                    return false;
-                }
-
-                return true;
+                return !(!mi.getArguments().isEmpty() &&
+                        !(mi.getArguments().size() == 1 && mi.getArguments().get( 0 ) instanceof J.Empty));
             }
 
             private boolean isSimpleNullCheck(Expression condition) {

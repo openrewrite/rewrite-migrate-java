@@ -148,8 +148,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
     static class JavadocToMarkdownConverter {
         private final List<String> lines = new ArrayList<>();
         private StringBuilder currentLine = new StringBuilder();
-        private boolean inPre = false;
-        private boolean suppressNextLineBreak = false;
+        private boolean inPre;
+        private boolean suppressNextLineBreak;
         private final Deque<String> listStack = new ArrayDeque<>();
         private final Deque<Integer> listCounterStack = new ArrayDeque<>();
 
