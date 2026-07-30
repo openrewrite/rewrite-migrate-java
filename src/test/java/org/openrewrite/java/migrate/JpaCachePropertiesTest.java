@@ -58,9 +58,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>NONE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -96,9 +94,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -134,9 +130,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- leave, change to ALL -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -173,8 +167,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
-                          <property name="openjpa.DataCache" value="truE(ExcludedTypes=foo.bar.Person;foo.bar.Employee)"/>
-                          <!-- remove -->
+                          <property name="openjpa.DataCache" value="truE(ExcludedTypes=foo.bar.Person;foo.bar.Employee)"/><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -209,8 +202,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>NONE</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -245,8 +237,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -281,8 +272,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>NONE</shared-cache-mode><!-- change to NONE -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -317,8 +307,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -410,8 +399,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- leave -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -446,8 +434,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode><!-- change to ALL -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -605,10 +592,8 @@ class JpaCachePropertiesTest implements RewriteTest {
                   <persistence-unit name="notset_set_set1"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <property name="javax.persistence.sharedCache.mode" value="NONE"/>
-                          <!-- leave -->
+                          <!-- Connection properties --><!-- remove -->
+                          <property name="javax.persistence.sharedCache.mode" value="NONE"/><!-- leave -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -642,10 +627,8 @@ class JpaCachePropertiesTest implements RewriteTest {
                   <persistence-unit name="notset_set_set2"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <property name="javax.persistence.sharedCache.mode" value="ALL"/>
-                          <!-- leave -->
+                          <!-- Connection properties --><!-- remove -->
+                          <property name="javax.persistence.sharedCache.mode" value="ALL"/><!-- leave -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -679,10 +662,8 @@ class JpaCachePropertiesTest implements RewriteTest {
                   <persistence-unit name="notset_set_set3"><!-- flag -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
-                          <property name="javax.persistence.sharedCache.mode" value="ALL"/>
-                          <!-- change to ALL -->
+                          <!-- Connection properties --><!-- remove -->
+                          <property name="javax.persistence.sharedCache.mode" value="ALL"/><!-- change to ALL -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -783,8 +764,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
-                          <property name="javax.persistence.sharedCache.mode" value="NONE"/>
-                          <!-- change to NONE -->
+                          <property name="javax.persistence.sharedCache.mode" value="NONE"/><!-- change to NONE -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -841,8 +821,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove and insert shared-cache-mode NONE -->
+                          <!-- Connection properties --><!-- remove and insert shared-cache-mode NONE -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -877,8 +856,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>ALL</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove and insert shared-cache-mode ALL -->
+                          <!-- Connection properties --><!-- remove and insert shared-cache-mode ALL -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -909,14 +887,12 @@ class JpaCachePropertiesTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
                   <persistence-unit name="notset_notset_set3">
-                      <!-- flag -->
-                      <!-- add shared-cache-mode ENABLE_SELECTIVE -->
+                      <!-- flag --> <!-- add shared-cache-mode ENABLE_SELECTIVE -->
                       <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
-                          <property name="openjpa.DataCache" value="truE(Types=foo.bar.Person;foo.bar.Employee)"/>
-                          <!-- leave - manual fix-->
+                          <property name="openjpa.DataCache" value="truE(Types=foo.bar.Person;foo.bar.Employee)"/><!-- leave - manual fix-->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -947,14 +923,12 @@ class JpaCachePropertiesTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
                   <persistence-unit name="notset_notset_set4">
-                      <!-- flag -->
-                      <!-- add shared-cache-mode DISABLE_SELECTIVE -->
+                      <!-- flag --> <!-- add shared-cache-mode DISABLE_SELECTIVE -->
                       <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
-                          <property name="openjpa.DataCache" value="TRUE(ExcludedTypes=foo.bar.Person;foo.bar.Employee)"/>
-                          <!-- leave - manual fix -->
+                          <property name="openjpa.DataCache" value="TRUE(ExcludedTypes=foo.bar.Person;foo.bar.Employee)"/><!-- leave - manual fix -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -1074,8 +1048,7 @@ class JpaCachePropertiesTest implements RewriteTest {
                       <shared-cache-mode>NONE</shared-cache-mode><!-- set to NONE -->
                       <validation-mode>NONE</validation-mode>
                       <properties>
-                          <!-- Connection properties -->
-                          <!-- remove -->
+                          <!-- Connection properties --><!-- remove -->
                       </properties>
                   </persistence-unit>
               </persistence>
@@ -1139,8 +1112,7 @@ class JpaCachePropertiesTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
                   <persistence-unit name="openjpa_cache3_flagged">
-                      <!-- flag -->
-                      <!-- create shared-cache-mode NONE -->
+                      <!-- flag --><!-- create shared-cache-mode NONE -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
