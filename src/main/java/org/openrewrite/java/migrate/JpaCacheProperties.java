@@ -20,6 +20,7 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.xml.RemoveContentVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Content;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
-import static org.openrewrite.xml.FilterTagChildrenVisitor.filterTagChildren;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -185,7 +185,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         if (sdh.openJPACacheProperty != null) {
             String attrValue = getAttributeValue("value", sdh.openJPACacheProperty);
             if ("true".equalsIgnoreCase(attrValue) || "false".equalsIgnoreCase(attrValue)) {
-                sdh.propertiesElement = filterTagChildren(sdh.propertiesElement, child -> child != sdh.openJPACacheProperty);
+                sdh.propertiesElement = removeContent(sdh.propertiesElement, sdh.openJPACacheProperty, ctx);
                 t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
             }
         }
@@ -193,10 +193,18 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         // if both shared-cache-mode and javax cache property are set, delete the
         // javax cache property
         if (sdh.sharedCacheModeElement != null && sdh.sharedCacheModeProperty != null) {
-            sdh.propertiesElement = filterTagChildren(sdh.propertiesElement, child -> child != sdh.sharedCacheModeProperty);
+            sdh.propertiesElement = removeContent(sdh.propertiesElement, sdh.sharedCacheModeProperty, ctx);
             t = addOrUpdateChild(t, sdh.propertiesElement, getCursor().getParentOrThrow());
         }
         return t;
+    }
+
+    /**
+     * Unlike {@code filterTagChildren}, this hands the removed element's prefix to a comment that trailed it,
+     * so the comment keeps its own line rather than collapsing onto the preceding sibling.
+     */
+    private static Xml.Tag removeContent(Xml.Tag parent, Xml.Tag child, ExecutionContext ctx) {
+        return (Xml.Tag) new RemoveContentVisitor<ExecutionContext>(child, false, false).visitNonNull(parent, ctx);
     }
 
     private SharedDataHolder extractData(Xml.Tag puNode) {
