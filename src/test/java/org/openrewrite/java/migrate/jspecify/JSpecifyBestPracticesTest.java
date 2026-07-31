@@ -46,6 +46,7 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                 """
                   import javax.annotation.Nonnull;
                   import javax.annotation.Nullable;
+                  import javax.annotation.CheckForNull;
 
                   public class Test {
                       @Nonnull
@@ -54,6 +55,8 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       public String field2;
                       @Nullable
                       public Foo.Bar foobar;
+                      @CheckForNull
+                      public String checked;
                   }
 
                   interface Foo {
@@ -73,6 +76,8 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       @Nullable
                       public String field2;
                       public Foo.@Nullable Bar foobar;
+                      @Nullable
+                      public String checked;
                   }
 
                   interface Foo {
