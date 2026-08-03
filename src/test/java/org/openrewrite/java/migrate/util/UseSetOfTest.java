@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -291,6 +292,71 @@ class UseSetOfTest implements RewriteTest {
                               "beta",
                               "gamma"));
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void doNotChangeLinkedHashSetBuiltWithAddStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.LinkedHashSet;
+
+              class Test {
+                  void m() {
+                      LinkedHashSet<String> tags = new LinkedHashSet<>();
+                      tags.add("alpha");
+                      tags.add("beta");
+                      tags.add("gamma");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void doNotChangeTreeSetBuiltWithAddStatements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.TreeSet;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new TreeSet<>();
+                      tags.add("alpha");
+                      tags.add("beta");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void doNotChangeAnonymousLinkedHashSet() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.LinkedHashSet;
+              import java.util.Set;
+
+              class Test {
+                  static final Set<String> ORDERED = new LinkedHashSet<>() {{
+                      add("alpha");
+                      add("beta");
+                  }};
               }
               """
           )

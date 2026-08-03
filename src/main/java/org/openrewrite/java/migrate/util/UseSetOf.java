@@ -30,6 +30,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +91,8 @@ public class UseSetOf extends Recipe {
 
                         // Anonymous-class form (original UseSetOf logic, unchanged).
                         J.Block body = n.getBody();
-                        if (NEW_HASH_SET.matches(n) && body != null && body.getStatements().size() == 1) {
+                        if (NEW_HASH_SET.matches(n) && body != null && body.getStatements().size() == 1 &&
+                                isExactlyHashSet(n)) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
                                 List<Expression> args = new ArrayList<>();
@@ -221,10 +223,23 @@ public class UseSetOf extends Recipe {
                         if (!NEW_HASH_SET.matches(nc)) {
                             return null;
                         }
+                        if (!isExactlyHashSet(nc)) {
+                            return null;
+                        }
                         if (nc.getBody() != null) {
                             return null;
                         }
                         return nv.getSimpleName();
+                    }
+
+                    /**
+                     * Skip `HashSet` subclasses like `LinkedHashSet`/`TreeSet`: `Set.of(..)` makes no
+                     * iteration-order guarantee, so converting them would silently drop the ordering
+                     * contract the original code relied on, and `new HashSet<>(..)` is not assignable
+                     * to a `LinkedHashSet` declared type (issue #1181, matching #1113).
+                     */
+                    private boolean isExactlyHashSet(J.NewClass nc) {
+                        return TypeUtils.isOfClassType(nc.getClazz() != null ? nc.getClazz().getType() : null, "java.util.HashSet");
                     }
 
                     private Expression matchAddCallOn(Statement stmt, String targetName) {

@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -293,6 +294,34 @@ class UseListOfTest implements RewriteTest {
                               "alice",
                               "Charlie"));
                       names.sort(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void doNotChangeArrayListSubclass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+
+              class Names extends ArrayList<String> {}
+              """
+          ),
+          java(
+            """
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      List<String> names = new Names();
+                      names.add("alpha");
+                      names.add("beta");
                   }
               }
               """

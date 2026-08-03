@@ -30,6 +30,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +91,8 @@ public class UseListOf extends Recipe {
 
                         // Anonymous-class form (original UseListOf logic, unchanged).
                         J.Block body = n.getBody();
-                        if (NEW_ARRAY_LIST.matches(n) && body != null && body.getStatements().size() == 1) {
+                        if (NEW_ARRAY_LIST.matches(n) && body != null && body.getStatements().size() == 1 &&
+                                isExactlyArrayList(n)) {
                             Statement statement = body.getStatements().get(0);
                             if (statement instanceof J.Block) {
                                 List<Expression> args = new ArrayList<>();
@@ -240,11 +242,23 @@ public class UseListOf extends Recipe {
                         if (!NEW_ARRAY_LIST.matches(nc)) {
                             return null;
                         }
+                        if (!isExactlyArrayList(nc)) {
+                            return null;
+                        }
                         // A body would put us in the anonymous-class case handled by visitNewClass directly.
                         if (nc.getBody() != null) {
                             return null;
                         }
                         return nv.getSimpleName();
+                    }
+
+                    /**
+                     * Skip `ArrayList` subclasses: `new ArrayList<>(..)` is not assignable to a subclass
+                     * declared type, and the subclass may carry behavior beyond a plain `ArrayList`
+                     * (issue #1181, matching #1113).
+                     */
+                    private boolean isExactlyArrayList(J.NewClass nc) {
+                        return TypeUtils.isOfClassType(nc.getClazz() != null ? nc.getClazz().getType() : null, "java.util.ArrayList");
                     }
 
                     /**
