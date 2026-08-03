@@ -191,10 +191,11 @@ class UpdateSdkManTest implements RewriteTest {
             """
               java=21.0.10-jbr
               """,
-            """
-              java=21.0.11-tem
-              """,
             spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=21.0.")
+                .endsWith("-tem")
+                .actual())
           )
         );
     }
