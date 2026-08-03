@@ -29,7 +29,11 @@ class ConvertAnyLogTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations")
           .parser(JavaParser.fromJavaVersion()
-            .classpath("slf4j-api", "log4j-api", "jboss-logging", "commons-logging"));
+            .classpath(
+              "slf4j-api",
+              "log4j-api",
+              "jboss-logging",
+              "commons-logging"));
     }
 
     @DocumentExample

@@ -32,7 +32,13 @@ class JSpecifyBestPracticesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
-          .parser(JavaParser.fromJavaVersion().classpath("jsr305", "jspecify", "jakarta.annotation-api", "annotations", "spring-core", "micronaut-core"));
+          .parser(JavaParser.fromJavaVersion().classpath(
+            "jsr305",
+            "jspecify",
+            "jakarta.annotation-api",
+            "annotations",
+            "spring-core",
+            "micronaut-core"));
     }
 
     @DocumentExample

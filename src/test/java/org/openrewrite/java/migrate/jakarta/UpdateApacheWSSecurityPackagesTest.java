@@ -31,7 +31,9 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(),
-              "wss4j-1.6.19", "wss4j-ws-security-common-2.0.0", "wss4j-ws-security-dom-2.0.0"))
+              "wss4j-1.6.19",
+              "wss4j-ws-security-common-2.0.0",
+              "wss4j-ws-security-dom-2.0.0"))
           .recipe(Environment.builder()
             .scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta")
             .build()
