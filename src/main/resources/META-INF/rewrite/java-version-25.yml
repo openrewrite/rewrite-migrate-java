@@ -228,6 +228,7 @@ recipeList:
       groupId: org.mockito
       artifactId: mockito-*
       newVersion: 5.17.x
+  - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
