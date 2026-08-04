@@ -97,11 +97,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             }
 
             /**
-             * Surefire's {@code @{argLine}} late replacement only earns its keep when something supplies an
-             * {@code argLine} property, and it drags along an empty {@code argLine} property to keep builds without
-             * such a provider from passing the literal token to the JVM. Adding both unconditionally is more
-             * invasive than most poms need, so only do so when the property is already declared or when JaCoCo
-             * is around to set it at runtime.
+             * The {@code @{argLine}} late replacement, and the empty {@code argLine} property it needs to not be
+             * passed to the JVM verbatim, are only worth adding when something actually supplies that property.
              */
             private boolean usesRuntimeArgLineProperty() {
                 return getResolutionResult().getPom().getProperties().containsKey("argLine") ||
@@ -232,9 +229,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     }
 
     /**
-     * Profiles are not carried into the resolved Maven model, so a JaCoCo declaration that is only active under a
-     * profile is invisible to {@link org.openrewrite.maven.tree.ResolvedPom#getPlugins()}. Scanning the raw document
-     * picks those up, along with declarations in {@code pluginManagement}.
+     * Scans the raw document, as JaCoCo declared in a profile or in {@code pluginManagement} is absent from
+     * {@link org.openrewrite.maven.tree.ResolvedPom#getPlugins()}.
      */
     private static boolean declaresJacocoPlugin(Xml.Document document) {
         return new XmlIsoVisitor<AtomicBoolean>() {
