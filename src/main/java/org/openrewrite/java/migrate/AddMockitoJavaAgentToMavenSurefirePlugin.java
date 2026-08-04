@@ -24,6 +24,7 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
 import org.openrewrite.maven.AddPropertyVisitor;
 import org.openrewrite.maven.ChangePluginExecutions;
@@ -43,6 +44,7 @@ import org.openrewrite.xml.tree.Xml;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 
@@ -83,7 +85,24 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             }
 
             private Xml.Tag buildConfigurationTag(String argLineJavaAgentParam, boolean hasExistingArgLine) {
-                return Xml.Tag.build(String.format(CONFIGURATION_TAG_TEMPLATE, hasExistingArgLine ? argLineJavaAgentParam : "@{argLine} " + argLineJavaAgentParam));
+                return Xml.Tag.build(String.format(CONFIGURATION_TAG_TEMPLATE, hasExistingArgLine ? argLineJavaAgentParam : newArgLineValue(argLineJavaAgentParam)));
+            }
+
+            private String newArgLineValue(String argLineJavaAgentParam) {
+                return usesRuntimeArgLineProperty() ? "@{argLine} " + argLineJavaAgentParam : argLineJavaAgentParam;
+            }
+
+            /**
+             * Surefire's {@code @{argLine}} late replacement only earns its keep when something supplies an
+             * {@code argLine} property, and it drags along an empty {@code argLine} property to keep builds without
+             * such a provider from passing the literal token to the JVM. Adding both unconditionally is more
+             * invasive than most poms need, so only do so when the property is already declared or when JaCoCo
+             * is around to set it at runtime.
+             */
+            private boolean usesRuntimeArgLineProperty() {
+                return getResolutionResult().getPom().getProperties().containsKey("argLine") ||
+                        getResolutionResult().getPom().getPlugins().stream().anyMatch(AddMockitoJavaAgentToMavenSurefirePlugin::isJacocoPlugin) ||
+                        declaresJacocoPlugin(getCursor().firstEnclosingOrThrow(Xml.Document.class));
             }
 
             private void maybeAddMavenDependencyPluginWithPropertiesGoal() {
@@ -132,11 +151,13 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
 
                 maybeAddMavenDependencyPluginWithPropertiesGoal();
-                doAfterVisit(new AddPropertyVisitor("argLine", "", true));
+                if (usesRuntimeArgLineProperty()) {
+                    doAfterVisit(new AddPropertyVisitor("argLine", "", true));
+                }
 
                 if (FindPlugin.find(document, "org.apache.maven.plugins", "maven-surefire-plugin").isEmpty()) {
                     doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-surefire-plugin", null,
-                            String.format(CONFIGURATION_TAG_TEMPLATE, "@{argLine} " + getArgLineJavaAgentArgument()), null,
+                            String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
                             null, "**/pom.xml").getVisitor());
                     return document;
                 }
@@ -172,11 +193,15 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
                 if (argLineTagChildren.size() == 1) {
                     Xml.Tag argLineTag = argLineTagChildren.get(0);
-                    String existingArgLineValue = argLineTag.getValue().orElse("@{argLine}");
+                    String existingArgLineValue = argLineTag.getValue().orElse("");
 
                     if (!existingArgLineValue.contains(argLineJavaAgentParam)) {
+                        // An empty argLine carries nothing to preserve, so it is filled in as if it were absent
+                        String mergedArgLine = StringUtils.isBlank(existingArgLineValue) ?
+                                newArgLineValue(argLineJavaAgentParam) :
+                                existingArgLineValue + " " + argLineJavaAgentParam;
                         List<Content> nonArgLineTags = ListUtils.filter(configContents, content -> content != argLineTag);
-                        Xml.Tag mergedConfiguration = buildConfigurationTag(existingArgLineValue + " " + argLineJavaAgentParam, true);
+                        Xml.Tag mergedConfiguration = buildConfigurationTag(mergedArgLine, true);
                         Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(nonArgLineTags, mergedConfiguration.getContent()));
                         return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                     }
@@ -196,6 +221,32 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static boolean isMavenPlugin(Plugin plugin, String artifactId) {
         return artifactId.equals(plugin.getArtifactId()) &&
                 (plugin.getGroupId() == null || MAVEN_PLUGINS_GROUP_ID.equals(plugin.getGroupId()));
+    }
+
+    private static boolean isJacocoPlugin(Plugin plugin) {
+        return "jacoco-maven-plugin".equals(plugin.getArtifactId()) && "org.jacoco".equals(plugin.getGroupId());
+    }
+
+    /**
+     * Profiles are not carried into the resolved Maven model, so a JaCoCo declaration that is only active under a
+     * profile is invisible to {@link org.openrewrite.maven.tree.ResolvedPom#getPlugins()}. Scanning the raw document
+     * picks those up, along with declarations in {@code pluginManagement}.
+     */
+    private static boolean declaresJacocoPlugin(Xml.Document document) {
+        AtomicBoolean found = new AtomicBoolean();
+        new XmlIsoVisitor<AtomicBoolean>() {
+            @Override
+            public Xml.Tag visitTag(Xml.Tag tag, AtomicBoolean found) {
+                if ("plugin".equals(tag.getName()) &&
+                        "jacoco-maven-plugin".equals(tag.getChildValue("artifactId").orElse(null)) &&
+                        "org.jacoco".equals(tag.getChildValue("groupId").orElse(null))) {
+                    found.set(true);
+                    return tag;
+                }
+                return super.visitTag(tag, found);
+            }
+        }.visit(document, found);
+        return found.get();
     }
 
     private static boolean hasPropertiesGoal(Plugin plugin) {
