@@ -237,8 +237,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
      * picks those up, along with declarations in {@code pluginManagement}.
      */
     private static boolean declaresJacocoPlugin(Xml.Document document) {
-        AtomicBoolean found = new AtomicBoolean();
-        new XmlIsoVisitor<AtomicBoolean>() {
+        return new XmlIsoVisitor<AtomicBoolean>() {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, AtomicBoolean found) {
                 if ("plugin".equals(tag.getName()) &&
@@ -249,8 +248,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
                 return super.visitTag(tag, found);
             }
-        }.visit(document, found);
-        return found.get();
+        }.reduce(document, new AtomicBoolean()).get();
     }
 
     private static boolean hasPropertiesGoal(Plugin plugin) {
