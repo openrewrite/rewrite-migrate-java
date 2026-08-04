@@ -225,9 +225,6 @@ examples:
           <version>3.5.4</version>
           <relativePath/>
         </parent>
-        <properties>
-          <argLine></argLine>
-        </properties>
 
         <dependencies>
           <dependency>
@@ -254,7 +251,7 @@ examples:
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                 <!--suppress MavenModelInspection -->
-                <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
               </configuration>
             </plugin>
           </plugins>

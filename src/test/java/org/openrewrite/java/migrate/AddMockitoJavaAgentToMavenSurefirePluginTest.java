@@ -84,9 +84,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -113,7 +110,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -301,7 +298,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <relativePath/>
               </parent>
               <properties>
-                <argLine></argLine>
                 <customProperty>some-property</customProperty>
               </properties>
 
@@ -333,7 +329,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                         <propertyName>foobar</propertyName>
                       </systemPropertyVariables>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -408,9 +404,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -437,7 +430,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -515,9 +508,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -635,9 +625,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>1.0</version>
                 <relativePath>../pom.xml</relativePath>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -664,7 +651,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -718,9 +705,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -747,7 +731,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -803,7 +787,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -823,9 +807,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -855,7 +836,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -914,7 +895,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -934,9 +915,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -967,7 +945,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                 </plugins>
@@ -997,9 +975,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -1026,7 +1001,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                       <systemPropertyVariables>
                         <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
                       </systemPropertyVariables>
@@ -1088,7 +1063,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                       <systemPropertyVariables>
                         <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
                       </systemPropertyVariables>
@@ -1177,7 +1152,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                       <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                           <!--suppress MavenModelInspection -->
-                          <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                          <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                           <systemPropertyVariables>
                             <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
                           </systemPropertyVariables>
@@ -1330,9 +1305,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>1.0</version>
                 <relativePath>../pom.xml</relativePath>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -1348,7 +1320,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                       <!--suppress MavenModelInspection -->
-                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                     </configuration>
                   </plugin>
                   <plugin>
@@ -1570,9 +1542,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>3.5.4</version>
                 <relativePath/>
               </parent>
-              <properties>
-                <argLine></argLine>
-              </properties>
 
               <dependencies>
                 <dependency>
@@ -1602,7 +1571,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                       <artifactId>maven-surefire-plugin</artifactId>
                       <configuration>
                         <!--suppress MavenModelInspection -->
-                        <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                        <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                       </configuration>
                     </plugin>
                   </plugins>
@@ -1700,6 +1669,149 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <version>1.0</version>
                 <relativePath>../pom.xml</relativePath>
               </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("test-module1/pom.xml")
+        )
+      )
+    );
+  }
+
+  @Test
+  void omitsLateArgLineReplacementWhenNothingSetsArgLineAtRuntime() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
+  void usesLateArgLineReplacementWhenJacocoPluginPresent() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.12</version>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
               <properties>
                 <argLine></argLine>
               </properties>
@@ -1708,6 +1820,183 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 <dependency>
                   <groupId>org.mockito</groupId>
                   <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.12</version>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
+  void usesLateArgLineReplacementWhenJacocoPluginOnlyActiveInProfile() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <profiles>
+                <profile>
+                  <id>coverage</id>
+                  <build>
+                    <plugins>
+                      <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                      </plugin>
+                    </plugins>
+                  </build>
+                </profile>
+              </profiles>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+              <properties>
+                <argLine></argLine>
+              </properties>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <profiles>
+                <profile>
+                  <id>coverage</id>
+                  <build>
+                    <plugins>
+                      <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                      </plugin>
+                    </plugins>
+                  </build>
+                </profile>
+              </profiles>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
+  void usesLateArgLineReplacementWhenArgLinePropertyAlreadyDeclared() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+              <properties>
+                <argLine>-Xmx512m</argLine>
+              </properties>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>1.0</version>
+              <properties>
+                <argLine>-Xmx512m</argLine>
+              </properties>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
                   <scope>test</scope>
                 </dependency>
               </dependencies>
@@ -1735,8 +2024,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                 </plugins>
               </build>
             </project>
-            """,
-          spec -> spec.path("test-module1/pom.xml")
+            """
         )
       )
     );

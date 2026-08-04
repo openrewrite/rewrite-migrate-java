@@ -24,6 +24,7 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
 import org.openrewrite.maven.AddPropertyVisitor;
 import org.openrewrite.maven.ChangePluginExecutions;
@@ -43,6 +44,7 @@ import org.openrewrite.xml.tree.Xml;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 
@@ -65,7 +67,10 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
 
     @Getter
-    final String description = "Adds required configuration to specifically enable the Mockito/Bytebuddy Java agent in the Maven Surefire plugin for Java 21 compatibility.";
+    final String description = "Mockito attaches its Byte Buddy agent to the running JVM at test time, which the JDK has " +
+            "warned about since Java 21 and intends to disallow. This recipe instead loads the agent up front through the " +
+            "Maven Surefire plugin, adding the `maven-dependency-plugin` `properties` goal to resolve the agent jar path, " +
+            "to silence the warning and stay ahead of the JDK change.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -83,7 +88,21 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             }
 
             private Xml.Tag buildConfigurationTag(String argLineJavaAgentParam, boolean hasExistingArgLine) {
-                return Xml.Tag.build(String.format(CONFIGURATION_TAG_TEMPLATE, hasExistingArgLine ? argLineJavaAgentParam : "@{argLine} " + argLineJavaAgentParam));
+                return Xml.Tag.build(String.format(CONFIGURATION_TAG_TEMPLATE, hasExistingArgLine ? argLineJavaAgentParam : newArgLineValue(argLineJavaAgentParam)));
+            }
+
+            private String newArgLineValue(String argLineJavaAgentParam) {
+                return usesRuntimeArgLineProperty() ? "@{argLine} " + argLineJavaAgentParam : argLineJavaAgentParam;
+            }
+
+            /**
+             * The {@code @{argLine}} late replacement, and the empty {@code argLine} property it needs to not be
+             * passed to the JVM verbatim, are only worth adding when something actually supplies that property.
+             */
+            private boolean usesRuntimeArgLineProperty() {
+                return getResolutionResult().getPom().getProperties().containsKey("argLine") ||
+                        getResolutionResult().getPom().getPlugins().stream().anyMatch(AddMockitoJavaAgentToMavenSurefirePlugin::isJacocoPlugin) ||
+                        declaresJacocoPlugin(getCursor().firstEnclosingOrThrow(Xml.Document.class));
             }
 
             private void maybeAddMavenDependencyPluginWithPropertiesGoal() {
@@ -132,11 +151,13 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
 
                 maybeAddMavenDependencyPluginWithPropertiesGoal();
-                doAfterVisit(new AddPropertyVisitor("argLine", "", true));
+                if (usesRuntimeArgLineProperty()) {
+                    doAfterVisit(new AddPropertyVisitor("argLine", "", true));
+                }
 
                 if (FindPlugin.find(document, "org.apache.maven.plugins", "maven-surefire-plugin").isEmpty()) {
                     doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-surefire-plugin", null,
-                            String.format(CONFIGURATION_TAG_TEMPLATE, "@{argLine} " + getArgLineJavaAgentArgument()), null,
+                            String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
                             null, "**/pom.xml").getVisitor());
                     return document;
                 }
@@ -172,11 +193,15 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
                 if (argLineTagChildren.size() == 1) {
                     Xml.Tag argLineTag = argLineTagChildren.get(0);
-                    String existingArgLineValue = argLineTag.getValue().orElse("@{argLine}");
+                    String existingArgLineValue = argLineTag.getValue().orElse("");
 
                     if (!existingArgLineValue.contains(argLineJavaAgentParam)) {
+                        // An empty argLine carries nothing to preserve, so it is filled in as if it were absent
+                        String mergedArgLine = StringUtils.isBlank(existingArgLineValue) ?
+                                newArgLineValue(argLineJavaAgentParam) :
+                                existingArgLineValue + " " + argLineJavaAgentParam;
                         List<Content> nonArgLineTags = ListUtils.filter(configContents, content -> content != argLineTag);
-                        Xml.Tag mergedConfiguration = buildConfigurationTag(existingArgLineValue + " " + argLineJavaAgentParam, true);
+                        Xml.Tag mergedConfiguration = buildConfigurationTag(mergedArgLine, true);
                         Xml.Tag updatedConfig = config.withContent(ListUtils.concatAll(nonArgLineTags, mergedConfiguration.getContent()));
                         return autoFormat(t.withContent(ListUtils.map(pluginContents, c -> c == config ? updatedConfig : c)), ctx);
                     }
@@ -196,6 +221,29 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static boolean isMavenPlugin(Plugin plugin, String artifactId) {
         return artifactId.equals(plugin.getArtifactId()) &&
                 (plugin.getGroupId() == null || MAVEN_PLUGINS_GROUP_ID.equals(plugin.getGroupId()));
+    }
+
+    private static boolean isJacocoPlugin(Plugin plugin) {
+        return "jacoco-maven-plugin".equals(plugin.getArtifactId()) && "org.jacoco".equals(plugin.getGroupId());
+    }
+
+    /**
+     * Scans the raw document, as JaCoCo declared in a profile or in {@code pluginManagement} is absent from
+     * {@link org.openrewrite.maven.tree.ResolvedPom#getPlugins()}.
+     */
+    private static boolean declaresJacocoPlugin(Xml.Document document) {
+        return new XmlIsoVisitor<AtomicBoolean>() {
+            @Override
+            public Xml.Tag visitTag(Xml.Tag tag, AtomicBoolean found) {
+                if ("plugin".equals(tag.getName()) &&
+                        "jacoco-maven-plugin".equals(tag.getChildValue("artifactId").orElse(null)) &&
+                        "org.jacoco".equals(tag.getChildValue("groupId").orElse(null))) {
+                    found.set(true);
+                    return tag;
+                }
+                return super.visitTag(tag, found);
+            }
+        }.reduce(document, new AtomicBoolean()).get();
     }
 
     private static boolean hasPropertiesGoal(Plugin plugin) {
