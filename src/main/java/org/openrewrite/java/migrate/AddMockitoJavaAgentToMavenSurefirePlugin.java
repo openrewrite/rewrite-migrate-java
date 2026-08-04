@@ -67,7 +67,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
 
     @Getter
-    final String description = "Adds required configuration to specifically enable the Mockito/Bytebuddy Java agent in the Maven Surefire plugin for Java 21 compatibility.";
+    final String description = "Mockito attaches its Byte Buddy agent to the running JVM at test time, which the JDK has " +
+            "warned about since Java 21 and intends to disallow. This recipe instead loads the agent up front through the " +
+            "Maven Surefire plugin, adding the `maven-dependency-plugin` `properties` goal to resolve the agent jar path. " +
+            "Self-attachment still works today, so this is not part of the Java version upgrades; apply it explicitly to " +
+            "silence the warning and stay ahead of the JDK change.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
