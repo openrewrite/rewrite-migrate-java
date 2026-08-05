@@ -396,4 +396,35 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void migrateTypeInJaxrsJsonSubpackage() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            """
+              package com.fasterxml.jackson.jaxrs.json.annotation;
+              public @interface JSONP {}
+              """
+          )),
+          //language=java
+          java(
+            """
+              import com.fasterxml.jackson.jaxrs.json.annotation.JSONP;
+
+              class A {
+                  @JSONP
+                  void method() {}
+              }
+              """,
+            """
+              import com.fasterxml.jackson.jakarta.rs.json.annotation.JSONP;
+
+              class A {
+                  @JSONP
+                  void method() {}
+              }
+              """
+          )
+        );
+    }
 }
