@@ -42,6 +42,7 @@ public class AddMapstructAnnotationProcessorPath extends ScanningRecipe<AddMapst
     public static class Accumulator {
         @Nullable
         String mapstructVersion;
+
         final AddAnnotationProcessor.Scanned processorPaths = new AddAnnotationProcessor.Scanned();
     }
 

@@ -52,6 +52,7 @@ examples:
   - before: |
       import javax.annotation.Nonnull;
       import javax.annotation.Nullable;
+      import javax.annotation.CheckForNull;
 
       public class Test {
           @Nonnull
@@ -60,6 +61,8 @@ examples:
           public String field2;
           @Nullable
           public Foo.Bar foobar;
+          @CheckForNull
+          public String checked;
       }
 
       interface Foo {
@@ -78,6 +81,8 @@ examples:
           @Nullable
           public String field2;
           public Foo.@Nullable Bar foobar;
+          @Nullable
+          public String checked;
       }
 
       interface Foo {
@@ -3931,6 +3936,25 @@ examples:
           Object foo(Object obj) {
               return Objects.requireNonNullElse(obj, "default");
           }
+      }
+    language: java
+- description: '`NoGuavaUnsignedTest#unsignedInts`'
+  sources:
+  - before: |
+      import com.google.common.primitives.UnsignedInts;
+
+      class Test {
+          int compare = UnsignedInts.compare(1, 2);
+          int divide = UnsignedInts.divide(6, 3);
+          int remainder = UnsignedInts.remainder(7, 3);
+          int parse = UnsignedInts.parseUnsignedInt("42");
+      }
+    after: |
+      class Test {
+          int compare = Integer.compareUnsigned(1, 2);
+          int divide = Integer.divideUnsigned(6, 3);
+          int remainder = Integer.remainderUnsigned(7, 3);
+          int parse = Integer.parseUnsignedInt("42");
       }
     language: java
 - description: '`NotYetImplemented#getCatchIllegalStateExceptionToNoSuchElementException`'
