@@ -245,6 +245,7 @@ examples:
               <artifactId>maven-dependency-plugin</artifactId>
               <executions>
                 <execution>
+                  <id>get-mockito-agent-path</id>
                   <goals>
                     <goal>properties</goal>
                   </goals>
