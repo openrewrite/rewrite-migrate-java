@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -27,15 +26,14 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.maven.AddPlugin;
 import org.openrewrite.maven.AddPropertyVisitor;
-import org.openrewrite.maven.ChangePluginExecutions;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.search.DependencyInsight;
 import org.openrewrite.maven.search.FindPlugin;
+import org.openrewrite.maven.trait.MavenPlugin;
 import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.semver.LatestRelease;
-import org.openrewrite.xml.AddOrUpdateChildTag;
 import org.openrewrite.xml.AddToTagVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlIsoVisitor;
@@ -54,14 +52,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static final String MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID = "maven-surefire-plugin";
     private static final String MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID = "maven-dependency-plugin";
 
-    @Language("xpath")
-    private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER = "/project/build/plugins/plugin[artifactId='maven-dependency-plugin']/executions/execution";
+    private static final String PROPERTIES_GOAL = "properties";
 
     @Language("xml")
-    private static final String MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL = "<goal>properties</goal>";
-
-    @Language("xml")
-    private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG = "<execution><goals>"+ MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL + "</goals></execution>";
+    private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG =
+            "<execution><id>get-mockito-agent-path</id><goals><goal>" + PROPERTIES_GOAL + "</goal></goals></execution>";
 
     @Getter
     final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
@@ -105,24 +100,6 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         declaresJacocoPlugin(getCursor().firstEnclosingOrThrow(Xml.Document.class));
             }
 
-            private void maybeAddMavenDependencyPluginWithPropertiesGoal() {
-                Optional<Plugin> mavenDependencyPlugin = getResolutionResult().getPom().getPlugins().stream()
-                        .filter(plugin -> isMavenPlugin(plugin, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID)).findFirst();
-
-                if (!mavenDependencyPlugin.isPresent()) {
-                    doAfterVisit(new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, null, null, null,
-                            "<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>", "**/pom.xml").getVisitor());
-                } else if (mavenDependencyPlugin.get().getExecutions().isEmpty()) {
-                    doAfterVisit(new ChangePluginExecutions(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG).getVisitor());
-                } else if (mavenDependencyPlugin.get().getExecutions().stream().noneMatch(execution -> execution.getGoals() != null)) {
-                    doAfterVisit(new AddOrUpdateChildTag(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER, "<goals>" + MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL + "</goals>", false).getVisitor());
-                } else if (!hasPropertiesGoal(mavenDependencyPlugin.get())) {
-                    doAfterVisit(new AppendChildTagToParentVisitor(
-                            new XPathMatcher(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_MATCHER + "/goals"),
-                            Xml.Tag.build(MAVEN_DEPENDENCY_PLUGIN_PROPERTIES_GOAL)));
-                }
-            }
-
             private @Nullable String surefireArgLineWithAgent(List<Plugin> plugins) {
                 String agentArgument = getArgLineJavaAgentArgument();
                 return plugins.stream()
@@ -130,11 +107,6 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         .map(plugin -> plugin.getConfigurationStringValue("argLine"))
                         .filter(argLine -> argLine != null && argLine.contains(agentArgument))
                         .findFirst().orElse(null);
-            }
-
-            private boolean mavenDependencyPluginHasPropertiesGoal() {
-                return getResolutionResult().getPom().getPlugins().stream()
-                        .anyMatch(plugin -> isMavenPlugin(plugin, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID) && hasPropertiesGoal(plugin));
             }
 
             @Override
@@ -145,12 +117,23 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 // Nothing to add when the surefire agent, the properties goal, and any `@{argLine}` property
                 // are already present, whether declared here or inherited from a parent's `build/plugins` (#1164).
                 String pluginArgLine = surefireArgLineWithAgent(getResolutionResult().getPom().getPlugins());
-                if (pluginArgLine != null && mavenDependencyPluginHasPropertiesGoal() &&
+                boolean mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase = getResolutionResult().getPom().getPlugins().stream()
+                        .anyMatch(plugin -> isMavenPlugin(plugin, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID) &&
+                                plugin.getExecutions().stream()
+                                        .anyMatch(execution -> execution.getPhase() == null &&
+                                                execution.getGoals() != null && execution.getGoals().contains(PROPERTIES_GOAL)));
+                if (pluginArgLine != null && mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase &&
                         (!pluginArgLine.contains("@{argLine}") || getResolutionResult().getPom().getProperties().containsKey("argLine"))) {
                     return document;
                 }
 
-                maybeAddMavenDependencyPluginWithPropertiesGoal();
+                if (!mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase) {
+                    // AddPlugin no-ops when the plugin exists; the visitor below appends only to an already declared plugin.
+                    doAfterVisit(new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, null, null, null,
+                            "<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>", "**/pom.xml").getVisitor());
+                    doAfterVisit(new AddPropertiesGoalExecutionVisitor());
+                }
+
                 if (usesRuntimeArgLineProperty()) {
                     doAfterVisit(new AddPropertyVisitor("argLine", "", true));
                 }
@@ -246,23 +229,36 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
         }.reduce(document, new AtomicBoolean()).get();
     }
 
-    private static boolean hasPropertiesGoal(Plugin plugin) {
-        return plugin.getExecutions().stream()
-                .anyMatch(execution -> execution.getGoals() != null && execution.getGoals().contains("properties"));
-    }
-
-    @RequiredArgsConstructor
-    private static class AppendChildTagToParentVisitor extends XmlIsoVisitor<ExecutionContext> {
-        private final XPathMatcher parentXPathMatcher;
-        private final Xml.Tag newChildTag;
+    // Matching the plugin, not each execution, keeps this to one new execution however many the plugin already has.
+    private static class AddPropertiesGoalExecutionVisitor extends XmlIsoVisitor<ExecutionContext> {
+        private static final XPathMatcher PLUGIN_MATCHER = new XPathMatcher("/project/build/plugins/plugin");
 
         @Override
         public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
-            if (parentXPathMatcher.matches(getCursor()) &&
-                    tag.getChildren(newChildTag.getName()).stream().noneMatch(child -> child.getValue().equals(newChildTag.getValue()))) {
-                return autoFormat(AddToTagVisitor.addToTag(tag, newChildTag, getCursor()), ctx);
+            Xml.Tag t = super.visitTag(tag, ctx);
+            // A missing groupId is Maven's own; the matcher excludes pluginManagement.
+            if (!"plugin".equals(t.getName()) ||
+                    !MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID.equals(t.getChildValue("artifactId").orElse(null)) ||
+                    !MAVEN_PLUGINS_GROUP_ID.equals(t.getChildValue("groupId").orElse(MAVEN_PLUGINS_GROUP_ID)) ||
+                    !PLUGIN_MATCHER.matches(getCursor())) {
+                return t;
             }
-            return super.visitTag(tag, ctx);
+
+            Optional<Xml.Tag> executions = t.getChild("executions");
+            if (executions.isPresent() && executions.get().getChildren("execution").stream()
+                    .anyMatch(execution -> !execution.getChild("phase").isPresent() &&
+                            execution.getChildren("goals").stream()
+                                    .flatMap(goals -> goals.getChildren("goal").stream())
+                                    .anyMatch(goal -> PROPERTIES_GOAL.equals(goal.getValue().orElse(null))))) {
+                return t;
+            }
+
+            Xml.Tag scope = executions.orElse(t);
+            Xml.Tag tagToAdd = executions.isPresent() ?
+                    Xml.Tag.build(MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG) :
+                    Xml.Tag.build("<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>");
+            return (Xml.Tag) new AddToTagVisitor<ExecutionContext>(scope, tagToAdd)
+                    .visitNonNull(t, ctx, getCursor().getParentOrThrow());
         }
     }
 }

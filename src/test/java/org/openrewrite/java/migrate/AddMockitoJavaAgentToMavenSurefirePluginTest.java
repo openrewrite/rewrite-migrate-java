@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -99,6 +100,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -206,6 +208,9 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                         <configuration>
                           <foobar />
                         </configuration>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -640,6 +645,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -720,6 +726,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -825,6 +832,9 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                         <configuration>
                           <foobar />
                         </configuration>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -935,6 +945,362 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                         </configuration>
                         <goals>
                           <goal>analyize</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Issue("https://github.com/moderneinc/customer-requests/issues/2968")
+  @Test
+  void addsSeparateExecutionWhenExistingExecutionRunsAfterTests() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
+  void addsSeparateExecutionWhenPropertiesGoalIsBoundToAPhase() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
+                        <goals>
+                          <goal>properties</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
+        )
+      )
+    );
+  }
+
+  @Test
+  void addsSingleExecutionWhenMavenDependencyPluginHasSeveralExecutions() {
+    rewriteRun(
+      mavenProject("test-project",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>unpack</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                          <goal>unpack-dependencies</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <!--suppress MavenModelInspection -->
+                      <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>test</artifactId>
+              <version>${revision}</version>
+
+              <parent>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.5.4</version>
+                <relativePath/>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>unpack</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                          <goal>unpack-dependencies</goal>
+                        </goals>
+                      </execution>
+                      <execution>
+                        <id>get-mockito-agent-path</id>
+                        <goals>
                           <goal>properties</goal>
                         </goals>
                       </execution>
@@ -1238,6 +1604,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                       <artifactId>maven-dependency-plugin</artifactId>
                       <executions>
                         <execution>
+                          <id>get-mockito-agent-path</id>
                           <goals>
                             <goal>properties</goal>
                           </goals>
@@ -1328,6 +1695,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -1684,6 +2052,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -1752,6 +2121,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -1836,6 +2206,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -1934,6 +2305,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
@@ -2007,6 +2379,7 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
                     <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                       <execution>
+                        <id>get-mockito-agent-path</id>
                         <goals>
                           <goal>properties</goal>
                         </goals>
