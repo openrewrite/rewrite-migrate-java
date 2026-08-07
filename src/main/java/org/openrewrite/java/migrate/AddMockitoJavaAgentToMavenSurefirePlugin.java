@@ -29,7 +29,6 @@ import org.openrewrite.maven.AddPropertyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.search.DependencyInsight;
 import org.openrewrite.maven.search.FindPlugin;
-import org.openrewrite.maven.trait.MavenPlugin;
 import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
@@ -122,29 +121,27 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                                 plugin.getExecutions().stream()
                                         .anyMatch(execution -> execution.getPhase() == null &&
                                                 execution.getGoals() != null && execution.getGoals().contains(PROPERTIES_GOAL)));
-                if (pluginArgLine != null && mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase &&
+                if (mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase && pluginArgLine != null &&
                         (!pluginArgLine.contains("@{argLine}") || getResolutionResult().getPom().getProperties().containsKey("argLine"))) {
                     return document;
                 }
 
+                Xml.Document d = document;
                 if (!mavenDependencyPluginRunsPropertiesGoalAtDefaultPhase) {
                     // AddPlugin no-ops when the plugin exists; the visitor below appends only to an already declared plugin.
-                    doAfterVisit(new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, null, null, null,
-                            "<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>", "**/pom.xml").getVisitor());
-                    doAfterVisit(new AddPropertiesGoalExecutionVisitor());
+                    d = (Xml.Document) new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_DEPENDENCY_PLUGIN_ARTIFACT_ID, null, null, null,
+                            "<executions>" + MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG + "</executions>", "**/pom.xml")
+                            .getVisitor().visitNonNull(d, ctx);
+                    d = (Xml.Document) new AddPropertiesGoalExecutionVisitor().visitNonNull(d, ctx);
                 }
-
                 if (usesRuntimeArgLineProperty()) {
-                    doAfterVisit(new AddPropertyVisitor("argLine", "", true));
+                    d = (Xml.Document) new AddPropertyVisitor("argLine", "", true).visitNonNull(d, ctx);
                 }
-
-                if (FindPlugin.find(document, "org.apache.maven.plugins", "maven-surefire-plugin").isEmpty()) {
-                    doAfterVisit(new AddPlugin("org.apache.maven.plugins", "maven-surefire-plugin", null,
-                            String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
-                            null, "**/pom.xml").getVisitor());
-                    return document;
-                }
-                return super.visitDocument(document, ctx);
+                return FindPlugin.find(d, MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID).isEmpty() ?
+                        (Xml.Document) new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID, null,
+                                String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
+                                null, "**/pom.xml").getVisitor().visitNonNull(d, ctx) :
+                        super.visitDocument(d, ctx);
             }
 
             @Override
