@@ -103,6 +103,7 @@ dependencies {
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")
+    testRuntimeOnly("org.bouncycastle:bcprov-jdk15on:1.70")
     testRuntimeOnly(gradleApi())
 }
 
