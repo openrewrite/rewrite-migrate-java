@@ -23,12 +23,14 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
@@ -226,12 +228,10 @@ final class DeclarationCheck {
 
     /**
      * Checks whether the initializer {@linkplain Expression} is a {@linkplain J.MethodInvocation} of a generic method
-     * whose type parameter can only be inferred from the assignment target, as in {@code <T> T getArgument(int index)}.
-     * Replacing the declared type with {@code var} drops that target type, so the type parameter is inferred as
-     * {@linkplain Object} instead of the declared type.
+     * whose type parameter is only inferable from the declared type, as in {@code <T> T getArgument(int index)}.
      *
      * @param initializer {@linkplain J.VariableDeclarations.NamedVariable#getInitializer()} value
-     * @return true iff is initialized by a generic method whose return type cannot be resolved without the declared type
+     * @return true iff is initialized by a generic method that needs the declared type to infer its return type
      */
     public static boolean initializedByUnresolvableGenericMethod(@Nullable Expression initializer) {
         J.MethodInvocation invocation = getMethodInvocation(initializer);
@@ -256,25 +256,71 @@ final class DeclarationCheck {
         if (mt == null || mi.getTypeParameters() != null) {
             return false;
         }
-        // The invocation's return type is already resolved to the declared type, so the declaration is consulted instead.
-        // Methods mentioning their own type parameters in their signature fail this lookup, as the invocation's parameter
-        // types are resolved while the declaration's are not; those are also the methods javac infers from arguments alone.
-        Optional<JavaType.Method> maybeDeclaredMethod = TypeUtils.findDeclaredMethod(mt.getDeclaringType(), mt.getName(), mt.getParameterTypes());
-        if (!maybeDeclaredMethod.isPresent()) {
+        // The invocation's types are already resolved against the declared type, so the declaration is consulted instead
+        return declaresUninferableReturnType(mt.getDeclaringType(), mt.getName(), mt.getParameterTypes().size(), newIdentitySet());
+    }
+
+    private static boolean declaresUninferableReturnType(JavaType.@Nullable FullyQualified clazz, String name, int arity, Set<JavaType> seen) {
+        if (clazz == null || !seen.add(clazz)) {
             return false;
         }
-
-        JavaType.Method declaredMethod = maybeDeclaredMethod.get();
-        JavaType returnType = declaredMethod.getReturnType();
-        while (returnType instanceof JavaType.Array) {
-            returnType = ((JavaType.Array) returnType).getElemType();
+        for (JavaType.Method method : clazz.getMethods()) {
+            if (name.equals(method.getName()) && method.getParameterTypes().size() == arity && returnsUninferableTypeParameter(method)) {
+                return true;
+            }
         }
-        if (!(returnType instanceof JavaType.GenericTypeVariable)) {
+        if (declaresUninferableReturnType(clazz.getSupertype(), name, arity, seen)) {
+            return true;
+        }
+        for (JavaType.FullyQualified anInterface : clazz.getInterfaces()) {
+            if (declaresUninferableReturnType(anInterface, name, arity, seen)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean returnsUninferableTypeParameter(JavaType.Method method) {
+        for (String typeParameterName : method.getDeclaredFormalTypeNames()) {
+            if (mentions(method.getReturnType(), typeParameterName, newIdentitySet()) &&
+                    !mentionsAny(method.getParameterTypes(), typeParameterName, newIdentitySet())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean mentions(JavaType type, String typeParameterName, Set<JavaType> seen) {
+        if (!seen.add(type)) {
             return false;
         }
+        if (type instanceof JavaType.GenericTypeVariable) {
+            JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) type;
+            if (typeParameterName.equals(generic.getName())) {
+                return true;
+            }
+            return mentionsAny(generic.getBounds(), typeParameterName, seen);
+        }
+        if (type instanceof JavaType.Array) {
+            return mentions(((JavaType.Array) type).getElemType(), typeParameterName, seen);
+        }
+        if (type instanceof JavaType.Parameterized) {
+            return mentionsAny(((JavaType.Parameterized) type).getTypeParameters(), typeParameterName, seen);
+        }
+        return false;
+    }
 
-        // Type parameters declared by the class are resolved through the receiver, not the assignment target
-        return declaredMethod.getDeclaredFormalTypeNames().contains(((JavaType.GenericTypeVariable) returnType).getName());
+    private static boolean mentionsAny(List<JavaType> types, String typeParameterName, Set<JavaType> seen) {
+        for (JavaType type : types) {
+            if (mentions(type, typeParameterName, seen)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Set<JavaType> newIdentitySet() {
+        return newSetFromMap(new IdentityHashMap<>());
     }
 
     /**

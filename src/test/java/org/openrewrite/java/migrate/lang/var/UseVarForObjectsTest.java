@@ -235,7 +235,7 @@ class UseVarForObjectsTest extends VarBaseTest {
             @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
             @Test
             void typeToken() {
-                // `T` is inferred from the `Class<T>` argument rather than from the declared type, so `var` is safe
+                // `T` is inferred from the `Class<T>` argument, not from the declared type
                 //language=java
                 rewriteRun(
                   version(
@@ -447,6 +447,44 @@ class UseVarForObjectsTest extends VarBaseTest {
                   )
                 );
             }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void genericMethodInferredFromWildcardBoundedArgument() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      import java.util.function.Supplier;
+
+                      class A {
+                        <T> T orElse(Supplier<? extends T> supplier) {
+                          return supplier.get();
+                        }
+                        void m(Supplier<String> supplier) {
+                            String s = orElse(supplier);
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      import java.util.function.Supplier;
+
+                      class A {
+                        <T> T orElse(Supplier<? extends T> supplier) {
+                          return supplier.get();
+                        }
+                        void m(Supplier<String> supplier) {
+                            var s = orElse(supplier);
+                        }
+                      }
+                      """
+                  )
+                );
+            }
         }
     }
 
@@ -490,6 +528,58 @@ class UseVarForObjectsTest extends VarBaseTest {
                   class A {
                     void m(Invocation invocation) {
                         String s = invocation.getArgument(0);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodDeclaredOnGenericInterface() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  interface Cache<K> {
+                    <T> T get(K key);
+                    <T> T getAll(List<K> keys);
+                  }
+                  class A {
+                    void m(Cache<String> cache, List<String> keys) {
+                        String s = cache.get("k");
+                        String t = cache.getAll(keys);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodInheritedFromSuperclass() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class Base {
+                    <T> T get(int index) {
+                      return null;
+                    }
+                  }
+                  class Sub extends Base {
+                  }
+                  class A {
+                    void m(Sub sub) {
+                        String s = sub.get(0);
                     }
                   }
                   """
