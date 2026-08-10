@@ -232,8 +232,10 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
             @Test
             void typeToken() {
+                // `T` is inferred from the `Class<T>` argument rather than from the declared type, so `var` is safe
                 //language=java
                 rewriteRun(
                   version(
@@ -378,6 +380,7 @@ class UseVarForObjectsTest extends VarBaseTest {
                 );
             }
 
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
             @Test
             void genericMethodWithTypeParameters() {
                 //language=java
@@ -394,7 +397,8 @@ class UseVarForObjectsTest extends VarBaseTest {
                             String strs = new A().<String>method();
                         }
                       }
-                      ""","""
+                      """,
+                    """
                       package com.example.app;
 
                       class A {
@@ -409,14 +413,93 @@ class UseVarForObjectsTest extends VarBaseTest {
                   )
                 );
             }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void genericMethodInferredFromArgument() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T identity(T t) {
+                          return t;
+                        }
+                        void m() {
+                            String s = identity("x");
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T identity(T t) {
+                          return t;
+                        }
+                        void m() {
+                            var s = identity("x");
+                        }
+                      }
+                      """
+                  )
+                );
+            }
         }
     }
 
     @Nested
     class NotApplicable {
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
         @Test
         void genericMethod() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T> T method() {
+                      return null;
+                    }
+                    void m() {
+                        String s = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodDeclaredOnInterface() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  interface Invocation {
+                    <T> T getArgument(int index);
+                  }
+                  class A {
+                    void m(Invocation invocation) {
+                        String s = invocation.getArgument(0);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodReturningArray() {
             //language=java
             rewriteRun(
               java(
@@ -429,6 +512,50 @@ class UseVarForObjectsTest extends VarBaseTest {
                     }
                     void m() {
                         String[] strs = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodReturningMultiDimensionalArray() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T> T[][] method() {
+                      return null;
+                    }
+                    void m() {
+                        String[][] strs = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodShadowingClassTypeParameter() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A<T> {
+                    <T> T method() {
+                      return null;
+                    }
+                    void m() {
+                        String s = method();
                     }
                   }
                   """

@@ -224,12 +224,21 @@ final class DeclarationCheck {
         return invocation.getMethodType().hasFlags(Flag.Static);
     }
 
+    /**
+     * Checks whether the initializer {@linkplain Expression} is a {@linkplain J.MethodInvocation} of a generic method
+     * whose type parameter can only be inferred from the assignment target, as in {@code <T> T getArgument(int index)}.
+     * Replacing the declared type with {@code var} drops that target type, so the type parameter is inferred as
+     * {@linkplain Object} instead of the declared type.
+     *
+     * @param initializer {@linkplain J.VariableDeclarations.NamedVariable#getInitializer()} value
+     * @return true iff is initialized by a generic method whose return type cannot be resolved without the declared type
+     */
     public static boolean initializedByUnresolvableGenericMethod(@Nullable Expression initializer) {
         J.MethodInvocation invocation = getMethodInvocation(initializer);
         return invocation != null && isUnresolvableGenericMethod(invocation);
     }
 
-    private J.@Nullable MethodInvocation getMethodInvocation(@Nullable Expression initializer) {
+    private static J.@Nullable MethodInvocation getMethodInvocation(@Nullable Expression initializer) {
         if (initializer == null) {
             return null;
         }
@@ -247,30 +256,25 @@ final class DeclarationCheck {
         if (mt == null || mi.getTypeParameters() != null) {
             return false;
         }
-        JavaType.FullyQualified clazz = mt.getDeclaringType();
-        Optional<JavaType.Method> maybeDeclaredMethod = TypeUtils.findDeclaredMethod(clazz, mt.getName(), mt.getParameterTypes());
+        // The invocation's return type is already resolved to the declared type, so the declaration is consulted instead.
+        // Methods mentioning their own type parameters in their signature fail this lookup, as the invocation's parameter
+        // types are resolved while the declaration's are not; those are also the methods javac infers from arguments alone.
+        Optional<JavaType.Method> maybeDeclaredMethod = TypeUtils.findDeclaredMethod(mt.getDeclaringType(), mt.getName(), mt.getParameterTypes());
         if (!maybeDeclaredMethod.isPresent()) {
             return false;
         }
 
-        JavaType returnType = maybeDeclaredMethod.get().getReturnType();
-        JavaType.GenericTypeVariable genericReturnType;
-        if (returnType instanceof JavaType.GenericTypeVariable) {
-            genericReturnType = (JavaType.GenericTypeVariable) returnType;
-        } else if (returnType instanceof JavaType.Array && ((JavaType.Array) returnType).getElemType() instanceof JavaType.GenericTypeVariable) {
-            genericReturnType = (JavaType.GenericTypeVariable) ((JavaType.Array) returnType).getElemType();
-        } else {
+        JavaType.Method declaredMethod = maybeDeclaredMethod.get();
+        JavaType returnType = declaredMethod.getReturnType();
+        while (returnType instanceof JavaType.Array) {
+            returnType = ((JavaType.Array) returnType).getElemType();
+        }
+        if (!(returnType instanceof JavaType.GenericTypeVariable)) {
             return false;
         }
 
-        for (JavaType classParam : clazz.getTypeParameters()) {
-            if (classParam instanceof JavaType.GenericTypeVariable &&
-                ((JavaType.GenericTypeVariable) classParam).getName().equals(genericReturnType.getName())) {
-                return false;
-            }
-        }
-
-        return true;
+        // Type parameters declared by the class are resolved through the receiver, not the assignment target
+        return declaredMethod.getDeclaredFormalTypeNames().contains(((JavaType.GenericTypeVariable) returnType).getName());
     }
 
     /**
