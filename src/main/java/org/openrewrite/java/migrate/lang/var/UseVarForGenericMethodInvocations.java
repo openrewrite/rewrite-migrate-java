@@ -58,10 +58,9 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             }
 
             // Recipe specific
-            boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
-            boolean usesNoGenerics = !DeclarationCheck.useGenerics(vd);
-            boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
-            if (isPrimitive || usesTernary || usesNoGenerics) {
+            if (DeclarationCheck.isPrimitive(vd) ||
+                    DeclarationCheck.initializedByTernary(vd) ||
+                    !DeclarationCheck.useGenerics(vd)) {
                 return vd;
             }
 
@@ -73,9 +72,7 @@ public class UseVarForGenericMethodInvocations extends Recipe {
             J.MethodInvocation invocation = (J.MethodInvocation) originalInitializer.unwrap();
 
             // If no type parameters and no arguments are present, we assume the type is too hard to determine
-            boolean hasNoTypeParams = invocation.getTypeParameters() == null;
-            boolean argumentsEmpty = allArgumentsEmpty(invocation);
-            if (hasNoTypeParams && argumentsEmpty) {
+            if (invocation.getTypeParameters() == null && allArgumentsEmpty(invocation)) {
                 return vd;
             }
 
