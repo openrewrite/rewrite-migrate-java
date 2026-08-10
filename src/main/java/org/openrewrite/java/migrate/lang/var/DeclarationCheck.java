@@ -24,6 +24,7 @@ import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 
@@ -216,23 +217,60 @@ final class DeclarationCheck {
      * @return true iff is initialized by static method
      */
     public static boolean initializedByStaticMethod(@Nullable Expression initializer) {
-        if (initializer == null) {
+        J.MethodInvocation invocation = getMethodInvocation(initializer);
+        if (invocation == null || invocation.getMethodType() == null) {
             return false;
+        }
+        return invocation.getMethodType().hasFlags(Flag.Static);
+    }
+
+    public static boolean initializedByUnresolvableGenericMethod(@Nullable Expression initializer) {
+        J.MethodInvocation invocation = getMethodInvocation(initializer);
+        return invocation != null && isUnresolvableGenericMethod(invocation);
+    }
+
+    private J.@Nullable MethodInvocation getMethodInvocation(@Nullable Expression initializer) {
+        if (initializer == null) {
+            return null;
         }
         initializer = initializer.unwrap();
 
         if (!(initializer instanceof J.MethodInvocation)) {
-            // no MethodInvocation -> false
+            return null;
+        }
+
+        return (J.MethodInvocation) initializer;
+    }
+
+    private static boolean isUnresolvableGenericMethod(J.MethodInvocation mi) {
+        JavaType.Method mt = mi.getMethodType();
+        if (mt == null || mi.getTypeParameters() != null) {
+            return false;
+        }
+        JavaType.FullyQualified clazz = mt.getDeclaringType();
+        Optional<JavaType.Method> maybeDeclaredMethod = TypeUtils.findDeclaredMethod(clazz, mt.getName(), mt.getParameterTypes());
+        if (!maybeDeclaredMethod.isPresent()) {
             return false;
         }
 
-        J.MethodInvocation invocation = (J.MethodInvocation) initializer;
-        if (invocation.getMethodType() == null) {
-            // not a static method -> false
+        JavaType returnType = maybeDeclaredMethod.get().getReturnType();
+        JavaType.GenericTypeVariable genericReturnType;
+        if (returnType instanceof JavaType.GenericTypeVariable) {
+            genericReturnType = (JavaType.GenericTypeVariable) returnType;
+        } else if (returnType instanceof JavaType.Array && ((JavaType.Array) returnType).getElemType() instanceof JavaType.GenericTypeVariable) {
+            genericReturnType = (JavaType.GenericTypeVariable) ((JavaType.Array) returnType).getElemType();
+        } else {
             return false;
         }
 
-        return invocation.getMethodType().hasFlags(Flag.Static);
+        for (JavaType classParam : clazz.getTypeParameters()) {
+            if (classParam instanceof JavaType.GenericTypeVariable &&
+                ((JavaType.GenericTypeVariable) classParam).getName().equals(genericReturnType.getName())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -62,7 +62,8 @@ public class UseVarForObject extends Recipe {
             Expression initializer = vd.getVariables().get(0).getInitializer();
             boolean usesArrayInitializer = initializer instanceof J.NewArray;
             boolean initializedByStaticMethod = DeclarationCheck.initializedByStaticMethod(initializer);
-            if (isPrimitive || usesGenerics || usesTernary || usesArrayInitializer || initializedByStaticMethod) {
+            boolean initializedByUnresolvableGenericMethod = DeclarationCheck.initializedByUnresolvableGenericMethod(initializer);
+            if (isPrimitive || usesGenerics || usesTernary || usesArrayInitializer || initializedByStaticMethod || initializedByUnresolvableGenericMethod) {
                 return vd;
             }
 

@@ -233,6 +233,39 @@ class UseVarForObjectsTest extends VarBaseTest {
             }
 
             @Test
+            void typeToken() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+
+                      class A {
+                        <T> T typeToken(Class<T> clazz) {
+                            return null;
+                        }
+                        void m() {
+                            String s = typeToken(String.class);
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+
+                      class A {
+                        <T> T typeToken(Class<T> clazz) {
+                            return null;
+                        }
+                        void m() {
+                            var s = typeToken(String.class);
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
             void subType() {
                 //language=java
                 rewriteRun(
@@ -317,7 +350,7 @@ class UseVarForObjectsTest extends VarBaseTest {
 
             @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
             @Test
-            void genericType() {
+            void classLevelGenericType() {
                 rewriteRun(
                   //language=java
                   java(
@@ -344,11 +377,64 @@ class UseVarForObjectsTest extends VarBaseTest {
                   )
                 );
             }
+
+            @Test
+            void genericMethodWithTypeParameters() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T method() {
+                          return null;
+                        }
+                        void m() {
+                            String strs = new A().<String>method();
+                        }
+                      }
+                      ""","""
+                      package com.example.app;
+
+                      class A {
+                        <T> T method() {
+                          return null;
+                        }
+                        void m() {
+                            var strs = new A().<String>method();
+                        }
+                      }
+                      """
+                  )
+                );
+            }
         }
     }
 
     @Nested
     class NotApplicable {
+
+        @Test
+        void genericMethod() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T, S extends T> S[] method() {
+                      return null;
+                    }
+                    void m() {
+                        String[] strs = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
 
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
         @Test
