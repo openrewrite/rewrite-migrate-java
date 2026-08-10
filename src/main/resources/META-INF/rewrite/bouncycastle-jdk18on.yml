@@ -19,17 +19,26 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
 displayName: Migrate Bouncy Castle to `jdk18on`
 description: >-
-  This recipe will upgrade Bouncy Castle dependencies from `-jdk15on` or `-jdk15to18` to `-jdk18on`.
+  This recipe will upgrade Bouncy Castle dependencies from any of the legacy artifact suffixes
+  `-jdk12`, `-jdk14`, `-jdk15`, `-jdk15+`, `-jdk16`, `-jdk15on` or `-jdk15to18` to `-jdk18on`.
 tags:
   - bouncycastle
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.BouncyCastleDerStringGetInstanceReturnType
+  - org.openrewrite.java.migrate.BouncyCastleSphincsPlusToPqcLegacy
+
   # -jdk15on migration
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
       oldArtifactId: bcprov-jdk15on
       newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk15on
+      newArtifactId: bcprov-ext-jdk18on
       newVersion: latest.release
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
@@ -70,6 +79,11 @@ recipeList:
       newVersion: latest.release
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk15to18
+      newArtifactId: bcprov-ext-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
       oldArtifactId: bcutil-jdk15to18
       newArtifactId: bcutil-jdk18on
       newVersion: latest.release
@@ -98,3 +112,179 @@ recipeList:
       oldArtifactId: bctls-jdk15to18
       newArtifactId: bctls-jdk18on
       newVersion: latest.release
+
+  # -jdk16 migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk16
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk16
+      newArtifactId: bcprov-ext-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcmail-jdk16
+      newArtifactId: bcmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk16
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+
+  # -jdk15+ migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk15+
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcmail-jdk15+
+      newArtifactId: bcmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk15+
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+
+  # -jdk15 migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk15
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk15
+      newArtifactId: bcprov-ext-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcmail-jdk15
+      newArtifactId: bcmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk15
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+
+  # -jdk14 migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk14
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk14
+      newArtifactId: bcprov-ext-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcutil-jdk14
+      newArtifactId: bcutil-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpkix-jdk14
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcmail-jdk14
+      newArtifactId: bcmail-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk14
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctls-jdk14
+      newArtifactId: bctls-jdk18on
+      newVersion: latest.release
+
+  # -jdk12 migration
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-jdk12
+      newArtifactId: bcprov-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bcpg-jdk12
+      newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.BouncyCastleDerStringGetInstanceReturnType
+displayName: Use `ASN1*String` for the result of `DER*String.getInstance(..)`
+description: >-
+  In Bouncy Castle 1.71 the `getInstance(..)` methods on the `DER*String` ASN.1 types were pulled up to their
+  `ASN1*String` supertypes, widening their return type. The call itself still compiles, as static methods are
+  inherited, but assigning the result to a `DER*String` variable or field no longer does. This recipe widens
+  those declared types to the matching `ASN1*String`, which compiles against both the `-jdk15on` and `-jdk18on`
+  artifacts, and can therefore safely be applied ahead of the upgrade.
+tags:
+  - bouncycastle
+recipeList:
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERBMPString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1BMPString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERBitString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1BitString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERGeneralString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1GeneralString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERGraphicString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1GraphicString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERIA5String getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1IA5String
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERNumericString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1NumericString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERPrintableString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1PrintableString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERT61String getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1T61String
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERUTF8String getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1UTF8String
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERUniversalString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1UniversalString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERVideotexString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1VideotexString
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: org.bouncycastle.asn1.DERVisibleString getInstance(..)
+      newReturnType: org.bouncycastle.asn1.ASN1VisibleString
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.BouncyCastleSphincsPlusToPqcLegacy
+displayName: Move Bouncy Castle SPHINCS+ classes to `pqc.legacy`
+description: >-
+  Bouncy Castle 1.78 moved the pre-standardization SPHINCS+ implementation from
+  `org.bouncycastle.pqc.crypto.sphincsplus` to `org.bouncycastle.pqc.legacy.sphincsplus`, to free up the original
+  package for the FIPS 205 SLH-DSA implementation. All types moved unchanged, so this is a straight package rename.
+tags:
+  - bouncycastle
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.bouncycastle.pqc.crypto.sphincsplus
+      newPackageName: org.bouncycastle.pqc.legacy.sphincsplus
+      recursive: false

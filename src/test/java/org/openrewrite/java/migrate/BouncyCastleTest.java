@@ -33,7 +33,23 @@ import static org.openrewrite.maven.Assertions.pomXml;
 class BouncyCastleTest implements RewriteTest {
 
     static List<String> artifactBaseNames() {
-        return List.of("bcprov", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
+        return List.of("bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
+    }
+
+    static List<String> jdk14ArtifactBaseNames() {
+        return List.of("bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls");
+    }
+
+    static List<String> jdk15AndJdk16ArtifactBaseNames() {
+        return List.of("bcprov", "bcprov-ext", "bcmail", "bcpg");
+    }
+
+    static List<String> jdk15PlusArtifactBaseNames() {
+        return List.of("bcprov", "bcmail", "bcpg");
+    }
+
+    static List<String> jdk12ArtifactBaseNames() {
+        return List.of("bcprov", "bcpg");
     }
 
     @DocumentExample
@@ -93,6 +109,7 @@ class BouncyCastleTest implements RewriteTest {
           "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
           artifactBaseName,
           "jdk15on",
+          "1.70",
           "jdk18on"
         );
     }
@@ -105,6 +122,72 @@ class BouncyCastleTest implements RewriteTest {
           "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
           artifactBaseName,
           "jdk15to18",
+          "1.70",
+          "jdk18on"
+        );
+    }
+
+    @MethodSource("jdk14ArtifactBaseNames")
+    @ParameterizedTest
+    void jdk14ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk14",
+          "1.70",
+          "jdk18on"
+        );
+    }
+
+    @MethodSource("jdk15AndJdk16ArtifactBaseNames")
+    @ParameterizedTest
+    void jdk15ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15",
+          "1.46",
+          "jdk18on"
+        );
+    }
+
+    @MethodSource("jdk15PlusArtifactBaseNames")
+    @ParameterizedTest
+    void jdk15PlusToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk15+",
+          "1.46",
+          "jdk18on"
+        );
+    }
+
+    @MethodSource("jdk15AndJdk16ArtifactBaseNames")
+    @ParameterizedTest
+    void jdk16ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk16",
+          "1.46",
+          "jdk18on"
+        );
+    }
+
+    @MethodSource("jdk12ArtifactBaseNames")
+    @ParameterizedTest
+    void jdk12ToJdk18on(String artifactBaseName) {
+        runBouncyCastleArtifactUpgradeRecipe(
+          "/META-INF/rewrite/bouncycastle-jdk18on.yml",
+          "org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On",
+          artifactBaseName,
+          "jdk12",
+          "130",
           "jdk18on"
         );
     }
@@ -117,6 +200,7 @@ class BouncyCastleTest implements RewriteTest {
           "org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18",
           artifactBaseName,
           "jdk15on",
+          "1.70",
           "jdk15to18"
         );
     }
@@ -126,6 +210,7 @@ class BouncyCastleTest implements RewriteTest {
       String recipe,
       String baseArtifactId,
       String originalArtifactSuffix,
+      String originalVersion,
       String expectedArtifactSuffix) {
         rewriteRun(
           recipeSpec -> recipeSpec.recipeFromResource(yamlFile, recipe),
@@ -142,11 +227,11 @@ class BouncyCastleTest implements RewriteTest {
                     <dependency>
                       <groupId>org.bouncycastle</groupId>
                       <artifactId>%s-%s</artifactId>
-                      <version>1.70</version>
+                      <version>%s</version>
                     </dependency>
                   </dependencies>
                 </project>
-                """.formatted(baseArtifactId, originalArtifactSuffix),
+                """.formatted(baseArtifactId, originalArtifactSuffix, originalVersion),
               spec -> spec
                 .after(identity())
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)

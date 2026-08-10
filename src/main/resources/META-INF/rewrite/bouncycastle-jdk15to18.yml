@@ -34,6 +34,11 @@ recipeList:
       newVersion: latest.release
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.bouncycastle
+      oldArtifactId: bcprov-ext-jdk15on
+      newArtifactId: bcprov-ext-jdk15to18
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
       oldArtifactId: bcutil-jdk15on
       newArtifactId: bcutil-jdk15to18
       newVersion: latest.release
