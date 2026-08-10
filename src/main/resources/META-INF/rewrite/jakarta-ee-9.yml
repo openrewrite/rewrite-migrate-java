@@ -293,6 +293,12 @@ recipeList:
       version: 3.0.x
       onlyIfUsing: javax.validation..*
       acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      version: 3.0.x
+      onlyIfUsing: com.sun.istack.NotNull
+      acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.validation
       newPackageName: jakarta.validation
