@@ -17,13 +17,11 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.List;
 
 import static java.util.function.UnaryOperator.identity;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,26 +29,6 @@ import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleTest implements RewriteTest {
-
-    static List<String> artifactBaseNames() {
-        return List.of("bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls");
-    }
-
-    static List<String> jdk14ArtifactBaseNames() {
-        return List.of("bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls");
-    }
-
-    static List<String> jdk15AndJdk16ArtifactBaseNames() {
-        return List.of("bcprov", "bcprov-ext", "bcmail", "bcpg");
-    }
-
-    static List<String> jdk15PlusArtifactBaseNames() {
-        return List.of("bcprov", "bcmail", "bcpg");
-    }
-
-    static List<String> jdk12ArtifactBaseNames() {
-        return List.of("bcprov", "bcpg");
-    }
 
     @DocumentExample
     @Test
@@ -101,7 +79,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("artifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
     void jdk15onToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -114,7 +92,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("artifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
     void jdk15to18ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -127,7 +105,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("jdk14ArtifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls"})
     @ParameterizedTest
     void jdk14ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -140,7 +118,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("jdk15AndJdk16ArtifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
     void jdk15ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -153,7 +131,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("jdk15PlusArtifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcmail", "bcpg"})
     @ParameterizedTest
     void jdk15PlusToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -166,7 +144,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("jdk15AndJdk16ArtifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
     void jdk16ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -179,7 +157,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("jdk12ArtifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcpg"})
     @ParameterizedTest
     void jdk12ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
@@ -192,7 +170,7 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @MethodSource("artifactBaseNames")
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
     void jdk15onToJdk15To18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
