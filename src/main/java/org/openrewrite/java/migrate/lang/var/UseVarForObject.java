@@ -56,13 +56,13 @@ public class UseVarForObject extends Recipe {
                 return vd;
             }
 
-            boolean isPrimitive = DeclarationCheck.isPrimitive(vd);
-            boolean usesGenerics = DeclarationCheck.useGenerics(vd);
-            boolean usesTernary = DeclarationCheck.initializedByTernary(vd);
             Expression initializer = vd.getVariables().get(0).getInitializer();
-            boolean usesArrayInitializer = initializer instanceof J.NewArray;
-            boolean initializedByStaticMethod = DeclarationCheck.initializedByStaticMethod(initializer);
-            if (isPrimitive || usesGenerics || usesTernary || usesArrayInitializer || initializedByStaticMethod) {
+            if (DeclarationCheck.isPrimitive(vd) ||
+                    DeclarationCheck.useGenerics(vd) ||
+                    DeclarationCheck.initializedByTernary(vd) ||
+                    initializer instanceof J.NewArray ||
+                    DeclarationCheck.initializedByStaticMethod(initializer) ||
+                    DeclarationCheck.initializedByUnresolvableGenericMethod(initializer)) {
                 return vd;
             }
 

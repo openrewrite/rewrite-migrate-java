@@ -23,11 +23,14 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.newSetFromMap;
 import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
 import static org.openrewrite.Tree.randomId;
@@ -216,23 +219,108 @@ final class DeclarationCheck {
      * @return true iff is initialized by static method
      */
     public static boolean initializedByStaticMethod(@Nullable Expression initializer) {
-        if (initializer == null) {
+        J.MethodInvocation invocation = getMethodInvocation(initializer);
+        if (invocation == null || invocation.getMethodType() == null) {
             return false;
+        }
+        return invocation.getMethodType().hasFlags(Flag.Static);
+    }
+
+    /**
+     * Checks whether the initializer {@linkplain Expression} is a {@linkplain J.MethodInvocation} of a generic method
+     * whose type parameter is only inferable from the declared type, as in {@code <T> T getArgument(int index)}.
+     *
+     * @param initializer {@linkplain J.VariableDeclarations.NamedVariable#getInitializer()} value
+     * @return true iff is initialized by a generic method that needs the declared type to infer its return type
+     */
+    public static boolean initializedByUnresolvableGenericMethod(@Nullable Expression initializer) {
+        J.MethodInvocation invocation = getMethodInvocation(initializer);
+        return invocation != null && isUnresolvableGenericMethod(invocation);
+    }
+
+    private static J.@Nullable MethodInvocation getMethodInvocation(@Nullable Expression initializer) {
+        if (initializer == null) {
+            return null;
         }
         initializer = initializer.unwrap();
 
         if (!(initializer instanceof J.MethodInvocation)) {
-            // no MethodInvocation -> false
-            return false;
+            return null;
         }
 
-        J.MethodInvocation invocation = (J.MethodInvocation) initializer;
-        if (invocation.getMethodType() == null) {
-            // not a static method -> false
+        return (J.MethodInvocation) initializer;
+    }
+
+    private static boolean isUnresolvableGenericMethod(J.MethodInvocation mi) {
+        JavaType.Method mt = mi.getMethodType();
+        if (mt == null || mi.getTypeParameters() != null) {
             return false;
         }
+        // The invocation's types are already resolved against the declared type, so the declaration is consulted instead
+        return declaresUninferableReturnType(mt.getDeclaringType(), mt.getName(), mt.getParameterTypes().size(), newIdentitySet());
+    }
 
-        return invocation.getMethodType().hasFlags(Flag.Static);
+    private static boolean declaresUninferableReturnType(JavaType.@Nullable FullyQualified clazz, String name, int arity, Set<JavaType> seen) {
+        if (clazz == null || !seen.add(clazz)) {
+            return false;
+        }
+        for (JavaType.Method method : clazz.getMethods()) {
+            if (name.equals(method.getName()) && method.getParameterTypes().size() == arity && returnsUninferableTypeParameter(method)) {
+                return true;
+            }
+        }
+        if (declaresUninferableReturnType(clazz.getSupertype(), name, arity, seen)) {
+            return true;
+        }
+        for (JavaType.FullyQualified anInterface : clazz.getInterfaces()) {
+            if (declaresUninferableReturnType(anInterface, name, arity, seen)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean returnsUninferableTypeParameter(JavaType.Method method) {
+        for (String typeParameterName : method.getDeclaredFormalTypeNames()) {
+            if (mentions(method.getReturnType(), typeParameterName, newIdentitySet()) &&
+                    !mentionsAny(method.getParameterTypes(), typeParameterName, newIdentitySet())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean mentions(JavaType type, String typeParameterName, Set<JavaType> seen) {
+        if (!seen.add(type)) {
+            return false;
+        }
+        if (type instanceof JavaType.GenericTypeVariable) {
+            JavaType.GenericTypeVariable generic = (JavaType.GenericTypeVariable) type;
+            if (typeParameterName.equals(generic.getName())) {
+                return true;
+            }
+            return mentionsAny(generic.getBounds(), typeParameterName, seen);
+        }
+        if (type instanceof JavaType.Array) {
+            return mentions(((JavaType.Array) type).getElemType(), typeParameterName, seen);
+        }
+        if (type instanceof JavaType.Parameterized) {
+            return mentionsAny(((JavaType.Parameterized) type).getTypeParameters(), typeParameterName, seen);
+        }
+        return false;
+    }
+
+    private static boolean mentionsAny(List<JavaType> types, String typeParameterName, Set<JavaType> seen) {
+        for (JavaType type : types) {
+            if (mentions(type, typeParameterName, seen)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Set<JavaType> newIdentitySet() {
+        return newSetFromMap(new IdentityHashMap<>());
     }
 
     /**
