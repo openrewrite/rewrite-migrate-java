@@ -21,6 +21,7 @@ displayName: Migrate Bouncy Castle to `jdk18on`
 description: >-
   This recipe will upgrade Bouncy Castle dependencies from any of the legacy artifact suffixes
   `-jdk12`, `-jdk14`, `-jdk15`, `-jdk15+`, `-jdk16`, `-jdk15on` or `-jdk15to18` to `-jdk18on`.
+  The `bctsp` artifacts map onto `bcpkix`, which absorbed the time stamp protocol support in 1.47.
 tags:
   - bouncycastle
 preconditions:
@@ -221,6 +222,33 @@ recipeList:
       oldGroupId: org.bouncycastle
       oldArtifactId: bcpg-jdk12
       newArtifactId: bcpg-jdk18on
+      newVersion: latest.release
+
+  # bctsp migration; folded into bcpkix in 1.47
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctsp-jdk15on
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctsp-jdk16
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctsp-jdk15+
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctsp-jdk15
+      newArtifactId: bcpkix-jdk18on
+      newVersion: latest.release
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.bouncycastle
+      oldArtifactId: bctsp-jdk14
+      newArtifactId: bcpkix-jdk18on
       newVersion: latest.release
 
 ---
