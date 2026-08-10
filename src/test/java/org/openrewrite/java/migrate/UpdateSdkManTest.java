@@ -18,7 +18,16 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.test.RewriteTest;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.test.SourceSpecs.text;
@@ -26,18 +35,36 @@ import static org.openrewrite.test.SourceSpecs.text;
 
 class UpdateSdkManTest implements RewriteTest {
 
+    /**
+     * The nightly SDKMAN! candidates refresh drops patch versions as new ones appear, so tests that need an exact
+     * version read a currently available one from the same candidate list the recipe resolves against.
+     */
+    private static String latestPatchVersion(String majorVersion, String distribution) {
+        Pattern pattern = Pattern.compile("^" + majorVersion + "\\.\\d+\\.\\d+-" + distribution + "$");
+        try (InputStream candidates = UpdateSdkMan.class.getResourceAsStream("/sdkman-java.csv");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(candidates, StandardCharsets.UTF_8))) {
+            return reader.lines()
+              .filter(candidate -> pattern.matcher(candidate).matches())
+              .max(new LatestRelease("-" + distribution))
+              .map(candidate -> candidate.substring(0, candidate.length() - distribution.length() - 1))
+              .orElseThrow(() -> new IllegalStateException(
+                String.format("No %s candidate for Java %s in sdkman-java.csv", distribution, majorVersion)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     @DocumentExample
     @Test
     void updateVersionExact() {
+        String version = latestPatchVersion("17", "tem");
         rewriteRun(
-          spec -> spec.recipe(new UpdateSdkMan("17.0.19", null)),
+          spec -> spec.recipe(new UpdateSdkMan(version, null)),
           text(
             """
               java=11.1.2-tem
               """,
-            """
-              java=17.0.19-tem
-              """,
+            "java=" + version + "-tem\n",
             spec -> spec.path(".sdkmanrc")
           )
         );
@@ -59,15 +86,12 @@ class UpdateSdkManTest implements RewriteTest {
 
     @Test
     void updateDistributionOnly() {
+        String version = latestPatchVersion("11", "amzn");
         rewriteRun(
           spec -> spec.recipe(new UpdateSdkMan(null, "amzn")),
           text(
-            """
-              java=11.0.31-zulu
-              """,
-            """
-              java=11.0.31-amzn
-              """,
+            "java=" + version + "-zulu\n",
+            "java=" + version + "-amzn\n",
             spec -> spec.path(".sdkmanrc")
           )
         );
