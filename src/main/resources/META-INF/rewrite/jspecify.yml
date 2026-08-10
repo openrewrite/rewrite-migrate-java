@@ -25,6 +25,15 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
 - org.openrewrite.java.jspecify.MigrateToJSpecify
+# The static analysis recipes below introduce `org.jspecify.annotations.*`, and the Spring
+# migration leaf is deliberately disabled in MigrateToJSpecify, so Spring projects still need
+# the JSpecify dependency.
+- org.openrewrite.java.dependencies.AddDependency:
+    groupId: org.jspecify
+    artifactId: jspecify
+    version: 1.0.0
+    onlyIfUsing: org.springframework.lang.*ull*
+    acceptTransitive: true
 - org.openrewrite.staticanalysis.AnnotateNullableMethods
 - org.openrewrite.staticanalysis.AnnotateNullableParameters
 - org.openrewrite.staticanalysis.AnnotateRequiredParameters
@@ -149,7 +158,7 @@ recipeList:
       groupId: org.jspecify
       artifactId: jspecify
       version: 1.0.0
-      onlyIfUsing: org.springframework.lang.*ull*
+      onlyIfUsing: io.micrometer.core.lang.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: io.micrometer.core.lang.*ull*
