@@ -100,31 +100,8 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
     @Test
     void sunIstackNotNullToJakartaValidation() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
-            //language=java
-            """
-              package com.sun.istack;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.CLASS)
-              @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-              public @interface NotNull {
-              }
-              """,
-            //language=java
-            """
-              package jakarta.validation.constraints;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.RUNTIME)
-              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-              public @interface NotNull {
-                  String message() default "{jakarta.validation.constraints.NotNull.message}";
-                  Class<?>[] groups() default {};
-                  Class<?>[] payload() default {};
-              }
-              """
-          )),
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "istack-commons-runtime-4.1.2", "jakarta.validation-api-3.0.2")),
           //language=java
           java(
             """
@@ -158,31 +135,8 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
     @Test
     void addsJakartaValidationApiDependencyWhenSunIstackNotNullUsed() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
-            //language=java
-            """
-              package com.sun.istack;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.CLASS)
-              @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-              public @interface NotNull {
-              }
-              """,
-            //language=java
-            """
-              package jakarta.validation.constraints;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.RUNTIME)
-              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-              public @interface NotNull {
-                  String message() default "{jakarta.validation.constraints.NotNull.message}";
-                  Class<?>[] groups() default {};
-                  Class<?>[] payload() default {};
-              }
-              """
-          )),
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "istack-commons-runtime-4.1.2", "jakarta.validation-api-3.0.2")),
           mavenProject(
             "Sample",
             srcMainJava(
