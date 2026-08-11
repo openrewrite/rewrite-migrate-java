@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -96,44 +95,8 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/moderneinc/customer-requests/issues/1526")
     @Test
-    void sunIstackNotNullToJakartaValidation() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "istack-commons-runtime-4.1.2", "jakarta.validation-api-3.0.2")),
-          //language=java
-          java(
-            """
-              import com.sun.istack.NotNull;
-
-              public class Example {
-                  @NotNull
-                  private String name;
-
-                  public void setName(@NotNull String name) {
-                      this.name = name;
-                  }
-              }
-              """,
-            """
-              import jakarta.validation.constraints.NotNull;
-
-              public class Example {
-                  @NotNull
-                  private String name;
-
-                  public void setName(@NotNull String name) {
-                      this.name = name;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void addsJakartaValidationApiDependencyWhenSunIstackNotNullUsed() {
+    void sunIstackNotNullToJakartaValidationAddsDependency() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(), "istack-commons-runtime-4.1.2", "jakarta.validation-api-3.0.2")),
@@ -144,17 +107,26 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
               java(
                 """
                   import com.sun.istack.NotNull;
-                  public class TestApplication {
+
+                  public class Example {
                       @NotNull
                       private String name;
+
+                      public void setName(@NotNull String name) {
+                          this.name = name;
+                      }
                   }
                   """,
                 """
                   import jakarta.validation.constraints.NotNull;
 
-                  public class TestApplication {
+                  public class Example {
                       @NotNull
                       private String name;
+
+                      public void setName(@NotNull String name) {
+                          this.name = name;
+                      }
                   }
                   """
               )
@@ -169,14 +141,21 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
                     <version>0.0.1-SNAPSHOT</version>
                 </project>
                 """,
-              spec -> spec.after(pom -> {
-                  return assertThat(pom)
-                          .containsPattern(
-                                  """
-                                  <groupId>jakarta\\.validation</groupId>\\s*\
-                                  <artifactId>jakarta\\.validation-api</artifactId>\\s*\
-                                  <version>3\\.0\\.\\d+</version>""").actual();
-              })
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.validation</groupId>
+                            <artifactId>jakarta.validation-api</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
             )
           )
         );
