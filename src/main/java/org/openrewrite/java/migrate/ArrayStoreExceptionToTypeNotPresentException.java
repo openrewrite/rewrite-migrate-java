@@ -58,21 +58,17 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
             "java.lang.RuntimeException", "java.lang.Exception", "java.lang.Throwable"));
 
     /**
-     * The supertypes of {@code RuntimeException}, a closed set because {@code java.lang} can not be extended.
-     * A position declared with one of these types accepts every {@code RuntimeException}, so it keeps compiling
-     * and keeps accepting the same values when the catch parameter's type widens from
-     * {@code ArrayStoreException} to {@code RuntimeException}. Unresolved types are not in the set, so they
-     * conservatively block the widening.
+     * The supertypes of {@code RuntimeException}, a closed set since {@code java.lang} cannot be extended. A
+     * position declared with one of these accepts every {@code RuntimeException}, so it survives the widening.
+     * Unresolved types are absent and so block it.
      */
     private static final Set<String> SUPERTYPES_OF_RUNTIME_EXCEPTION = new HashSet<>(asList(
             "java.lang.RuntimeException", "java.lang.Exception", "java.lang.Throwable",
             "java.lang.Object", "java.io.Serializable"));
 
     /**
-     * Types that accept any {@code Class} value regardless of its type argument: raw {@code Class} itself, and
-     * the supertypes of {@code Class} a value is realistically declared with. Any supertype not listed here,
-     * such as {@code java.lang.constant.Constable} (Java 12+), conservatively blocks the widening, as do
-     * unresolved types.
+     * Types accepting any {@code Class} whatever its type argument. Anything unlisted, such as
+     * {@code java.lang.constant.Constable} (Java 12+), blocks the widening, as do unresolved types.
      */
     private static final Set<String> ACCEPTS_ANY_CLASS = new HashSet<>(asList(
             "java.lang.Class", "java.lang.Object", "java.io.Serializable",
@@ -86,25 +82,21 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
             "The `ArrayStoreException` is retained as the protected code can still throw it for reasons unrelated to annotations.";
 
     /**
-     * Where the sources declare their own class named {@code TypeNotPresentException}, the spliced simple name
-     * would resolve to it instead of to {@code java.lang.TypeNotPresentException}, either failing to compile or,
-     * worse, silently catching the wrong type. The scanner records where such classes are declared so the
-     * visitor can emit the fully qualified name at the affected sites.
-     * <p>
-     * The declarations are scoped per {@link JavaProject} marker: only a declaration in the same module can
-     * shadow the simple name at compile time, so one module's {@code TypeNotPresentException} does not qualify
-     * the name in the other modules of a multi-module repository. Sources without the marker share one scope.
+     * Where the sources declare their own {@code TypeNotPresentException}, the spliced simple name would resolve
+     * to it instead, either failing to compile or silently catching the wrong type, so the scanner records those
+     * declarations and the visitor qualifies the name there. Scoped per {@link JavaProject} marker, since only a
+     * same-module declaration can shadow; unmarked sources share one scope.
      */
     public static class Accumulator {
         /**
-         * Per project, the packages declaring a top-level class named {@code TypeNotPresentException},
-         * {@code ""} for the default package.
+         * Per project, the packages declaring a top-level {@code TypeNotPresentException}, {@code ""} for the
+         * default package.
          */
         private final Map<@Nullable JavaProject, Set<String>> packagesByProject = new HashMap<>();
 
         /**
-         * Per project, the classes declaring a nested class named {@code TypeNotPresentException}, which
-         * shadows through inheritance and through on-demand imports.
+         * Per project, the classes declaring a nested {@code TypeNotPresentException}, which shadows through
+         * inheritance and on-demand imports.
          */
         private final Map<@Nullable JavaProject, Set<String>> classesByProject = new HashMap<>();
 
@@ -180,10 +172,9 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Only the resources and the body of a try are protected by its catches. A call in a catch or in the finally
-     * block runs outside that region, and so do the method bodies of a lambda, anonymous class or local class
-     * created inside the try. The instance initializers of such a class do run inside the protected region, but
-     * are left out as well; that only costs a migration that is not applied.
+     * Only a try's resources and body are protected by its catches. A catch or finally block runs outside that
+     * region, as do the method bodies of a lambda or class created inside it. Such a class's instance
+     * initializers do run inside, but are left out too, which only costs a migration that is not applied.
      */
     private static boolean protectedRegionCallsGetAnnotation(J.Try try_) {
         AtomicBoolean found = new AtomicBoolean(false);
@@ -210,9 +201,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
             @Override
             public J.NewClass visitNewClass(J.NewClass newClass, AtomicBoolean found) {
                 if (newClass.getBody() != null) {
-                    // Constructor arguments are evaluated here, and so are the anonymous class's instance
-                    // initializers; only its method bodies are deferred. The whole body is left out anyway,
-                    // which only costs a migration that is not applied
+                    // Constructor arguments and instance initializers are evaluated here, only method bodies are
+                    // deferred; the whole body is left out anyway, costing only a migration that is not applied
                     for (Expression argument : newClass.getArguments()) {
                         visit(argument, found);
                     }
@@ -247,13 +237,10 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * A catch of an enclosing try whose protected region contains this try is reached by every
-     * {@code TypeNotPresentException} this try does not catch. Widening a catch here would intercept those
-     * exceptions before the enclosing handler sees them, silently rerouting them, so any enclosing try that
-     * concerns itself with {@code TypeNotPresentException} blocks the widening. Only enclosing tries whose
-     * body or resources contain this try count: from a catch or finally block the enclosing catches are no
-     * longer reachable. The walk deliberately does not stop at lambda or class boundaries, whose bodies may
-     * run inside the enclosing protected region; that errs towards not widening.
+     * An enclosing try whose protected region contains this one sees every {@code TypeNotPresentException} this
+     * try does not catch, so widening here would silently reroute them and any such enclosing try blocks it.
+     * Only enclosing tries containing this one in their body or resources count. The walk does not stop at
+     * lambda or class boundaries, whose bodies may run inside the enclosing region, erring towards not widening.
      */
     private static boolean anyEnclosingCatchConcernsTypeNotPresentException(Cursor tryCursor) {
         J child = tryCursor.getValue();
@@ -275,8 +262,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * A catch of a supertype of {@code TypeNotPresentException} already handles it, and a catch of
-     * {@code TypeNotPresentException} itself or of a subclass would become unreachable if it were added elsewhere.
+     * A supertype catch already handles it, and a catch of it or a subclass would become unreachable.
      */
     private static boolean concernsTypeNotPresentException(@Nullable JavaType type) {
         JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(type);
@@ -286,12 +272,10 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Per JLS 14.20 a multi-catch parameter is implicitly final and its type is the least upper bound of the
-     * alternatives, here {@code RuntimeException}. Widening therefore breaks any handler that assigns to the
-     * parameter or uses it where the narrower {@code ArrayStoreException} type is required. Rather than
-     * enumerating the ways a handler can depend on the narrower type, every reference to the parameter must
-     * occur in a context that provably tolerates the wider type; any reference in an unrecognized context
-     * means the catch is left untouched.
+     * Per JLS 14.20 a multi-catch parameter is implicitly final and typed as the least upper bound of the
+     * alternatives, here {@code RuntimeException}. Rather than enumerate the ways a handler can depend on the
+     * narrower type, every reference must sit in a context that provably tolerates the wider one; anything
+     * unrecognized leaves the catch untouched.
      */
     private static boolean allParameterReferencesSurviveWidening(J.Try.Catch catch_, Cursor tryCursor) {
         List<J.VariableDeclarations.NamedVariable> variables = catch_.getParameter().getTree().getVariables();
@@ -315,9 +299,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether this identifier is a use of the catch parameter. Identifiers that are provably something else, a
-     * method or member name, a declaration or a label, are skipped. When variable attribution is missing the
-     * identifier can not be told apart from the parameter, so it is conservatively treated as a use.
+     * Whether this identifier uses the catch parameter. Provably-something-else identifiers, such as method or
+     * member names, declarations and labels, are skipped; an unattributed one counts as a use.
      */
     private static boolean referencesParameter(J.Identifier identifier, Cursor cursor, String parameterName,
                                                JavaType.@Nullable Variable parameterType) {
@@ -342,10 +325,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether an expression whose static type the widening changes from {@code ArrayStoreException} to
-     * {@code RuntimeException} keeps compiling, and keeps the same meaning, in its enclosing context. This is
-     * an allow-list: only contexts that provably tolerate the wider type are accepted, everything else fails
-     * safe. In particular an expression-bodied lambda, a switch, or any unforeseen context blocks the widening.
+     * Whether an expression the widening retypes keeps compiling, and keeps its meaning, in its context. An
+     * allow list: an expression-bodied lambda, a switch, or anything unforeseen blocks the widening.
      */
     private static boolean widenedReferenceIsSafe(Cursor cursor) {
         J expression = cursor.getValue();
@@ -363,25 +344,22 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
         }
         if (parent instanceof J.Binary || parent instanceof J.InstanceOf || parent instanceof J.Throw ||
                 parent instanceof J.Assert) {
-            // The reference operations valid on an ArrayStoreException, string concatenation, == and !=,
-            // a type test, throwing (RuntimeException is unchecked) and an assert message, all remain valid
-            // and unchanged in behavior for the values the original handler could receive
+            // Concatenation, `==`/`!=`, a type test, throwing (`RuntimeException` is unchecked) and an assert
+            // message all stay valid and unchanged for the values the original handler could receive
             return true;
         }
         if (parent instanceof J.AssignmentOperation) {
-            // Of the compound assignments only String's += compiles with an exception operand, and
-            // concatenation tolerates any RuntimeException; the parameter as the assigned variable fails safe
+            // Only `String +=` compiles with an exception operand, and concatenation tolerates any
+            // `RuntimeException`; the parameter as the assigned variable fails safe
             return expression == ((J.AssignmentOperation) parent).getAssignment();
         }
         if (parent instanceof J.ControlParentheses) {
-            // Of the statements that parenthesize a bare expression, only a synchronized monitor keeps its
-            // meaning with a widened operand, any object being a valid monitor; a pattern switch selector
-            // is deliberately excluded
+            // Of the statements parenthesizing a bare expression only a synchronized monitor keeps its meaning,
+            // any object being a valid monitor; a pattern switch selector is deliberately excluded
             return parentCursor.getParentTreeCursor().getValue() instanceof J.Synchronized;
         }
         if (parent instanceof J.TypeCast) {
-            // The cast's own type does not change, but a cast to a type narrower than RuntimeException would
-            // throw ClassCastException for the TypeNotPresentException values the widened handler receives
+            // The cast's own type is unchanged, but one narrower than `RuntimeException` would now throw
             return expression == ((J.TypeCast) parent).getExpression() &&
                     acceptsAnyRuntimeException(((J.TypeCast) parent).getType());
         }
@@ -400,8 +378,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
             return argumentIndex >= 0 && argumentRemainsCompatible(((J.NewClass) parent).getMethodType(), argumentIndex, parentCursor);
         }
         if (parent instanceof J.MemberReference) {
-            // The reference's result type would have to be checked against the functional interface's method,
-            // which is not reliably recoverable here, so a receiver-dependent result fails safe
+            // Checking the result against the functional interface's method is not reliable here, so a
+            // receiver-dependent result fails safe
             J.MemberReference reference = (J.MemberReference) parent;
             return expression == reference.getContaining() &&
                     invokedMethodRemainsAvailable(reference.getMethodType()) &&
@@ -434,11 +412,9 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * A parent that holds the expression as a statement discards its value, so the expression keeps compiling
-     * no matter how its type widens. Only reachable by recursion, since a bare identifier is not a statement.
-     * The unbraced forms, {@code if (flag) Objects.requireNonNull(e);}, discard the value exactly like a
-     * block does. A switch's arrow case is deliberately absent: there the expression may be the switch's own
-     * value.
+     * A parent holding the expression as a statement discards its value, so it compiles however its type
+     * widens. Unbraced forms discard it exactly as a block does. A switch's arrow case is deliberately absent,
+     * since there the expression may be the switch's own value.
      */
     private static boolean isStatementPosition(J parent) {
         return parent instanceof J.Block || parent instanceof J.If || parent instanceof J.If.Else ||
@@ -447,23 +423,19 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * A method resolved against the parameter's receiver remains available when its declaring type is a
-     * supertype of {@code RuntimeException}; {@code ArrayStoreException} declares no methods of its own, so
-     * this holds for every resolvable call, and an unresolved one blocks the widening.
+     * A method stays available when its declaring type is a supertype of {@code RuntimeException}, which holds
+     * for every resolvable call since {@code ArrayStoreException} declares none of its own.
      */
     private static boolean invokedMethodRemainsAvailable(JavaType.@Nullable Method methodType) {
         return methodType != null && acceptsAnyRuntimeException(methodType.getDeclaringType());
     }
 
     /**
-     * Whether the invocation's own result type widens along with its receiver. Per JLS 4.3.2 the type of
-     * {@code e.getClass()} is {@code Class<? extends |E|>} where |E| is the erasure of the receiver's STATIC
-     * type, so widening the receiver silently changes the result from
-     * {@code Class<? extends ArrayStoreException>} to {@code Class<? extends RuntimeException>}.
-     * {@code getClass()} is the only receiver-polymorphic member in {@code java.lang} and the parser
-     * attributes it with its declared signature, so it is recognized by name and arity; a resolved signature
-     * that mentions {@code ArrayStoreException} or a type variable is treated the same way, which also covers
-     * a future member whose site-specific attribution exposes the dependence.
+     * Whether the invocation's result type widens with its receiver. Per JLS 4.3.2 {@code e.getClass()} is
+     * {@code Class<? extends |E|>} over the receiver's *static* type, so widening it silently changes the
+     * result. {@code getClass()} is the only receiver-polymorphic member in {@code java.lang} and is
+     * recognized by name and arity; a signature mentioning {@code ArrayStoreException} or a type variable
+     * counts too, covering any future member whose attribution exposes the same dependence.
      */
     private static boolean resultTypeDependsOnReceiverType(JavaType.Method methodType) {
         return "getClass".equals(methodType.getName()) && methodType.getParameterTypes().isEmpty() ||
@@ -471,10 +443,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether the context of an invocation whose result type widens from
-     * {@code Class<? extends ArrayStoreException>} to {@code Class<? extends RuntimeException>} tolerates the
-     * wider result. Mirrors {@link #widenedReferenceIsSafe} with the acceptance test adjusted to the class
-     * type; everything unrecognized fails safe.
+     * Whether the context tolerates a result widened to {@code Class<? extends RuntimeException>}. Mirrors
+     * {@link #widenedReferenceIsSafe} with the acceptance test adjusted to the class type.
      */
     private static boolean widenedResultIsSafe(Cursor cursor) {
         J expression = cursor.getValue();
@@ -489,9 +459,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
                     widenedResultIsSafe(parentCursor);
         }
         if (parent instanceof J.Binary) {
-            // Widening the wildcard's bound never breaks string concatenation, and it never removes the
-            // cast-compatibility that == and != require: every type castable to Class<? extends
-            // ArrayStoreException> is also castable to Class<? extends RuntimeException>
+            // Widening the wildcard's bound breaks neither concatenation nor the cast-compatibility `==` and
+            // `!=` require, every such type staying castable
             J.Binary.Type operator = ((J.Binary) parent).getOperator();
             return operator == J.Binary.Type.Addition || operator == J.Binary.Type.Equal ||
                     operator == J.Binary.Type.NotEqual;
@@ -499,9 +468,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
         if (parent instanceof J.MethodInvocation) {
             J.MethodInvocation invocation = (J.MethodInvocation) parent;
             if (expression == invocation.getSelect()) {
-                // A chained call is a member of Class, so it stays available; it remains valid exactly when
-                // nothing in its resolved signature involves the receiver's type argument, as with getName().
-                // A signature that does, as with cast() or getDeclaredConstructor(), fails safe
+                // A chained call is a member of `Class` and so stays available, valid exactly when its resolved
+                // signature avoids the receiver's type argument; `cast()` and the like fail safe
                 JavaType.Method methodType = invocation.getMethodType();
                 if (methodType == null || involvesReceiverTypeArgument(methodType.getReturnType(), newIdentitySet())) {
                     return false;
@@ -536,8 +504,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether the type mentions {@code ArrayStoreException}, a type variable, a wildcard or an unresolved
-     * type anywhere in its structure, in which case it can not be relied on to survive the widening.
+     * Whether the type mentions {@code ArrayStoreException}, a type variable, a wildcard or an unresolved type
+     * anywhere, in which case it cannot be relied on to survive the widening.
      */
     private static boolean involvesReceiverTypeArgument(@Nullable JavaType type, Set<JavaType> visited) {
         if (type == null || type instanceof JavaType.Unknown) {
@@ -572,9 +540,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether a position declared with this type accepts a {@code Class<? extends RuntimeException>}: raw
-     * {@code Class} or a supertype of it, {@code Class<?>}, or {@code Class} of a covariant wildcard whose
-     * every bound accepts any {@code RuntimeException}.
+     * Whether a position of this type accepts a {@code Class<? extends RuntimeException>}: raw {@code Class} or
+     * a supertype, {@code Class<?>}, or a covariant wildcard whose bounds all accept any {@code RuntimeException}.
      */
     private static boolean acceptsWidenedClassResult(@Nullable JavaType type) {
         if (type instanceof JavaType.Parameterized) {
@@ -607,8 +574,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * The return type of the method declaration enclosing this return statement, or null from a lambda, whose
-     * functional interface's return type is not reliably recoverable here.
+     * The enclosing method declaration's return type, or null from a lambda, whose functional interface's
+     * return type is not reliably recoverable here.
      */
     private static @Nullable JavaType enclosingMethodReturnType(Cursor returnCursor) {
         for (Cursor cursor = returnCursor.getParent(); cursor != null; cursor = cursor.getParent()) {
@@ -656,13 +623,11 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * The resolved method type reports the inferred argument type: {@code Objects.requireNonNull(e)} reports
-     * its parameter as {@code ArrayStoreException} although the declaration is {@code <T> T requireNonNull(T)}
-     * and would simply re-infer {@code T = RuntimeException} after the widening. Consult the declaration:
-     * widening is safe when the parameter is a type variable of the method itself (a class type variable is
-     * fixed by the receiver and can not re-infer), every bound accepts any {@code RuntimeException}, no other
-     * parameter constrains the same variable, and a result whose type mentions the variable is itself only
-     * used where the widened type is acceptable.
+     * The resolved method type reports the *inferred* argument type, so {@code Objects.requireNonNull(e)} looks
+     * like it takes an {@code ArrayStoreException} although {@code <T> T requireNonNull(T)} would simply
+     * re-infer. Consult the declaration instead: safe when the parameter is a type variable of the method
+     * itself (a class variable is fixed by the receiver), its bounds all accept any {@code RuntimeException},
+     * no other parameter constrains it, and a result mentioning it is itself used safely.
      */
     private static boolean inferredTypeParameterAcceptsWidening(JavaType.Method methodType, int argumentIndex,
                                                                 Cursor invocationCursor) {
@@ -703,8 +668,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * The single declaration matching the resolved method by name and arity, or null when it can not be
-     * identified unambiguously.
+     * The single declaration matching the resolved method by name and arity, or null when ambiguous.
      */
     private static JavaType.@Nullable Method declaredMethod(JavaType.Method methodType) {
         JavaType.Method declared = null;
@@ -721,9 +685,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether the declaring class or one of its owning classes declares a type variable of this name. A method
-     * reusing such a name declares its own variable, so this errs towards attributing the variable to the
-     * class, which only blocks a widening that may have been safe.
+     * Whether the declaring class or an owner declares a type variable of this name. A method reusing the name
+     * declares its own, so this errs towards the class and only blocks a widening that may have been safe.
      */
     private static boolean declaredByClass(String typeVariableName, JavaType.@Nullable FullyQualified declaringType) {
         for (JavaType.FullyQualified type = declaringType; type != null; type = type.getOwningClass()) {
@@ -779,15 +742,11 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * Whether the simple name {@code TypeNotPresentException} at this try would resolve to anything other
-     * than {@code java.lang.TypeNotPresentException}: a class or type parameter of that name declared in this
-     * file, a single-type import of another such class, a top-level class of that name in this file's package
-     * or reachable through an on-demand import, a nested class of that name inherited from a supertype of an
-     * enclosing class, or any other such type already referenced in this file. A shadowing class that exists
-     * only as a compiled dependency, never as a source in this run and never referenced in this file, is not
-     * visible here; the simple name is emitted for it. A class declared in a different {@link JavaProject} is
-     * treated the same way: it can only shadow here by being on this module's compile classpath, which the
-     * markers do not reveal, so it is handled like any other compiled dependency.
+     * Whether the simple name would resolve to anything but {@code java.lang.TypeNotPresentException}: a class
+     * or type parameter of that name in this file, a single-type import, a top-level class in this package or
+     * reachable through an on-demand import, a nested class inherited from an enclosing class's supertype, or
+     * any such type already referenced here. A shadowing class visible only as a compiled dependency, or
+     * declared in another {@link JavaProject}, cannot be seen from here, so the simple name is emitted for it.
      */
     private static boolean typeNotPresentExceptionSimpleNameIsShadowed(J.CompilationUnit cu, Cursor tryCursor,
                                                                        Accumulator acc, @Nullable JavaProject project) {
@@ -834,8 +793,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * The {@link JavaProject} marker of this source file, or null where the build did not attach one, as in a
-     * single-module parse; every unmarked source then shares the null scope.
+     * The {@link JavaProject} marker of this source file, or null where the build attached none, as in a
+     * single-module parse; unmarked sources share the null scope.
      */
     private static @Nullable JavaProject javaProject(@Nullable JavaSourceFile sourceFile) {
         return sourceFile == null ? null : sourceFile.getMarkers().findFirst(JavaProject.class).orElse(null);
@@ -907,11 +866,9 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     }
 
     /**
-     * The multi-catch is assembled directly rather than through {@code JavaTemplate}: a catch parameter is not
-     * a template insertion point ({@code J.Try.Catch} and {@code J.MultiCatch} have no coordinates), and
-     * regenerating the whole catch from a template would discard the original type expression as written along
-     * with the parameter's modifiers and annotations. Keeping the existing type expression as the first
-     * alternative and splicing in the one new name preserves all of that, as
+     * Assembled directly rather than through {@code JavaTemplate}: a catch parameter is not an insertion point,
+     * and regenerating the catch would discard the type expression as written along with the parameter's
+     * modifiers and annotations. Keeping it as the first alternative preserves all of that, as
      * {@code CombineSemanticallyEqualCatchBlocks} does upstream.
      */
     private static J.Try.Catch alsoCatchTypeNotPresentException(J.Try.Catch catch_, boolean qualify) {
