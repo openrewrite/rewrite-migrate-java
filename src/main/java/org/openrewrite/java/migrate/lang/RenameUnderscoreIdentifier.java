@@ -100,8 +100,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
         String oldName;
         String newName;
 
-        /// The paths of every source file in the run, so that renaming a class, which may also
-        /// rename its file, never picks a name whose file another source file already occupies.
+        /// The paths of every source file, so a class rename never picks a name whose file is taken.
         Set<Path> sourcePaths;
 
         RenameIdentifierVisitor(String oldName, String newName) {
@@ -129,8 +128,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
         public J.MethodDeclaration visitMethodDeclaration(
                 J.MethodDeclaration method, ExecutionContext ctx) {
             method = super.visitMethodDeclaration(method, ctx);
-            // A constructor carries the name of the class it belongs to, so it is renamed along with
-            // the class declaration, which keeps its `<constructor>` method type intact.
+            // A constructor carries its class's name, so it is renamed with the class declaration
             JavaType.Method type = method.getMethodType();
             if (oldName.equals(method.getSimpleName()) && !method.isConstructor() && type != null) {
                 type = type.withName(availableName(type));
@@ -182,31 +180,25 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
             return classDecl;
         }
 
-        /// The first name of the form `__`, `___`, ... that is not already taken anywhere in the
-        /// source file, nor inherited by any of the types it declares. Picking a name that is free
-        /// in the whole file is stricter than picking one that is free in the declaration's own
-        /// scope, but it is deterministic and never merges two declarations into one. Used for
-        /// variable declaration renames; references to a renamed type from other compilation
-        /// units are deliberately not followed.
+        /// The first name of the form `__`, `___`, ... free anywhere in the file and uninherited by any type it
+        /// declares. Stricter than scoping the search to the declaration, but deterministic and it never merges
+        /// two declarations into one.
         private String availableName() {
-            // The message has to hang off the source file rather than off the root cursor, which is
-            // shared by every source file in the run.
+            // The root cursor is shared by every source file, so the message hangs off this one
             Cursor sourceFile = getCursor().dropParentUntil(JavaSourceFile.class::isInstance);
             return firstAvailableName(sourceFile.computeMessageIfAbsent(NAMES_IN_USE,
                     k -> namesInUse(sourceFile.getValue())));
         }
 
-        /// Like `availableName()`, but for a class declaration, whose rename may also rename the
-        /// source file: when it does, every candidate whose target file path is already occupied
-        /// by another source file is skipped as well, so the rename never moves this compilation
-        /// unit onto an existing one, which would silently overwrite it on write.
+        /// Like `availableName()`, but for a class whose rename may also rename the file, so candidates whose
+        /// target path another source file occupies are skipped rather than silently overwriting it.
         private String availableName(JavaType.FullyQualified type) {
             Cursor cursor = getCursor().dropParentUntil(JavaSourceFile.class::isInstance);
             JavaSourceFile sourceFile = cursor.getValue();
             Set<String> namesInUse = cursor.computeMessageIfAbsent(NAMES_IN_USE,
                     k -> namesInUse(sourceFile));
             Path sourcePath = sourceFile.getSourcePath();
-            // Mirrors the file rename condition in RenameTypeVisitor#visitCompilationUnit.
+            // Mirrors `RenameTypeVisitor#visitCompilationUnit`
             boolean renamesFile = type.getFullyQualifiedName().indexOf('$') < 0 &&
                     (oldName + ".java").equals(sourcePath.getFileName().toString());
             StringBuilder availableName = new StringBuilder(newName);
@@ -217,12 +209,9 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
             return availableName.toString();
         }
 
-        /// The first name of the form `__`, `___`, ... that no method of the type declaring the
-        /// root of the override chain, or of any of its supertypes, already uses. The name is
-        /// derived from that root rather than from the file being visited, so that a method, every
-        /// declaration that overrides or implements it, and every compilation unit calling it all
-        /// arrive at the same name and the override links survive the rename. Only method names
-        /// are considered: fields occupy a separate namespace and cannot collide with a method.
+        /// The first name of the form `__`, `___`, ... unused by the type rooting the override chain or its
+        /// supertypes. Deriving it from that root rather than from the file being visited makes every override
+        /// and caller arrive at the same name, so the override links survive. Fields are a separate namespace.
         private String availableName(JavaType.Method methodType) {
             JavaType.Method root = methodType;
             Set<String> visited = new HashSet<>();
@@ -284,12 +273,9 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
         }
     }
 
-    /// Renames the references bound to a type that was just renamed: field, return, parameter and
-    /// local variable types, casts, `instanceof`, class literals and `new` expressions, plus the
-    /// explicit constructors declared on it, all within the compilation unit that declares the
-    /// type; references from other compilation units are not updated. Only identifiers that both
-    /// spell the old name and resolve to that very type are touched, so unrelated same-named
-    /// identifiers are left alone.
+    /// Renames the references bound to a just-renamed type — declared types, casts, `instanceof`, class
+    /// literals, `new` and its explicit constructors — within the declaring compilation unit only. An identifier
+    /// must both spell the old name and resolve to that type, so unrelated same-named ones are left alone.
     @Value
     @EqualsAndHashCode(callSuper = false)
     static class RenameTypeVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -301,8 +287,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
             J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
-            // A public top level type must live in a file named after it, so when the file is
-            // named after the type, rename the file too.
+            // A public top level type must live in a file named after it, so rename the file too
             Path sourcePath = c.getSourcePath();
             if (fullyQualifiedName.indexOf('$') < 0 &&
                     (oldName + ".java").equals(sourcePath.getFileName().toString())) {
@@ -316,7 +301,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
             J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
             if (m.isConstructor() && oldName.equals(m.getSimpleName()) && m.getMethodType() != null &&
                     TypeUtils.isOfClassType(m.getMethodType().getDeclaringType(), fullyQualifiedName)) {
-                // Only the printed name changes; the method type keeps its `<constructor>` identity.
+                // Only the printed name changes; the method type keeps its `<constructor>` identity
                 return m.withName(m.getName().withSimpleName(newName));
             }
             return m;
