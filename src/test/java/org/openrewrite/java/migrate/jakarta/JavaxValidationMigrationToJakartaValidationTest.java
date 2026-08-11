@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
-import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -96,61 +95,68 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
         );
     }
 
-    @Issue("https://github.com/moderneinc/customer-requests/issues/1526")
     @Test
-    void sunIstackNotNullToJakartaValidation() {
+    void sunIstackNotNullToJakartaValidationAddsDependency() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
-            //language=java
-            """
-              package com.sun.istack;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.CLASS)
-              @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-              public @interface NotNull {
-              }
-              """,
-            //language=java
-            """
-              package jakarta.validation.constraints;
-              import java.lang.annotation.*;
-              @Documented
-              @Retention(RetentionPolicy.RUNTIME)
-              @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-              public @interface NotNull {
-                  String message() default "{jakarta.validation.constraints.NotNull.message}";
-                  Class<?>[] groups() default {};
-                  Class<?>[] payload() default {};
-              }
-              """
-          )),
-          //language=java
-          java(
-            """
-              import com.sun.istack.NotNull;
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "istack-commons-runtime-4.1.2", "jakarta.validation-api-3.0.2")),
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import com.sun.istack.NotNull;
 
-              public class Example {
-                  @NotNull
-                  private String name;
+                  public class Example {
+                      @NotNull
+                      private String name;
 
-                  public void setName(@NotNull String name) {
-                      this.name = name;
+                      public void setName(@NotNull String name) {
+                          this.name = name;
+                      }
                   }
-              }
-              """,
-            """
-              import jakarta.validation.constraints.NotNull;
+                  """,
+                """
+                  import jakarta.validation.constraints.NotNull;
 
-              public class Example {
-                  @NotNull
-                  private String name;
+                  public class Example {
+                      @NotNull
+                      private String name;
 
-                  public void setName(@NotNull String name) {
-                      this.name = name;
+                      public void setName(@NotNull String name) {
+                          this.name = name;
+                      }
                   }
-              }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
               """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.validation</groupId>
+                            <artifactId>jakarta.validation-api</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
           )
         );
     }
