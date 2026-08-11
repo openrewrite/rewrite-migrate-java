@@ -789,9 +789,8 @@ class JSpecifyBestPracticesTest implements RewriteTest {
 
     @Test
     void addJspecifyDependencyOnSpringOnlyProject() {
-        // The Spring migration leaf is deliberately disabled in MigrateToJSpecify, but the static
-        // analysis recipes in JSpecifyBestPractices still introduce `org.jspecify.annotations.*`,
-        // so a Spring-only project must still get the JSpecify dependency.
+        // MigrateToJSpecify disables the Spring leaf, but JSpecifyBestPractices still introduces
+        // `org.jspecify.annotations.*`, so a Spring-only project still needs the dependency
         rewriteRun(
           mavenProject("foo",
             //language=java
