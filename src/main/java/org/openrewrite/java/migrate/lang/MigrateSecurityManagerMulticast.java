@@ -77,14 +77,11 @@ public class MigrateSecurityManagerMulticast extends Recipe {
     }
 
     /**
-     * {@code checkMulticast(InetAddress, byte)} and {@code checkMulticast(InetAddress)} are separate virtual
-     * methods, so switching a call from one to the other changes which method runs whenever the receiver holds a
-     * {@code SecurityManager} subclass that overrides either overload. The receiver's runtime class is only known
-     * here when the receiver is a direct {@code new SecurityManager()} allocation without an anonymous class body.
-     * For {@code java.lang.SecurityManager} itself both overloads are specified to call {@code checkPermission}
-     * with the same {@code SocketPermission}, and the two argument form is documented not to use the time to
-     * live, so only then is the switch unobservable. Every other receiver, including any expression whose static
-     * type merely is {@code SecurityManager}, may hold a subclass at run time and is left unchanged.
+     * The two overloads are separate virtual methods, so switching between them changes which one runs whenever
+     * the receiver holds a subclass overriding either. Only a direct {@code new SecurityManager()} without an
+     * anonymous body pins the runtime class, and only for {@code java.lang.SecurityManager} are both overloads
+     * specified to check the same {@code SocketPermission} and ignore the time to live. Anything else, including
+     * an expression merely typed as {@code SecurityManager}, is left unchanged.
      */
     private static boolean cannotDispatchToAnOverride(@Nullable Expression select) {
         J receiver = select;
@@ -99,9 +96,8 @@ public class MigrateSecurityManagerMulticast extends Recipe {
     }
 
     /**
-     * The migrated call must reference the declared {@code checkMulticast(InetAddress)} overload rather than a
-     * synthetic method type trimmed down from the two argument overload, which would carry over the latter's
-     * deprecation metadata. When the overload cannot be resolved the call is left unchanged.
+     * The migrated call must reference the declared one argument overload rather than a synthetic type trimmed
+     * from the two argument one, which would carry over its deprecation metadata.
      */
     private static JavaType.@Nullable Method singleArgumentOverload(JavaType.@Nullable Method twoArgumentOverload) {
         if (twoArgumentOverload == null) {
@@ -116,18 +112,16 @@ public class MigrateSecurityManagerMulticast extends Recipe {
     }
 
     /**
-     * The one argument overload ignores the time to live, so dropping the second argument also stops evaluating it.
-     * That is only safe when evaluating the argument can neither be observed nor throw, which is limited to
-     * constants and reads of a local variable or parameter of primitive type. Anything else, such as a method
-     * invocation, an increment, an array access, a field read that might be volatile, or an unboxing conversion,
-     * is left unchanged.
+     * Dropping the ignored second argument also stops evaluating it, which is only safe when that evaluation can
+     * neither be observed nor throw: constants and reads of a primitive local or parameter. Anything else — an
+     * invocation, increment, array access, possibly volatile field read or unboxing — is left unchanged.
      */
     private static boolean isPureAndNonThrowing(Expression argument) {
         if (argument instanceof J.Literal) {
             return true;
         }
         if (argument instanceof J.TypeCast) {
-            // A primitive to primitive cast neither throws nor has side effects, unlike a reference or unboxing cast.
+            // A primitive to primitive cast neither throws nor has side effects, unlike a reference or unboxing one
             J.TypeCast typeCast = (J.TypeCast) argument;
             return typeCast.getType() instanceof JavaType.Primitive && isPureAndNonThrowing(typeCast.getExpression());
         }
