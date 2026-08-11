@@ -338,9 +338,8 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * Whether a lambda created inside the try is invoked before the try completes can not be decided locally, so
-     * the conservative choice is to leave the handler alone rather than widen it on a lookup that may never run
-     * inside the protected region.
+     * Whether a lambda created inside the try runs before the try completes cannot be decided locally, so the
+     * handler is left alone.
      */
     @Test
     void lookupOnlyInImmediatelyInvokedLambda() {
@@ -433,9 +432,8 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * Unlike a method body, an anonymous class's instance initializers run at the {@code new}, inside the
-     * protected region, so this lookup can throw into the enclosing catch. The recipe leaves the whole
-     * anonymous class body out regardless, which only costs a migration that is not applied.
+     * Instance initializers run at the {@code new}, inside the protected region, so this lookup can throw into
+     * the enclosing catch. The whole anonymous body is left out regardless, costing only a missed migration.
      */
     @Test
     void lookupOnlyInAnonymousClassInstanceInitializer() {
@@ -545,8 +543,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * A catch of a subclass of `TypeNotPresentException` would become unreachable if the earlier handler were
-     * widened.
+     * A catch of a `TypeNotPresentException` subclass would become unreachable if the earlier handler widened.
      */
     @Test
     void existingTypeNotPresentExceptionSubclassCatch() {
@@ -580,8 +577,8 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * After widening, the parameter's static type is `RuntimeException`, the least upper bound of the
-     * multi-catch alternatives, which any `Throwable` method, string concatenation and rethrow tolerate.
+     * The widened parameter is typed `RuntimeException`, which `Throwable` methods, concatenation and rethrow
+     * all tolerate.
      */
     @Test
     void alsoCatchWhenHandlerLogsAndRethrowsTheException() {
@@ -759,8 +756,8 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * `Objects.requireNonNull` reports its inferred parameter type as `ArrayStoreException`, but the
-     * declaration is `<T> T requireNonNull(T)` and simply re-infers `T = RuntimeException` after widening.
+     * `Objects.requireNonNull` reports an inferred `ArrayStoreException` parameter, but `<T> T requireNonNull(T)`
+     * simply re-infers after widening.
      */
     @Test
     void alsoCatchWhenHandlerChecksTheExceptionWithRequireNonNull() {
@@ -806,8 +803,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * A multi-catch parameter has the least upper bound of its alternatives as its type, here
-     * `RuntimeException`, so a parameter declared as `ArrayStoreException...` no longer accepts it.
+     * The widened parameter is typed `RuntimeException`, which an `ArrayStoreException...` parameter rejects.
      */
     @Test
     void retainCatchThatPassesTheExceptionToAVarargsParameter() {
@@ -995,8 +991,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * The cast itself would still compile, but it would throw `ClassCastException` for the
-     * `TypeNotPresentException` values the widened handler newly receives.
+     * The cast still compiles, but throws for the `TypeNotPresentException` values the widened handler receives.
      */
     @Test
     void retainCatchThatCastsTheExceptionToTheNarrowerType() {
@@ -1023,8 +1018,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
     }
 
     /**
-     * When the method receiving the parameter can not be resolved, its requirements are unknowable, so the
-     * catch is conservatively left alone.
+     * An unresolvable receiving method has unknowable requirements, so the catch is left alone.
      */
     @Test
     void retainCatchThatPassesTheExceptionToAnUnresolvableMethod() {
