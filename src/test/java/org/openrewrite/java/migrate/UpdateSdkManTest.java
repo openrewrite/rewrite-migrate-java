@@ -21,11 +21,7 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.test.RewriteTest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
@@ -42,7 +38,7 @@ class UpdateSdkManTest implements RewriteTest {
     private static String latestPatchVersion(String majorVersion, String distribution) {
         Pattern pattern = Pattern.compile("^" + majorVersion + "\\.\\d+\\.\\d+-" + distribution + "$");
         try (InputStream candidates = UpdateSdkMan.class.getResourceAsStream("/sdkman-java.csv");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(candidates, StandardCharsets.UTF_8))) {
+             var reader = new BufferedReader(new InputStreamReader(candidates, StandardCharsets.UTF_8))) {
             return reader.lines()
               .filter(candidate -> pattern.matcher(candidate).matches())
               .max(new LatestRelease("-" + distribution))

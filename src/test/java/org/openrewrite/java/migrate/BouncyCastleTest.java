@@ -79,8 +79,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     void jdk15onToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -92,8 +92,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     void jdk15to18ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -105,8 +105,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls"})
     void jdk14ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -118,8 +118,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     void jdk15ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -131,8 +131,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcmail", "bcpg"})
     void jdk15PlusToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -144,8 +144,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     void jdk16ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -157,8 +157,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcpg"})
     void jdk12ToJdk18on(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -170,8 +170,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcjmail", "bcpg", "bctls"})
     void jdk15onToJdk15To18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -183,8 +183,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcutil", "bcpkix", "bcmail", "bcpg", "bctls"})
     void jdk14ToJdk15to18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -196,8 +196,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     void jdk15ToJdk15to18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -209,8 +209,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcmail", "bcpg"})
     void jdk15PlusToJdk15to18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -222,8 +222,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcprov-ext", "bcmail", "bcpg"})
     void jdk16ToJdk15to18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -235,8 +235,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"bcprov", "bcpg"})
     @ParameterizedTest
+    @ValueSource(strings = {"bcprov", "bcpg"})
     void jdk12ToJdk15to18(String artifactBaseName) {
         runBouncyCastleArtifactUpgradeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -248,8 +248,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"jdk14", "jdk15", "jdk15+", "jdk15on", "jdk16"})
     @ParameterizedTest
+    @ValueSource(strings = {"jdk14", "jdk15", "jdk15+", "jdk15on", "jdk16"})
     void bctspToBcpkixJdk18on(String originalArtifactSuffix) {
         runBouncyCastleDependencyChangeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk18on.yml",
@@ -260,8 +260,8 @@ class BouncyCastleTest implements RewriteTest {
         );
     }
 
-    @ValueSource(strings = {"jdk14", "jdk15", "jdk15+", "jdk15on", "jdk16"})
     @ParameterizedTest
+    @ValueSource(strings = {"jdk14", "jdk15", "jdk15+", "jdk15on", "jdk16"})
     void bctspToBcpkixJdk15to18(String originalArtifactSuffix) {
         runBouncyCastleDependencyChangeRecipe(
           "/META-INF/rewrite/bouncycastle-jdk15to18.yml",
@@ -303,8 +303,7 @@ class BouncyCastleTest implements RewriteTest {
                 """,
               spec -> spec
                 .after(actual -> {
-                    assertThat(actual).containsOnlyOnce("<artifactId>bcpkix-jdk18on</artifactId>");
-                    return actual;
+                    return assertThat( actual ).containsOnlyOnce( "<artifactId>bcpkix-jdk18on</artifactId>" ).actual();
                 })
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
                   .get().getDependencies().get(Scope.Compile))
