@@ -10413,6 +10413,7 @@ examples:
           }
       }
     after: |
+      import java.util.Collections;
       import java.util.EnumSet;
       import java.util.Set;
 
@@ -10421,7 +10422,7 @@ examples:
               RED, GREEN, BLUE
           }
           public void method() {
-              Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
+              Set<Color> warm = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
           }
       }
     language: java
