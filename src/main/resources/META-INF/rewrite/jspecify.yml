@@ -85,7 +85,7 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -113,7 +113,7 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -141,7 +141,7 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -169,7 +169,7 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -197,7 +197,7 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -225,5 +225,5 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
       annotationType: org.jspecify.annotations.*
-  - org.openrewrite.java.migrate.jspecify.RemoveDuplicateAnnotations:
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
       annotationType: org.jspecify.annotations.*
