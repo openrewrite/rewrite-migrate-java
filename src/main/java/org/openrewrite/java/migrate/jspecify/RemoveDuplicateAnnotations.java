@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jspecify;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -84,30 +85,27 @@ public class RemoveDuplicateAnnotations extends Recipe {
             @Override
             public J.ArrayType visitArrayType(J.ArrayType arrayType, ExecutionContext ctx) {
                 J.ArrayType at = super.visitArrayType(arrayType, ctx);
-                return at.getAnnotations() == null ? at : at.withAnnotations(removeDuplicates(at.getAnnotations()));
+                return at.withAnnotations(removeDuplicates(at.getAnnotations()));
             }
 
             @Override
             public J.Identifier visitIdentifier(J.Identifier identifier, ExecutionContext ctx) {
                 J.Identifier id = super.visitIdentifier(identifier, ctx);
-                return id.getAnnotations() == null ? id : id.withAnnotations(removeDuplicates(id.getAnnotations()));
+                return id.withAnnotations(removeDuplicates(id.getAnnotations()));
             }
 
-            private List<J.Annotation> removeDuplicates(List<J.Annotation> annotations) {
-                if (annotations.size() < 2) {
+            private @Nullable List<J.Annotation> removeDuplicates(@Nullable List<J.Annotation> annotations) {
+                if (annotations == null || annotations.size() < 2) {
                     return annotations;
                 }
                 List<J.Annotation> kept = new ArrayList<>(annotations.size());
-                return ListUtils.map(annotations, annotation -> {
-                    if (matchesType(annotation)) {
-                        for (J.Annotation earlier : kept) {
-                            if (SemanticallyEqual.areEqual(earlier, annotation)) {
-                                return null;
-                            }
-                        }
+                return ListUtils.filter(annotations, annotation -> {
+                    if (matchesType(annotation) &&
+                            kept.stream().anyMatch(earlier -> SemanticallyEqual.areEqual(earlier, annotation))) {
+                        return false;
                     }
                     kept.add(annotation);
-                    return annotation;
+                    return true;
                 });
             }
 
