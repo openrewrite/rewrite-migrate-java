@@ -226,6 +226,40 @@ class JSpecifyBestPracticesTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1199")
+    @Test
+    void doNotDuplicateNullableWhenSeveralAnnotationsMapToJspecify() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.CheckForNull;
+              import javax.annotation.Nullable;
+
+              class Foo {
+                  @Nullable
+                  @CheckForNull
+                  private String field;
+
+                  public void bar(@Nullable @org.jetbrains.annotations.Nullable String baz) {
+                  }
+              }
+              """,
+            """
+              import org.jspecify.annotations.Nullable;
+
+              class Foo {
+                  @Nullable
+                  private String field;
+
+                  public void bar(@Nullable String baz) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void migrateFromJakartaAnnotationApiToJspecify() {
         rewriteRun(
