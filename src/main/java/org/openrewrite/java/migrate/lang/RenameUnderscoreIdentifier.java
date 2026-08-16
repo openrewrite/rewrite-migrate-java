@@ -91,6 +91,12 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
         );
     }
 
+    /// `$` separates nested type names, so a `$`-free fully qualified name is a top-level type whose file may need renaming
+    static boolean renameAlsoRenamesFile(String fullyQualifiedName, String oldName, Path sourcePath) {
+        return fullyQualifiedName.indexOf('$') < 0 &&
+                (oldName + ".java").equals(sourcePath.getFileName().toString());
+    }
+
     @Value
     @EqualsAndHashCode(callSuper = false)
     static class RenameIdentifierVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -198,9 +204,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
             Set<String> namesInUse = cursor.computeMessageIfAbsent(NAMES_IN_USE,
                     k -> namesInUse(sourceFile));
             Path sourcePath = sourceFile.getSourcePath();
-            // Mirrors `RenameTypeVisitor#visitCompilationUnit`
-            boolean renamesFile = type.getFullyQualifiedName().indexOf('$') < 0 &&
-                    (oldName + ".java").equals(sourcePath.getFileName().toString());
+            boolean renamesFile = renameAlsoRenamesFile(type.getFullyQualifiedName(), oldName, sourcePath);
             StringBuilder availableName = new StringBuilder(newName);
             while (namesInUse.contains(availableName.toString()) ||
                     (renamesFile && sourcePaths.contains(sourcePath.resolveSibling(availableName + ".java")))) {
@@ -289,8 +293,7 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
             J.CompilationUnit compilationUnit = super.visitCompilationUnit(cu, ctx);
             // A public top level type must live in a file named after it, so rename the file too
             Path sourcePath = compilationUnit.getSourcePath();
-            if (fullyQualifiedName.indexOf('$') < 0 &&
-                    (oldName + ".java").equals(sourcePath.getFileName().toString())) {
+            if (renameAlsoRenamesFile(fullyQualifiedName, oldName, sourcePath)) {
                 return compilationUnit.withSourcePath(sourcePath.resolveSibling(newName + ".java"));
             }
             return compilationUnit;
