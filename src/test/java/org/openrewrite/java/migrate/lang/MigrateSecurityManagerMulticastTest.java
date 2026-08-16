@@ -199,91 +199,7 @@ class MigrateSecurityManagerMulticastTest implements RewriteTest {
     }
 
     @Test
-    void retainMethodInvocation() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  void method(InetAddress maddr) {
-                      new SecurityManager().checkMulticast(maddr, nextTtl());
-                      new SecurityManager().checkMulticast(maddr, (byte) nextTtl());
-                  }
-
-                  byte nextTtl() {
-                      throw new IllegalStateException("evaluated");
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainIncrement() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  byte ttl;
-
-                  void method(InetAddress maddr) {
-                      new SecurityManager().checkMulticast(maddr, ttl++);
-                      new SecurityManager().checkMulticast(maddr, ++ttl);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainArrayAccess() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  byte[] ttls = {1};
-                  int index;
-
-                  void method(InetAddress maddr) {
-                      new SecurityManager().checkMulticast(maddr, ttls[index++]);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainUnboxing() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  void method(InetAddress maddr, Byte boxedTtl) {
-                      new SecurityManager().checkMulticast(maddr, boxedTtl);
-                      new SecurityManager().checkMulticast(maddr, (byte) boxedTtl);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainFieldRead() {
+    void retainPotentiallyObservableArguments() {
         //language=java
         rewriteRun(
           java(
@@ -294,81 +210,35 @@ class MigrateSecurityManagerMulticastTest implements RewriteTest {
                   byte ttl;
                   volatile byte volatileTtl;
                   static final byte DEFAULT_TTL = 1;
+                  byte[] ttls = {1};
+                  int index;
+                  int divisor;
 
-                  void method(InetAddress maddr) {
+                  void method(InetAddress maddr, Byte boxedTtl, boolean flag, int mode) {
+                      new SecurityManager().checkMulticast(maddr, nextTtl());
+                      new SecurityManager().checkMulticast(maddr, (byte) nextTtl());
+                      new SecurityManager().checkMulticast(maddr, ttl++);
+                      new SecurityManager().checkMulticast(maddr, ++ttl);
+                      new SecurityManager().checkMulticast(maddr, ttls[index++]);
+                      new SecurityManager().checkMulticast(maddr, boxedTtl);
+                      new SecurityManager().checkMulticast(maddr, (byte) boxedTtl);
                       new SecurityManager().checkMulticast(maddr, ttl);
                       new SecurityManager().checkMulticast(maddr, this.ttl);
                       new SecurityManager().checkMulticast(maddr, volatileTtl);
                       new SecurityManager().checkMulticast(maddr, DEFAULT_TTL);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainAssignment() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  byte ttl;
-
-                  void method(InetAddress maddr) {
                       new SecurityManager().checkMulticast(maddr, ttl = 1);
                       new SecurityManager().checkMulticast(maddr, ttl += 1);
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainConditionalAndSwitch() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  void method(InetAddress maddr, boolean flag, int mode) {
                       new SecurityManager().checkMulticast(maddr, flag ? nextTtl() : (byte) 1);
                       new SecurityManager().checkMulticast(maddr, switch (mode) {
                           case 1 -> (byte) 1;
                           default -> nextTtl();
                       });
+                      new SecurityManager().checkMulticast(maddr, (byte) (ttl / divisor));
+                      new SecurityManager().checkMulticast(maddr, new Test().ttl);
                   }
 
                   byte nextTtl() {
                       throw new IllegalStateException("evaluated");
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainDivisionAndAllocation() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.net.InetAddress;
-
-              class Test {
-                  byte ttl;
-                  int divisor;
-
-                  void method(InetAddress maddr) {
-                      new SecurityManager().checkMulticast(maddr, (byte) (ttl / divisor));
-                      new SecurityManager().checkMulticast(maddr, new Test().ttl);
                   }
               }
               """
