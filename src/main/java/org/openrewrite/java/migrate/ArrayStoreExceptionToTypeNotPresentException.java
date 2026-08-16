@@ -44,6 +44,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     private static final String ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException";
     private static final String TYPE_NOT_PRESENT_EXCEPTION = "java.lang.TypeNotPresentException";
     private static final String TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME = "TypeNotPresentException";
+    private static final String PACKAGE_SEPARATOR = ".";
+    private static final String NESTED_TYPE_SEPARATOR = "$";
     private static final MethodMatcher CLASS_GET_ANNOTATION = new MethodMatcher("java.lang.Class getAnnotation(java.lang.Class)");
 
     /**
@@ -411,8 +413,8 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
     private static boolean isForeignTypeNotPresentException(String fullyQualifiedName) {
         return !TYPE_NOT_PRESENT_EXCEPTION.equals(fullyQualifiedName) &&
                 (TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME.equals(fullyQualifiedName) ||
-                        fullyQualifiedName.endsWith("." + TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME) ||
-                        fullyQualifiedName.endsWith("$" + TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME));
+                        fullyQualifiedName.endsWith(PACKAGE_SEPARATOR + TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME) ||
+                        fullyQualifiedName.endsWith(NESTED_TYPE_SEPARATOR + TYPE_NOT_PRESENT_EXCEPTION_SIMPLE_NAME));
     }
 
     private static boolean declaresTypeNotPresentException(J.CompilationUnit cu) {

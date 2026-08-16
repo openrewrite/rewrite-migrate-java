@@ -578,6 +578,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
 
     @Test
     void widenCatchWhenHandlerAcceptsRuntimeException() {
+        // %1$s fills every catch site with the single formatted argument
         //language=java
         var source = """
           class Example {
