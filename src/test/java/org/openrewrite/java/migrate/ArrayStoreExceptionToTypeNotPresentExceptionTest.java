@@ -576,235 +576,110 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
-    /**
-     * The widened parameter is typed `RuntimeException`, which `Throwable` methods, concatenation and rethrow
-     * all tolerate.
-     */
     @Test
-    void alsoCatchWhenHandlerLogsAndRethrowsTheException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          System.out.println("failed: " + e.getMessage());
-                          e.printStackTrace();
-                          throw e;
-                      }
-                  }
-              }
-              """,
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          System.out.println("failed: " + e.getMessage());
-                          e.printStackTrace();
-                          throw e;
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
+    void widenCatchWhenHandlerAcceptsRuntimeException() {
+        //language=java
+        var source = """
+          import java.util.Objects;
 
-    @Test
-    void alsoCatchWhenHandlerWrapsTheException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          throw new IllegalStateException("wrap", e);
-                      }
+          class Example {
+              void logAndRethrow(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      System.out.println("failed: " + e.getMessage());
+                      e.printStackTrace();
+                      throw e;
                   }
               }
-              """,
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          throw new IllegalStateException("wrap", e);
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
 
-    @Test
-    void alsoCatchWhenHandlerAssignsTheExceptionToABroaderVariable() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          RuntimeException cause = e;
-                          RuntimeException chosen = flag ? e : null;
-                          recover(cause);
-                          recover(chosen);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
+              void wrap(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      throw new IllegalStateException("wrap", e);
                   }
               }
-              """,
-            """
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          RuntimeException cause = e;
-                          RuntimeException chosen = flag ? e : null;
-                          recover(cause);
-                          recover(chosen);
-                      }
-                  }
 
-                  void recover(RuntimeException e) {
+              void assign(Class<?> type, boolean flag) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      RuntimeException cause = e;
+                      RuntimeException chosen = flag ? e : null;
+                      recover(cause);
+                      recover(chosen);
                   }
               }
-              """
-          )
-        );
-    }
 
-    @Test
-    void alsoCatchWhenHandlerReturnsTheExceptionAsABroaderType() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  RuntimeException inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException e) {
-                          return e;
-                      }
+              RuntimeException returnBroaderType(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                      return null;
+                  } catch (%1$s e) {
+                      return e;
                   }
               }
-              """,
-            """
-              class Example {
-                  RuntimeException inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          return e;
-                      }
+
+              Runnable methodReference(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                      return null;
+                  } catch (%1$s e) {
+                      return e::printStackTrace;
                   }
               }
-              """
-          )
-        );
-    }
 
-    @Test
-    void alsoCatchWhenHandlerUsesAMethodReferenceOnTheException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  Runnable printer(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException e) {
-                          return e::printStackTrace;
-                      }
+              void genericInference(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      Objects.requireNonNull(e);
+                      recover(e);
                   }
               }
-              """,
-            """
-              class Example {
-                  Runnable printer(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          return e::printStackTrace;
-                      }
+
+              void appendToMessage(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      String message = "failed: ";
+                      message += e;
+                      System.out.println(message);
                   }
               }
-              """
-          )
-        );
-    }
 
-    /**
-     * `Objects.requireNonNull` reports an inferred `ArrayStoreException` parameter, but `<T> T requireNonNull(T)`
-     * simply re-infers after widening.
-     */
-    @Test
-    void alsoCatchWhenHandlerChecksTheExceptionWithRequireNonNull() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.Objects;
-
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          Objects.requireNonNull(e);
+              void synchronize(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      synchronized (e) {
                           recover(e);
                       }
                   }
+              }
 
-                  void recover(RuntimeException e) {
+              void unbracedIf(Class<?> type, boolean flag) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      if (flag) Objects.requireNonNull(e);
+                      recover(e);
                   }
               }
-              """,
-            """
-              import java.util.Objects;
 
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          Objects.requireNonNull(e);
-                          recover(e);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
+              void recover(RuntimeException e) {
               }
-              """
+          }
+          """;
+        rewriteRun(
+          java(
+            source.formatted("ArrayStoreException"),
+            source.formatted("ArrayStoreException | TypeNotPresentException")
           )
         );
     }
 
-    /**
-     * The widened parameter is typed `RuntimeException`, which an `ArrayStoreException...` parameter rejects.
-     */
     @Test
     void retainCatchThatPassesTheExceptionToAVarargsParameter() {
         rewriteRun(
@@ -1760,130 +1635,4 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
-    /**
-     * {@code message += e} concatenates like {@code message = message + e}, which tolerates any
-     * {@code RuntimeException}.
-     */
-    @Test
-    void alsoCatchWhenHandlerAppendsTheExceptionToAMessage() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          String message = "failed: ";
-                          message += e;
-                          System.out.println(message);
-                      }
-                  }
-              }
-              """,
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          String message = "failed: ";
-                          message += e;
-                          System.out.println(message);
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void alsoCatchWhenHandlerSynchronizesOnTheException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          synchronized (e) {
-                              recover(e);
-                          }
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """,
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          synchronized (e) {
-                              recover(e);
-                          }
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * An unbraced statement discards the call's value exactly like a braced one, so migration must not depend
-     * on brace style.
-     */
-    @Test
-    void alsoCatchWhenHandlerChecksTheExceptionInAnUnbracedIf() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.Objects;
-
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          if (flag) Objects.requireNonNull(e);
-                          recover(e);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """,
-            """
-              import java.util.Objects;
-
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException | TypeNotPresentException e) {
-                          if (flag) Objects.requireNonNull(e);
-                          recover(e);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
 }
