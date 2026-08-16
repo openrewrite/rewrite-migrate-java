@@ -286,34 +286,36 @@ public class RenameUnderscoreIdentifier extends ScanningRecipe<Set<Path>> {
 
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            J.CompilationUnit c = super.visitCompilationUnit(cu, ctx);
+            J.CompilationUnit compilationUnit = super.visitCompilationUnit(cu, ctx);
             // A public top level type must live in a file named after it, so rename the file too
-            Path sourcePath = c.getSourcePath();
+            Path sourcePath = compilationUnit.getSourcePath();
             if (fullyQualifiedName.indexOf('$') < 0 &&
                     (oldName + ".java").equals(sourcePath.getFileName().toString())) {
-                return c.withSourcePath(sourcePath.resolveSibling(newName + ".java"));
+                return compilationUnit.withSourcePath(sourcePath.resolveSibling(newName + ".java"));
             }
-            return c;
+            return compilationUnit;
         }
 
         @Override
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-            J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-            if (m.isConstructor() && oldName.equals(m.getSimpleName()) && m.getMethodType() != null &&
-                    TypeUtils.isOfClassType(m.getMethodType().getDeclaringType(), fullyQualifiedName)) {
+            J.MethodDeclaration visitedMethod = super.visitMethodDeclaration(method, ctx);
+            if (visitedMethod.isConstructor() && oldName.equals(visitedMethod.getSimpleName()) &&
+                    visitedMethod.getMethodType() != null &&
+                    TypeUtils.isOfClassType(visitedMethod.getMethodType().getDeclaringType(), fullyQualifiedName)) {
                 // Only the printed name changes; the method type keeps its `<constructor>` identity
-                return m.withName(m.getName().withSimpleName(newName));
+                return visitedMethod.withName(visitedMethod.getName().withSimpleName(newName));
             }
-            return m;
+            return visitedMethod;
         }
 
         @Override
         public J.Identifier visitIdentifier(J.Identifier identifier, ExecutionContext ctx) {
-            J.Identifier i = super.visitIdentifier(identifier, ctx);
-            if (oldName.equals(i.getSimpleName()) && TypeUtils.isOfClassType(i.getType(), fullyQualifiedName)) {
-                return i.withSimpleName(newName);
+            J.Identifier visitedIdentifier = super.visitIdentifier(identifier, ctx);
+            if (oldName.equals(visitedIdentifier.getSimpleName()) &&
+                    TypeUtils.isOfClassType(visitedIdentifier.getType(), fullyQualifiedName)) {
+                return visitedIdentifier.withSimpleName(newName);
             }
-            return i;
+            return visitedIdentifier;
         }
     }
 }
