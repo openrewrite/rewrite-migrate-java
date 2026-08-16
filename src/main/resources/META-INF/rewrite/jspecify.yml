@@ -32,6 +32,7 @@ recipeList:
     groupId: org.jspecify
     artifactId: jspecify
     version: 1.0.0
+    # *ull* matches Nullable, NonNull, NonNullApi and NonNullFields
     onlyIfUsing: org.springframework.lang.*ull*
     acceptTransitive: true
 - org.openrewrite.staticanalysis.AnnotateNullableMethods
@@ -158,6 +159,7 @@ recipeList:
       groupId: org.jspecify
       artifactId: jspecify
       version: 1.0.0
+      # *ull* matches Nullable, NonNull, NonNullApi and NonNullFields
       onlyIfUsing: io.micrometer.core.lang.*ull*
       acceptTransitive: true
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
