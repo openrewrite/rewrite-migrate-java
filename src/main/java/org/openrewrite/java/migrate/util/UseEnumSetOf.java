@@ -77,12 +77,13 @@ public class UseEnumSetOf extends Recipe {
                                 ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
                         if (isAssignmentSetOfEnum(type)) {
                             boolean collectionsUnavailable = isNameUnavailable("Collections", "java.util.Collections");
-                            boolean javaUnavailable = isNameUnavailable("java", null);
-                            if (collectionsUnavailable && javaUnavailable) {
+                            // a declaration named `java` in scope breaks the fully qualified `java.util.Collections` fallback
+                            boolean fullyQualifiedFallbackShadowed = isNameUnavailable("java", null);
+                            if (collectionsUnavailable && fullyQualifiedFallbackShadowed) {
                                 return mi;
                             }
-                            String collections = javaUnavailable ? "Collections" : "java.util.Collections";
-                            if (javaUnavailable) {
+                            String collections = fullyQualifiedFallbackShadowed ? "Collections" : "java.util.Collections";
+                            if (fullyQualifiedFallbackShadowed) {
                                 maybeAddImport("java.util.Collections");
                             }
                             maybeAddImport(METHOD_TYPE);
