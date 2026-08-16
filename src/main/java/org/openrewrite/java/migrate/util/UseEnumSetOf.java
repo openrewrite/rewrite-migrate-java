@@ -99,8 +99,8 @@ public class UseEnumSetOf extends Recipe {
                                 }
                                 JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
                                 JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
-                                J.MethodInvocation replacement = JavaTemplate.builder(collections + ".unmodifiableSet(EnumSet.noneOf(" +
-                                                shallowClass.getClassName() + ".class))")
+                                J.MethodInvocation replacement = JavaTemplate.builder(
+                                                unmodifiableSet(collections, "EnumSet.noneOf(" + shallowClass.getClassName() + ".class)"))
                                         .contextSensitive()
                                         .imports("java.util.Collections", METHOD_TYPE)
                                         .build()
@@ -112,9 +112,9 @@ public class UseEnumSetOf extends Recipe {
                                 return replacement;
                             }
 
-                            StringJoiner setOf = new StringJoiner(", ", collections + ".unmodifiableSet(EnumSet.of(", "))");
-                            args.forEach(o -> setOf.add("#{any()}"));
-                            J.MethodInvocation replacement = JavaTemplate.builder(setOf.toString())
+                            StringJoiner setOfArguments = new StringJoiner(", ");
+                            args.forEach(o -> setOfArguments.add("#{any()}"));
+                            J.MethodInvocation replacement = JavaTemplate.builder(unmodifiableSet(collections, "EnumSet.of(" + setOfArguments + ")"))
                                     .contextSensitive()
                                     .imports("java.util.Collections", METHOD_TYPE)
                                     .build()
@@ -221,6 +221,11 @@ public class UseEnumSetOf extends Recipe {
                                .anyMatch(classDecl -> name.equals(classDecl.getSimpleName()));
             }
         });
+    }
+
+    // Wraps the EnumSet expression so every paren opens and closes in one place
+    private static String unmodifiableSet(String collections, String enumSetExpression) {
+        return collections + ".unmodifiableSet(" + enumSetExpression + ")";
     }
 
 }
