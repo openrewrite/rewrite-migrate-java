@@ -551,8 +551,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
                 return false;
             }
             JavaType argument = parameterized.getTypeParameters().get(0);
-            if (!(argument instanceof JavaType.GenericTypeVariable) ||
-                    !"?".equals(((JavaType.GenericTypeVariable) argument).getName())) {
+            if (!isWildcard(argument)) {
                 return false;
             }
             JavaType.GenericTypeVariable wildcard = (JavaType.GenericTypeVariable) argument;
@@ -571,6 +570,14 @@ public class ArrayStoreExceptionToTypeNotPresentException extends ScanningRecipe
         }
         JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(type);
         return fullyQualified != null && ACCEPTS_ANY_CLASS.contains(fullyQualified.getFullyQualifiedName());
+    }
+
+    /**
+     * OpenRewrite models a wildcard type argument as a {@link JavaType.GenericTypeVariable} literally named {@code "?"}.
+     */
+    private static boolean isWildcard(JavaType argument) {
+        return argument instanceof JavaType.GenericTypeVariable &&
+                "?".equals(((JavaType.GenericTypeVariable) argument).getName());
     }
 
     /**
