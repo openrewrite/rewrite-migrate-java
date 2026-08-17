@@ -105,12 +105,12 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Range apply(java.lang.Comparable)'
+      methodPattern: 'com.google.common.collect.Range apply(*)'
       replacement: 'this.contains(input)'
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Range test(java.lang.Comparable)'
+      methodPattern: 'com.google.common.collect.Range test(*)'
       replacement: 'this.contains(input)'
       classpathFromResources:
         - 'guava-33'
@@ -172,7 +172,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Ordering binarySearch(java.util.List, java.lang.Object)'
+      methodPattern: 'com.google.common.collect.Ordering binarySearch(java.util.List, *)'
       replacement: 'Collections.binarySearch(sortedList, key, this)'
       imports:
         - 'java.util.Collections'
@@ -205,7 +205,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.base.Equivalence test(java.lang.Object, java.lang.Object)'
+      methodPattern: 'com.google.common.base.Equivalence test(*, *)'
       replacement: 'this.equivalent(t, u)'
       classpathFromResources:
         - 'guava-33'
@@ -229,12 +229,12 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.hash.BloomFilter apply(java.lang.Object)'
+      methodPattern: 'com.google.common.hash.BloomFilter apply(*)'
       replacement: 'this.mightContain(input)'
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.hash.BloomFilter test(java.lang.Object)'
+      methodPattern: 'com.google.common.hash.BloomFilter test(*)'
       replacement: 'this.mightContain(input)'
       classpathFromResources:
         - 'guava-33'
@@ -318,7 +318,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.base.Converter apply(java.lang.Object)'
+      methodPattern: 'com.google.common.base.Converter apply(*)'
       replacement: 'this.convert(a)'
       classpathFromResources:
         - 'guava-33'

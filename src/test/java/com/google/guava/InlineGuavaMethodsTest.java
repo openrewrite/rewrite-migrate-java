@@ -129,4 +129,155 @@ class InlineGuavaMethodsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void range() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Range;
+
+              class R {
+                  boolean applied(Range<Integer> range, Integer value) {
+                      return range.apply(value);
+                  }
+
+                  boolean tested(Range<Integer> range, Integer value) {
+                      return range.test(value);
+                  }
+              }
+              """,
+            """
+              import com.google.common.collect.Range;
+
+              class R {
+                  boolean applied(Range<Integer> range, Integer value) {
+                      return range.contains(value);
+                  }
+
+                  boolean tested(Range<Integer> range, Integer value) {
+                      return range.contains(value);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void bloomFilter() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.hash.BloomFilter;
+
+              class B {
+                  boolean applied(BloomFilter<String> filter, String value) {
+                      return filter.apply(value);
+                  }
+
+                  boolean tested(BloomFilter<String> filter, String value) {
+                      return filter.test(value);
+                  }
+              }
+              """,
+            """
+              import com.google.common.hash.BloomFilter;
+
+              class B {
+                  boolean applied(BloomFilter<String> filter, String value) {
+                      return filter.mightContain(value);
+                  }
+
+                  boolean tested(BloomFilter<String> filter, String value) {
+                      return filter.mightContain(value);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void converter() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Converter;
+
+              class C {
+                  Integer applied(Converter<String, Integer> converter, String value) {
+                      return converter.apply(value);
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Converter;
+
+              class C {
+                  Integer applied(Converter<String, Integer> converter, String value) {
+                      return converter.convert(value);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void equivalence() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Equivalence;
+
+              class E {
+                  boolean tested(Equivalence<String> equivalence, String left, String right) {
+                      return equivalence.test(left, right);
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Equivalence;
+
+              class E {
+                  boolean tested(Equivalence<String> equivalence, String left, String right) {
+                      return equivalence.equivalent(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void orderingBinarySearch() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Ordering;
+
+              import java.util.List;
+
+              class O {
+                  int search(Ordering<String> ordering, List<String> list, String key) {
+                      return ordering.binarySearch(list, key);
+                  }
+              }
+              """,
+            """
+              import com.google.common.collect.Ordering;
+
+              import java.util.Collections;
+              import java.util.List;
+
+              class O {
+                  int search(Ordering<String> ordering, List<String> list, String key) {
+                      return Collections.binarySearch(list, key, ordering);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
