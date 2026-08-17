@@ -75,4 +75,58 @@ class InlineGuavaMethodsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void atomics() {
+        rewriteRun(
+          java(
+            """
+              import com.google.common.util.concurrent.Atomics;
+
+              import java.util.concurrent.atomic.AtomicReference;
+              import java.util.concurrent.atomic.AtomicReferenceArray;
+
+              class Atomic {
+                  AtomicReference<String> empty() {
+                      return Atomics.newReference();
+                  }
+
+                  AtomicReference<String> initial(String value) {
+                      return Atomics.newReference(value);
+                  }
+
+                  AtomicReferenceArray<String> sized(int length) {
+                      return Atomics.newReferenceArray(length);
+                  }
+
+                  AtomicReferenceArray<String> fromArray(String[] array) {
+                      return Atomics.newReferenceArray(array);
+                  }
+              }
+              """,
+            """
+              import java.util.concurrent.atomic.AtomicReference;
+              import java.util.concurrent.atomic.AtomicReferenceArray;
+
+              class Atomic {
+                  AtomicReference<String> empty() {
+                      return new AtomicReference<>();
+                  }
+
+                  AtomicReference<String> initial(String value) {
+                      return new AtomicReference<>(value);
+                  }
+
+                  AtomicReferenceArray<String> sized(int length) {
+                      return new AtomicReferenceArray<>(length);
+                  }
+
+                  AtomicReferenceArray<String> fromArray(String[] array) {
+                      return new AtomicReferenceArray<>(array);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

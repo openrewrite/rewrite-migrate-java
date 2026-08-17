@@ -15,7 +15,7 @@
 #
 
 #
-# Recipes generated for `@InlineMe` annotated methods in `com.google.guava:guava:33.5.0-jre`
+# Recipes generated for `@InlineMe` annotated methods in `com.google.guava:guava:33.7.0-jre`
 #
 
 type: specs.openrewrite.org/v1beta/recipe
@@ -401,5 +401,33 @@ recipeList:
   - org.openrewrite.java.InlineMethodCalls:
       methodPattern: 'com.google.common.math.IntMath checkedMultiply(int, int)'
       replacement: 'Math.multiplyExact(a, b)'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReference()'
+      replacement: 'new AtomicReference<>()'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReference'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReference(*)'
+      replacement: 'new AtomicReference<>(initialValue)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReference'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReferenceArray(int)'
+      replacement: 'new AtomicReferenceArray<>(length)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReferenceArray'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReferenceArray(*[])'
+      replacement: 'new AtomicReferenceArray<>(array)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReferenceArray'
       classpathFromResources:
         - 'guava-33'
