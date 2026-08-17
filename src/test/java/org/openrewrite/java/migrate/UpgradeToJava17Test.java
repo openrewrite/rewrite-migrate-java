@@ -320,6 +320,37 @@ class UpgradeToJava17Test implements RewriteTest {
     }
 
     @Test
+    void upgradeMavenPmdPlugin() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava17"),
+          mavenProject("project",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                    <plugins>
+                      <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>3.24.0</version>
+                      </plugin>
+                    </plugins>
+                  </build>
+                </project>
+                """,
+              sourceSpec -> sourceSpec.after(actual -> assertThat(actual)
+                .containsPattern("maven-pmd-plugin</artifactId>\\s*<version>3\\.(2[89]|[3-9]\\d)\\.")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void agentMainPreMainPublicApp() {
         rewriteRun(
           version(
