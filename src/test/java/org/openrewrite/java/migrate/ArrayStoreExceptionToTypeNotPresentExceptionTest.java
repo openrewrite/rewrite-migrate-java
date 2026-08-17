@@ -230,14 +230,24 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
+    /**
+     * Only the try's resources and body are protected by its catches: a call in a finally block, a sibling
+     * catch, or a body that runs after the try never throws into these handlers. The immediately invoked
+     * lambda and the instance initializer do run inside the protected region, but the bodies of lambdas and
+     * classes created in the try are conservatively skipped as a whole, costing only a missed migration.
+     */
     @Test
-    void lookupOnlyInFinally() {
+    void retainWhenGetAnnotationIsOutsideTheProtectedRegion() {
         rewriteRun(
           //language=java
           java(
             """
+              import java.lang.annotation.Annotation;
+              import java.util.List;
+              import java.util.function.Function;
+
               class Example {
-                  void inspect(Class<?> type, Object value) {
+                  void inFinally(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -248,22 +258,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void lookupOnlyInSiblingCatch() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type, Object value) {
+                  void inSiblingCatch(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -274,22 +269,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void lookupOnlyInDeferredLambda() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  Runnable inspectLater(Class<?> type, Object value) {
+                  Runnable inDeferredLambda(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -301,24 +281,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void lookupOnlyInMethodReference() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.function.Function;
-
-              class Example {
-                  Function<Class<Override>, Override> inspectLater(Class<?> type, Object value) {
+                  Function<Class<Override>, Override> inMethodReference(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -329,28 +292,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * Whether a lambda created inside the try runs before the try completes cannot be decided locally, so the
-     * handler is left alone.
-     */
-    @Test
-    void lookupOnlyInImmediatelyInvokedLambda() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.List;
-
-              class Example {
-                  void inspect(List<Class<?>> types, Object value) {
+                  void inImmediatelyInvokedLambda(List<Class<?>> types, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -360,22 +302,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void lookupOnlyInAnonymousClass() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  Runnable inspectLater(Class<?> type, Object value) {
+                  Runnable inAnonymousClass(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -391,22 +318,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void lookupOnlyInLocalClass() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  Runnable inspectLater(Class<?> type, Object value) {
+                  Runnable inLocalClass(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -423,28 +335,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * Instance initializers run at the {@code new}, inside the protected region, so this lookup can throw into
-     * the enclosing catch. The whole anonymous body is left out regardless, costing only a missed migration.
-     */
-    @Test
-    void lookupOnlyInAnonymousClassInstanceInitializer() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.lang.annotation.Annotation;
-
-              class Example {
-                  Runnable inspectLater(Class<?> type, Object value) {
+                  Runnable inAnonymousClassInstanceInitializer(Class<?> type, Object value) {
                       try {
                           Object[] values = new String[1];
                           values[0] = value;
@@ -469,14 +360,19 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
+    /**
+     * A sibling catch of {@code TypeNotPresentException} or a supertype already handles it, a catch of a
+     * subclass would become unreachable, and a multi-catch parameter is typed as the least upper bound
+     * rather than {@code ArrayStoreException}, so none of these tries change.
+     */
     @Test
-    void existingTypeNotPresentExceptionCatch() {
+    void retainWhenTypeNotPresentExceptionIsAlreadyHandled() {
         rewriteRun(
           //language=java
           java(
             """
               class Example {
-                  void inspect(Class<?> type) {
+                  void existingCatch(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
@@ -486,22 +382,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void existingMultiCatch() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void existingMultiCatch(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException | IllegalStateException e) {
@@ -509,22 +390,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void existingBroaderCatchAlreadyHandlesTypeNotPresentException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void existingBroaderCatch(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
@@ -534,25 +400,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * A catch of a `TypeNotPresentException` subclass would become unreachable if the earlier handler widened.
-     */
-    @Test
-    void existingTypeNotPresentExceptionSubclassCatch() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void existingSubclassCatch(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
@@ -576,6 +424,11 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
         );
     }
 
+    /**
+     * The last two handlers mirror real consumers: WildFly's {@code BusinessViewAnnotationProcessor} throws
+     * its own deployment error without referencing the parameter, and Grails' {@code DomainClassArtefactHandler}
+     * swallows the failure with an empty catch.
+     */
     @Test
     void widenCatchWhenHandlerAcceptsRuntimeException() {
         // %1$s fills every catch site with the single formatted argument
@@ -611,6 +464,24 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                   }
               }
 
+              void requireAnnotation(Class<?> type) {
+                  try {
+                      type.getAnnotation(Override.class);
+                  } catch (%1$s e) {
+                      throw new IllegalStateException("missing class in annotation on " + type.getName());
+                  }
+              }
+
+              boolean isDomainClass(Class<?> type) {
+                  Deprecated artefact = null;
+                  try {
+                      artefact = type.getAnnotation(Deprecated.class);
+                  } catch (%1$s e) {
+                      // a reference to a class that no longer exists
+                  }
+                  return artefact != null;
+              }
+
               void recover(RuntimeException e) {
               }
           }
@@ -634,6 +505,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
           java(
             """
               import java.util.Objects;
+              import java.util.function.Supplier;
 
               class Example {
                   RuntimeException returnBroaderType(Class<?> type) {
@@ -651,6 +523,15 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                           return null;
                       } catch (ArrayStoreException e) {
                           return e::printStackTrace;
+                      }
+                  }
+
+                  Supplier<ArrayStoreException> expressionLambda(Class<?> type) {
+                      try {
+                          type.getAnnotation(Override.class);
+                          return null;
+                      } catch (ArrayStoreException e) {
+                          return () -> e;
                       }
                   }
 
@@ -691,68 +572,23 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatPassesTheExceptionToAVarargsParameter() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void log(String message, ArrayStoreException... exceptions) {
-                  }
-
-                  void inspect(Class<?> type) {
+                  void passToVarargs(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
                           log("failed", e);
                       }
                   }
-              }
-              """
-          )
-        );
-    }
 
-    @Test
-    void retainCatchThatPassesTheExceptionToANarrowerParameter() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void passToNarrowerParameter(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
-                          recover(e);
+                          recoverNarrow(e);
                       }
                   }
 
-                  void recover(ArrayStoreException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatAssignsTheExceptionToANarrowerVariable() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void assignToNarrowerVariable(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
@@ -761,69 +597,7 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatUsesTheExceptionInATernaryInitializer() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          ArrayStoreException copy = flag ? e : null;
-                          recover(copy);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatPassesATernaryToANarrowerParameter() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type, boolean flag) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          recover(flag ? e : null);
-                      }
-                  }
-
-                  void recover(ArrayStoreException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatStoresTheExceptionInAnArrayInitializer() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void storeInArrayInitializer(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
@@ -832,78 +606,44 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       }
                   }
 
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatReturnsTheExceptionFromAnExpressionLambda() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.function.Supplier;
-
-              class Example {
-                  Supplier<ArrayStoreException> inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException e) {
-                          return () -> e;
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void retainCatchThatReturnsTheExceptionAsTheNarrowerType() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  ArrayStoreException inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                          return null;
-                      } catch (ArrayStoreException e) {
-                          return e;
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * The cast still compiles, but throws for the `TypeNotPresentException` values the widened handler receives.
-     */
-    @Test
-    void retainCatchThatCastsTheExceptionToTheNarrowerType() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
+                  void castToNarrowerType(Class<?> type) {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
+                          // The cast still compiles, but would throw for the TypeNotPresentException values a widened handler receives
                           Object narrowed = (ArrayStoreException) e;
                           recover(e);
                       }
                   }
 
+                  void reassignParameter(Class<?> type) {
+                      try {
+                          type.getAnnotation(Override.class);
+                      } catch (ArrayStoreException e) {
+                          // A multi-catch parameter is implicitly final, so this would not compile widened
+                          e = new ArrayStoreException("wrapped");
+                          recover(e);
+                      }
+                  }
+
+                  void readTheExceptionClass(Class<?> type) {
+                      try {
+                          type.getAnnotation(Override.class);
+                      } catch (ArrayStoreException e) {
+                          // Per JLS 4.3.2 `e.getClass()` is typed over the receiver's static type, so it widens with it
+                          Class<? extends ArrayStoreException> narrow = e.getClass();
+                          Class<?> wide = e.getClass();
+                          recover(e);
+                      }
+                  }
+
+                  void log(String message, ArrayStoreException... exceptions) {
+                  }
+
                   void recover(RuntimeException e) {
+                  }
+
+                  void recoverNarrow(ArrayStoreException e) {
                   }
               }
               """
@@ -928,33 +668,6 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       } catch (ArrayStoreException e) {
                           Unknown.log(e);
                       }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * A multi-catch parameter is implicitly final, so widening this handler would not compile.
-     */
-    @Test
-    void retainCatchThatReassignsTheException() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          e = new ArrayStoreException("wrapped");
-                          recover(e);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
                   }
               }
               """
@@ -1062,37 +775,6 @@ class ArrayStoreExceptionToTypeNotPresentExceptionTest implements RewriteTest {
                       try {
                           type.getAnnotation(Override.class);
                       } catch (ArrayStoreException e) {
-                          recover(e);
-                      }
-                  }
-
-                  void recover(RuntimeException e) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    /**
-     * Per JLS 4.3.2 the type of {@code e.getClass()} is {@code Class<? extends |E|>} where {@code |E|} is the
-     * erasure of the receiver's static type, so its result widens with the receiver. Proving a particular use
-     * of that result safe is not worth the machinery, so any read of the class retains the catch, even one a
-     * wider {@code Class<?>} would tolerate.
-     */
-    @Test
-    void retainCatchThatReadsTheExceptionClass() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Example {
-                  void inspect(Class<?> type) {
-                      try {
-                          type.getAnnotation(Override.class);
-                      } catch (ArrayStoreException e) {
-                          Class<? extends ArrayStoreException> narrow = e.getClass();
-                          Class<?> wide = e.getClass();
                           recover(e);
                       }
                   }
