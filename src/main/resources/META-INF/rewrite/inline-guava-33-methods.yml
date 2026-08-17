@@ -16,6 +16,7 @@
 
 #
 # Recipes generated for `@InlineMe` annotated methods in `com.google.guava:guava:33.7.0-jre`
+# by `InlineMethodCallsRecipeGenerator` in https://github.com/openrewrite/rewrite-third-party
 #
 
 type: specs.openrewrite.org/v1beta/recipe
