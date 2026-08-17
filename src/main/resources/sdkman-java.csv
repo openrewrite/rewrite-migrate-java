@@ -42,8 +42,11 @@
 21.0.12.fx-zulu
 21.0.2-graalce
 21.0.2-open
+25.0.1+1-kona
 25.0.2-open
+25.0.2+1-kona
 25.0.2.r25-mandrel
+25.0.3+1-kona
 25.0.3.crac-zulu
 25.0.4-amzn
 25.0.4-graal
@@ -55,11 +58,14 @@
 25.0.4-sem
 25.0.4-tem
 25.0.4-zulu
+25.0.4+1-kona
 25.0.4.fx-librca
 25.0.4.fx-nik
 25.0.4.fx-zulu
 25.0.4.r25-nik
+25.1.3+r25-graal
 25.2.4-graalce
+25.2.4+r25-graal
 25.r25-mandrel
 26.0.1.crac-zulu
 26.0.2-amzn
@@ -74,6 +80,7 @@
 26.0.2.fx-zulu
 27.0.0+ea.34-open
 28.0.0+ea.10-open
+28.0.0+ea.11-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.232-amzn
