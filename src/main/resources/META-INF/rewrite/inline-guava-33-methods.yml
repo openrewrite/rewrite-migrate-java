@@ -15,7 +15,8 @@
 #
 
 #
-# Recipes generated for `@InlineMe` annotated methods in `com.google.guava:guava:33.5.0-jre`
+# Recipes generated for `@InlineMe` annotated methods in `com.google.guava:guava:33.7.0-jre`
+# by `InlineMethodCallsRecipeGenerator` in https://github.com/openrewrite/rewrite-third-party
 #
 
 type: specs.openrewrite.org/v1beta/recipe
@@ -105,12 +106,12 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Range apply(java.lang.Comparable)'
+      methodPattern: 'com.google.common.collect.Range apply(*)'
       replacement: 'this.contains(input)'
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Range test(java.lang.Comparable)'
+      methodPattern: 'com.google.common.collect.Range test(*)'
       replacement: 'this.contains(input)'
       classpathFromResources:
         - 'guava-33'
@@ -172,7 +173,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.collect.Ordering binarySearch(java.util.List, java.lang.Object)'
+      methodPattern: 'com.google.common.collect.Ordering binarySearch(java.util.List, *)'
       replacement: 'Collections.binarySearch(sortedList, key, this)'
       imports:
         - 'java.util.Collections'
@@ -205,7 +206,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.base.Equivalence test(java.lang.Object, java.lang.Object)'
+      methodPattern: 'com.google.common.base.Equivalence test(*, *)'
       replacement: 'this.equivalent(t, u)'
       classpathFromResources:
         - 'guava-33'
@@ -229,12 +230,12 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.hash.BloomFilter apply(java.lang.Object)'
+      methodPattern: 'com.google.common.hash.BloomFilter apply(*)'
       replacement: 'this.mightContain(input)'
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.hash.BloomFilter test(java.lang.Object)'
+      methodPattern: 'com.google.common.hash.BloomFilter test(*)'
       replacement: 'this.mightContain(input)'
       classpathFromResources:
         - 'guava-33'
@@ -318,7 +319,7 @@ recipeList:
       classpathFromResources:
         - 'guava-33'
   - org.openrewrite.java.InlineMethodCalls:
-      methodPattern: 'com.google.common.base.Converter apply(java.lang.Object)'
+      methodPattern: 'com.google.common.base.Converter apply(*)'
       replacement: 'this.convert(a)'
       classpathFromResources:
         - 'guava-33'
@@ -401,5 +402,33 @@ recipeList:
   - org.openrewrite.java.InlineMethodCalls:
       methodPattern: 'com.google.common.math.IntMath checkedMultiply(int, int)'
       replacement: 'Math.multiplyExact(a, b)'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReference()'
+      replacement: 'new AtomicReference<>()'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReference'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReference(*)'
+      replacement: 'new AtomicReference<>(initialValue)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReference'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReferenceArray(int)'
+      replacement: 'new AtomicReferenceArray<>(length)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReferenceArray'
+      classpathFromResources:
+        - 'guava-33'
+  - org.openrewrite.java.InlineMethodCalls:
+      methodPattern: 'com.google.common.util.concurrent.Atomics newReferenceArray(*[])'
+      replacement: 'new AtomicReferenceArray<>(array)'
+      imports:
+        - 'java.util.concurrent.atomic.AtomicReferenceArray'
       classpathFromResources:
         - 'guava-33'
