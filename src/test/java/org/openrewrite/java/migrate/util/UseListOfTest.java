@@ -329,6 +329,105 @@ class UseListOfTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void convertLinkedHashSetToUseListOf() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.LinkedHashSet;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new LinkedHashSet<>();
+                      tags.add("alpha");
+                      tags.add("beta");
+                      tags.add("gamma");
+                  }
+              }
+              """,
+            """
+              import java.util.LinkedHashSet;
+              import java.util.List;
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new LinkedHashSet<>(List.of(
+                              "alpha",
+                              "beta",
+                              "gamma"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseAddChainOnCollectionDeclaredType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.Collection;
+
+              class Test {
+                  void m() {
+                      Collection<String> names = new ArrayList<>();
+                      names.add("Bob");
+                      names.add("alice");
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.Collection;
+              import java.util.List;
+
+              class Test {
+                  void m() {
+                      Collection<String> names = new ArrayList<>(List.of(
+                              "Bob",
+                              "alice"));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1181")
+    @Test
+    void doNotChangeLinkedHashSetSubclass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.LinkedHashSet;
+
+              class Tags extends LinkedHashSet<String> {}
+              """
+          ),
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  void m() {
+                      Set<String> tags = new Tags();
+                      tags.add("alpha");
+                      tags.add("beta");
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void proseSingleAddBelowThresholdLeftAlone() {
         // A single add is below the threshold — the rewrite would be more noise than benefit.

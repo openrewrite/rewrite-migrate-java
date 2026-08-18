@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,6 +30,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
@@ -39,7 +41,15 @@ import static java.util.Collections.singletonList;
 
 public class UseListOf extends Recipe {
     private static final MethodMatcher NEW_ARRAY_LIST = new MethodMatcher("java.util.ArrayList <constructor>()", true);
+    private static final MethodMatcher NEW_LINKED_HASH_SET = new MethodMatcher("java.util.LinkedHashSet <constructor>()", true);
     private static final MethodMatcher LIST_ADD = new MethodMatcher("java.util.List add(..)", true);
+    private static final MethodMatcher COLLECTION_ADD = new MethodMatcher("java.util.Collection add(..)", true);
+
+    /**
+     * Concrete collection types the prose pattern may keep: each preserves insertion order and has a
+     * {@code Collection} constructor, so wrapping an ordered {@code List.of(..)} is behavior preserving.
+     */
+    private static final List<String> ORDERED_COLLECTIONS = Arrays.asList("java.util.ArrayList", "java.util.LinkedHashSet");
 
     private static final String PROSE_REWRITES_KEY = "use-list-of.prose-rewrites";
 
@@ -51,36 +61,42 @@ public class UseListOf extends Recipe {
             "- Anonymous-class initialization (`new ArrayList<>() {{ add(\"a\"); add(\"b\"); }}`), " +
             "which is replaced wholesale with `List.of(\"a\", \"b\")` (immutable result, matching the " +
             "anonymous-class idiom's typical intent).\n" +
-            "- A `new ArrayList<>()` declaration followed by a chain of `target.add(..)` statements, " +
-            "which is collapsed to `new ArrayList<>(List.of(..))` (preserving the mutable `ArrayList`).";
+            "- A `new ArrayList<>()` or `new LinkedHashSet<>()` declaration followed by a chain of " +
+            "`target.add(..)` statements, which is collapsed to `new ArrayList<>(List.of(..))` or " +
+            "`new LinkedHashSet<>(List.of(..))` (preserving both the mutable collection and its iteration order).";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
                         new UsesJavaVersion<>(10),
-                        new UsesMethod<>(NEW_ARRAY_LIST)),
+                        Preconditions.or(
+                                new UsesMethod<>(NEW_ARRAY_LIST),
+                                new UsesMethod<>(NEW_LINKED_HASH_SET))),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                         J.NewClass n = (J.NewClass) super.visitNewClass(newClass, ctx);
 
                         // Prose-pattern: see if visitBlock (above us on the cursor) decided this
-                        // initializer should be wrapped with `new ArrayList<>(List.of(..))`.
+                        // initializer should keep its type and wrap a `List.of(..)`.
                         Map<UUID, List<J.MethodInvocation>> rewrites = getCursor().getNearestMessage(PROSE_REWRITES_KEY);
-                        if (rewrites != null) {
+                        String orderedCollection = orderedCollectionType(n);
+                        if (rewrites != null && orderedCollection != null) {
                             List<J.MethodInvocation> adds = rewrites.get(n.getId());
                             if (adds != null) {
+                                String simpleName = orderedCollection.substring(orderedCollection.lastIndexOf('.') + 1);
                                 List<Expression> args = new ArrayList<>();
-                                StringJoiner joiner = new StringJoiner(", ", "new ArrayList<>(List.of(", "))");
+                                StringJoiner joiner = new StringJoiner(", ", "new " + simpleName + "<>(List.of(", "))");
                                 for (J.MethodInvocation add : adds) {
                                     args.add(add.getArguments().get(0));
                                     joiner.add("#{any()}");
                                 }
+                                maybeAddImport(orderedCollection);
                                 maybeAddImport("java.util.List");
                                 J applied = JavaTemplate.builder(joiner.toString())
                                         .contextSensitive()
-                                        .imports("java.util.ArrayList", "java.util.List")
+                                        .imports(orderedCollection, "java.util.List")
                                         .build()
                                         .apply(updateCursor(n), n.getCoordinates().replace(), args.toArray());
                                 // Reattach each add's prefix so the elements land one-per-line and any
@@ -124,7 +140,7 @@ public class UseListOf extends Recipe {
 
                     /**
                      * Re-applies the absorbed add statements' prefixes to the generated
-                     * {@code new ArrayList<>(List.of(..))} so each element keeps its own line and any
+                     * {@code new ArrayList<>(List.of(..))} constructor call so each element keeps its own line and any
                      * leading comments. {@code adds} holds one invocation per element, in order.
                      */
                     private J reattachElementPrefixes(J applied, List<J.MethodInvocation> adds) {
@@ -223,14 +239,14 @@ public class UseListOf extends Recipe {
 
                     /**
                      * Returns the variable name if {@code decl} is a single-variable, parameterized
-                     * {@code List<T>} declaration whose initializer is a no-arg {@code new ArrayList<>()}
-                     * with no anonymous-class body. Returns {@code null} otherwise.
+                     * declaration whose initializer is a no-arg {@code new ArrayList<>()} or
+                     * {@code new LinkedHashSet<>()} with no anonymous-class body. Returns {@code null} otherwise.
                      */
                     private String matchingTargetName(J.VariableDeclarations decl) {
                         if (decl.getVariables().size() != 1) {
                             return null;
                         }
-                        // Require parameterized LHS; for raw `List` we'd be guessing at a type argument.
+                        // Require parameterized LHS; for a raw `List` we'd be guessing at a type argument.
                         if (!(decl.getTypeExpression() instanceof J.ParameterizedType)) {
                             return null;
                         }
@@ -239,10 +255,10 @@ public class UseListOf extends Recipe {
                             return null;
                         }
                         J.NewClass nc = (J.NewClass) nv.getInitializer();
-                        if (!NEW_ARRAY_LIST.matches(nc)) {
+                        if (!NEW_ARRAY_LIST.matches(nc) && !NEW_LINKED_HASH_SET.matches(nc)) {
                             return null;
                         }
-                        if (!isExactlyArrayList(nc)) {
+                        if (orderedCollectionType(nc) == null) {
                             return null;
                         }
                         // A body would put us in the anonymous-class case handled by visitNewClass directly.
@@ -253,16 +269,31 @@ public class UseListOf extends Recipe {
                     }
 
                     /**
-                     * Skip `ArrayList` subclasses: `new ArrayList<>(..)` is not assignable to a subclass
-                     * declared type, and the subclass may carry behavior beyond a plain `ArrayList`
-                     * (issue #1181, matching #1113).
+                     * Returns the constructed type if it is exactly one of {@link #ORDERED_COLLECTIONS}, which the
+                     * prose rewrite retains rather than replacing. Subclasses return {@code null}: they may carry
+                     * behavior beyond the collection they extend, and the constructor we'd generate might not exist
+                     * on them (issue #1181, matching #1113).
+                     */
+                    private @Nullable String orderedCollectionType(J.NewClass nc) {
+                        JavaType type = nc.getClazz() != null ? nc.getClazz().getType() : null;
+                        for (String fqn : ORDERED_COLLECTIONS) {
+                            if (TypeUtils.isOfClassType(type, fqn)) {
+                                return fqn;
+                            }
+                        }
+                        return null;
+                    }
+
+                    /**
+                     * Skip `ArrayList` subclasses: the subclass may carry behavior beyond a plain `ArrayList`
+                     * that `List.of(..)` would drop (issue #1181, matching #1113).
                      */
                     private boolean isExactlyArrayList(J.NewClass nc) {
                         return TypeUtils.isOfClassType(nc.getClazz() != null ? nc.getClazz().getType() : null, "java.util.ArrayList");
                     }
 
                     /**
-                     * If {@code stmt} is {@code targetName.add(arg)} matching {@link #LIST_ADD},
+                     * If {@code stmt} is {@code targetName.add(arg)} matching {@link #COLLECTION_ADD},
                      * returns the single argument expression; otherwise {@code null}. Also returns
                      * {@code null} when the argument is the {@code null} literal, since
                      * {@code List.of(..)} rejects nulls.
@@ -272,7 +303,7 @@ public class UseListOf extends Recipe {
                             return null;
                         }
                         J.MethodInvocation mi = (J.MethodInvocation) stmt;
-                        if (!LIST_ADD.matches(mi)) {
+                        if (!COLLECTION_ADD.matches(mi)) {
                             return null;
                         }
                         if (mi.getArguments().size() != 1) {
