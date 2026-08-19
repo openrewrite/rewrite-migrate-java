@@ -77,7 +77,6 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferMathAddExact
   - org.openrewrite.java.migrate.guava.PreferMathSubtractExact
   - org.openrewrite.java.migrate.guava.PreferMathMultiplyExact
-  - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
 
   - tech.picnic.errorprone.refasterrules.InputStreamRulesRecipes
 

@@ -4006,27 +4006,6 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
-recipeName: org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
-examples:
-- description: '`NoGuavaAtomicsNewReferenceTest#noNewReference`'
-  sources:
-  - before: |
-      import com.google.common.util.concurrent.Atomics;
-
-      class Test {
-          Object o1 = Atomics.newReference();
-          Object o2 = Atomics.newReference(0);
-      }
-    after: |
-      import java.util.concurrent.atomic.AtomicReference;
-
-      class Test {
-          Object o1 = new AtomicReference<>();
-          Object o2 = new AtomicReference<>(0);
-      }
-    language: java
----
-type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
 examples:
 - description: '`NoGuavaCollections2TransformTest#replaceCollections2Transform`'
