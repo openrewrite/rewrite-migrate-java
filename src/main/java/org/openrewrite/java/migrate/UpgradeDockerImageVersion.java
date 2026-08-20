@@ -55,7 +55,9 @@ public class UpgradeDockerImageVersion extends Recipe {
             "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
             "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin, " +
             "preserving any tag suffix such as `-jre-alpine`. Image references built from build arguments or " +
-            "environment variables are left untouched, as their value can not be determined statically.";
+            "environment variables are left untouched, as their value can not be determined statically. A digest " +
+            "pin is dropped when the tag is upgraded, as the stale digest would otherwise keep resolving to the " +
+            "old image.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -80,11 +82,10 @@ public class UpgradeDockerImageVersion extends Recipe {
 
             String newTag = version + (matcher.group(2) == null ? "" : matcher.group(2));
             if (DEPRECATED_IMAGES.contains(imageName)) {
-                return image.withImageReference(NEW_IMAGE + ":" + newTag +
-                        image.getDigest().map(digest -> "@" + digest).orElse(""));
+                return image.withImageReference(NEW_IMAGE + ":" + newTag);
             }
             if (CURRENT_IMAGES.contains(imageName)) {
-                return image.withTag(newTag);
+                return image.withTag(newTag).withDigest(null);
             }
             return image.getTree();
         });

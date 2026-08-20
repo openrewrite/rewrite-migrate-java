@@ -103,14 +103,15 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
-    @Test
-    void preserveDigestWhenMigratingDeprecatedImage() {
+    @CsvSource({
+      "FROM openjdk:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
+      "FROM eclipse-temurin:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
+    })
+    @ParameterizedTest
+    void dropStaleDigestPin(String before, String after) {
         rewriteRun(
           spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
-          docker(
-            "FROM openjdk:11-jre@sha256:1234567890abcdef",
-            "FROM eclipse-temurin:25-jre@sha256:1234567890abcdef"
-          )
+          docker(before, after)
         );
     }
 
