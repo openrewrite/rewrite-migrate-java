@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,9 +61,7 @@ public class UpgradeDockerImageVersion extends Recipe {
     private static final int OLDEST_VERSION = 8;
     private static final Pattern VERSIONED_TAG = Pattern.compile("(\\d{1,3})(\\D.*)?");
 
-    private static final String ARG_DEFAULTS = "argDefaults";
-    private static final String ARG_UPGRADES = "argUpgrades";
-    private static final String ARG_BLOCKED = "argBlocked";
+    private static final String FROM_REPLACEMENTS = "fromReplacements";
 
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
@@ -91,14 +90,12 @@ public class UpgradeDockerImageVersion extends Recipe {
                         defaults.put(arg.getName().getText(), QuotedText.of(literalDefault.getText()).getText());
                     }
                 }
-                Map<String, String> upgrades = new HashMap<>();
-                Set<String> blocked = new HashSet<>();
-                getCursor().putMessage(ARG_DEFAULTS, defaults);
-                getCursor().putMessage(ARG_UPGRADES, upgrades);
-                getCursor().putMessage(ARG_BLOCKED, blocked);
 
+                ArgPlan plan = planUpgrades(file, defaults);
+                getCursor().putMessage(FROM_REPLACEMENTS, plan.getFromReplacements());
                 Docker.File f = super.visitFile(file, ctx);
-                upgrades.keySet().removeAll(blocked);
+
+                Map<String, String> upgrades = plan.getArgUpgrades();
                 if (upgrades.isEmpty()) {
                     return f;
                 }
@@ -116,90 +113,106 @@ public class UpgradeDockerImageVersion extends Recipe {
 
             @Override
             public Docker.From visitFrom(Docker.From from, ExecutionContext ctx) {
-                DockerFrom image = new DockerFrom(getCursor());
-                String imageName = image.getImageName().orElse("");
-                String tag = image.getTag().orElse("");
-                if (!containsVariable(imageName) && !containsVariable(tag)) {
-                    return upgradeLiteralFrom(image, imageName, tag);
+                if (containsVariable(from.getImageName()) || containsVariable(from.getTag())) {
+                    Map<UUID, Docker.From> replacements = getCursor().getNearestMessage(FROM_REPLACEMENTS, emptyMap());
+                    return replacements.getOrDefault(from.getId(), from);
                 }
-                return upgradeThroughArgs(from,
-                        getCursor().getNearestMessage(ARG_DEFAULTS, emptyMap()),
-                        getCursor().getNearestMessage(ARG_UPGRADES, new HashMap<>()),
-                        getCursor().getNearestMessage(ARG_BLOCKED, new HashSet<>()));
-            }
 
-            private Docker.From upgradeLiteralFrom(DockerFrom image, String imageName, String tag) {
-                String newTag = upgradedTag(tag);
+                DockerFrom image = new DockerFrom(getCursor());
+                String newTag = upgradedTag(image.getTag().orElse(""));
                 if (newTag == null) {
-                    return image.getTree();
+                    return from;
                 }
+                String imageName = image.getImageName().orElse("");
                 if (DEPRECATED_IMAGES.contains(imageName)) {
                     return image.withImageReference(NEW_IMAGE + ":" + newTag);
                 }
                 if (CURRENT_IMAGES.contains(imageName)) {
                     return image.withTag(newTag).withDigest(null);
                 }
-                return image.getTree();
-            }
-
-            private Docker.From upgradeThroughArgs(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades, Set<String> blocked) {
-                String imageVariable = soleVariable(from.getImageName());
-                String imageName = imageVariable == null ?
-                        literalText(from.getImageName()) :
-                        defaults.get(imageVariable);
-                if (imageName == null) {
-                    block(blocked, imageVariable, from.getTag() == null ? null : leadingVariable(from.getTag()));
-                    return from;
-                }
-
-                String tagVariable;
-                String tag;
-                if (from.getTag() == null) {
-                    // A single argument holding the whole reference, as in `FROM ${BASE_IMAGE}`
-                    String[] reference = splitReference(imageName);
-                    if (imageVariable == null || reference == null) {
-                        return from;
-                    }
-                    imageName = reference[0];
-                    tag = reference[1];
-                    tagVariable = imageVariable;
-                } else {
-                    tagVariable = leadingVariable(from.getTag());
-                    tag = tagVariable == null ? literalText(from.getTag()) : defaults.get(tagVariable);
-                }
-                if (tag == null) {
-                    return from;
-                }
-
-                String newImageName = upgradedImageName(imageName);
-                if (newImageName == null) {
-                    block(blocked, imageVariable, tagVariable);
-                    return from;
-                }
-                String newTag = upgradedTag(tag);
-                if (newTag == null) {
-                    return from;
-                }
-
-                if (tagVariable != null && tagVariable.equals(imageVariable)) {
-                    upgrades.put(imageVariable, newImageName + ":" + newTag);
-                    return from.withDigest(null);
-                }
-                if (tagVariable == null) {
-                    from = new DockerFrom(getCursor()).withTag(newTag);
-                } else {
-                    upgrades.put(tagVariable, newTag);
-                }
-                if (!newImageName.equals(imageName)) {
-                    if (imageVariable == null) {
-                        from = withImageName(from, newImageName);
-                    } else {
-                        upgrades.put(imageVariable, newImageName);
-                    }
-                }
-                return from.withDigest(null);
+                return from;
             }
         };
+    }
+
+    /**
+     * Withholding an argument can rule out the images that depend on it, which in turn can withhold further arguments,
+     * so the whole file is planned over and over until the set of withheld arguments stops growing. Only then is it
+     * known which `FROM` instructions may be rewritten, as an image may not be moved to a tag that is never written.
+     */
+    private ArgPlan planUpgrades(Docker.File file, Map<String, String> defaults) {
+        Map<String, String> upgrades = new HashMap<>();
+        Map<UUID, Docker.From> replacements = new HashMap<>();
+        Set<String> blocked = new HashSet<>();
+        int blockedCount;
+        do {
+            blockedCount = blocked.size();
+            upgrades.clear();
+            replacements.clear();
+            for (Docker.Stage stage : file.getStages()) {
+                Docker.From from = stage.getFrom();
+                if (containsVariable(from.getImageName()) || containsVariable(from.getTag())) {
+                    Docker.From planned = planFrom(from, defaults, upgrades, blocked);
+                    if (planned != from) {
+                        replacements.put(from.getId(), planned);
+                    }
+                }
+            }
+        } while (blockedCount < blocked.size());
+        return new ArgPlan(upgrades, replacements);
+    }
+
+    private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades, Set<String> blocked) {
+        String imageVariable = soleVariable(from.getImageName());
+        String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
+        String imageName = imageVariable == null ?
+                literalText(from.getImageName()) :
+                defaultValue(defaults, blocked, imageVariable);
+        if (imageName == null) {
+            return block(from, blocked, imageVariable, tagVariable);
+        }
+
+        String tag;
+        boolean wholeReference = from.getTag() == null;
+        if (wholeReference) {
+            // A single argument holding the whole reference, as in `FROM ${BASE_IMAGE}`
+            String[] reference = imageVariable == null ? null : splitReference(imageName);
+            if (reference == null) {
+                return block(from, blocked, imageVariable, null);
+            }
+            imageName = reference[0];
+            tag = reference[1];
+            tagVariable = imageVariable;
+        } else {
+            tag = tagVariable == null ? literalText(from.getTag()) : defaultValue(defaults, blocked, tagVariable);
+        }
+        if (tag == null) {
+            return block(from, blocked, imageVariable, tagVariable);
+        }
+
+        String newImageName = upgradedImageName(imageName);
+        String newTag = upgradedTag(tag);
+        if (newImageName == null || newTag == null) {
+            return block(from, blocked, imageVariable, tagVariable);
+        }
+
+        if (wholeReference) {
+            upgrades.put(requireNonNull(imageVariable), newImageName + ":" + newTag);
+            return from.withDigest(null);
+        }
+        if (tagVariable == null) {
+            from = from.withTag(withText(requireNonNull(from.getTag()), newTag));
+        } else {
+            upgrades.put(tagVariable, newTag);
+        }
+        if (!newImageName.equals(imageName)) {
+            if (imageVariable == null) {
+                from = from.withImageName(withText(from.getImageName(), newImageName));
+            } else {
+                upgrades.put(imageVariable, newImageName);
+            }
+        }
+        return from.withDigest(null);
     }
 
     private @Nullable String upgradedImageName(String imageName) {
@@ -222,19 +235,31 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     /**
-     * Withhold arguments feeding an image we do not upgrade, as a shared argument can not be bumped for one image alone.
+     * Withhold arguments feeding an image we leave alone, as a shared argument can not be bumped for one image alone.
      */
-    private static void block(Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
+    private static Docker.From block(Docker.From from, Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
         if (imageVariable != null) {
             blocked.add(imageVariable);
         }
         if (tagVariable != null) {
             blocked.add(tagVariable);
         }
+        return from;
     }
 
-    private static boolean containsVariable(String imageReferencePart) {
-        return imageReferencePart.indexOf('$') != -1;
+    private static @Nullable String defaultValue(Map<String, String> defaults, Set<String> blocked, String variable) {
+        return blocked.contains(variable) ? null : defaults.get(variable);
+    }
+
+    private static boolean containsVariable(Docker.@Nullable Argument argument) {
+        if (argument != null) {
+            for (Docker.ArgumentContent content : argument.getContents()) {
+                if (content instanceof Docker.EnvironmentVariable) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static Docker.@Nullable Literal literalDefault(Docker.Arg arg) {
@@ -282,10 +307,15 @@ public class UpgradeDockerImageVersion extends Recipe {
         return new String[]{withoutDigest.substring(0, colon), withoutDigest.substring(colon + 1)};
     }
 
-    private static Docker.From withImageName(Docker.From from, String imageName) {
-        Docker.Argument argument = from.getImageName();
+    private static Docker.Argument withText(Docker.Argument argument, String text) {
         Docker.Literal literal = requireNonNull(sole(argument.getContents(), Docker.Literal.class));
-        return from.withImageName(argument.withContents(singletonList(literal.withText(imageName))));
+        return argument.withContents(singletonList(literal.withText(text)));
+    }
+
+    @Value
+    private static class ArgPlan {
+        Map<String, String> argUpgrades;
+        Map<UUID, Docker.From> fromReplacements;
     }
 
     /**

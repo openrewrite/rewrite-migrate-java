@@ -223,6 +223,77 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
+    @Test
+    void keepDigestPinWhenTheSharedArgumentIsNotUpgraded() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG VERSION=11
+              FROM eclipse-temurin:${VERSION}@sha256:1234567890abcdef AS build
+              FROM node:${VERSION}
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepDeprecatedImageWhenTheSharedArgumentIsNotUpgraded() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG VERSION=11
+              FROM openjdk:${VERSION} AS build
+              FROM node:${VERSION}
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepImageArgumentWhenTheSharedVersionArgumentIsNotUpgraded() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG IMAGE=openjdk
+              ARG VERSION=11
+              FROM ${IMAGE}:${VERSION} AS build
+              FROM node:${VERSION}
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotUpgradeImageArgumentSharedWithAnUntaggedImage() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG BASE=openjdk
+              FROM ${BASE}:11-jre AS build
+              FROM ${BASE}
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotUpgradeImageArgumentSharedWithAnImageStuckOnItsTag() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG BASE=openjdk
+              FROM ${BASE}:11-jre AS build
+              FROM ${BASE}:latest
+              """
+          )
+        );
+    }
+
     @CsvSource({
       // Arguments that are not used in a FROM are left alone
       "JAVA_VERSION=11, eclipse-temurin:25-jre",
