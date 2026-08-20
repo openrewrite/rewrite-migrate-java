@@ -62,6 +62,7 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     private static final String ARG_DEFAULTS = "argDefaults";
     private static final String ARG_UPGRADES = "argUpgrades";
+    private static final String ARG_BLOCKED = "argBlocked";
 
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
@@ -87,14 +88,17 @@ public class UpgradeDockerImageVersion extends Recipe {
                 for (Docker.Arg arg : file.getGlobalArgs()) {
                     Docker.Literal literalDefault = literalDefault(arg);
                     if (literalDefault != null) {
-                        defaults.put(arg.getName().getText(), literalDefault.getText());
+                        defaults.put(arg.getName().getText(), QuotedText.of(literalDefault.getText()).getText());
                     }
                 }
                 Map<String, String> upgrades = new HashMap<>();
+                Set<String> blocked = new HashSet<>();
                 getCursor().putMessage(ARG_DEFAULTS, defaults);
                 getCursor().putMessage(ARG_UPGRADES, upgrades);
+                getCursor().putMessage(ARG_BLOCKED, blocked);
 
                 Docker.File f = super.visitFile(file, ctx);
+                upgrades.keySet().removeAll(blocked);
                 if (upgrades.isEmpty()) {
                     return f;
                 }
@@ -104,8 +108,9 @@ public class UpgradeDockerImageVersion extends Recipe {
                     if (upgraded == null || literalDefault == null) {
                         return arg;
                     }
+                    String requoted = QuotedText.of(literalDefault.getText()).requote(upgraded);
                     return arg.withValue(requireNonNull(arg.getValue())
-                            .withContents(singletonList(literalDefault.withText(upgraded))));
+                            .withContents(singletonList(literalDefault.withText(requoted))));
                 }));
             }
 
@@ -119,7 +124,8 @@ public class UpgradeDockerImageVersion extends Recipe {
                 }
                 return upgradeThroughArgs(from,
                         getCursor().getNearestMessage(ARG_DEFAULTS, emptyMap()),
-                        getCursor().getNearestMessage(ARG_UPGRADES, new HashMap<>()));
+                        getCursor().getNearestMessage(ARG_UPGRADES, new HashMap<>()),
+                        getCursor().getNearestMessage(ARG_BLOCKED, new HashSet<>()));
             }
 
             private Docker.From upgradeLiteralFrom(DockerFrom image, String imageName, String tag) {
@@ -139,14 +145,16 @@ public class UpgradeDockerImageVersion extends Recipe {
             /**
              * Upgrade a {@code FROM} whose image name or tag is built from a build argument, by rewriting the
              * default value of the global {@code ARG} that supplies it. Only arguments that carry a literal
-             * default are resolvable; anything else is left untouched.
+             * default are resolvable; anything else is left untouched. Arguments that also feed an image we
+             * do not upgrade are blocked, as a shared argument can not be bumped for one image alone.
              */
-            private Docker.From upgradeThroughArgs(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
+            private Docker.From upgradeThroughArgs(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades, Set<String> blocked) {
                 String imageVariable = soleVariable(from.getImageName());
                 String imageName = imageVariable == null ?
                         literalText(from.getImageName()) :
                         defaults.get(imageVariable);
                 if (imageName == null) {
+                    block(blocked, imageVariable, from.getTag() == null ? null : leadingVariable(from.getTag()));
                     return from;
                 }
 
@@ -170,14 +178,18 @@ public class UpgradeDockerImageVersion extends Recipe {
                 }
 
                 String newImageName = upgradedImageName(imageName);
+                if (newImageName == null) {
+                    block(blocked, imageVariable, tagVariable);
+                    return from;
+                }
                 String newTag = upgradedTag(tag);
-                if (newImageName == null || newTag == null) {
+                if (newTag == null) {
                     return from;
                 }
 
                 if (tagVariable != null && tagVariable.equals(imageVariable)) {
                     upgrades.put(imageVariable, newImageName + ":" + newTag);
-                    return from;
+                    return from.withDigest(null);
                 }
                 if (tagVariable == null) {
                     from = new DockerFrom(getCursor()).withTag(newTag);
@@ -213,6 +225,15 @@ public class UpgradeDockerImageVersion extends Recipe {
             return null;
         }
         return version + (matcher.group(2) == null ? "" : matcher.group(2));
+    }
+
+    private static void block(Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
+        if (imageVariable != null) {
+            blocked.add(imageVariable);
+        }
+        if (tagVariable != null) {
+            blocked.add(tagVariable);
+        }
     }
 
     private static boolean containsVariable(String imageReferencePart) {
@@ -275,5 +296,30 @@ public class UpgradeDockerImageVersion extends Recipe {
         Docker.Argument argument = from.getImageName();
         Docker.Literal literal = requireNonNull(sole(argument.getContents(), Docker.Literal.class));
         return from.withImageName(argument.withContents(singletonList(literal.withText(imageName))));
+    }
+
+    /**
+     * The source text of an {@code ARG} default value, split into the quotes surrounding it and the text within, as
+     * the parser keeps any quotes as part of the literal. Splitting the two apart lets a value be matched unquoted,
+     * and written back with the very same quoting.
+     */
+    @Value
+    private static class QuotedText {
+        String quote;
+        String text;
+
+        static QuotedText of(String source) {
+            if (source.length() > 1) {
+                char first = source.charAt(0);
+                if ((first == '"' || first == '\'') && source.charAt(source.length() - 1) == first) {
+                    return new QuotedText(String.valueOf(first), source.substring(1, source.length() - 1));
+                }
+            }
+            return new QuotedText("", source);
+        }
+
+        String requote(String replacement) {
+            return quote + replacement + quote;
+        }
     }
 }

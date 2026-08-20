@@ -100,6 +100,10 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       // The argument holds the image name only
       "BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:11-jre, BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:25-jre",
       "BASE_IMAGE=openjdk, ${BASE_IMAGE}:11-jre, BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:25-jre",
+      // A quoted default value keeps its quotes
+      "JAVA_VERSION=\"11\", eclipse-temurin:${JAVA_VERSION}, JAVA_VERSION=\"25\", eclipse-temurin:${JAVA_VERSION}",
+      "IMAGE_TAG=\"11-jre\", eclipse-temurin:${IMAGE_TAG}, IMAGE_TAG=\"25-jre\", eclipse-temurin:${IMAGE_TAG}",
+      "BASE_IMAGE=\"openjdk:11-jre\", ${BASE_IMAGE}, BASE_IMAGE=\"eclipse-temurin:25-jre\", ${BASE_IMAGE}",
     })
     @ParameterizedTest
     void upgradeArgumentDefaultValue(String beforeArg, String beforeFrom, String afterArg, String afterFrom) {
@@ -114,6 +118,23 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
               ARG %s
               FROM %s
               """.formatted(afterArg, afterFrom)
+          )
+        );
+    }
+
+    @Test
+    void upgradeSingleQuotedArgumentDefaultValue() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG IMAGE_TAG='11-jre'
+              FROM eclipse-temurin:${IMAGE_TAG}
+              """,
+            """
+              ARG IMAGE_TAG='25-jre'
+              FROM eclipse-temurin:${IMAGE_TAG}
+              """
           )
         );
     }
@@ -171,6 +192,37 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
+    @Test
+    void dropDigestPinWhenUpgradingArgumentHoldingWholeReference() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG BASE_IMAGE=eclipse-temurin:11-jre
+              FROM ${BASE_IMAGE}@sha256:1234567890abcdef
+              """,
+            """
+              ARG BASE_IMAGE=eclipse-temurin:25-jre
+              FROM ${BASE_IMAGE}
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotUpgradeArgumentSharedWithAnImageWeDoNotUpgrade() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG VERSION=11
+              FROM eclipse-temurin:${VERSION} AS build
+              FROM node:${VERSION}
+              """
+          )
+        );
+    }
+
     @CsvSource({
       // Arguments that are not used in a FROM are left alone
       "JAVA_VERSION=11, eclipse-temurin:25-jre",
@@ -181,6 +233,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "JAVA_VERSION=26, eclipse-temurin:${JAVA_VERSION}-jre",
       // Arguments not holding a leading version are left alone
       "JAVA_VERSION=latest, eclipse-temurin:${JAVA_VERSION}",
+      "JAVA_VERSION=\"latest\", eclipse-temurin:${JAVA_VERSION}",
       "SUFFIX=-jre, eclipse-temurin:11${SUFFIX}",
       // Arguments that only hold part of the image name are left alone
       "REGISTRY=docker.io, ${REGISTRY}/eclipse-temurin:11-jre",
