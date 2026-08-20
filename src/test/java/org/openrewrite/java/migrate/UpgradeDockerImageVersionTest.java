@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.test.RewriteTest;
@@ -58,6 +59,77 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
           docker(
             "FROM %s:%s".formatted(fromImage, fromTag),
             "FROM %s:%s".formatted(toImage, toTag)
+          )
+        );
+    }
+
+    @CsvSource({
+      "FROM ${IMAGE_NAME}:${IMAGE_TAG}",
+      "FROM $IMAGE_NAME:$IMAGE_TAG",
+      "FROM ${IMAGE_NAME}:11",
+      "FROM eclipse-temurin:${IMAGE_TAG}",
+      "FROM ${REGISTRY}/eclipse-temurin:11-jre",
+    })
+    @ParameterizedTest
+    void doNotChangeVariableImageReferences(String from) {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG IMAGE_NAME
+              ARG IMAGE_TAG
+              ARG REGISTRY
+              %s
+              """.formatted(from)
+          )
+        );
+    }
+
+    @CsvSource({
+      // Unrelated images are left alone
+      "FROM ubuntu:22.04",
+      "FROM node:20-alpine",
+      // Tags without a leading Java version are left alone
+      "FROM eclipse-temurin:latest",
+      // Already at or beyond the target version
+      "FROM eclipse-temurin:25-jre",
+      "FROM eclipse-temurin:26-jre",
+    })
+    @ParameterizedTest
+    void doNotChangeUnrelatedImages(String from) {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(from)
+        );
+    }
+
+    @CsvSource({
+      "FROM openjdk:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
+      "FROM eclipse-temurin:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
+    })
+    @ParameterizedTest
+    void dropStaleDigestPin(String before, String after) {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(before, after)
+        );
+    }
+
+    @Test
+    void changeLiteralImageAlongsideVariableImage() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG IMAGE_TAG
+              FROM eclipse-temurin:${IMAGE_TAG} AS builder
+              FROM eclipse-temurin:11-jre
+              """,
+            """
+              ARG IMAGE_TAG
+              FROM eclipse-temurin:${IMAGE_TAG} AS builder
+              FROM eclipse-temurin:25-jre
+              """
           )
         );
     }
