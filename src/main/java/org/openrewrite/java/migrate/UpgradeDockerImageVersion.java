@@ -142,12 +142,6 @@ public class UpgradeDockerImageVersion extends Recipe {
                 return image.getTree();
             }
 
-            /**
-             * Upgrade a {@code FROM} whose image name or tag is built from a build argument, by rewriting the
-             * default value of the global {@code ARG} that supplies it. Only arguments that carry a literal
-             * default are resolvable; anything else is left untouched. Arguments that also feed an image we
-             * do not upgrade are blocked, as a shared argument can not be bumped for one image alone.
-             */
             private Docker.From upgradeThroughArgs(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades, Set<String> blocked) {
                 String imageVariable = soleVariable(from.getImageName());
                 String imageName = imageVariable == null ?
@@ -161,7 +155,7 @@ public class UpgradeDockerImageVersion extends Recipe {
                 String tagVariable;
                 String tag;
                 if (from.getTag() == null) {
-                    // A single argument holding the whole `name:tag` reference, as in `FROM ${BASE_IMAGE}`
+                    // A single argument holding the whole reference, as in `FROM ${BASE_IMAGE}`
                     String[] reference = splitReference(imageName);
                     if (imageVariable == null || reference == null) {
                         return from;
@@ -227,6 +221,9 @@ public class UpgradeDockerImageVersion extends Recipe {
         return version + (matcher.group(2) == null ? "" : matcher.group(2));
     }
 
+    /**
+     * Withhold arguments feeding an image we do not upgrade, as a shared argument can not be bumped for one image alone.
+     */
     private static void block(Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
         if (imageVariable != null) {
             blocked.add(imageVariable);
@@ -255,10 +252,6 @@ public class UpgradeDockerImageVersion extends Recipe {
         return variable == null ? null : variable.getName();
     }
 
-    /**
-     * The name of the variable a tag starts with, as in the {@code JAVA_VERSION} of {@code ${JAVA_VERSION}-jre},
-     * or null when the tag does not start with a variable or holds a further variable we can not resolve.
-     */
     private static @Nullable String leadingVariable(Docker.Argument argument) {
         List<Docker.ArgumentContent> contents = argument.getContents();
         if (contents.isEmpty() || !(contents.get(0) instanceof Docker.EnvironmentVariable)) {
@@ -279,9 +272,6 @@ public class UpgradeDockerImageVersion extends Recipe {
         return null;
     }
 
-    /**
-     * Splits an image reference into its name and tag, dropping any digest; null when there is no tag.
-     */
     private static String @Nullable [] splitReference(String reference) {
         int at = reference.indexOf('@');
         String withoutDigest = at == -1 ? reference : reference.substring(0, at);
@@ -299,9 +289,8 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     /**
-     * The source text of an {@code ARG} default value, split into the quotes surrounding it and the text within, as
-     * the parser keeps any quotes as part of the literal. Splitting the two apart lets a value be matched unquoted,
-     * and written back with the very same quoting.
+     * The parser keeps any quotes around an {@code ARG} default value as part of the literal text, so they have to be
+     * taken off before matching a version, and put back on when writing the upgraded value.
      */
     @Value
     private static class QuotedText {
