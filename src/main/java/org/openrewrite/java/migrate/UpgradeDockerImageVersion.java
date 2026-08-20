@@ -17,12 +17,18 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-import org.openrewrite.docker.ChangeFrom;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.docker.trait.DockerFrom;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.util.Arrays.asList;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -33,36 +39,58 @@ public class UpgradeDockerImageVersion extends Recipe {
             example = "11")
     Integer version;
 
-    private static final String[] DEPRECATED_IMAGES = {"openjdk", "adoptopenjdk"};
-    private static final String[] CURRENT_IMAGES = {
+    private static final String NEW_IMAGE = "eclipse-temurin";
+    private static final Set<String> DEPRECATED_IMAGES = new HashSet<>(asList("openjdk", "adoptopenjdk"));
+    private static final Set<String> CURRENT_IMAGES = new HashSet<>(asList(
             "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
             "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
             "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
-    };
+    ));
+
+    private static final int OLDEST_VERSION = 8;
+    private static final Pattern VERSIONED_TAG = Pattern.compile("(\\d{1,3})(\\D.*)?");
 
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
             "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
-            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin. " +
-            "Uses a single `ChangeFrom` glob capture per (image, oldVersion) to preserve any tag suffix.";
+            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin, " +
+            "preserving any tag suffix such as `-jre-alpine`. Image references built from build arguments or " +
+            "environment variables are left untouched, as their value can not be determined statically.";
 
     @Override
-    public List<Recipe> getRecipeList() {
-        List<Recipe> recipes = new ArrayList<>();
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         if (version == null) {
-            return recipes;
+            return TreeVisitor.noop();
         }
-        String newVer = version.toString();
-        for (int oldVersion = 8; oldVersion < version; oldVersion++) {
-            String oldTag = oldVersion + "*";
-            String newTag = newVer + "$1";
-            for (String image : DEPRECATED_IMAGES) {
-                recipes.add(new ChangeFrom(image, oldTag, null, null, "eclipse-temurin", newTag, null, null));
+        return new DockerFrom.Matcher().asVisitor((image, ctx) -> {
+            String imageName = image.getImageName().orElse("");
+            String tag = image.getTag().orElse("");
+            if (containsVariable(imageName) || containsVariable(tag)) {
+                return image.getTree();
             }
-            for (String image : CURRENT_IMAGES) {
-                recipes.add(new ChangeFrom(image, oldTag, null, null, null, newTag, null, null));
+
+            Matcher matcher = VERSIONED_TAG.matcher(tag);
+            if (!matcher.matches()) {
+                return image.getTree();
             }
-        }
-        return recipes;
+            int currentVersion = Integer.parseInt(matcher.group(1));
+            if (currentVersion < OLDEST_VERSION || version <= currentVersion) {
+                return image.getTree();
+            }
+
+            String newTag = version + (matcher.group(2) == null ? "" : matcher.group(2));
+            if (DEPRECATED_IMAGES.contains(imageName)) {
+                return image.withImageReference(NEW_IMAGE + ":" + newTag +
+                        image.getDigest().map(digest -> "@" + digest).orElse(""));
+            }
+            if (CURRENT_IMAGES.contains(imageName)) {
+                return image.withTag(newTag);
+            }
+            return image.getTree();
+        });
+    }
+
+    private static boolean containsVariable(String imageReferencePart) {
+        return imageReferencePart.indexOf('$') != -1;
     }
 }
