@@ -56,7 +56,6 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");
                     return JavaTemplate.builder("new TreeMap<>()")
-                            .contextSensitive()
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
@@ -65,7 +64,6 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");
                     return JavaTemplate.builder("new TreeMap<>(#{any(java.util.Comparator)})")
-                            .contextSensitive()
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
@@ -74,7 +72,6 @@ public class NoGuavaMapsNewTreeMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.TreeMap");
                     return JavaTemplate.builder("new TreeMap<>(#{any(java.util.Map)})")
-                            .contextSensitive()
                             .imports("java.util.TreeMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));

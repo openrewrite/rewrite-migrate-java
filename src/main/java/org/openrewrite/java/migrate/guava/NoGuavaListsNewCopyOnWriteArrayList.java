@@ -55,7 +55,6 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
                     return JavaTemplate.builder("new CopyOnWriteArrayList<>()")
-                            .contextSensitive()
                             .imports("java.util.concurrent.CopyOnWriteArrayList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
@@ -65,7 +64,6 @@ public class NoGuavaListsNewCopyOnWriteArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.concurrent.CopyOnWriteArrayList");
                     return JavaTemplate.builder("new CopyOnWriteArrayList<>(#{any(java.util.Collection)})")
-                            .contextSensitive()
                             .imports("java.util.concurrent.CopyOnWriteArrayList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));

@@ -18,10 +18,12 @@ package org.openrewrite.java.migrate.guava;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.groovy.GroovyParser;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
 
 
@@ -31,7 +33,8 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NoGuavaMapsNewHashMap())
-          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"))
+          .parser(GroovyParser.builder().classpathFromResource(new InMemoryExecutionContext(), "guava"));
     }
 
     @DocumentExample
@@ -83,6 +86,60 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
               class Test {
                   Map<Integer, Integer> m = Collections.emptyMap();
                   Map<Integer, Integer> cardinalsWorldSeries = new HashMap<>(m);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceWithNewHashMapWithMapInGroovy() {
+        //language=groovy
+        rewriteRun(
+          groovy(
+            """
+              import com.google.common.collect.Lists
+              import com.google.common.collect.Maps
+
+              class Test extends Specification {
+                  def 'test get_privilege_set'() {
+                      def registry = Mock(Registry)
+
+                      when:
+                      def result = ms.get_privilege_set(null, null, null)
+
+                      then:
+                      result == new PrincipalPrivilegeSet(null
+                              , null
+                              , Maps.newHashMap(Map.of("users",
+                              Lists.newArrayList(new PrivilegeGrantInfo("ALL", 0, "hadoop", PrincipalType.ROLE, true)))))
+                      registry.timer(_) >> timer
+                      timer.record(_, _) >> {}
+                      registry.createId(_ as String) >> id
+                  }
+              }
+              """,
+            """
+              import com.google.common.collect.Lists
+
+              import java.util.HashMap
+
+              class Test extends Specification {
+                  def 'test get_privilege_set'() {
+                      def registry = Mock(Registry)
+
+                      when:
+                      def result = ms.get_privilege_set(null, null, null)
+
+                      then:
+                      result == new PrincipalPrivilegeSet(null
+                              , null
+                              , new HashMap<>(Map.of("users",
+                              Lists.newArrayList(new PrivilegeGrantInfo("ALL", 0, "hadoop", PrincipalType.ROLE, true)))))
+                      registry.timer(_) >> timer
+                      timer.record(_, _) >> {}
+                      registry.createId(_ as String) >> id
+                  }
               }
               """
           )

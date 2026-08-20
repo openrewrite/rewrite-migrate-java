@@ -52,7 +52,6 @@ public class NoGuavaSetsNewConcurrentHashSet extends Recipe {
                     maybeAddImport("java.util.Collections");
                     maybeAddImport("java.util.concurrent.ConcurrentHashMap");
                     return JavaTemplate.builder("Collections.newSetFromMap(new ConcurrentHashMap<>())")
-                            .contextSensitive()
                             .imports("java.util.Collections")
                             .imports("java.util.concurrent.ConcurrentHashMap")
                             .build()

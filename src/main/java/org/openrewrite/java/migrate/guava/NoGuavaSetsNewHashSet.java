@@ -54,7 +54,6 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                         maybeRemoveImport("com.google.common.collect.Sets");
                         maybeAddImport("java.util.HashSet");
                         return JavaTemplate.builder("new HashSet<>()")
-                                .contextSensitive()
                                 .imports("java.util.HashSet")
                                 .build()
                                 .apply(getCursor(), method.getCoordinates().replace());
@@ -65,7 +64,6 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                             maybeRemoveImport("com.google.common.collect.Sets");
                             maybeAddImport("java.util.HashSet");
                             return JavaTemplate.builder("new HashSet<>(#{any(java.util.Collection)})")
-                                    .contextSensitive()
                                     .imports("java.util.HashSet")
                                     .build()
                                     .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
@@ -79,7 +77,6 @@ public class NoGuavaSetsNewHashSet extends Recipe {
                     maybeAddImport("java.util.HashSet");
                     maybeAddImport("java.util.Arrays");
                     JavaTemplate newHashSetVarargs = JavaTemplate.builder("new HashSet<>(Arrays.asList(" + method.getArguments().stream().map(a -> "#{any()}").collect(joining(",")) + "))")
-                            .contextSensitive()
                             .imports("java.util.Arrays")
                             .imports("java.util.HashSet")
                             .build();

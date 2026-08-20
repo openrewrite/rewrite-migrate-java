@@ -54,7 +54,6 @@ public class NoGuavaMapsNewHashMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.HashMap");
                     return JavaTemplate.builder("new HashMap<>()")
-                            .contextSensitive()
                             .imports("java.util.HashMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
@@ -63,7 +62,6 @@ public class NoGuavaMapsNewHashMap extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Maps");
                     maybeAddImport("java.util.HashMap");
                     return JavaTemplate.builder("new HashMap<>(#{any(java.util.Map)})")
-                            .contextSensitive()
                             .imports("java.util.HashMap")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
