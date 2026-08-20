@@ -86,6 +86,133 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @CsvSource({
+      // The argument holds the bare version
+      "java_version=17, eclipse-temurin:${java_version}, java_version=25, eclipse-temurin:${java_version}",
+      "java_version=17, eclipse-temurin:$java_version, java_version=25, eclipse-temurin:$java_version",
+      "JAVA_VERSION=11, eclipse-temurin:${JAVA_VERSION}-jre, JAVA_VERSION=25, eclipse-temurin:${JAVA_VERSION}-jre",
+      "JAVA_VERSION=8, amazoncorretto:${JAVA_VERSION}-alpine, JAVA_VERSION=25, amazoncorretto:${JAVA_VERSION}-alpine",
+      // The argument holds the version and a suffix
+      "IMAGE_TAG=11-jre-alpine, eclipse-temurin:${IMAGE_TAG}, IMAGE_TAG=25-jre-alpine, eclipse-temurin:${IMAGE_TAG}",
+      // The argument holds the whole image reference
+      "BASE_IMAGE=eclipse-temurin:11-jre, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
+      "BASE_IMAGE=openjdk:11-jre, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
+      "BASE_IMAGE=eclipse-temurin:11-jre@sha256:1234567890abcdef, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
+      // The argument holds the image name only
+      "BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:11-jre, BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:25-jre",
+      "BASE_IMAGE=openjdk, ${BASE_IMAGE}:11-jre, BASE_IMAGE=eclipse-temurin, ${BASE_IMAGE}:25-jre",
+    })
+    @ParameterizedTest
+    void upgradeArgumentDefaultValue(String beforeArg, String beforeFrom, String afterArg, String afterFrom) {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG %s
+              FROM %s
+              """.formatted(beforeArg, beforeFrom),
+            """
+              ARG %s
+              FROM %s
+              """.formatted(afterArg, afterFrom)
+          )
+        );
+    }
+
+    @Test
+    void upgradeDeprecatedImageNameAlongsideArgumentDefaultValue() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG JAVA_VERSION=11
+              FROM openjdk:${JAVA_VERSION}-jre
+              """,
+            """
+              ARG JAVA_VERSION=25
+              FROM eclipse-temurin:${JAVA_VERSION}-jre
+              """
+          )
+        );
+    }
+
+    @Test
+    void upgradeArgumentDefaultValueSharedByStages() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG JAVA_VERSION=11
+              FROM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
+              FROM eclipse-temurin:${JAVA_VERSION}-jre
+              """,
+            """
+              ARG JAVA_VERSION=25
+              FROM eclipse-temurin:${JAVA_VERSION}-jdk AS builder
+              FROM eclipse-temurin:${JAVA_VERSION}-jre
+              """
+          )
+        );
+    }
+
+    @Test
+    void dropDigestPinWhenUpgradingArgumentDefaultValue() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG JAVA_VERSION=11
+              FROM eclipse-temurin:${JAVA_VERSION}-jre@sha256:1234567890abcdef
+              """,
+            """
+              ARG JAVA_VERSION=25
+              FROM eclipse-temurin:${JAVA_VERSION}-jre
+              """
+          )
+        );
+    }
+
+    @CsvSource({
+      // Arguments that are not used in a FROM are left alone
+      "JAVA_VERSION=11, eclipse-temurin:25-jre",
+      // Arguments for unrelated images are left alone
+      "NODE_VERSION=20, node:${NODE_VERSION}-alpine",
+      // Arguments already at or beyond the target version are left alone
+      "JAVA_VERSION=25, eclipse-temurin:${JAVA_VERSION}-jre",
+      "JAVA_VERSION=26, eclipse-temurin:${JAVA_VERSION}-jre",
+      // Arguments not holding a leading version are left alone
+      "JAVA_VERSION=latest, eclipse-temurin:${JAVA_VERSION}",
+      "SUFFIX=-jre, eclipse-temurin:11${SUFFIX}",
+      // Arguments that only hold part of the image name are left alone
+      "REGISTRY=docker.io, ${REGISTRY}/eclipse-temurin:11-jre",
+    })
+    @ParameterizedTest
+    void doNotChangeUnrelatedArgumentDefaultValues(String arg, String from) {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG %s
+              FROM %s
+              """.formatted(arg, from)
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeArgumentDeclaredAfterFirstFrom() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              FROM eclipse-temurin:25-jre
+              ARG JAVA_VERSION=11
+              RUN echo "${JAVA_VERSION}"
+              """
+          )
+        );
+    }
+
+    @CsvSource({
       // Unrelated images are left alone
       "FROM ubuntu:22.04",
       "FROM node:20-alpine",
