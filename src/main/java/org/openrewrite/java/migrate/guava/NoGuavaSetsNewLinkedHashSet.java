@@ -58,7 +58,6 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return JavaTemplate.builder("new LinkedHashSet<>()")
-                            .contextSensitive()
                             .imports("java.util.LinkedHashSet")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
@@ -68,7 +67,6 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return JavaTemplate.builder("new LinkedHashSet<>(#{any(java.util.Collection)})")
-                            .contextSensitive()
                             .imports("java.util.LinkedHashSet")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));
@@ -77,7 +75,6 @@ public class NoGuavaSetsNewLinkedHashSet extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Sets");
                     maybeAddImport("java.util.LinkedHashSet");
                     return JavaTemplate.builder("new LinkedHashSet<>(#{any(int)})")
-                            .contextSensitive()
                             .imports("java.util.LinkedHashSet")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0));

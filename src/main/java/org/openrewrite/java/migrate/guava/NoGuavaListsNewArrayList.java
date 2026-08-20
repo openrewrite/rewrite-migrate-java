@@ -57,7 +57,6 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return JavaTemplate.builder("new ArrayList<>()")
-                            .contextSensitive()
                             .imports("java.util.ArrayList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace());
@@ -67,7 +66,6 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return JavaTemplate.builder("new ArrayList<>(#{any(java.util.Collection)})")
-                            .contextSensitive()
                             .imports("java.util.ArrayList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(),
@@ -77,7 +75,6 @@ public class NoGuavaListsNewArrayList extends Recipe {
                     maybeRemoveImport("com.google.common.collect.Lists");
                     maybeAddImport("java.util.ArrayList");
                     return JavaTemplate.builder("new ArrayList<>(#{any(int)})")
-                            .contextSensitive()
                             .imports("java.util.ArrayList")
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(),

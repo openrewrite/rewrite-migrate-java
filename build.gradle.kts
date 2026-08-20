@@ -83,6 +83,7 @@ dependencies {
     runtimeOnly("tech.picnic.error-prone-support:error-prone-contrib:latest.release:recipes")
     testImplementation("org.junit-pioneer:junit-pioneer:2.0.0")
 
+    testImplementation("org.openrewrite:rewrite-groovy")
     testImplementation("org.openrewrite:rewrite-test")
     testImplementation("org.openrewrite.gradle.tooling:model:$rewriteVersion")
 
