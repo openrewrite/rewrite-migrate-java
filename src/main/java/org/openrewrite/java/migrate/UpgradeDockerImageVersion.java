@@ -24,6 +24,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.docker.DockerIsoVisitor;
 import org.openrewrite.docker.trait.DockerFrom;
+import org.openrewrite.docker.trait.ImageName;
 import org.openrewrite.docker.tree.Docker;
 import org.openrewrite.internal.ListUtils;
 
@@ -161,9 +162,8 @@ public class UpgradeDockerImageVersion extends Recipe {
     private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
-        String variableRegistry = imageVariable == null ? repositoryAfterVariableRegistry(from.getImageName()) : null;
         String imageName = imageVariable == null ?
-                (variableRegistry == null ? from.getImageName().getText() : variableRegistry) :
+                from.getImageName().getTextWithVariables() :
                 defaults.get(imageVariable);
         if (imageName == null) {
             return from;
@@ -203,8 +203,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         }
         if (!newImageName.equals(imageName)) {
             if (imageVariable == null) {
-                from = from.withImageName(withText(from.getImageName(),
-                        variableRegistry == null ? newImageName : "/" + newImageName));
+                from = from.withImageName(withRepository(from.getImageName(), imageName, newImageName));
             } else {
                 upgrades.put(imageVariable, newImageName);
             }
@@ -213,43 +212,12 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private @Nullable String upgradedImageName(String imageName) {
-        int repository = repositoryIndex(imageName);
-        String registry = imageName.substring(0, repository);
-        String name = imageName.substring(repository);
-        if (DEPRECATED_IMAGES.contains(name)) {
-            return registry + NEW_IMAGE;
+        ImageName parsed = ImageName.parse(imageName);
+        if (DEPRECATED_IMAGES.contains(parsed.getPath())) {
+            String registry = parsed.getRegistry();
+            return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(name) ? imageName : null;
-    }
-
-    /**
-     * Where the repository starts within an image name. Docker reads a leading path segment holding a `.` or a `:`,
-     * or `localhost`, as the registry to pull from; anything else belongs to the repository, as in `azul/zulu-openjdk`.
-     */
-    private static int repositoryIndex(String imageName) {
-        int slash = imageName.indexOf('/');
-        if (slash == -1) {
-            return 0;
-        }
-        String host = imageName.substring(0, slash);
-        return "localhost".equals(host) || host.indexOf('.') != -1 || host.indexOf(':') != -1 ? slash + 1 : 0;
-    }
-
-    /**
-     * The repository of an image name whose registry is a variable, as in the `eclipse-temurin` of
-     * `${REGISTRY}/eclipse-temurin`, or null when the name is not of that shape.
-     */
-    private static @Nullable String repositoryAfterVariableRegistry(Docker.Argument imageName) {
-        List<Docker.ArgumentContent> contents = imageName.getContents();
-        if (contents.size() < 2 || !(contents.get(0) instanceof Docker.EnvironmentVariable)) {
-            return null;
-        }
-        Docker.ArgumentContent last = contents.get(contents.size() - 1);
-        if (!(last instanceof Docker.Literal)) {
-            return null;
-        }
-        String text = ((Docker.Literal) last).getText();
-        return text.startsWith("/") ? text.substring(1) : null;
+        return CURRENT_IMAGES.contains(parsed.getPath()) ? imageName : null;
     }
 
     private @Nullable String upgradedTag(String tag) {
@@ -301,6 +269,23 @@ public class UpgradeDockerImageVersion extends Recipe {
             return null;
         }
         return new String[]{withoutDigest.substring(0, colon), withoutDigest.substring(colon + 1)};
+    }
+
+    /// The registry an image is pulled from is left as written, which may be a variable, so only the trailing
+    /// repository is rewritten.
+    private static Docker.Argument withRepository(Docker.Argument imageName, String from, String to) {
+        String oldPath = ImageName.parse(from).getPath();
+        String newPath = ImageName.parse(to).getPath();
+        return imageName.withContents(ListUtils.mapLast(imageName.getContents(), content -> {
+            if (!(content instanceof Docker.Literal)) {
+                return content;
+            }
+            Docker.Literal literal = (Docker.Literal) content;
+            String text = literal.getText();
+            return text.endsWith(oldPath) ?
+                    literal.withText(text.substring(0, text.length() - oldPath.length()) + newPath) :
+                    literal;
+        }));
     }
 
     private static Docker.Argument withText(Docker.Argument argument, String text) {

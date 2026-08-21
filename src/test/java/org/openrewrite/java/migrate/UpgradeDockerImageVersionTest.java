@@ -351,6 +351,8 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "docker.io/openjdk:11-jre, docker.io/eclipse-temurin:25-jre",
       "myregistry:5000/openjdk:11-jre, myregistry:5000/eclipse-temurin:25-jre",
       "localhost/eclipse-temurin:11-jre, localhost/eclipse-temurin:25-jre",
+      // A repository name may not be uppercase, so an uppercase segment can only be a registry
+      "MyRegistry/openjdk:11-jre, MyRegistry/eclipse-temurin:25-jre",
       // A registry the FROM builds from an argument
       "${REGISTRY}/eclipse-temurin:11-jre, ${REGISTRY}/eclipse-temurin:25-jre",
       "${REGISTRY}/openjdk:11-jre, ${REGISTRY}/eclipse-temurin:25-jre",
