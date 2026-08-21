@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -69,26 +70,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
-    @CsvSource({
-      "FROM ${IMAGE_NAME}:${IMAGE_TAG}",
-      "FROM $IMAGE_NAME:$IMAGE_TAG",
-      "FROM ${IMAGE_NAME}:11",
-      "FROM eclipse-temurin:${IMAGE_TAG}",
-      "FROM ${REGISTRY}/eclipse-temurin:11-jre",
-    })
-    @ParameterizedTest
-    void doNotChangeVariableImageReferences(String from) {
-        rewriteRun(
-          docker(
-            """
-              ARG IMAGE_NAME
-              ARG IMAGE_TAG
-              ARG REGISTRY
-              %s
-              """.formatted(from)
-          )
-        );
-    }
 
     @CsvSource({
       // The argument holds the bare version
@@ -209,11 +190,16 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @Test
-    void doNotUpgradeArgumentSharedWithAnImageWeDoNotUpgrade() {
+    void upgradeArgumentSharedWithAnImageWeDoNotUpgrade() {
         rewriteRun(
           docker(
             """
               ARG VERSION=11
+              FROM eclipse-temurin:${VERSION} AS build
+              FROM node:${VERSION}
+              """,
+            """
+              ARG VERSION=25
               FROM eclipse-temurin:${VERSION} AS build
               FROM node:${VERSION}
               """
@@ -222,25 +208,17 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @Test
-    void keepDigestPinWhenTheSharedArgumentIsNotUpgraded() {
+    void dropDigestPinWhenUpgradingASharedArgument() {
         rewriteRun(
           docker(
             """
               ARG VERSION=11
               FROM eclipse-temurin:${VERSION}@sha256:1234567890abcdef AS build
               FROM node:${VERSION}
-              """
-          )
-        );
-    }
-
-    @Test
-    void keepDeprecatedImageWhenTheSharedArgumentIsNotUpgraded() {
-        rewriteRun(
-          docker(
+              """,
             """
-              ARG VERSION=11
-              FROM openjdk:${VERSION} AS build
+              ARG VERSION=25
+              FROM eclipse-temurin:${VERSION} AS build
               FROM node:${VERSION}
               """
           )
@@ -248,12 +226,36 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @Test
-    void keepImageArgumentWhenTheSharedVersionArgumentIsNotUpgraded() {
+    void upgradeDeprecatedImageAlongsideASharedArgument() {
+        rewriteRun(
+          docker(
+            """
+              ARG VERSION=11
+              FROM openjdk:${VERSION} AS build
+              FROM node:${VERSION}
+              """,
+            """
+              ARG VERSION=25
+              FROM eclipse-temurin:${VERSION} AS build
+              FROM node:${VERSION}
+              """
+          )
+        );
+    }
+
+    @Test
+    void upgradeImageAndVersionArgumentsSharedWithAnotherImage() {
         rewriteRun(
           docker(
             """
               ARG IMAGE=openjdk
               ARG VERSION=11
+              FROM ${IMAGE}:${VERSION} AS build
+              FROM node:${VERSION}
+              """,
+            """
+              ARG IMAGE=eclipse-temurin
+              ARG VERSION=25
               FROM ${IMAGE}:${VERSION} AS build
               FROM node:${VERSION}
               """
@@ -297,76 +299,9 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
-    @Test
-    void doNotUpgradeArgumentDefaultingToAnotherVariable() {
-        rewriteRun(
-          docker(
-            """
-              ARG DEFAULT_VERSION
-              ARG JAVA_VERSION=${DEFAULT_VERSION}
-              FROM eclipse-temurin:${JAVA_VERSION}
-              """
-          )
-        );
-    }
 
-    @CsvSource({
-      // Arguments that are not used in a FROM are left alone
-      "JAVA_VERSION=11, eclipse-temurin:25-jre",
-      // Arguments for unrelated images are left alone
-      "NODE_VERSION=20, node:${NODE_VERSION}-alpine",
-      // Arguments already at or beyond the target version are left alone
-      "JAVA_VERSION=25, eclipse-temurin:${JAVA_VERSION}-jre",
-      "JAVA_VERSION=26, eclipse-temurin:${JAVA_VERSION}-jre",
-      // Arguments not holding a leading version are left alone
-      "JAVA_VERSION=latest, eclipse-temurin:${JAVA_VERSION}",
-      "JAVA_VERSION=\"latest\", eclipse-temurin:${JAVA_VERSION}",
-      "SUFFIX=-jre, eclipse-temurin:11${SUFFIX}",
-      // Arguments that only hold part of the image name are left alone
-      "REGISTRY=docker.io, ${REGISTRY}/eclipse-temurin:11-jre",
-    })
-    @ParameterizedTest
-    void doNotChangeUnrelatedArgumentDefaultValues(String arg, String from) {
-        rewriteRun(
-          docker(
-            """
-              ARG %s
-              FROM %s
-              """.formatted(arg, from)
-          )
-        );
-    }
 
-    @Test
-    void doNotChangeArgumentDeclaredAfterFirstFrom() {
-        rewriteRun(
-          docker(
-            """
-              FROM eclipse-temurin:25-jre
-              ARG JAVA_VERSION=11
-              RUN echo "${JAVA_VERSION}"
-              """
-          )
-        );
-    }
 
-    @CsvSource({
-      // Unrelated images are left alone
-      "FROM ubuntu:22.04",
-      "FROM node:20-alpine",
-      // Tags without a leading Java version are left alone
-      "FROM eclipse-temurin:latest",
-      "FROM eclipse-temurin:",
-      // Already at or beyond the target version
-      "FROM eclipse-temurin:25-jre",
-      "FROM eclipse-temurin:26-jre",
-    })
-    @ParameterizedTest
-    void doNotChangeUnrelatedImages(String from) {
-        rewriteRun(
-          docker(from)
-        );
-    }
 
     @CsvSource({
       "FROM openjdk:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
@@ -395,5 +330,101 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Nested
+    class NoChange {
+
+        @CsvSource({
+          "FROM ${IMAGE_NAME}:${IMAGE_TAG}",
+          "FROM $IMAGE_NAME:$IMAGE_TAG",
+          "FROM ${IMAGE_NAME}:11",
+          "FROM eclipse-temurin:${IMAGE_TAG}",
+          "FROM ${REGISTRY}/eclipse-temurin:11-jre",
+        })
+        @ParameterizedTest
+        void variableImageReferences(String from) {
+            rewriteRun(
+              docker(
+                """
+                  ARG IMAGE_NAME
+                  ARG IMAGE_TAG
+                  ARG REGISTRY
+                  %s
+                  """.formatted(from)
+              )
+            );
+        }
+
+        @Test
+        void anArgumentDefaultingToAnotherVariable() {
+            rewriteRun(
+              docker(
+                """
+                  ARG DEFAULT_VERSION
+                  ARG JAVA_VERSION=${DEFAULT_VERSION}
+                  FROM eclipse-temurin:${JAVA_VERSION}
+                  """
+              )
+            );
+        }
+
+        @CsvSource({
+          // Arguments that are not used in a FROM are left alone
+          "JAVA_VERSION=11, eclipse-temurin:25-jre",
+          // Arguments for unrelated images are left alone
+          "NODE_VERSION=20, node:${NODE_VERSION}-alpine",
+          // Arguments already at or beyond the target version are left alone
+          "JAVA_VERSION=25, eclipse-temurin:${JAVA_VERSION}-jre",
+          "JAVA_VERSION=26, eclipse-temurin:${JAVA_VERSION}-jre",
+          // Arguments not holding a leading version are left alone
+          "JAVA_VERSION=latest, eclipse-temurin:${JAVA_VERSION}",
+          "JAVA_VERSION=\"latest\", eclipse-temurin:${JAVA_VERSION}",
+          "SUFFIX=-jre, eclipse-temurin:11${SUFFIX}",
+          // Arguments that only hold part of the image name are left alone
+          "REGISTRY=docker.io, ${REGISTRY}/eclipse-temurin:11-jre",
+        })
+        @ParameterizedTest
+        void unrelatedArgumentDefaultValues(String arg, String from) {
+            rewriteRun(
+              docker(
+                """
+                  ARG %s
+                  FROM %s
+                  """.formatted(arg, from)
+              )
+            );
+        }
+
+        @Test
+        void anArgumentDeclaredAfterTheFirstFrom() {
+            rewriteRun(
+              docker(
+                """
+                  FROM eclipse-temurin:25-jre
+                  ARG JAVA_VERSION=11
+                  RUN echo "${JAVA_VERSION}"
+                  """
+              )
+            );
+        }
+
+        @CsvSource({
+          // Unrelated images are left alone
+          "FROM ubuntu:22.04",
+          "FROM node:20-alpine",
+          // Tags without a leading Java version are left alone
+          "FROM eclipse-temurin:latest",
+          "FROM eclipse-temurin:",
+          // Already at or beyond the target version
+          "FROM eclipse-temurin:25-jre",
+          "FROM eclipse-temurin:26-jre",
+        })
+        @ParameterizedTest
+        void unrelatedImages(String from) {
+            rewriteRun(
+              docker(from)
+            );
+        }
     }
 }

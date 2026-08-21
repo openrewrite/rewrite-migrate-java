@@ -130,40 +130,33 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     /**
-     * Withholding an argument can rule out the images that depend on it, which in turn can withhold further arguments,
-     * so the whole file is planned over and over until the set of withheld arguments stops growing. Only then is it
-     * known which `FROM` instructions may be rewritten, as an image may not be moved to a tag that is never written.
+     * An argument is shared by every `FROM` that reads it, so which ones may be rewritten is only known once the whole
+     * file has been read.
      */
     private ArgPlan planUpgrades(Docker.File file, Map<String, String> defaults) {
         Map<String, String> upgrades = new HashMap<>();
         Map<UUID, Docker.From> replacements = new HashMap<>();
-        Set<String> blocked = new HashSet<>();
-        int blockedCount;
-        do {
-            blockedCount = blocked.size();
-            upgrades.clear();
-            replacements.clear();
-            for (Docker.Stage stage : file.getStages()) {
-                Docker.From from = stage.getFrom();
+        new DockerIsoVisitor<Integer>() {
+            @Override
+            public Docker.From visitFrom(Docker.From from, Integer p) {
                 if (containsVariable(from.getImageName()) || containsVariable(from.getTag())) {
-                    Docker.From planned = planFrom(from, defaults, upgrades, blocked);
+                    Docker.From planned = planFrom(from, defaults, upgrades);
                     if (planned != from) {
                         replacements.put(from.getId(), planned);
                     }
                 }
+                return from;
             }
-        } while (blockedCount < blocked.size());
+        }.visit(file, 0);
         return new ArgPlan(upgrades, replacements);
     }
 
-    private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades, Set<String> blocked) {
+    private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
-        String imageName = imageVariable == null ?
-                from.getImageName().getText() :
-                defaultValue(defaults, blocked, imageVariable);
+        String imageName = imageVariable == null ? from.getImageName().getText() : defaults.get(imageVariable);
         if (imageName == null) {
-            return block(from, blocked, imageVariable, tagVariable);
+            return from;
         }
 
         String tag;
@@ -178,19 +171,16 @@ public class UpgradeDockerImageVersion extends Recipe {
             tag = reference[1];
             tagVariable = imageVariable;
         } else {
-            tag = tagVariable == null ? from.getTag().getText() : defaultValue(defaults, blocked, tagVariable);
+            tag = tagVariable == null ? from.getTag().getText() : defaults.get(tagVariable);
         }
         if (tag == null) {
-            return block(from, blocked, imageVariable, tagVariable);
+            return from;
         }
 
         String newImageName = upgradedImageName(imageName);
-        if (newImageName == null) {
-            return block(from, blocked, imageVariable, tagVariable);
-        }
         String newTag = upgradedTag(tag);
-        if (newTag == null) {
-            return block(from, blocked, null, tagVariable);
+        if (newImageName == null || newTag == null) {
+            return from;
         }
 
         if (wholeReference) {
@@ -229,25 +219,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             return null;
         }
         return version + (matcher.group(2) == null ? "" : matcher.group(2));
-    }
-
-    /**
-     * Withhold arguments feeding an image we leave alone, as a shared argument can not be bumped for one image alone.
-     * Only a version is withheld this way; renaming a deprecated image holds for every `FROM` that reads the argument,
-     * whatever tag it carries.
-     */
-    private static Docker.From block(Docker.From from, Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
-        if (imageVariable != null) {
-            blocked.add(imageVariable);
-        }
-        if (tagVariable != null) {
-            blocked.add(tagVariable);
-        }
-        return from;
-    }
-
-    private static @Nullable String defaultValue(Map<String, String> defaults, Set<String> blocked, String variable) {
-        return blocked.contains(variable) ? null : defaults.get(variable);
     }
 
     private static boolean containsVariable(Docker.@Nullable Argument argument) {
