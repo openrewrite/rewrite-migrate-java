@@ -84,10 +84,12 @@ public class UpgradeDockerImageVersion extends Recipe {
             @Override
             public Docker.File visitFile(Docker.File file, ExecutionContext ctx) {
                 Map<String, String> defaults = new HashMap<>();
+                Map<String, UUID> declarations = new HashMap<>();
                 for (Docker.Arg arg : file.getGlobalArgs()) {
                     String value = arg.getValue() == null ? null : arg.getValue().getText();
                     if (value != null) {
                         defaults.put(arg.getName().getText(), value);
+                        declarations.put(arg.getName().getText(), arg.getId());
                     }
                 }
 
@@ -100,8 +102,12 @@ public class UpgradeDockerImageVersion extends Recipe {
                     return f;
                 }
                 return f.withGlobalArgs(ListUtils.map(f.getGlobalArgs(), arg -> {
-                    String upgraded = upgrades.get(arg.getName().getText());
-                    return upgraded == null ? arg : arg.withValue(withText(requireNonNull(arg.getValue()), upgraded));
+                    String name = arg.getName().getText();
+                    String upgraded = upgrades.get(name);
+                    if (upgraded == null || !arg.getId().equals(declarations.get(name))) {
+                        return arg;
+                    }
+                    return arg.withValue(withText(requireNonNull(arg.getValue()), upgraded));
                 }));
             }
 
@@ -118,13 +124,14 @@ public class UpgradeDockerImageVersion extends Recipe {
                     return from;
                 }
                 String imageName = image.getImageName().orElse("");
-                if (DEPRECATED_IMAGES.contains(imageName)) {
-                    return image.withImageReference(NEW_IMAGE + ":" + newTag);
+                String newImageName = upgradedImageName(imageName);
+                if (newImageName == null) {
+                    return from;
                 }
-                if (CURRENT_IMAGES.contains(imageName)) {
-                    return image.withTag(newTag).withDigest(null);
+                if (!newImageName.equals(imageName)) {
+                    return image.withImageReference(newImageName + ":" + newTag);
                 }
-                return from;
+                return image.withTag(newTag).withDigest(null);
             }
         };
     }
@@ -154,7 +161,10 @@ public class UpgradeDockerImageVersion extends Recipe {
     private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
-        String imageName = imageVariable == null ? from.getImageName().getText() : defaults.get(imageVariable);
+        String variableRegistry = imageVariable == null ? repositoryAfterVariableRegistry(from.getImageName()) : null;
+        String imageName = imageVariable == null ?
+                (variableRegistry == null ? from.getImageName().getText() : variableRegistry) :
+                defaults.get(imageVariable);
         if (imageName == null) {
             return from;
         }
@@ -169,7 +179,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             }
             imageName = reference[0];
             tag = reference[1];
-            tagVariable = imageVariable;
         } else {
             tag = tagVariable == null ? from.getTag().getText() : defaults.get(tagVariable);
         }
@@ -194,7 +203,8 @@ public class UpgradeDockerImageVersion extends Recipe {
         }
         if (!newImageName.equals(imageName)) {
             if (imageVariable == null) {
-                from = from.withImageName(withText(from.getImageName(), newImageName));
+                from = from.withImageName(withText(from.getImageName(),
+                        variableRegistry == null ? newImageName : "/" + newImageName));
             } else {
                 upgrades.put(imageVariable, newImageName);
             }
@@ -203,10 +213,43 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private @Nullable String upgradedImageName(String imageName) {
-        if (DEPRECATED_IMAGES.contains(imageName)) {
-            return NEW_IMAGE;
+        int repository = repositoryIndex(imageName);
+        String registry = imageName.substring(0, repository);
+        String name = imageName.substring(repository);
+        if (DEPRECATED_IMAGES.contains(name)) {
+            return registry + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(imageName) ? imageName : null;
+        return CURRENT_IMAGES.contains(name) ? imageName : null;
+    }
+
+    /**
+     * Where the repository starts within an image name. Docker reads a leading path segment holding a `.` or a `:`,
+     * or `localhost`, as the registry to pull from; anything else belongs to the repository, as in `azul/zulu-openjdk`.
+     */
+    private static int repositoryIndex(String imageName) {
+        int slash = imageName.indexOf('/');
+        if (slash == -1) {
+            return 0;
+        }
+        String host = imageName.substring(0, slash);
+        return "localhost".equals(host) || host.indexOf('.') != -1 || host.indexOf(':') != -1 ? slash + 1 : 0;
+    }
+
+    /**
+     * The repository of an image name whose registry is a variable, as in the `eclipse-temurin` of
+     * `${REGISTRY}/eclipse-temurin`, or null when the name is not of that shape.
+     */
+    private static @Nullable String repositoryAfterVariableRegistry(Docker.Argument imageName) {
+        List<Docker.ArgumentContent> contents = imageName.getContents();
+        if (contents.size() < 2 || !(contents.get(0) instanceof Docker.EnvironmentVariable)) {
+            return null;
+        }
+        Docker.ArgumentContent last = contents.get(contents.size() - 1);
+        if (!(last instanceof Docker.Literal)) {
+            return null;
+        }
+        String text = ((Docker.Literal) last).getText();
+        return text.startsWith("/") ? text.substring(1) : null;
     }
 
     private @Nullable String upgradedTag(String tag) {
@@ -261,8 +304,8 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private static Docker.Argument withText(Docker.Argument argument, String text) {
-        Docker.Literal literal = requireNonNull(sole(argument.getContents(), Docker.Literal.class));
-        return argument.withContents(singletonList(literal.withText(text)));
+        return argument.withContents(ListUtils.mapLast(argument.getContents(),
+                content -> content instanceof Docker.Literal ? ((Docker.Literal) content).withText(text) : content));
     }
 
     @Value

@@ -70,7 +70,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
-
     @CsvSource({
       // The argument holds the bare version
       "java_version=17, eclipse-temurin:${java_version}, java_version=25, eclipse-temurin:${java_version}",
@@ -299,10 +298,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
-
-
-
-
     @CsvSource({
       "FROM openjdk:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
       "FROM eclipse-temurin:11-jre@sha256:1234567890abcdef, FROM eclipse-temurin:25-jre",
@@ -332,6 +327,69 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
+    @Test
+    void upgradeOnlyTheArgumentDeclarationHoldingTheDefault() {
+        rewriteRun(
+          docker(
+            """
+              ARG JAVA_VERSION
+              ARG JAVA_VERSION=11
+              FROM eclipse-temurin:${JAVA_VERSION}
+              """,
+            """
+              ARG JAVA_VERSION
+              ARG JAVA_VERSION=25
+              FROM eclipse-temurin:${JAVA_VERSION}
+              """
+          )
+        );
+    }
+
+    @CsvSource({
+      // A registry the FROM spells out
+      "docker.io/eclipse-temurin:11-jre, docker.io/eclipse-temurin:25-jre",
+      "docker.io/openjdk:11-jre, docker.io/eclipse-temurin:25-jre",
+      "myregistry:5000/openjdk:11-jre, myregistry:5000/eclipse-temurin:25-jre",
+      "localhost/eclipse-temurin:11-jre, localhost/eclipse-temurin:25-jre",
+      // A registry the FROM builds from an argument
+      "${REGISTRY}/eclipse-temurin:11-jre, ${REGISTRY}/eclipse-temurin:25-jre",
+      "${REGISTRY}/openjdk:11-jre, ${REGISTRY}/eclipse-temurin:25-jre",
+      "${REGISTRY}/azul/zulu-openjdk:11-jdk, ${REGISTRY}/azul/zulu-openjdk:25-jdk",
+    })
+    @ParameterizedTest
+    void upgradeAnImageBehindARegistry(String before, String after) {
+        rewriteRun(
+          docker(
+            """
+              ARG REGISTRY
+              FROM %s
+              """.formatted(before),
+            """
+              ARG REGISTRY
+              FROM %s
+              """.formatted(after)
+          )
+        );
+    }
+
+    @Test
+    void upgradeArgumentDefaultValueBehindAVariableRegistry() {
+        rewriteRun(
+          docker(
+            """
+              ARG REGISTRY
+              ARG JAVA_VERSION=11
+              FROM ${REGISTRY}/eclipse-temurin:${JAVA_VERSION}-jre
+              """,
+            """
+              ARG REGISTRY
+              ARG JAVA_VERSION=25
+              FROM ${REGISTRY}/eclipse-temurin:${JAVA_VERSION}-jre
+              """
+          )
+        );
+    }
+
     @Nested
     class NoChange {
 
@@ -340,7 +398,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
           "FROM $IMAGE_NAME:$IMAGE_TAG",
           "FROM ${IMAGE_NAME}:11",
           "FROM eclipse-temurin:${IMAGE_TAG}",
-          "FROM ${REGISTRY}/eclipse-temurin:11-jre",
         })
         @ParameterizedTest
         void variableImageReferences(String from) {
@@ -381,8 +438,8 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
           "JAVA_VERSION=latest, eclipse-temurin:${JAVA_VERSION}",
           "JAVA_VERSION=\"latest\", eclipse-temurin:${JAVA_VERSION}",
           "SUFFIX=-jre, eclipse-temurin:11${SUFFIX}",
-          // Arguments that only hold part of the image name are left alone
-          "REGISTRY=docker.io, ${REGISTRY}/eclipse-temurin:11-jre",
+          // A leading segment that is not a registry host belongs to the repository name
+          "JAVA_VERSION=11, mycompany/eclipse-temurin:${JAVA_VERSION}-jre",
         })
         @ParameterizedTest
         void unrelatedArgumentDefaultValues(String arg, String from) {
