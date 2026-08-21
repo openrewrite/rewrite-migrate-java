@@ -41,6 +41,10 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
   - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
+  - org.openrewrite.text.AppendToTextFile:
+      relativeFileName: '{,**/}lombok.config'
+      content: lombok.checkReturnValueAnnotation += lombok
+      existingFileStrategy: Merge
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.UpdateLombokToJava11

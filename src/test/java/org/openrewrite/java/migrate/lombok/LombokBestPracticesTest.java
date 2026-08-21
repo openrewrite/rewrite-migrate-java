@@ -24,6 +24,7 @@ import org.openrewrite.test.SourceSpec;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.text;
 
 class LombokBestPracticesTest implements RewriteTest {
 
@@ -68,6 +69,27 @@ class LombokBestPracticesTest implements RewriteTest {
                   .actual()
               )
             )
+          )
+        );
+    }
+
+    @Test
+    void addCheckReturnValueAnnotationToLombokConfig() {
+        rewriteRun(
+          text(
+            "config.stopBubbling = true\n",
+            "config.stopBubbling = true\nlombok.checkReturnValueAnnotation += lombok\n",
+            spec -> spec.path("lombok.config").noTrim()
+          )
+        );
+    }
+
+    @Test
+    void retainExistingCheckReturnValueAnnotation() {
+        rewriteRun(
+          text(
+            "lombok.checkReturnValueAnnotation += lombok\n",
+            spec -> spec.path("lombok.config").noTrim()
           )
         );
     }
