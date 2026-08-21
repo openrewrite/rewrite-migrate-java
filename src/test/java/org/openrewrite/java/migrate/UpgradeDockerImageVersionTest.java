@@ -18,11 +18,17 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.docker.Assertions.docker;
 
 class UpgradeDockerImageVersionTest implements RewriteTest {
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(new UpgradeDockerImageVersion(25));
+    }
 
     @CsvSource({
       // Deprecated images migrate to eclipse-temurin
@@ -73,7 +79,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @ParameterizedTest
     void doNotChangeVariableImageReferences(String from) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG IMAGE_NAME
@@ -108,7 +113,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @ParameterizedTest
     void upgradeArgumentDefaultValue(String beforeArg, String beforeFrom, String afterArg, String afterFrom) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG %s
@@ -125,7 +129,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void upgradeSingleQuotedArgumentDefaultValue() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG IMAGE_TAG='11-jre'
@@ -142,7 +145,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void upgradeDeprecatedImageNameAlongsideArgumentDefaultValue() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG JAVA_VERSION=11
@@ -159,7 +161,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void upgradeArgumentDefaultValueSharedByStages() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG JAVA_VERSION=11
@@ -178,7 +179,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void dropDigestPinWhenUpgradingArgumentDefaultValue() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG JAVA_VERSION=11
@@ -195,7 +195,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void dropDigestPinWhenUpgradingArgumentHoldingWholeReference() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG BASE_IMAGE=eclipse-temurin:11-jre
@@ -212,7 +211,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void doNotUpgradeArgumentSharedWithAnImageWeDoNotUpgrade() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG VERSION=11
@@ -226,7 +224,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void keepDigestPinWhenTheSharedArgumentIsNotUpgraded() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG VERSION=11
@@ -240,7 +237,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void keepDeprecatedImageWhenTheSharedArgumentIsNotUpgraded() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG VERSION=11
@@ -254,7 +250,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void keepImageArgumentWhenTheSharedVersionArgumentIsNotUpgraded() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG IMAGE=openjdk
@@ -267,13 +262,17 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @Test
-    void doNotUpgradeImageArgumentSharedWithAnUntaggedImage() {
+    void upgradeImageArgumentSharedWithAnUntaggedImage() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG BASE=openjdk
               FROM ${BASE}:11-jre AS build
+              FROM ${BASE}
+              """,
+            """
+              ARG BASE=eclipse-temurin
+              FROM ${BASE}:25-jre AS build
               FROM ${BASE}
               """
           )
@@ -281,13 +280,17 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     }
 
     @Test
-    void doNotUpgradeImageArgumentSharedWithAnImageStuckOnItsTag() {
+    void upgradeImageArgumentSharedWithAnImageStuckOnItsTag() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG BASE=openjdk
               FROM ${BASE}:11-jre AS build
+              FROM ${BASE}:latest
+              """,
+            """
+              ARG BASE=eclipse-temurin
+              FROM ${BASE}:25-jre AS build
               FROM ${BASE}:latest
               """
           )
@@ -297,7 +300,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void doNotUpgradeArgumentDefaultingToAnotherVariable() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG DEFAULT_VERSION
@@ -326,7 +328,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @ParameterizedTest
     void doNotChangeUnrelatedArgumentDefaultValues(String arg, String from) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG %s
@@ -339,7 +340,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void doNotChangeArgumentDeclaredAfterFirstFrom() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               FROM eclipse-temurin:25-jre
@@ -364,7 +364,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @ParameterizedTest
     void doNotChangeUnrelatedImages(String from) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(from)
         );
     }
@@ -376,7 +375,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @ParameterizedTest
     void dropStaleDigestPin(String before, String after) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(before, after)
         );
     }
@@ -384,7 +382,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Test
     void changeLiteralImageAlongsideVariableImage() {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
           docker(
             """
               ARG IMAGE_TAG

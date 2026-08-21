@@ -172,7 +172,7 @@ public class UpgradeDockerImageVersion extends Recipe {
             // A single argument holding the whole reference, as in `FROM ${BASE_IMAGE}`
             String[] reference = imageVariable == null ? null : splitReference(imageName);
             if (reference == null) {
-                return block(from, blocked, imageVariable, null);
+                return from;
             }
             imageName = reference[0];
             tag = reference[1];
@@ -185,9 +185,12 @@ public class UpgradeDockerImageVersion extends Recipe {
         }
 
         String newImageName = upgradedImageName(imageName);
-        String newTag = upgradedTag(tag);
-        if (newImageName == null || newTag == null) {
+        if (newImageName == null) {
             return block(from, blocked, imageVariable, tagVariable);
+        }
+        String newTag = upgradedTag(tag);
+        if (newTag == null) {
+            return block(from, blocked, null, tagVariable);
         }
 
         if (wholeReference) {
@@ -230,6 +233,8 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     /**
      * Withhold arguments feeding an image we leave alone, as a shared argument can not be bumped for one image alone.
+     * Only a version is withheld this way; renaming a deprecated image holds for every `FROM` that reads the argument,
+     * whatever tag it carries.
      */
     private static Docker.From block(Docker.From from, Set<String> blocked, @Nullable String imageVariable, @Nullable String tagVariable) {
         if (imageVariable != null) {
