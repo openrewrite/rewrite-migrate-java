@@ -33,13 +33,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode(callSuper = false)
@@ -62,7 +60,8 @@ public class UpgradeDockerImageVersion extends Recipe {
     private static final int OLDEST_VERSION = 8;
     private static final Pattern VERSIONED_TAG = Pattern.compile("(\\d{1,3})(\\D.*)?");
 
-    private static final String FROM_REPLACEMENTS = "fromReplacements";
+    private static final String ARG_DEFAULTS = "argDefaults";
+    private static final String ARG_UPGRADES = "argUpgrades";
 
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
@@ -85,38 +84,37 @@ public class UpgradeDockerImageVersion extends Recipe {
             @Override
             public Docker.File visitFile(Docker.File file, ExecutionContext ctx) {
                 Map<String, String> defaults = new HashMap<>();
-                Map<String, UUID> declarations = new HashMap<>();
                 for (Docker.Arg arg : file.getGlobalArgs()) {
                     String value = arg.getValue() == null ? null : arg.getValue().getText();
                     if (value != null) {
                         defaults.put(arg.getName().getText(), value);
-                        declarations.put(arg.getName().getText(), arg.getId());
                     }
                 }
 
-                ArgPlan plan = planUpgrades(file, defaults);
-                getCursor().putMessage(FROM_REPLACEMENTS, plan.getFromReplacements());
+                Map<String, String> upgrades = new HashMap<>();
+                getCursor().putMessage(ARG_DEFAULTS, defaults);
+                getCursor().putMessage(ARG_UPGRADES, upgrades);
                 Docker.File f = super.visitFile(file, ctx);
-
-                Map<String, String> upgrades = plan.getArgUpgrades();
                 if (upgrades.isEmpty()) {
                     return f;
                 }
                 return f.withGlobalArgs(ListUtils.map(f.getGlobalArgs(), arg -> {
                     String name = arg.getName().getText();
                     String upgraded = upgrades.get(name);
-                    if (upgraded == null || !arg.getId().equals(declarations.get(name))) {
+                    // A name may be declared more than once; only the declaration the default was read from moves
+                    if (upgraded == null || arg.getValue() == null || !defaults.get(name).equals(arg.getValue().getText())) {
                         return arg;
                     }
-                    return arg.withValue(withText(requireNonNull(arg.getValue()), upgraded));
+                    return arg.withValue(withText(arg.getValue(), upgraded));
                 }));
             }
 
             @Override
             public Docker.From visitFrom(Docker.From from, ExecutionContext ctx) {
                 if (containsVariable(from.getImageName()) || containsVariable(from.getTag())) {
-                    Map<UUID, Docker.From> replacements = getCursor().getNearestMessage(FROM_REPLACEMENTS, emptyMap());
-                    return replacements.getOrDefault(from.getId(), from);
+                    return upgradeThroughArgs(from,
+                            getCursor().getNearestMessage(ARG_DEFAULTS, emptyMap()),
+                            getCursor().getNearestMessage(ARG_UPGRADES, new HashMap<>()));
                 }
 
                 DockerFrom image = new DockerFrom(getCursor());
@@ -137,29 +135,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         };
     }
 
-    /**
-     * An argument is shared by every `FROM` that reads it, so which ones may be rewritten is only known once the whole
-     * file has been read.
-     */
-    private ArgPlan planUpgrades(Docker.File file, Map<String, String> defaults) {
-        Map<String, String> upgrades = new HashMap<>();
-        Map<UUID, Docker.From> replacements = new HashMap<>();
-        new DockerIsoVisitor<Integer>() {
-            @Override
-            public Docker.From visitFrom(Docker.From from, Integer p) {
-                if (containsVariable(from.getImageName()) || containsVariable(from.getTag())) {
-                    Docker.From planned = planFrom(from, defaults, upgrades);
-                    if (planned != from) {
-                        replacements.put(from.getId(), planned);
-                    }
-                }
-                return from;
-            }
-        }.visit(file, 0);
-        return new ArgPlan(upgrades, replacements);
-    }
-
-    private Docker.From planFrom(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
+    private Docker.From upgradeThroughArgs(Docker.From from, Map<String, String> defaults, Map<String, String> upgrades) {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
         String imageName = imageVariable == null ?
@@ -213,11 +189,12 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     private @Nullable String upgradedImageName(String imageName) {
         ImageName parsed = ImageName.parse(imageName);
-        if (DEPRECATED_IMAGES.contains(parsed.getPath())) {
+        String path = parsed.getPath();
+        if (DEPRECATED_IMAGES.contains(path)) {
             String registry = parsed.getRegistry();
             return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(parsed.getPath()) ? imageName : null;
+        return CURRENT_IMAGES.contains(path) ? imageName : null;
     }
 
     private @Nullable String upgradedTag(String tag) {
@@ -237,8 +214,9 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private static @Nullable String soleVariable(Docker.Argument argument) {
-        Docker.EnvironmentVariable variable = sole(argument.getContents(), Docker.EnvironmentVariable.class);
-        return variable == null ? null : variable.getName();
+        List<Docker.ArgumentContent> contents = argument.getContents();
+        return contents.size() == 1 && contents.get(0) instanceof Docker.EnvironmentVariable ?
+                ((Docker.EnvironmentVariable) contents.get(0)).getName() : null;
     }
 
     private static @Nullable String leadingVariable(Docker.Argument argument) {
@@ -252,13 +230,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             }
         }
         return ((Docker.EnvironmentVariable) contents.get(0)).getName();
-    }
-
-    private static <T> @Nullable T sole(List<? extends Docker.ArgumentContent> contents, Class<T> type) {
-        if (contents.size() == 1 && type.isInstance(contents.get(0))) {
-            return type.cast(contents.get(0));
-        }
-        return null;
     }
 
     private static String @Nullable [] splitReference(String reference) {
@@ -293,9 +264,4 @@ public class UpgradeDockerImageVersion extends Recipe {
                 content -> content instanceof Docker.Literal ? ((Docker.Literal) content).withText(text) : content));
     }
 
-    @Value
-    private static class ArgPlan {
-        Map<String, String> argUpgrades;
-        Map<UUID, Docker.From> fromReplacements;
-    }
 }

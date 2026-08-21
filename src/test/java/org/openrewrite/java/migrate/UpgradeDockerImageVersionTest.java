@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -395,7 +396,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Nested
     class NoChange {
 
-        @CsvSource({
+        @ValueSource(strings = {
           "FROM ${IMAGE_NAME}:${IMAGE_TAG}",
           "FROM $IMAGE_NAME:$IMAGE_TAG",
           "FROM ${IMAGE_NAME}:11",
@@ -468,7 +469,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
             );
         }
 
-        @CsvSource({
+        @ValueSource(strings = {
           // Unrelated images are left alone
           "FROM ubuntu:22.04",
           "FROM node:20-alpine",
