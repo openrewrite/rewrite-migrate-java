@@ -85,9 +85,9 @@ public class UpgradeDockerImageVersion extends Recipe {
             public Docker.File visitFile(Docker.File file, ExecutionContext ctx) {
                 Map<String, String> defaults = new HashMap<>();
                 for (Docker.Arg arg : file.getGlobalArgs()) {
-                    Docker.Literal literalDefault = literalDefault(arg);
-                    if (literalDefault != null) {
-                        defaults.put(arg.getName().getText(), QuotedText.of(literalDefault.getText()).getText());
+                    String value = arg.getValue() == null ? null : arg.getValue().getText();
+                    if (value != null) {
+                        defaults.put(arg.getName().getText(), value);
                     }
                 }
 
@@ -101,13 +101,7 @@ public class UpgradeDockerImageVersion extends Recipe {
                 }
                 return f.withGlobalArgs(ListUtils.map(f.getGlobalArgs(), arg -> {
                     String upgraded = upgrades.get(arg.getName().getText());
-                    Docker.Literal literalDefault = literalDefault(arg);
-                    if (upgraded == null || literalDefault == null) {
-                        return arg;
-                    }
-                    String requoted = QuotedText.of(literalDefault.getText()).requote(upgraded);
-                    return arg.withValue(requireNonNull(arg.getValue())
-                            .withContents(singletonList(literalDefault.withText(requoted))));
+                    return upgraded == null ? arg : arg.withValue(withText(requireNonNull(arg.getValue()), upgraded));
                 }));
             }
 
@@ -166,7 +160,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
         String imageName = imageVariable == null ?
-                literalText(from.getImageName()) :
+                from.getImageName().getText() :
                 defaultValue(defaults, blocked, imageVariable);
         if (imageName == null) {
             return block(from, blocked, imageVariable, tagVariable);
@@ -184,7 +178,7 @@ public class UpgradeDockerImageVersion extends Recipe {
             tag = reference[1];
             tagVariable = imageVariable;
         } else {
-            tag = tagVariable == null ? literalText(from.getTag()) : defaultValue(defaults, blocked, tagVariable);
+            tag = tagVariable == null ? from.getTag().getText() : defaultValue(defaults, blocked, tagVariable);
         }
         if (tag == null) {
             return block(from, blocked, imageVariable, tagVariable);
@@ -252,24 +246,7 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private static boolean containsVariable(Docker.@Nullable Argument argument) {
-        if (argument != null) {
-            for (Docker.ArgumentContent content : argument.getContents()) {
-                if (content instanceof Docker.EnvironmentVariable) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static Docker.@Nullable Literal literalDefault(Docker.Arg arg) {
-        Docker.Argument value = arg.getValue();
-        return value == null ? null : sole(value.getContents(), Docker.Literal.class);
-    }
-
-    private static @Nullable String literalText(Docker.Argument argument) {
-        Docker.Literal literal = sole(argument.getContents(), Docker.Literal.class);
-        return literal == null ? null : literal.getText();
+        return argument != null && argument.hasEnvironmentVariables();
     }
 
     private static @Nullable String soleVariable(Docker.Argument argument) {
@@ -316,29 +293,5 @@ public class UpgradeDockerImageVersion extends Recipe {
     private static class ArgPlan {
         Map<String, String> argUpgrades;
         Map<UUID, Docker.From> fromReplacements;
-    }
-
-    /**
-     * The parser keeps any quotes around an {@code ARG} default value as part of the literal text, so they have to be
-     * taken off before matching a version, and put back on when writing the upgraded value.
-     */
-    @Value
-    private static class QuotedText {
-        String quote;
-        String text;
-
-        static QuotedText of(String source) {
-            if (source.length() > 1) {
-                char first = source.charAt(0);
-                if ((first == '"' || first == '\'') && source.charAt(source.length() - 1) == first) {
-                    return new QuotedText(String.valueOf(first), source.substring(1, source.length() - 1));
-                }
-            }
-            return new QuotedText("", source);
-        }
-
-        String requote(String replacement) {
-            return quote + replacement + quote;
-        }
     }
 }

@@ -294,6 +294,20 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotUpgradeArgumentDefaultingToAnotherVariable() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeDockerImageVersion(25)),
+          docker(
+            """
+              ARG DEFAULT_VERSION
+              ARG JAVA_VERSION=${DEFAULT_VERSION}
+              FROM eclipse-temurin:${JAVA_VERSION}
+              """
+          )
+        );
+    }
+
     @CsvSource({
       // Arguments that are not used in a FROM are left alone
       "JAVA_VERSION=11, eclipse-temurin:25-jre",
