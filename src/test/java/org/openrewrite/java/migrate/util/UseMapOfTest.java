@@ -574,4 +574,119 @@ class UseMapOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void proseMapsWithProvablyNonNullValuesAreCollapsed() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class PrimitiveValues {
+                  Map<String, Integer> values(int first, int second) {
+                      Map<String, Integer> values = new HashMap<>();
+                      values.put("first", first);
+                      values.put("second", second);
+                      return values;
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class PrimitiveValues {
+                  Map<String, Integer> values(int first, int second) {
+                      Map<String, Integer> values = new HashMap<>(Map.of(
+                              "first", first,
+                              "second", second));
+                      return values;
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class ParenthesizedValues {
+                  Map<String, Integer> values(int first, int second) {
+                      Map<String, Integer> values = new HashMap<>();
+                      values.put(("first"), first);
+                      values.put(("second"), second);
+                      return values;
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class ParenthesizedValues {
+                  Map<String, Integer> values(int first, int second) {
+                      Map<String, Integer> values = new HashMap<>(Map.of(
+                              "first", first,
+                              "second", second));
+                      return values;
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class NewClassValues {
+                  Map<String, Object> values() {
+                      Map<String, Object> values = new HashMap<>();
+                      values.put("first", new Object());
+                      values.put("second", new Object());
+                      return values;
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class NewClassValues {
+                  Map<String, Object> values() {
+                      Map<String, Object> values = new HashMap<>(Map.of(
+                              "first", new Object(),
+                              "second", new Object()));
+                      return values;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void proseMapWithUnknownNullableValueIsLeftAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, Object> prompt(Object card, Object attempt) {
+                      Map<String, Object> values = new HashMap<>();
+                      values.put("card", card);
+                      values.put("attempt", attempt);
+                      return values;
+                  }
+              }
+              """
+          )
+        );
+    }
 }
