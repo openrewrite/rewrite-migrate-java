@@ -23,6 +23,7 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.docker.DockerIsoVisitor;
+import org.openrewrite.docker.internal.ArgumentContents;
 import org.openrewrite.docker.trait.DockerFrom;
 import org.openrewrite.docker.trait.ImageName;
 import org.openrewrite.docker.tree.Docker;
@@ -85,7 +86,7 @@ public class UpgradeDockerImageVersion extends Recipe {
             public Docker.File visitFile(Docker.File file, ExecutionContext ctx) {
                 Map<String, String> defaults = new HashMap<>();
                 for (Docker.Arg arg : file.getGlobalArgs()) {
-                    String value = arg.getValue() == null ? null : arg.getValue().getText();
+                    String value = arg.getValue() == null ? null : ArgumentContents.text(arg.getValue());
                     if (value != null) {
                         defaults.put(arg.getName().getText(), value);
                     }
@@ -102,7 +103,7 @@ public class UpgradeDockerImageVersion extends Recipe {
                     String name = arg.getName().getText();
                     String upgraded = upgrades.get(name);
                     // A name may be declared more than once; only the declaration the default was read from moves
-                    if (upgraded == null || arg.getValue() == null || !defaults.get(name).equals(arg.getValue().getText())) {
+                    if (upgraded == null || arg.getValue() == null || !defaults.get(name).equals(ArgumentContents.text(arg.getValue()))) {
                         return arg;
                     }
                     return arg.withValue(withText(arg.getValue(), upgraded));
@@ -139,7 +140,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
         String imageName = imageVariable == null ?
-                from.getImageName().getTextWithVariables() :
+                ArgumentContents.textWithVariables(from.getImageName()) :
                 defaults.get(imageVariable);
         if (imageName == null) {
             return from;
@@ -156,7 +157,7 @@ public class UpgradeDockerImageVersion extends Recipe {
             imageName = reference[0];
             tag = reference[1];
         } else {
-            tag = tagVariable == null ? from.getTag().getText() : defaults.get(tagVariable);
+            tag = tagVariable == null ? ArgumentContents.text(from.getTag()) : defaults.get(tagVariable);
         }
         if (tag == null) {
             return from;
@@ -210,7 +211,7 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private static boolean containsVariable(Docker.@Nullable Argument argument) {
-        return argument != null && argument.hasEnvironmentVariables();
+        return argument != null && ArgumentContents.containsVariable(argument);
     }
 
     private static @Nullable String soleVariable(Docker.Argument argument) {
