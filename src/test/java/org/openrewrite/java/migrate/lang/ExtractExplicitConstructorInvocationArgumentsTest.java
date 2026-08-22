@@ -243,6 +243,47 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
     }
 
     @Test
+    void preserveInvocationAndArgumentCommentsOnce() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Objects;
+
+              class Parent {
+                  Parent(String first, String second) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      // Explain the delegation.
+                      super(/* validate first */ Objects.requireNonNull(value), Objects.requireNonNull(value));
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class Parent {
+                  Parent(String first, String second) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String value) {
+                      // Explain the delegation.
+                      String first = /* validate first */ Objects.requireNonNull(value);
+                      String second = Objects.requireNonNull(value);
+                      super(first, second);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leaveTrivialArgumentsInlineWhenExtractingSiblings() {
         rewriteRun(
           //language=java
@@ -647,7 +688,8 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, Integer p) {
-                        if ("b".equals(vd.getVariables().getFirst().getSimpleName())) {
+                        if ("b".equals(vd.getVariables().getFirst().getSimpleName()) &&
+                            vd.getVariables().getFirst().getInitializer() != null) {
                             decls.add(vd);
                         }
                         return super.visitVariableDeclarations(vd, p);
