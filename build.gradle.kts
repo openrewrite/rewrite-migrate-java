@@ -115,7 +115,13 @@ tasks.withType(Javadoc::class.java) {
 }
 
 tasks.test {
-    maxHeapSize = "2g"  // Set max heap size to 2GB or adjust as necessary
+    maxHeapSize = "2g"
+    if (System.getenv("CI") != null) {
+        // 47 of the 267 test classes resolve Maven poms over the network, so forks idle on I/O;
+        // oversubscribing the runner's cores packs the remaining work more evenly across them.
+        maxParallelForks = Runtime.getRuntime().availableProcessors() * 3 / 2
+        maxHeapSize = "1500m"
+    }
 }
 
 tasks.withType<JavaCompile> {
