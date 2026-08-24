@@ -220,6 +220,33 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
+  # Both distributions bundle an AspectJ too old to read Java 25 bytecode, so aspectjtools is pinned on the plugin.
+  # dev.aspectj is otherwise interchangeable, but org.codehaus.mojo's `complianceLevel` default of 1.4 is now fatal.
+  - org.openrewrite.maven.ChangePluginGroupIdAndArtifactId:
+      oldGroupId: org.codehaus.mojo
+      oldArtifactId: aspectj-maven-plugin
+      newGroupId: dev.aspectj
+      newVersion: 1.14.x
+  - org.openrewrite.maven.AddPluginDependency:
+      pluginGroupId: dev.aspectj
+      pluginArtifactId: aspectj-maven-plugin
+      groupId: org.aspectj
+      artifactId: aspectjtools
+      version: 1.9.25.1
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //plugin[artifactId='aspectj-maven-plugin']/configuration/complianceLevel
+      newValue: "25"
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.aspectj
+      artifactId: aspectj*
+      newVersion: 1.9.x
+  # mockito-inline was last published as 5.2.0 and inline mocking is the default in mockito-core 5.x, so fold it in
+  # before the bump below rather than leaving a coordinate that no longer resolves.
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.mockito
+      oldArtifactId: mockito-inline
+      newArtifactId: mockito-core
+  - org.openrewrite.maven.RemoveDuplicateDependencies
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.mockito
       artifactId: mockito-*

@@ -508,4 +508,139 @@ class UpgradeToJava25Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void mockitoInlineFoldedIntoMockitoCore() {
+        // mockito-inline was last published as 5.2.0, so bumping a shared mockito version property would otherwise
+        // leave it unresolvable; inline mocking is the default in mockito-core 5.x.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                        <mockito.version>5.2.0</mockito.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-inline</artifactId>
+                            <version>${mockito.version}</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  .doesNotContain("mockito-inline")
+                  .contains("<artifactId>mockito-core</artifactId>")
+                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void mockitoInlineAlongsideMockitoCoreLeavesNoDuplicate() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                        <mockito.version>5.2.0</mockito.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>${mockito.version}</version>
+                            <scope>test</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-inline</artifactId>
+                            <version>${mockito.version}</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .doesNotContain("mockito-inline")
+                  .containsOnlyOnce("<artifactId>mockito-core</artifactId>")
+                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradesAspectJMavenPluginForJava25() {
+        // Only AspectJ 1.9.25 and later can read Java 25 bytecode, and neither plugin distribution bundles a compiler
+        // that new, so aspectjtools is pinned on the plugin itself.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.source>8</maven.compiler.source>
+                        <maven.compiler.target>8</maven.compiler.target>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjrt</artifactId>
+                            <version>1.8.13</version>
+                        </dependency>
+                    </dependencies>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>aspectj-maven-plugin</artifactId>
+                                <version>1.11</version>
+                                <configuration>
+                                    <source>${maven.compiler.source}</source>
+                                    <target>${maven.compiler.target}</target>
+                                    <complianceLevel>1.8</complianceLevel>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.source>25</maven.compiler.source>")
+                  .doesNotContain("org.codehaus.mojo")
+                  .containsPattern("<groupId>dev.aspectj</groupId>\\s*<artifactId>aspectj-maven-plugin</artifactId>\\s*<version>1\\.14\\.")
+                  .containsPattern("<artifactId>aspectjtools</artifactId>\\s*<version>1\\.9\\.25")
+                  .contains("<complianceLevel>25</complianceLevel>")
+                  .containsPattern("<artifactId>aspectjrt</artifactId>\\s*<version>1\\.9\\.")
+                  .actual())
+            )
+          )
+        );
+    }
 }
