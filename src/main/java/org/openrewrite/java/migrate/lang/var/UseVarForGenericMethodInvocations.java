@@ -87,6 +87,13 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
+            // Only a qualified invocation can carry a type witness (JLS 15.12), so an unqualified call whose return
+            // type still mentions a type variable has no way to hold on to the type the declaration pinned down.
+            if (invocation.getSelect() == null && invocation.getTypeParameters() == null &&
+                    invocation.getMethodType() != null && containsGenericTypeVariable(invocation.getMethodType().getReturnType())) {
+                return vd;
+            }
+
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }

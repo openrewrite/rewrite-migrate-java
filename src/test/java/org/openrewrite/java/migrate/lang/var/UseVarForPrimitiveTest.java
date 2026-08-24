@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang.var;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.java;
@@ -79,6 +80,25 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                   class A {
                     void m() {
                         String s = "a" + "b";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1218")
+        @Test
+        void forCStyleArrayDeclarator() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        int address[] = new int[8];
                     }
                   }
                   """

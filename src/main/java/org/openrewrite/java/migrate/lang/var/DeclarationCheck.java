@@ -48,11 +48,23 @@ final class DeclarationCheck {
      * @return true if var is applicable in general
      */
     public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
-        if (isField(vd, cursor) || isMethodParameter(vd, cursor) || !isSingleVariableDefinition(vd) || initializedByTernary(vd)) {
+        if (isField(vd, cursor) || isMethodParameter(vd, cursor) || !isSingleVariableDefinition(vd) ||
+                initializedByTernary(vd) || hasDimensionsAfterName(vd)) {
             return false;
         }
 
         return isInsideMethod(cursor) || isInsideInitializer(cursor, 0);
+    }
+
+    /**
+     * Determine whether the declarator carries C-style array brackets after the variable name, as in {@code int a[]}.
+     * JLS 14.4.1 makes extra array dimensions on a {@code var} declarator a compile-time error.
+     *
+     * @param vd variable definition at hand
+     * @return true iff the variable name is followed by array dimensions
+     */
+    private static boolean hasDimensionsAfterName(J.VariableDeclarations vd) {
+        return !vd.getVariables().get(0).getDimensionsAfterName().isEmpty();
     }
 
     /**

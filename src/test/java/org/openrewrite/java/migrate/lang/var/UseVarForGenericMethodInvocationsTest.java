@@ -56,6 +56,33 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
             );
         }
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1219")
+        @Test
+        void forUnqualifiedInvocationNeedingTypeWitness() {
+            // `var contentTypes = <T>contentType(...)` would not parse; a type witness needs a receiver
+            //language=java
+            rewriteRun(
+              version(
+                java("""
+                  package com.example.app;
+
+                  import java.util.function.Predicate;
+
+                  class A {
+                    static <T> Predicate<T> contentType(String... types) {
+                        return null;
+                    }
+                    static <T> Predicate<T> binary() {
+                        final Predicate<T> contentTypes = contentType("application/octet-stream");
+                        return contentTypes;
+                    }
+                  }
+                  """),
+                10
+              )
+            );
+        }
+
         @Nested
         class NotSupportedByOpenRewrite {
             // this is possible because `myList()`s type is fixed to `List<String>` but it is not distinguishable from
