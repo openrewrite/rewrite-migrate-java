@@ -21,8 +21,10 @@ import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/243")
 class ListFirstAndLastTest implements RewriteTest {
@@ -382,6 +384,54 @@ class ListFirstAndLastTest implements RewriteTest {
                   class Foo {
                       void bar(List<String> collection) {
                           collection.add(collection.size() - 1, "last");
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void kotlinIndexAccess() {
+            rewriteRun(
+              //language=kotlin
+              kotlin(
+                """
+                  class Foo {
+                      fun bar(collection: java.util.ArrayList<String>): String {
+                          return collection[0]
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void kotlinGet() {
+            rewriteRun(
+              //language=kotlin
+              kotlin(
+                """
+                  class Foo {
+                      fun bar(collection: java.util.ArrayList<String>): String {
+                          return collection.get(0)
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void groovyGet() {
+            rewriteRun(
+              //language=groovy
+              groovy(
+                """
+                  class Foo {
+                      String bar(List<String> collection) {
+                          return collection.get(0)
                       }
                   }
                   """
