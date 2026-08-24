@@ -28,6 +28,8 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
+import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +59,10 @@ public class ListFirstAndLast extends Recipe {
                                 new UsesMethod<>(ADD_MATCHER),
                                 new UsesMethod<>(GET_MATCHER),
                                 new UsesMethod<>(REMOVE_MATCHER)
-                        )
+                        ),
+                        // Dropping the index argument leaves Kotlin index access as `list[]`, and Groovy loses its parentheses
+                        Preconditions.not(new KotlinFileChecker<>()),
+                        Preconditions.not(new GroovyFileChecker<>())
                 ),
                 new FirstLastVisitor());
     }
