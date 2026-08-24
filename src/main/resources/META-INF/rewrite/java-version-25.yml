@@ -43,6 +43,7 @@ recipeList:
   - org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
   - org.openrewrite.java.migrate.MigrateZipErrorToZipException
   - org.openrewrite.java.migrate.MigrateGraalVMResourceConfig
+  - org.openrewrite.java.migrate.DanglingDocCommentToBlockComment
   # Run last, once every module has reached its final Java version: comment the Kotlin modules that truly stayed at
   # Java 24 (a Kotlin 1.x cap, or a 2.0-2.2 module whose Kotlin upgrade could not be applied).
   - org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24
