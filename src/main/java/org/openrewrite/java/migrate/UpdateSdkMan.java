@@ -42,6 +42,13 @@ import static java.util.stream.Collectors.toList;
 @Value
 public class UpdateSdkMan extends Recipe {
 
+    /**
+     * Candidates carry the vendor build between the version and the distribution, as in `17.0.20+1.1-zulu`, and that
+     * lands in the qualifier the distribution is matched against. Only a build is tolerated ahead of the distribution,
+     * so a variant such as `.crac-zulu` is still a distinct distribution rather than a match for plain `-zulu`.
+     */
+    private static final String BUILD_METADATA = "(\\+[^-]*)?";
+
     @Option(displayName = "Java version",
             description = "The Java version to update to. Use `latest.patch` to upgrade to the latest version within the current major version.",
             required = false,
@@ -96,13 +103,14 @@ public class UpdateSdkMan extends Recipe {
                     String dist = newDistribution == null ? matcher.group(2) : "-" + newDistribution;
                     String newBasis = ver + dist;
                     Pattern majorPattern = Pattern.compile("^" + ver + "[.-].*");
-                    LatestRelease releaseComparator = new LatestRelease(dist);
+                    String distPattern = BUILD_METADATA + dist;
+                    LatestRelease releaseComparator = new LatestRelease(distPattern);
                     String idealCandidate = readSdkmanJavaCandidates().stream()
                             .filter(candidate -> majorPattern.matcher(candidate).matches())
                             .filter(candidate -> releaseComparator.isValid(newBasis, candidate))
                             .max(releaseComparator)
                             .orElse(null);
-                    if (idealCandidate != null && !isRequestedDowngrade(matcher.group(1) + dist, idealCandidate, dist)) {
+                    if (idealCandidate != null && !isRequestedDowngrade(matcher.group(1) + dist, idealCandidate, distPattern)) {
                         return plainText.withText(matcher.replaceFirst("java=" + idealCandidate));
                     }
                 }
