@@ -23,15 +23,14 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.docker.DockerIsoVisitor;
-import org.openrewrite.docker.internal.ArgumentContents;
 import org.openrewrite.docker.trait.DockerFrom;
-import org.openrewrite.docker.trait.ImageName;
 import org.openrewrite.docker.tree.Docker;
 import org.openrewrite.internal.ListUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -86,9 +85,9 @@ public class UpgradeDockerImageVersion extends Recipe {
             public Docker.File visitFile(Docker.File file, ExecutionContext ctx) {
                 Map<String, String> defaults = new HashMap<>();
                 for (Docker.Arg arg : file.getGlobalArgs()) {
-                    String value = arg.getValue() == null ? null : ArgumentContents.text(arg.getValue());
+                    String value = arg.getValue() == null ? null : text(arg.getValue());
                     if (value != null) {
-                        defaults.put(arg.getName().getText(), value);
+                        defaults.put(arg.getName().getText(), unquoted(value));
                     }
                 }
 
@@ -103,10 +102,11 @@ public class UpgradeDockerImageVersion extends Recipe {
                     String name = arg.getName().getText();
                     String upgraded = upgrades.get(name);
                     // A name may be declared more than once; only the declaration the default was read from moves
-                    if (upgraded == null || arg.getValue() == null || !defaults.get(name).equals(ArgumentContents.text(arg.getValue()))) {
+                    String value = arg.getValue() == null ? null : text(arg.getValue());
+                    if (upgraded == null || value == null || !defaults.get(name).equals(unquoted(value))) {
                         return arg;
                     }
-                    return arg.withValue(withText(arg.getValue(), upgraded));
+                    return arg.withValue(withText(requireNonNull(arg.getValue()), requoted(value, upgraded)));
                 }));
             }
 
@@ -140,7 +140,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         String imageVariable = soleVariable(from.getImageName());
         String tagVariable = from.getTag() == null ? null : leadingVariable(from.getTag());
         String imageName = imageVariable == null ?
-                ArgumentContents.textWithVariables(from.getImageName()) :
+                textWithVariables(from.getImageName()) :
                 defaults.get(imageVariable);
         if (imageName == null) {
             return from;
@@ -157,7 +157,7 @@ public class UpgradeDockerImageVersion extends Recipe {
             imageName = reference[0];
             tag = reference[1];
         } else {
-            tag = tagVariable == null ? ArgumentContents.text(from.getTag()) : defaults.get(tagVariable);
+            tag = tagVariable == null ? text(from.getTag()) : defaults.get(tagVariable);
         }
         if (tag == null) {
             return from;
@@ -189,10 +189,9 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private @Nullable String upgradedImageName(String imageName) {
-        ImageName parsed = ImageName.parse(imageName);
-        String path = parsed.getPath();
+        String registry = registry(imageName);
+        String path = path(imageName);
         if (DEPRECATED_IMAGES.contains(path)) {
-            String registry = parsed.getRegistry();
             return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
         }
         return CURRENT_IMAGES.contains(path) ? imageName : null;
@@ -211,7 +210,71 @@ public class UpgradeDockerImageVersion extends Recipe {
     }
 
     private static boolean containsVariable(Docker.@Nullable Argument argument) {
-        return argument != null && ArgumentContents.containsVariable(argument);
+        if (argument == null) {
+            return false;
+        }
+        for (Docker.ArgumentContent content : argument.getContents()) {
+            if (content instanceof Docker.EnvironmentVariable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// @return The text of every content of `argument`, or `null` if an environment variable
+    /// reference makes it impossible to resolve statically.
+    private static @Nullable String text(Docker.Argument argument) {
+        StringBuilder text = new StringBuilder();
+        for (Docker.ArgumentContent content : argument.getContents()) {
+            if (content instanceof Docker.EnvironmentVariable) {
+                return null;
+            }
+            if (content instanceof Docker.Literal) {
+                text.append(((Docker.Literal) content).getText());
+            }
+        }
+        return text.toString();
+    }
+
+    /// @return As [#text], but rendering environment variable references in their original
+    /// `$VAR` or `${VAR}` form rather than giving up.
+    private static String textWithVariables(Docker.Argument argument) {
+        StringBuilder text = new StringBuilder();
+        for (Docker.ArgumentContent content : argument.getContents()) {
+            if (content instanceof Docker.Literal) {
+                text.append(((Docker.Literal) content).getText());
+            } else if (content instanceof Docker.EnvironmentVariable) {
+                Docker.EnvironmentVariable env = (Docker.EnvironmentVariable) content;
+                text.append(env.isBraced() ? "${" + env.getName() + "}" : "$" + env.getName());
+            }
+        }
+        return text.toString();
+    }
+
+    /// @return The registry `imageName` is pulled from, or `null` where it names no registry.
+    /// A variable reference is left in the component that holds it, so `${REGISTRY}/app` is
+    /// pulled from `${REGISTRY}`.
+    private static @Nullable String registry(String imageName) {
+        int slash = imageName.indexOf('/');
+        return slash >= 0 && isRegistry(imageName.substring(0, slash)) ? imageName.substring(0, slash) : null;
+    }
+
+    /// @return The path of `imageName` within its registry, as `library/ubuntu` of
+    /// `docker.io/library/ubuntu`.
+    private static String path(String imageName) {
+        String registry = registry(imageName);
+        return registry == null ? imageName : imageName.substring(registry.length() + 1);
+    }
+
+    /// Registry-ness cannot be told from the syntax: `mcr.microsoft.com/windows/servercore` names a
+    /// registry, while `redhat/ubi9-minimal` names an organisation on Docker Hub. This is the rule
+    /// Docker itself settles that by; the last clause holds because a path component may not carry
+    /// an uppercase character.
+    private static boolean isRegistry(String component) {
+        return component.indexOf('.') >= 0 ||
+                component.indexOf(':') >= 0 ||
+                "localhost".equals(component) ||
+                !component.equals(component.toLowerCase(Locale.ROOT));
     }
 
     private static @Nullable String soleVariable(Docker.Argument argument) {
@@ -246,8 +309,8 @@ public class UpgradeDockerImageVersion extends Recipe {
     /// The registry an image is pulled from is left as written, which may be a variable, so only the trailing
     /// repository is rewritten.
     private static Docker.Argument withRepository(Docker.Argument imageName, String from, String to) {
-        String oldPath = ImageName.parse(from).getPath();
-        String newPath = ImageName.parse(to).getPath();
+        String oldPath = path(from);
+        String newPath = path(to);
         return imageName.withContents(ListUtils.mapLast(imageName.getContents(), content -> {
             if (!(content instanceof Docker.Literal)) {
                 return content;
@@ -258,6 +321,19 @@ public class UpgradeDockerImageVersion extends Recipe {
                     literal.withText(text.substring(0, text.length() - oldPath.length()) + newPath) :
                     literal;
         }));
+    }
+
+    /// `rewrite-docker` leaves the quotes of an `ARG` default value inside the text of its literal
+    /// rather than in the literal's quote style, so they are taken off on read and put back on write.
+    /// Both are no-ops against a version that models the quotes, which keeps this working either way.
+    private static String unquoted(String value) {
+        char quote = value.isEmpty() ? 0 : value.charAt(0);
+        return (quote == '"' || quote == '\'') && value.length() > 1 && value.charAt(value.length() - 1) == quote ?
+                value.substring(1, value.length() - 1) : value;
+    }
+
+    private static String requoted(String value, String upgraded) {
+        return value.equals(unquoted(value)) ? upgraded : value.charAt(0) + upgraded + value.charAt(0);
     }
 
     private static Docker.Argument withText(Docker.Argument argument, String text) {

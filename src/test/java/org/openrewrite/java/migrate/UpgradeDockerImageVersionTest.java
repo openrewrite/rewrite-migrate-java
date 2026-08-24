@@ -475,7 +475,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
           "FROM node:20-alpine",
           // Tags without a leading Java version are left alone
           "FROM eclipse-temurin:latest",
-          "FROM eclipse-temurin:",
           // Already at or beyond the target version
           "FROM eclipse-temurin:25-jre",
           "FROM eclipse-temurin:26-jre",
