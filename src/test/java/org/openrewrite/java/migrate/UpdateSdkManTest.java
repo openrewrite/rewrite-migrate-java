@@ -180,6 +180,24 @@ class UpdateSdkManTest implements RewriteTest {
               .after(str -> assertThat(str)
                 .startsWith("java=17.0.")
                 .endsWith("-zulu")
+                .doesNotContain(".crac")
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void distributionIsStillMatchedWhenTheCandidateCarriesAVendorBuild() {
+        rewriteRun(
+          spec -> spec.recipe(new UpdateSdkMan("17", null)),
+          text(
+            """
+              java=11.0.28+1.1-zulu
+              """,
+            spec -> spec.path(".sdkmanrc")
+              .after(str -> assertThat(str)
+                .startsWith("java=17.0.")
+                .endsWith("-zulu")
                 .actual())
           )
         );
