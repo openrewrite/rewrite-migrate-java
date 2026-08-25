@@ -22,6 +22,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -29,11 +30,13 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class URLConstructorToURICreate extends Recipe {
 
@@ -92,9 +95,11 @@ public class URLConstructorToURICreate extends Recipe {
                                 for (Statement statement : ((J.Block) c.getValue()).getStatements()) {
                                     if (statement instanceof J.VariableDeclarations) {
                                         for (J.VariableDeclarations.NamedVariable variable : ((J.VariableDeclarations) statement).getVariables()) {
-                                            if (variable.getSimpleName().equals(identifier.getSimpleName())) {
+                                            if (isSameVariable(identifier, variable)) {
                                                 Expression initializer = variable.getInitializer();
-                                                if (initializer instanceof J.Literal && ((J.Literal) initializer).getValue() instanceof String) {
+                                                if (initializer instanceof J.Literal &&
+                                                        ((J.Literal) initializer).getValue() instanceof String &&
+                                                        !isReassigned(variable)) {
                                                     return (String) ((J.Literal) initializer).getValue();
                                                 }
                                                 return null;
@@ -105,6 +110,44 @@ public class URLConstructorToURICreate extends Recipe {
                             }
                         }
                         return null;
+                    }
+
+                    private boolean isSameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {
+                        if (expression instanceof J.FieldAccess) {
+                            return isSameVariable(((J.FieldAccess) expression).getName(), variable);
+                        }
+                        if (!(expression instanceof J.Identifier)) {
+                            return false;
+                        }
+                        JavaType.Variable fieldType = ((J.Identifier) expression).getFieldType();
+                        if (fieldType != null && variable.getVariableType() != null) {
+                            return TypeUtils.isOfType(fieldType, variable.getVariableType());
+                        }
+                        return variable.getSimpleName().equals(((J.Identifier) expression).getSimpleName());
+                    }
+
+                    private boolean isReassigned(J.VariableDeclarations.NamedVariable variable) {
+                        JavaSourceFile sourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
+                        if (sourceFile == null) {
+                            return true;
+                        }
+                        return new JavaIsoVisitor<AtomicBoolean>() {
+                            @Override
+                            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean reassigned) {
+                                if (isSameVariable(assignment.getVariable(), variable)) {
+                                    reassigned.set(true);
+                                }
+                                return super.visitAssignment(assignment, reassigned);
+                            }
+
+                            @Override
+                            public J.AssignmentOperation visitAssignmentOperation(J.AssignmentOperation assignOp, AtomicBoolean reassigned) {
+                                if (isSameVariable(assignOp.getVariable(), variable)) {
+                                    reassigned.set(true);
+                                }
+                                return super.visitAssignmentOperation(assignOp, reassigned);
+                            }
+                        }.reduce(sourceFile, new AtomicBoolean()).get();
                     }
 
                     private boolean isNotValidPath(@Nullable String path) {
