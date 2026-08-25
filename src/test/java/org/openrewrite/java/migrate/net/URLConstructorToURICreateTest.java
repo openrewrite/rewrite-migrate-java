@@ -183,6 +183,36 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
+    @Test
+    void urlCheckLocalVariableAbsolutePath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor() {
+                      String goodURL = "https://test.com";
+                      URL url1 = new URL(goodURL);
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor() {
+                      String goodURL = "https://test.com";
+                      URL url1 = URI.create(goodURL).toURL();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
     @Test
     void urlCheckConstantRelativePath() {

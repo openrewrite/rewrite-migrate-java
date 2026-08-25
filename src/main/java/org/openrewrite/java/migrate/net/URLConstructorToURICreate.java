@@ -17,13 +17,11 @@ package org.openrewrite.java.migrate.net;
 
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.analysis.constantfold.ConstantFold;
-import org.openrewrite.analysis.util.CursorUtil;
-import org.openrewrite.internal.RecipeRunException;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -32,6 +30,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.net.URI;
@@ -81,19 +80,31 @@ public class URLConstructorToURICreate extends Recipe {
                         }
                         if (arg instanceof J.Identifier &&
                                 TypeUtils.isOfType(arg.getType(), JavaType.Primitive.String)) {
-                            // find constant value of the identifier
-                            try {
-                                return CursorUtil.findCursorForTree(getCursor(), arg)
-                                        .bind(c -> ConstantFold.findConstantLiteralValue(c, String.class))
-                                        .toNull();
-                            } catch (RecipeRunException e) {
-                                // `ConstantFold` does not support lambdas
-                                return null;
-                            }
-                        } else {
-                            // null indicates no path extractable
-                            return null;
+                            return findLiteralInitializer((J.Identifier) arg);
                         }
+                        // null indicates no path extractable
+                        return null;
+                    }
+
+                    private @Nullable String findLiteralInitializer(J.Identifier identifier) {
+                        for (Cursor c = getCursor(); c != null; c = c.getParent()) {
+                            if (c.getValue() instanceof J.Block) {
+                                for (Statement statement : ((J.Block) c.getValue()).getStatements()) {
+                                    if (statement instanceof J.VariableDeclarations) {
+                                        for (J.VariableDeclarations.NamedVariable variable : ((J.VariableDeclarations) statement).getVariables()) {
+                                            if (variable.getSimpleName().equals(identifier.getSimpleName())) {
+                                                Expression initializer = variable.getInitializer();
+                                                if (initializer instanceof J.Literal && ((J.Literal) initializer).getValue() instanceof String) {
+                                                    return (String) ((J.Literal) initializer).getValue();
+                                                }
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return null;
                     }
 
                     private boolean isNotValidPath(@Nullable String path) {
