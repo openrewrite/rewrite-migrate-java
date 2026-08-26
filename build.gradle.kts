@@ -72,7 +72,6 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-joda:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
-    implementation("org.openrewrite.meta:rewrite-analysis:$rewriteVersion")
 
     runtimeOnly("org.openrewrite:rewrite-java-8")
     runtimeOnly("org.openrewrite:rewrite-java-11")

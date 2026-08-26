@@ -183,6 +183,102 @@ class URLConstructorToURICreateTest implements RewriteTest {
         );
     }
 
+    @Test
+    void urlCheckLocalVariableAbsolutePath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor() {
+                      String goodURL = "https://test.com";
+                      URL url1 = new URL(goodURL);
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor() {
+                      String goodURL = "https://test.com";
+                      URL url1 = URI.create(goodURL).toURL();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void urlCheckReassignedVariablePath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  void urlConstructor() throws Exception {
+                      String url = "https://test.com";
+                      url = "not/valid/url";
+                      URL url1 = new URL(url);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void urlCheckFieldShadowedByLaterLocalPath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  private String url = "not/valid/url";
+
+                  void urlConstructor() throws Exception {
+                      System.out.println(new URL(url));
+                      String url = "https://test.com";
+                      System.out.println(url);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void urlCheckFieldReassignedInAnotherMethodPath() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  private String url = "https://test.com";
+
+                  void setUrl() {
+                      this.url = "not/valid/url";
+                  }
+
+                  void urlConstructor() throws Exception {
+                      System.out.println(new URL(url));
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/620")
     @Test
     void urlCheckConstantRelativePath() {
