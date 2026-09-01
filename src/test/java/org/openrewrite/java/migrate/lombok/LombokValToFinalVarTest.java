@@ -89,6 +89,47 @@ class LombokValToFinalVarTest implements RewriteTest {
     }
 
     @Test
+    void removeValInsideNestedLambda() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.function.Function;
+                import lombok.val;
+
+                class A {
+                    private String apiMetricKey = "helloKey";
+
+                    public Function<String, String[]> bar(Function<String, String> keySelector) {
+                        return apiMetricKey -> {
+                            val key = keySelector.apply(apiMetricKey);
+                            return new String[] { "aaa", "bbb" };
+                        };
+                    }
+                }
+                """,
+              """
+                import java.util.function.Function;
+
+                class A {
+                    private String apiMetricKey = "helloKey";
+
+                    public Function<String, String[]> bar(Function<String, String> keySelector) {
+                        return apiMetricKey -> {
+                            final var key = keySelector.apply(apiMetricKey);
+                            return new String[] { "aaa", "bbb" };
+                        };
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
     void preserveStarImport() {
         //language=java
         rewriteRun(
