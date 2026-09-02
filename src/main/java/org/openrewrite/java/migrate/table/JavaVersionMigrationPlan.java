@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.table;
 
-import lombok.Builder;
 import lombok.Value;
 import org.openrewrite.Column;
 import org.openrewrite.DataTable;
@@ -31,7 +30,7 @@ public class JavaVersionMigrationPlan extends DataTable<JavaVersionMigrationPlan
         );
     }
 
-    @Builder
+    @lombok.Builder
     @Value
     public static class Row {
 
