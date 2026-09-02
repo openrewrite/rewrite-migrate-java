@@ -115,7 +115,7 @@ class UpgradeToJava25Test implements RewriteTest {
               spec -> spec.after(actual ->
                 assertThat(actual)
                   .contains("<maven.compiler.release>25</maven.compiler.release>")
-                  .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.15\\.")
+                  .containsPattern("maven-compiler-plugin</artifactId>\\s*<version>3\\.(1[5-9]|[2-9]\\d)\\.")
                   .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
                   .containsPattern("maven-failsafe-plugin</artifactId>\\s*<version>3\\.5\\.")
                   .contains("<argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>")

@@ -19,17 +19,19 @@ import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Markers;
 
 import java.time.Duration;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 
 public class LombokValToFinalVar extends Recipe {
@@ -79,27 +81,32 @@ public class LombokValToFinalVar extends Recipe {
                     (varDecls.getTypeExpression() instanceof J.Identifier && "val".equals(((J.Identifier) varDecls.getTypeExpression()).getSimpleName()))) {
                 maybeRemoveImport(LOMBOK_VAL);
 
-                J.VariableDeclarations.NamedVariable nv = mv.getVariables().get(0);
+                // Manually transform to `var`, rather than using a JavaTemplate, so that the initializer
+                // is carried over untouched; reprinting it can lose type information, such as the type
+                // variable in a cast like `(T) o`.
+                J.VariableDeclarations.NamedVariable nv = varDecls.getVariables().get(0);
+                TypeTree typeExpression = varDecls.getTypeExpression();
+                J.Identifier varType = new J.Identifier(Tree.randomId(),
+                        typeExpression.getPrefix(),
+                        typeExpression.getMarkers(),
+                        service(AnnotationService.class).getAllAnnotations(getCursor()),
+                        "var",
+                        nv.getType(),
+                        null);
                 if (nv.getInitializer() == null) {
-                    // manually transform to var, as val in this case has no sufficient type information
-                    // and the java template parsing would fail, see https://github.com/openrewrite/rewrite/pull/5637
-                    TypeTree typeExpression = varDecls.getTypeExpression();
-                    J.Identifier varType = new J.Identifier(Tree.randomId(),
-                            typeExpression.getPrefix(),
-                            typeExpression.getMarkers(),
-                            service(AnnotationService.class).getAllAnnotations(getCursor()),
-                            "var",
-                            nv.getType(),
-                            null);
+                    // `val` in this case has no sufficient type information, so it becomes a plain `var`,
+                    // see https://github.com/openrewrite/rewrite/pull/5637
                     return varDecls.withTypeExpression(varType);
                 }
 
-                varDecls = JavaTemplate.builder("final var #{} = #{any()};")
-                        .contextSensitive()
-                        .build()
-                        .apply(updateCursor(varDecls), varDecls.getCoordinates().replace(), nv.getSimpleName(), nv.getInitializer());
-                varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), namedVar -> namedVar
-                        .withInitializer(namedVar.getInitializer().withPrefix(nv.getInitializer().getPrefix()))));
+                if (varDecls.getModifiers().stream().noneMatch(m -> m.getType() == J.Modifier.Type.Final)) {
+                    varDecls = varDecls.withModifiers(ListUtils.concat(
+                            new J.Modifier(Tree.randomId(), typeExpression.getPrefix(), Markers.EMPTY,
+                                    null, J.Modifier.Type.Final, emptyList()),
+                            varDecls.getModifiers()));
+                    varType = varType.withPrefix(Space.SINGLE_SPACE);
+                }
+                varDecls = varDecls.withTypeExpression(varType);
             }
             return varDecls;
         }
