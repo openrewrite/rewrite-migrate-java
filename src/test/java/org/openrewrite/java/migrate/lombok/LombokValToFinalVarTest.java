@@ -130,6 +130,41 @@ class LombokValToFinalVarTest implements RewriteTest {
     }
 
     @Test
+    void doNotUseFinal_TryWithResources_statement() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.io.StringWriter;
+                import lombok.val;
+
+                class A {
+                    public void foo(String aaa) {
+                        try (val writer = new StringWriter()) {
+                            writer.append(aaa);
+                        }
+                    }
+                }
+                """,
+              """
+                import java.io.StringWriter;
+
+                class A {
+                    public void foo(String aaa) {
+                        try (var writer = new StringWriter()) {
+                            writer.append(aaa);
+                        }
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
     void preserveStarImport() {
         //language=java
         rewriteRun(
