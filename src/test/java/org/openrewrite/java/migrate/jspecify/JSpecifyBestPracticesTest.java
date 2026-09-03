@@ -23,6 +23,8 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 @SuppressWarnings("NotNullFieldNotInitialized")
@@ -38,6 +40,7 @@ class JSpecifyBestPracticesTest implements RewriteTest {
             "jakarta.annotation-api",
             "annotations",
             "spring-core",
+            "micrometer-core",
             "micronaut-core"));
     }
 
@@ -489,6 +492,372 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                       @NonNull
                       public String barField;
                     }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-core</artifactId>
+                            <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-core</artifactId>
+                            <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromMicrometerAnnotationsToJspecify() {
+        rewriteRun(
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micrometer.core.lang.NonNull;
+                  import io.micrometer.core.lang.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      @Nullable
+                      public Foo.Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      public Foo.@Nullable Bar foobar;
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.1</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromMicrometerAnnotationsWithExistingJspecifyDependency() {
+        rewriteRun(
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micrometer.core.lang.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field1;
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field1;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void micrometerProjectBuiltWithGradleAlsoGetsTheJspecifyDependency() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micrometer.core.lang.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field;
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field;
+                  }
+                  """
+              )
+            ),
+            //language=groovy
+            buildGradle(
+              """
+                plugins {
+                    id "java-library"
+                }
+
+                repositories {
+                    mavenCentral()
+                }
+
+                dependencies {
+                    implementation "io.micrometer:micrometer-core:1.15.1"
+                }
+                """,
+              """
+                plugins {
+                    id "java-library"
+                }
+
+                repositories {
+                    mavenCentral()
+                }
+
+                dependencies {
+                    implementation "io.micrometer:micrometer-core:1.15.1"
+                    implementation "org.jspecify:jspecify:1.0.0"
+                }
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void micrometerRecipeDoesNotActivateOnSpringAnnotations() {
+        rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/jspecify.yml",
+            "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations"),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import org.springframework.lang.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field1;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-core</artifactId>
+                            <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void micrometerRecipeDoesNotActivateWithoutNullnessAnnotations() {
+        rewriteRun(
+          spec -> spec.recipeFromResource(
+            "/META-INF/rewrite/jspecify.yml",
+            "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations"),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  public class Test {
+                      public String field1;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.1</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void addJspecifyDependencyOnSpringOnlyProject() {
+        // MigrateToJSpecify disables the Spring leaf, but JSpecifyBestPractices still introduces
+        // `org.jspecify.annotations.*`, so a Spring-only project still needs the dependency
+        rewriteRun(
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import org.springframework.lang.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field1;
+
+                      public String maybe() {
+                          if (field1 != null) {
+                              return field1;
+                          }
+                          return null;
+                      }
+                  }
+                  """,
+                """
+                  import org.springframework.lang.Nullable;
+
+                  public class Test {
+                      @Nullable
+                      public String field1;
+
+                      public @org.jspecify.annotations.Nullable String maybe() {
+                          if (field1 != null) {
+                              return field1;
+                          }
+                          return null;
+                      }
                   }
                   """
               )
