@@ -99,7 +99,9 @@ public class LombokValToFinalVar extends Recipe {
                     return varDecls.withTypeExpression(varType);
                 }
 
-                if (varDecls.getModifiers().stream().noneMatch(m -> m.getType() == J.Modifier.Type.Final)) {
+                // Resources of a try-with-resources statement are implicitly final
+                boolean implicitlyFinal = getCursor().getParentTreeCursor().getValue() instanceof J.Try.Resource;
+                if (!implicitlyFinal && varDecls.getModifiers().stream().noneMatch(m -> m.getType() == J.Modifier.Type.Final)) {
                     varDecls = varDecls.withModifiers(ListUtils.concat(
                             new J.Modifier(Tree.randomId(), typeExpression.getPrefix(), Markers.EMPTY,
                                     null, J.Modifier.Type.Final, emptyList()),
