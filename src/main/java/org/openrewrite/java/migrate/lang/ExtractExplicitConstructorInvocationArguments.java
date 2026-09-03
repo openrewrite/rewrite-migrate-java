@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -112,16 +113,6 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     }
                 }
 
-                // 1. Declare the extracted arguments right before the constructor invocation, preserving their order
-                JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString());
-                for (String fqn : imports) {
-                    declarationTemplate.imports(fqn);
-                    maybeAddImport(fqn);
-                }
-                md = declarationTemplate.build()
-                        .apply(getCursor(), superCall.getCoordinates().before(), declarationArgs.toArray());
-
-                // 2. Replace the now-redundant arguments with references to the new local variables
                 StringBuilder argumentList = new StringBuilder();
                 List<Expression> inlineArgs = new ArrayList<>();
                 for (int i = 0; i < args.size(); i++) {
@@ -135,7 +126,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                         inlineArgs.add(args.get(i));
                     }
                 }
-                return (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
+                md = (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx2) {
                         // Do not descend into nested/local classes; their own `super(..)`/`this(..)` calls
@@ -147,11 +138,25 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
                         mi = super.visitMethodInvocation(mi, ctx2);
                         if (isExplicitConstructorInvocation(mi)) {
-                            return JavaTemplate.apply(argumentList.toString(), getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
+                            return JavaTemplate.apply(argumentList.toString(), getCursor(),
+                                    mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
                         }
                         return mi;
                     }
                 }.visitNonNull(md, ctx, getCursor().getParentOrThrow());
+
+                J.MethodInvocation updatedSuperCall = findExplicitConstructorInvocation(md.getBody().getStatements());
+                if (updatedSuperCall == null) {
+                    return md;
+                }
+                JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString());
+                for (String fqn : imports) {
+                    declarationTemplate.imports(fqn);
+                    maybeAddImport(fqn);
+                }
+                return declarationTemplate.build().apply(
+                        new Cursor(getCursor().getParentOrThrow(), md),
+                        updatedSuperCall.getCoordinates().before(), declarationArgs.toArray());
             }
 
             private J.@Nullable MethodInvocation findExplicitConstructorInvocation(List<Statement> statements) {
