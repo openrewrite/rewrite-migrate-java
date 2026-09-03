@@ -511,4 +511,58 @@ class LombokValToFinalVarTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void preserveCast() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.val;
+                class CastDemo {
+                    void bar() {
+                        val foo = (String) "foo";
+                    }
+                }
+                """,
+              """
+                class CastDemo {
+                    void bar() {
+                        final var foo = (String) "foo";
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
+
+    @Test
+    void preserveGenericCast() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.val;
+                class GenericCastDemo<T> {
+                    void bar(Object o) {
+                        val foo = (T) o;
+                    }
+                }
+                """,
+              """
+                class GenericCastDemo<T> {
+                    void bar(Object o) {
+                        final var foo = (T) o;
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
 }
