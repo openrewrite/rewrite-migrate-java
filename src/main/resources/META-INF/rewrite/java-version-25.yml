@@ -204,6 +204,8 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # Gradle 9 removed the JavaPluginConvention, so the wrapper bump above turns a project-level `sourceCompatibility` into an error.
+  - org.openrewrite.gradle.gradle9.UseJavaExtensionBlock
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin

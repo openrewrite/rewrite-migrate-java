@@ -23,6 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -214,6 +215,30 @@ class UpgradeToJava25Test implements RewriteTest {
                   .containsPattern("<artifactId>checkstyle</artifactId>\\s*<version>10\\.")
                   .actual())
             )
+          )
+        );
+    }
+
+    @Test
+    void movesProjectLevelCompatibilityIntoJavaBlockForGradle9() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=groovy
+            """
+              plugins { id 'java' }
+              sourceCompatibility = 1.8
+              targetCompatibility = 1.8
+              """,
+            //language=groovy
+            """
+              plugins { id 'java' }
+
+              java {
+                  sourceCompatibility = JavaVersion.VERSION_25
+                  targetCompatibility = JavaVersion.VERSION_25
+              }
+              """
           )
         );
     }
