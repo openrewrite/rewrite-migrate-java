@@ -157,6 +157,68 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradesBuildPluginsThatCannotRunOnJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <pluginManagement>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-enforcer-plugin</artifactId>
+                                    <version>1.4</version>
+                                </plugin>
+                            </plugins>
+                        </pluginManagement>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-assembly-plugin</artifactId>
+                                <version>2.6</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-plugin-plugin</artifactId>
+                                <version>3.6.1</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-checkstyle-plugin</artifactId>
+                                <version>3.1.2</version>
+                                <dependencies>
+                                    <dependency>
+                                        <groupId>com.puppycrawl.tools</groupId>
+                                        <artifactId>checkstyle</artifactId>
+                                        <version>8.45</version>
+                                    </dependency>
+                                </dependencies>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("maven-enforcer-plugin</artifactId>\\s*<version>3\\.")
+                  .containsPattern("maven-assembly-plugin</artifactId>\\s*<version>3\\.")
+                  .containsPattern("maven-plugin-plugin</artifactId>\\s*<version>3\\.15\\.")
+                  .containsPattern("maven-checkstyle-plugin</artifactId>\\s*<version>3\\.6\\.")
+                  .containsPattern("<artifactId>checkstyle</artifactId>\\s*<version>10\\.")
+                  .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void kotlin1xCapsJavaVersionAt24WithComment() {
         // Kotlin 1.x is left untouched: crossing the K2 compiler default introduced in Kotlin 2.0 is source-breaking,
         // so the module stays on Kotlin 1.x and is capped at Java 24 (with an explanatory comment) rather than upgraded.
