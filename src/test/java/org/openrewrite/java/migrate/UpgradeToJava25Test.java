@@ -23,6 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -153,6 +154,92 @@ class UpgradeToJava25Test implements RewriteTest {
               return a + "\n";
           })),
           other("", spec -> spec.path("gradle/wrapper/gradle-wrapper.jar"))
+        );
+    }
+
+    @Test
+    void upgradesBuildPluginsThatCannotRunOnJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <pluginManagement>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-enforcer-plugin</artifactId>
+                                    <version>1.4</version>
+                                </plugin>
+                            </plugins>
+                        </pluginManagement>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-assembly-plugin</artifactId>
+                                <version>2.6</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-plugin-plugin</artifactId>
+                                <version>3.6.1</version>
+                            </plugin>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-checkstyle-plugin</artifactId>
+                                <version>3.1.2</version>
+                                <dependencies>
+                                    <dependency>
+                                        <groupId>com.puppycrawl.tools</groupId>
+                                        <artifactId>checkstyle</artifactId>
+                                        <version>8.45</version>
+                                    </dependency>
+                                </dependencies>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("maven-enforcer-plugin</artifactId>\\s*<version>3\\.")
+                  .containsPattern("maven-assembly-plugin</artifactId>\\s*<version>3\\.")
+                  .containsPattern("maven-plugin-plugin</artifactId>\\s*<version>3\\.15\\.")
+                  .containsPattern("maven-checkstyle-plugin</artifactId>\\s*<version>3\\.6\\.")
+                  .containsPattern("<artifactId>checkstyle</artifactId>\\s*<version>10\\.")
+                  .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void movesProjectLevelCompatibilityIntoJavaBlockForGradle9() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=groovy
+            """
+              plugins { id 'java' }
+              sourceCompatibility = 1.8
+              targetCompatibility = 1.8
+              """,
+            //language=groovy
+            """
+              plugins { id 'java' }
+
+              java {
+                  sourceCompatibility = JavaVersion.VERSION_25
+                  targetCompatibility = JavaVersion.VERSION_25
+              }
+              """
+          )
         );
     }
 
@@ -470,6 +557,72 @@ class UpgradeToJava25Test implements RewriteTest {
                     </dependencies>
                 </project>
                 """
+            )
+          )
+        );
+    }
+
+    @Test
+    void addsLombokAnnotationProcessorToReactorParent() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.EnableLombokAnnotationProcessor"),
+          mavenProject("parent",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1</version>
+                    <packaging>pom</packaging>
+                    <modules>
+                        <module>child</module>
+                    </modules>
+                    <build>
+                        <pluginManagement>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-compiler-plugin</artifactId>
+                                    <version>3.14.0</version>
+                                    <configuration>
+                                        <release>25</release>
+                                    </configuration>
+                                </plugin>
+                            </plugins>
+                        </pluginManagement>
+                    </build>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
+                  .actual()
+              )
+            ),
+            mavenProject("child",
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                          <groupId>com.mycompany.app</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                      </parent>
+                      <artifactId>child</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.projectlombok</groupId>
+                              <artifactId>lombok</artifactId>
+                              <version>1.18.40</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """
+              )
             )
           )
         );
