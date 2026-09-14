@@ -7,6 +7,7 @@
 11.0.32+1.1-librca
 11.0.32+1.1-tem
 11.0.32+1.1-zulu
+11.0.32+15-bisheng
 11.0.32-fx+1.1-librca
 11.0.32.fx-zulu
 17.0.12-graal
@@ -21,6 +22,7 @@
 17.0.20+1-sapmchn
 17.0.20+1.1-librca
 17.0.20+1.1-zulu
+17.0.20+15-bisheng
 17.0.20-crac+1.2-librca
 17.0.20-fx+1.1-librca
 17.0.20.fx-zulu
@@ -37,6 +39,7 @@
 21.0.12+1.1-librca
 21.0.12+1.1-tem
 21.0.12+1.1-zulu
+21.0.12+15-bisheng
 21.0.12-crac+1.2-librca
 21.0.12-fx+1.1-librca
 21.0.12.fx-zulu
@@ -57,6 +60,7 @@
 25.0.4+1.1-zulu
 25.0.4+1.1.r25-nik
 25.0.4+1.58348-jbr
+25.0.4+15-bisheng
 25.0.4-fx+1.1-librca
 25.0.4-fx+1.1.r25-nik
 25.0.4.fx-zulu
@@ -77,7 +81,7 @@
 26.0.2.fx-zulu
 27.0.0+ea.34-open
 27.0.0+ea.35-open
-28.0.0+ea.14-open
+28.0.0+ea.15-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.232-amzn
