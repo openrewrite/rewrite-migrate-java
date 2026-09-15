@@ -174,7 +174,8 @@ description: >-
   With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
   The change is valid for older versions as well.
 preconditions:
-  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+  # Marks the reactor parent too: `AddAnnotationProcessor` configures a module through its parent's `pluginManagement`.
+  - org.openrewrite.java.migrate.search.ModuleOrParentHasDependency:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
 recipeList:
@@ -204,6 +205,8 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # Gradle 9 removed the JavaPluginConvention, so the wrapper bump above turns a project-level `sourceCompatibility` into an error.
+  - org.openrewrite.gradle.gradle9.UseJavaExtensionBlock
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
@@ -217,6 +220,29 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-failsafe-plugin
       newVersion: 3.5.x
+  # Plugins whose older lines fail to load on JDK 25 (plexus-utils reflection, ASM without class file version 69).
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-enforcer-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-assembly-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-plugin-plugin
+      newVersion: 3.15.x
+      addVersionIfMissing: true
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-checkstyle-plugin
+      newVersion: 3.6.x
+  # A checkstyle pinned on the plugin must be able to parse the pattern-matching `switch` the Java 21 migration writes.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.puppycrawl.tools
+      artifactId: checkstyle
+      newVersion: 10.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
