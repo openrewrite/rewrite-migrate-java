@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -526,6 +527,140 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-core</artifactId>
                             <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @ExpectedToFail("No AddDependency guard in jspecify.yml matches a project without a prior nullness library, so the annotations just written do not resolve")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1192")
+    @Test
+    void addJspecifyDependencyWithoutPriorNullnessAnnotations() {
+        rewriteRun(
+          mavenProject("foo",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  public class Test {
+
+                      public String getString() {
+                          return null;
+                      }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+
+                      public @Nullable String getString() {
+                          return null;
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @ExpectedToFail("AddDependency's onlyIfUsing scans the original sources and does not see annotations inserted earlier in the same cycle; the dependency is only added in a follow-up cycle")
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1192")
+    @Test
+    void addDependencyForAnnotationsInsertedInSameRun() {
+        rewriteRun(
+          spec -> spec.recipeFromYaml(
+            """
+              type: specs.openrewrite.org/v1beta/recipe
+              name: org.openrewrite.java.jspecify.AnnotateNullableAndAddDependency
+              displayName: Annotate nullable methods and add the JSpecify dependency
+              description: Adds JSpecify annotations and the dependency providing them.
+              recipeList:
+                - org.openrewrite.staticanalysis.AnnotateNullableMethods
+                - org.openrewrite.java.dependencies.AddDependency:
+                    groupId: org.jspecify
+                    artifactId: jspecify
+                    version: 1.0.0
+                    onlyIfUsing: org.jspecify.annotations.*
+                    acceptTransitive: true
+              """,
+            "org.openrewrite.java.jspecify.AnnotateNullableAndAddDependency"),
+          mavenProject("foo",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  public class Test {
+
+                      public String getString() {
+                          return null;
+                      }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+
+                      public @Nullable String getString() {
+                          return null;
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
                         </dependency>
                     </dependencies>
                 </project>
