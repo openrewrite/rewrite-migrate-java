@@ -347,7 +347,7 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
 examples:
-- description: '`ArrayStoreExceptionToTypeNotPresentExceptionTest#replaceCaughtException`'
+- description: '`ArrayStoreExceptionToTypeNotPresentExceptionTest#alsoCatchTypeNotPresentException`'
   sources:
   - before: |
       import java.lang.annotation.*;
@@ -377,12 +377,12 @@ examples:
               try {
                   Object o = "test";
                   o.getClass().getAnnotation(Override.class);
-              } catch (TypeNotPresentException e) {
+              } catch (ArrayStoreException | TypeNotPresentException e) {
                   System.out.println("Caught Exception");
               }
               try {
                   Object.class.getAnnotation(Override.class);
-              } catch (TypeNotPresentException e) {
+              } catch (ArrayStoreException | TypeNotPresentException e) {
                   System.out.println("Caught ArrayStoreException");
               }
           }
