@@ -81,6 +81,34 @@ class ConsolidateLombokConfigTest implements RewriteTest {
     }
 
     @Test
+    void createRootConfigFromNestedConfigs() {
+        rewriteRun(
+          text(
+            doesNotExist(),
+            """
+              aaa=true
+              bbb=true
+              """,
+            spec -> spec.path("lombok.config")
+          ),
+          text(
+            """
+              aaa=true
+              """,
+            doesNotExist(),
+            spec -> spec.path("a/lombok.config")
+          ),
+          text(
+            """
+              bbb=true
+              """,
+            doesNotExist(),
+            spec -> spec.path("b/lombok.config")
+          )
+        );
+    }
+
+    @Test
     void conflictingDirectiveInNestedConfig() {
         rewriteRun(
           text(
@@ -867,19 +895,86 @@ class ConsolidateLombokConfigTest implements RewriteTest {
     }
 
     @Test
-    void nestedConfigsAreLeftInPlaceWithoutARootConfig() {
+    void createdRootConfigIsWrittenShallowestNestedConfigFirst() {
         rewriteRun(
+          text(
+            doesNotExist(),
+            """
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              """,
+            spec -> spec.path("lombok.config")
+          ),
           text(
             """
               lombok.val.flagUsage = error
               """,
+            doesNotExist(),
             spec -> spec.path("module/lombok.config")
           ),
           text(
             """
               lombok.var.flagUsage = error
               """,
+            doesNotExist(),
             spec -> spec.path("module/nested/lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void noRootConfigIsCreatedWhenNoNestedConfigCanBeHoisted() {
+        rewriteRun(
+          text(
+            """
+              config.stopBubbling = true
+              lombok.val.flagUsage = error
+              """,
+            spec -> spec.path("module/lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void createdRootConfigLeavesUnhoistableNestedConfigsInPlace() {
+        rewriteRun(
+          text(
+            doesNotExist(),
+            """
+              lombok.val.flagUsage = error
+              """,
+            spec -> spec.path("lombok.config")
+          ),
+          text(
+            """
+              lombok.val.flagUsage = error
+              """,
+            doesNotExist(),
+            spec -> spec.path("a/lombok.config")
+          ),
+          text(
+            """
+              clear lombok.var.flagUsage
+              """,
+            spec -> spec.path("b/lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void noRootConfigIsCreatedWhenNestedConfigsConflict() {
+        rewriteRun(
+          text(
+            """
+              lombok.val.flagUsage = error
+              """,
+            spec -> spec.path("a/lombok.config")
+          ),
+          text(
+            """
+              lombok.val.flagUsage = allow
+              """,
+            spec -> spec.path("b/lombok.config")
           )
         );
     }
