@@ -93,6 +93,7 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
   # Remove the legacy jaxb-core artifact
   - org.openrewrite.java.dependencies.RemoveDependency:
       groupId: com.sun.xml.bind
@@ -134,3 +135,42 @@ recipeList:
       groupId: org.codehaus.mojo
       artifactId: jaxb2-maven-plugin
       newVersion: 2.5.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
+displayName: Replace `one.gfw` JAXB artifacts with their official coordinates
+description: >-
+  The `one.gfw` group republishes unmodified copies of the JAXB API and runtime artifacts under its own group ID.
+  This recipe replaces them with the official artifacts they were copied from, so that subsequent JAXB and Jakarta
+  migrations recognize them.
+tags:
+  - javax
+  - jaxb
+  - jakarta
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: one.gfw
+      oldArtifactId: jaxb-api
+      newGroupId: javax.xml.bind
+      newArtifactId: jaxb-api
+      newVersion: 2.3.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: one.gfw
+      oldArtifactId: jakarta.xml.bind-api
+      newGroupId: jakarta.xml.bind
+      newArtifactId: jakarta.xml.bind-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: one.gfw
+      oldArtifactId: jaxb-core
+      newGroupId: com.sun.xml.bind
+      newArtifactId: jaxb-core
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: one.gfw
+      oldArtifactId: jaxb-impl
+      newGroupId: com.sun.xml.bind
+      newArtifactId: jaxb-impl
+      newVersion: 4.0.x

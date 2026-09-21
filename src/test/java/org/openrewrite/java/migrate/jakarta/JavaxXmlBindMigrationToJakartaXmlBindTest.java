@@ -270,4 +270,53 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void migrateOneGfwJaxbApi() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
+          //language=java
+          java(
+            """
+              import javax.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """,
+            """
+              import jakarta.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>one.gfw</groupId>
+                          <artifactId>jaxb-api</artifactId>
+                          <version>2.3.1.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom ->
+                assertThat(pom)
+                  .doesNotContain("one.gfw")
+                  .doesNotContain("<artifactId>jaxb-api</artifactId>")
+                  .containsPattern("<groupId>jakarta.xml.bind</groupId>\\s*<artifactId>jakarta.xml.bind-api</artifactId>\\s*<version>3\\.0\\.\\d+</version>")
+                  .actual())
+          )
+        );
+    }
 }
