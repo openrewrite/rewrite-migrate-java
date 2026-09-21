@@ -29,6 +29,7 @@ import org.openrewrite.text.PlainTextParser;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -38,8 +39,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingInt;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.openrewrite.java.migrate.lombok.LombokConfig.LOMBOK_CONFIG;
 import static org.openrewrite.java.migrate.lombok.LombokConfig.STOP_BUBBLING_KEY;
 import static org.openrewrite.java.migrate.lombok.LombokConfig.append;
@@ -56,7 +59,8 @@ public class ConsolidateLombokConfig extends ScanningRecipe<ConsolidateLombokCon
     String displayName = "Consolidate `lombok.config` files";
 
     String description = "Merge the directives of every nested `lombok.config` into the root `lombok.config` and " +
-            "delete the nested files, so that a project has a single place where Lombok is configured. Directives " +
+            "delete the nested files, so that a project has a single place where Lombok is configured. A root " +
+            "`lombok.config` is created when the project has none. Directives " +
             "are appended to the root file; what it already declares, itself or through an `import`, is left as " +
             "written and not repeated. Note that hoisting a directive widens its scope from the directory that " +
             "declared it to the whole project, so a directive only some directories can satisfy, such as " +
@@ -124,20 +128,34 @@ public class ConsolidateLombokConfig extends ScanningRecipe<ConsolidateLombokCon
         };
     }
 
+    /**
+     * The root {@code lombok.config}, when a project that has none has directives to consolidate into one. What the
+     * nested files declare is written to a new file rather than left scattered, as the alternative is to leave a
+     * project of nested configs alone for want of the one file this recipe is about.
+     */
+    @Override
+    public Collection<? extends SourceFile> generate(Accumulator acc, ExecutionContext ctx) {
+        if (acc.rootConfig != null) {
+            return emptyList();
+        }
+        Consolidation consolidation = consolidation(acc);
+        if (consolidation == null || consolidation.additions.isEmpty()) {
+            return emptyList();
+        }
+        return PlainTextParser.builder().build()
+                .parse(append("", consolidation.additions))
+                .map(config -> (SourceFile) config.withSourcePath(Paths.get(LOMBOK_CONFIG)))
+                .collect(toList());
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        if (acc.rootConfig == null) {
+        Consolidation consolidation = consolidation(acc);
+        if (consolidation == null) {
             return TreeVisitor.noop();
         }
-        SortedMap<Path, List<LombokConfig.Line>> hoistable = hoistable(configuration(acc), importedConfigs(acc));
-        if (hoistable.isEmpty()) {
-            return TreeVisitor.noop();
-        }
-        List<LombokConfig.Line> rootLines = expandImports(acc.rootConfig, acc.rootLines, acc.configs, new HashSet<>());
-        if (rootLines == null || hasConflictingDirectives(rootLines, hoistable)) {
-            return TreeVisitor.noop();
-        }
-        List<String> additions = additions(rootLines, hoistable);
+        SortedMap<Path, List<LombokConfig.Line>> hoistable = consolidation.hoistable;
+        List<String> additions = consolidation.additions;
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
@@ -155,6 +173,32 @@ public class ConsolidateLombokConfig extends ScanningRecipe<ConsolidateLombokCon
                 return plainText.withText(append(plainText.getText(), additions));
             }
         };
+    }
+
+    /**
+     * What the nested configs come to: the files to delete and the lines the root needs for them to keep taking
+     * effect. {@code null} when there is nothing to consolidate, or when the sources do not say enough about what
+     * the root declares to consolidate safely. A project without a root config has nothing declared above the
+     * nested files, so everything they say is carried over.
+     */
+    private static @Nullable Consolidation consolidation(Accumulator acc) {
+        SortedMap<Path, List<LombokConfig.Line>> hoistable = hoistable(configuration(acc), importedConfigs(acc));
+        if (hoistable.isEmpty()) {
+            return null;
+        }
+        List<LombokConfig.Line> rootLines = acc.rootConfig == null ? emptyList() :
+                expandImports(acc.rootConfig, acc.rootLines, acc.configs, new HashSet<>());
+        if (rootLines == null || hasConflictingDirectives(rootLines, hoistable)) {
+            return null;
+        }
+        return new Consolidation(hoistable, additions(rootLines, hoistable));
+    }
+
+    @Value
+    private static class Consolidation {
+        SortedMap<Path, List<LombokConfig.Line>> hoistable;
+
+        List<String> additions;
     }
 
     /**
