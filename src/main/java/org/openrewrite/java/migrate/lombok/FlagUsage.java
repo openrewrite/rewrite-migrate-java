@@ -53,23 +53,19 @@ public class FlagUsage extends Recipe {
 
     String displayName = "Flag usage of a Lombok feature";
 
-    String description = "Assign `lombok.<featureName>.flagUsage` in every `lombok.config`, so that Lombok fails the " +
-            "build, or warns, on a use of the feature rather than quietly compiling it. Run this once the uses are " +
-            "gone, to keep them from coming back. Every config is written to rather than only the root, as a config " +
-            "below the root has the last word on the directories under it and would otherwise go on allowing what " +
-            "the root forbids. A file that assigns the key another value is rewritten; a file that speaks about the " +
-            "key in a way that cannot be rewritten, such as `clear lombok.val.flagUsage`, is left as written, as is " +
-            "a project with no `lombok.config` at all, as there is then no file to write to.";
+    String description = "Assign `lombok.<featureName>.flagUsage` in every `lombok.config`, so that Lombok fails " +
+            "the build, or warns, where the feature is used. Nested configs are written to as well, as those have " +
+            "the last word on the directories below them.";
 
     @Override
     public String getInstanceNameSuffix() {
-        return String.format("`lombok.%s.flagUsage`", featureName);
+        return String.format("`lombok.%s.flagUsage = %s`", featureName, valueOrDefault());
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         String key = String.format("lombok.%s.flagUsage", featureName);
-        String flagUsage = value == null ? ERROR : value;
+        String flagUsage = valueOrDefault();
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
@@ -82,5 +78,9 @@ public class FlagUsage extends Recipe {
                 return text == null ? sourceFile : plainText.withText(text);
             }
         };
+    }
+
+    private String valueOrDefault() {
+        return value == null ? ERROR : value;
     }
 }
