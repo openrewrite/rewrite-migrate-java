@@ -25,7 +25,7 @@ import static org.openrewrite.test.SourceSpecs.text;
 class FlagUsageTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FlagUsage("lombok.val.flagUsage"));
+        spec.recipe(new FlagUsage("val", null));
     }
 
     @DocumentExample
@@ -202,7 +202,7 @@ class FlagUsageTest implements RewriteTest {
     @Test
     void sortsAfterVal() {
         rewriteRun(
-          spec -> spec.recipe(new FlagUsage("lombok.var.flagUsage")),
+          spec -> spec.recipe(new FlagUsage("var", null)),
           text(
             """
               lombok.val.flagUsage = error
@@ -212,6 +212,39 @@ class FlagUsageTest implements RewriteTest {
               lombok.val.flagUsage = error
               lombok.var.flagUsage = error
               zzz=true
+              """,
+            spec -> spec.path("lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void warningInsteadOfError() {
+        rewriteRun(
+          spec -> spec.recipe(new FlagUsage("val", "warning")),
+          text(
+            """
+              aaa=true
+              """,
+            """
+              aaa=true
+              lombok.val.flagUsage = warning
+              """,
+            spec -> spec.path("lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void errorDowngradedToWarning() {
+        rewriteRun(
+          spec -> spec.recipe(new FlagUsage("val", "warning")),
+          text(
+            """
+              lombok.val.flagUsage = error
+              """,
+            """
+              lombok.val.flagUsage = warning
               """,
             spec -> spec.path("lombok.config")
           )
