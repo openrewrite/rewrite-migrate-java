@@ -25,6 +25,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -226,10 +227,82 @@ final class LombokConfig {
     }
 
     /**
+     * The given text with {@code key} assigned {@code value}: the line that assigns it rewritten, keeping the
+     * spacing it was written with, or a new line added when the file does not assign it at all. {@code null} when
+     * the file already says this, so that nothing is written for nothing, and when it speaks about the key in a way
+     * that cannot be rewritten, such as {@code clear} or {@code +=}, as only the author can say what was meant
+     * there. The last assignment is the one rewritten, as that is the one Lombok keeps.
+     */
+    static @Nullable String assign(String text, String key, String value) {
+        if (text.isEmpty()) {
+            return key + " = " + value;
+        }
+        String normalizedKey = normalizeKey(key);
+        List<String> lines = new ArrayList<>(Arrays.asList(text.split("\r?\n", -1)));
+        int assignment = -1;
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = classify(lines.get(i).trim());
+            if (normalizedKey.equals(line.normalizedKey)) {
+                if (line.kind != Kind.ASSIGN) {
+                    return null;
+                }
+                assignment = i;
+            }
+        }
+        if (assignment == -1) {
+            lines.add(insertionIndex(lines, normalizedKey), key + " = " + value);
+        } else if (value.equals(classify(lines.get(assignment).trim()).value)) {
+            return null;
+        } else {
+            lines.set(assignment, reassign(lines.get(assignment), value));
+        }
+        return String.join(newLine(text), lines);
+    }
+
+    /**
+     * The given assignment with its value replaced, leaving the key, the indentation and the spacing around the
+     * {@code =} as they were written.
+     */
+    private static String reassign(String line, String value) {
+        String upToValue = line.substring(0, line.indexOf('=') + 1);
+        String rest = line.substring(upToValue.length());
+        int valueStart = 0;
+        while (valueStart < rest.length() && Character.isWhitespace(rest.charAt(valueStart))) {
+            valueStart++;
+        }
+        return upToValue + rest.substring(0, valueStart) + value;
+    }
+
+    /**
+     * Where a new assignment goes: in a file whose keys are in alphabetical order, where that order says it goes, so
+     * that the file stays sorted; at the end otherwise, as there is then no order to keep. The end is before the
+     * empty string a trailing newline splits into, as that is the end of the last line rather than a line of its own.
+     */
+    private static int insertionIndex(List<String> lines, String normalizedKey) {
+        int end = !lines.isEmpty() && lines.get(lines.size() - 1).isEmpty() ? lines.size() - 1 : lines.size();
+        int insertion = end;
+        String previousKey = null;
+        for (int i = 0; i < end; i++) {
+            Line line = classify(lines.get(i).trim());
+            if (line.normalizedKey == null) {
+                continue;
+            }
+            if (previousKey != null && previousKey.compareTo(line.normalizedKey) > 0) {
+                return end;
+            }
+            previousKey = line.normalizedKey;
+            if (insertion == end && line.normalizedKey.compareTo(normalizedKey) > 0) {
+                insertion = i;
+            }
+        }
+        return insertion;
+    }
+
+    /**
      * The given text with the given lines appended, preserving its line endings and trailing newline.
      */
     static String append(String text, List<String> additions) {
-        String newLine = text.contains("\r\n") ? "\r\n" : "\n";
+        String newLine = newLine(text);
         boolean endsWithNewLine = text.isEmpty() || text.endsWith("\n");
         StringBuilder merged = new StringBuilder(text);
         if (!endsWithNewLine) {
@@ -240,5 +313,12 @@ final class LombokConfig {
             merged.append(newLine);
         }
         return merged.toString();
+    }
+
+    /**
+     * The line ending the given text is written with, so that a line added to it reads the same as the rest.
+     */
+    private static String newLine(String text) {
+        return text.contains("\r\n") ? "\r\n" : "\n";
     }
 }
