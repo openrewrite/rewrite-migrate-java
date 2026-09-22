@@ -562,6 +562,30 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void noCapCommentWithoutKotlinStdlib() {
+        // Without a resolved kotlin-stdlib none of the Kotlin gates could have capped the module, so Java 24 came from elsewhere.
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
     void kotlinNewerThan2_3UpgradesToJava25() {
         rewriteRun(
           mavenProject("project",
