@@ -76,8 +76,10 @@ recipeList:
       oldFullyQualifiedTypeName: lombok.experimental.val
       newFullyQualifiedTypeName: lombok.val
   - org.openrewrite.java.migrate.lombok.LombokValToFinalVar
-  - org.openrewrite.java.migrate.lombok.FlagUsageVal
-  - org.openrewrite.java.migrate.lombok.FlagUsageVar
+  - org.openrewrite.java.migrate.lombok.FlagUsage:
+      key: lombok.val.flagUsage
+  - org.openrewrite.java.migrate.lombok.FlagUsage:
+      key: lombok.var.flagUsage
   - org.openrewrite.java.migrate.lombok.LombokOnXToOnX_
 
 ---

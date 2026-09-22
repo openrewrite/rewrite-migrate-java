@@ -15,8 +15,11 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
@@ -28,19 +31,31 @@ import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.migrate.lombok.LombokConfig.assign;
 import static org.openrewrite.java.migrate.lombok.LombokConfig.isLombokConfig;
 
-/**
- * Assigns a {@code flagUsage} key in every {@code lombok.config}, so that Lombok fails the build where a feature is
- * used. Every config is written to rather than only the root, as a config below the root has the last word on the
- * directories under it and would otherwise go on allowing what the root forbids.
- */
-abstract class FlagUsage extends Recipe {
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class FlagUsage extends Recipe {
 
     private static final String ERROR = "error";
 
-    /**
-     * The key this recipe assigns, written into the file as it is spelled here.
-     */
-    abstract String getKey();
+    @Option(displayName = "Configuration key",
+            description = "The `flagUsage` key to assign, written into the file as it is spelled here.",
+            example = "lombok.val.flagUsage")
+    String key;
+
+    String displayName = "Flag usage of a Lombok feature";
+
+    String description = "Assign a `flagUsage` key the value `error` in every `lombok.config`, so that Lombok fails " +
+            "the build on a use of the feature rather than compiling it. Run this once the uses are gone, to keep " +
+            "them from coming back. Every config is written to rather than only the root, as a config below the root " +
+            "has the last word on the directories under it and would otherwise go on allowing what the root forbids. " +
+            "A file that assigns the key another value is rewritten to `error`; a file that speaks about the key in " +
+            "a way that cannot be rewritten, such as `clear lombok.val.flagUsage`, is left as written, as is a " +
+            "project with no `lombok.config` at all, as there is then no file to write to.";
+
+    @Override
+    public String getInstanceNameSuffix() {
+        return String.format("`%s`", key);
+    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -52,7 +67,7 @@ abstract class FlagUsage extends Recipe {
                     return sourceFile;
                 }
                 PlainText plainText = PlainTextParser.convert(sourceFile);
-                String text = assign(plainText.getText(), getKey(), ERROR);
+                String text = assign(plainText.getText(), key, ERROR);
                 return text == null ? sourceFile : plainText.withText(text);
             }
         };

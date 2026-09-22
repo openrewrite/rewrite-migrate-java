@@ -22,10 +22,10 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.test.SourceSpecs.text;
 
-class FlagUsageValTest implements RewriteTest {
+class FlagUsageTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new FlagUsageVal());
+        spec.recipe(new FlagUsage("lombok.val.flagUsage"));
     }
 
     @DocumentExample
@@ -193,6 +193,25 @@ class FlagUsageValTest implements RewriteTest {
               aaa=true
               lombok.val.flagUsage = error
               lombok.var.flagUsage = error
+              """,
+            spec -> spec.path("lombok.config")
+          )
+        );
+    }
+
+    @Test
+    void sortsAfterVal() {
+        rewriteRun(
+          spec -> spec.recipe(new FlagUsage("lombok.var.flagUsage")),
+          text(
+            """
+              lombok.val.flagUsage = error
+              zzz=true
+              """,
+            """
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              zzz=true
               """,
             spec -> spec.path("lombok.config")
           )
