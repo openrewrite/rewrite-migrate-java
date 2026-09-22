@@ -273,7 +273,7 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[2.0,2.3)"
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
@@ -306,7 +306,7 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[0,2.0)"
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
@@ -353,7 +353,7 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[0,2.3)"
       invertMarking: true
 recipeList:

@@ -431,6 +431,137 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void transitiveLegacyKotlinStdlibDoesNotHoldBackKotlin2xModule() {
+        // https://github.com/openrewrite/rewrite-migrate-java/issues/1240
+        // OkHttp brings in kotlin-stdlib-jdk8 1.8.21, which must not block Java 25 once the module's own Kotlin is 2.3.
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(2),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.2.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.squareup.okhttp3</groupId>
+                            <artifactId>okhttp</artifactId>
+                            <version>4.12.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .contains("<maven.compiler.release>25</maven.compiler.release>")
+                  .containsPattern("kotlin-stdlib</artifactId>\\s*<version>2\\.3\\.")
+                  .doesNotContain("Capped at Java 24")
+                  .actual())
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
+    void transitiveLegacyKotlinStdlibDoesNotCapKotlin2_3Module() {
+        // https://github.com/openrewrite/rewrite-migrate-java/issues/1240
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.squareup.okhttp3</groupId>
+                            <artifactId>okhttp</artifactId>
+                            <version>4.12.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.squareup.okhttp3</groupId>
+                            <artifactId>okhttp</artifactId>
+                            <version>4.12.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
+    void noCapCommentForKotlin2_3ModuleAtJava24() {
+        // Kotlin 2.3 can target Java 25, so a module left at Java 24 must not be told it is on "Kotlin before 2.3".
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24"),
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>2.3.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            other("fun main() {}", spec -> spec.path("src/main/kotlin/App.kt"))
+          )
+        );
+    }
+
+    @Test
     void kotlinNewerThan2_3UpgradesToJava25() {
         rewriteRun(
           mavenProject("project",
