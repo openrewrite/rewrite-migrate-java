@@ -227,11 +227,9 @@ final class LombokConfig {
     }
 
     /**
-     * The given text with {@code key} assigned {@code value}: the line that assigns it rewritten, keeping the
-     * spacing it was written with, or a new line added when the file does not assign it at all. {@code null} when
-     * the file already says this, so that nothing is written for nothing, and when it speaks about the key in a way
-     * that cannot be rewritten, such as {@code clear} or {@code +=}, as only the author can say what was meant
-     * there. The last assignment is the one rewritten, as that is the one Lombok keeps.
+     * The given text with {@code key} assigned {@code value}, rewriting the last assignment as Lombok reads that
+     * one. {@code null} when the file already says this, or speaks about the key in a way that cannot be
+     * rewritten, such as {@code clear} or {@code +=}.
      */
     static @Nullable String assign(String text, String key, String value) {
         if (text.isEmpty()) {
@@ -260,8 +258,7 @@ final class LombokConfig {
     }
 
     /**
-     * The given assignment with its value replaced, leaving the key, the indentation and the spacing around the
-     * {@code =} as they were written.
+     * The given assignment with only its value replaced, leaving the spacing as it was written.
      */
     private static String reassign(String line, String value) {
         String upToValue = line.substring(0, line.indexOf('=') + 1);
@@ -274,9 +271,7 @@ final class LombokConfig {
     }
 
     /**
-     * Where a new assignment goes: in a file whose keys are in alphabetical order, where that order says it goes, so
-     * that the file stays sorted; at the end otherwise, as there is then no order to keep. The end is before the
-     * empty string a trailing newline splits into, as that is the end of the last line rather than a line of its own.
+     * Where a new assignment goes: in alphabetical order in a file that is sorted, at the end otherwise.
      */
     private static int insertionIndex(List<String> lines, String normalizedKey) {
         int end = !lines.isEmpty() && lines.get(lines.size() - 1).isEmpty() ? lines.size() - 1 : lines.size();
@@ -315,9 +310,6 @@ final class LombokConfig {
         return merged.toString();
     }
 
-    /**
-     * The line ending the given text is written with, so that a line added to it reads the same as the rest.
-     */
     private static String newLine(String text) {
         return text.contains("\r\n") ? "\r\n" : "\n";
     }
