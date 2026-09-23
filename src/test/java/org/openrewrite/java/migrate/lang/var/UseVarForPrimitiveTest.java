@@ -21,6 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -33,6 +34,22 @@ class UseVarForPrimitiveTest extends VarBaseTest {
 
     @Nested
     class NotApplicable {
+        @Test
+        void forGroovyDef() {
+            //language=groovy
+            rewriteRun(
+              groovy(
+                """
+                  class A {
+                    void m() {
+                      def count = 1
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
         @Test
         void forShort() {
             //language=java

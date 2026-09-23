@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -262,6 +263,21 @@ class UseVarForConstructorsTest implements RewriteTest {
                   ArrayList<String> getList() {
                       return new ArrayList<>();
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotSpliceVarIntoGroovyDef() {
+        rewriteRun(
+          //language=groovy
+          groovy(
+            """
+              def stripVmExtension(File dir) {
+                  def newFile = new File(dir, "child")
+                  assert newFile != null
               }
               """
           )
