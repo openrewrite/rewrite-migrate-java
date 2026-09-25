@@ -35,7 +35,10 @@ class LombokUtils {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
             return false;
         }
-        J.MethodDeclaration method = cursor.getValue();
+        return isGetter((J.MethodDeclaration) cursor.getValue());
+    }
+
+    static boolean isGetter(J.MethodDeclaration method) {
         if (method.getMethodType() == null) {
             return false;
         }
