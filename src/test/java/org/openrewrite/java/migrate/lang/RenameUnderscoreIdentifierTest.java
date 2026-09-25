@@ -16,10 +16,12 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.ChangeType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -324,6 +326,72 @@ class RenameUnderscoreIdentifierTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @ExpectedToFail("References to the renamed class in other source files keep the old `_` spelling")
+    @Test
+    void classReferencesInAnotherSourceFileFollowTheRename() {
+        rewriteRun(
+          spec -> spec.recipes(new ChangeType("UNDERSCORE", "_", false), new RenameUnderscoreIdentifier())
+            .allSources(s -> s.markers(javaVersion(8))),
+          //language=java
+          java(
+            """
+              class UNDERSCORE {
+              }
+              """,
+            """
+              class __ {
+              }
+              """,
+            spec -> spec.path("_.java")
+          ),
+          //language=java
+          java(
+            """
+              class User {
+                  UNDERSCORE field = new UNDERSCORE();
+              }
+              """,
+            """
+              class User {
+                  __ field = new __();
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("The chosen name duplicates a package private class declared in a differently named file")
+    @Test
+    void classRenameAvoidsASecondaryClassDeclaredInAnotherSourceFile() {
+        rewriteRun(
+          spec -> spec.recipes(new ChangeType("UNDERSCORE", "_", false), new RenameUnderscoreIdentifier())
+            .allSources(s -> s.markers(javaVersion(8))),
+          //language=java
+          java(
+            """
+              class UNDERSCORE {
+              }
+              """,
+            """
+              class _ {
+              }
+              """,
+            spec -> spec.path("_.java")
+          ),
+          //language=java
+          java(
+            """
+              class Other {
+              }
+
+              class __ {
+              }
+              """,
+            spec -> spec.path("Other.java")
           )
         );
     }
