@@ -38,7 +38,8 @@ class JSpecifyBestPracticesTest implements RewriteTest {
             "jakarta.annotation-api",
             "annotations",
             "spring-core",
-            "micronaut-core"));
+            "micronaut-core",
+            "spotbugs-annotations"));
     }
 
     @DocumentExample
@@ -612,6 +613,115 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                             <groupId>io.micronaut</groupId>
                             <artifactId>micronaut-core</artifactId>
                             <version>4.10.8</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromSpotBugsAnnotationToJspecify() {
+        rewriteRun(
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import edu.umd.cs.findbugs.annotations.CheckForNull;
+                  import edu.umd.cs.findbugs.annotations.NonNull;
+                  import edu.umd.cs.findbugs.annotations.Nullable;
+                  import edu.umd.cs.findbugs.annotations.PossiblyNull;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      @Nullable
+                      public Foo.Bar foobar;
+                      @CheckForNull
+                      public String checked;
+                      @PossiblyNull
+                      public String possibly;
+
+                      @Nullable
+                      public byte[] bytes() {
+                          return null;
+                      }
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                      public Foo.@Nullable Bar foobar;
+                      @Nullable
+                      public String checked;
+                      @Nullable
+                      public String possibly;
+
+                      public byte @Nullable[] bytes() {
+                          return null;
+                      }
+                  }
+
+                  interface Foo {
+                    class Bar {
+                      @NonNull
+                      public String barField;
+                    }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs-annotations</artifactId>
+                            <version>4.9.3</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs-annotations</artifactId>
+                            <version>4.9.3</version>
                         </dependency>
                         <dependency>
                             <groupId>org.jspecify</groupId>
