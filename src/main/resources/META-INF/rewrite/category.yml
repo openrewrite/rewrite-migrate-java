@@ -53,6 +53,10 @@ name: '`java.sql` APIs'
 packageName: org.openrewrite.java.migrate.sql
 ---
 type: specs.openrewrite.org/v1beta/category
+name: '`java.awt` APIs'
+packageName: org.openrewrite.java.migrate.awt
+---
+type: specs.openrewrite.org/v1beta/category
 name: JSpecify
 packageName: org.openrewrite.java.jspecify
 description: Recipes for adopting [JSpecify](https://jspecify.dev/) nullability annotations.
