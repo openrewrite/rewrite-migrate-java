@@ -67,45 +67,27 @@ class JavaAwtAPIsTest implements RewriteTest {
     }
 
     @Test
-    void showFromSubclassThatDoesNotOverrideIt() {
+    void showWithoutReceiver() {
         rewriteRun(
           //language=java
           java(
             """
               import java.awt.Frame;
-              import java.awt.Graphics;
 
               class MainWindow extends Frame {
                   MainWindow() {
                       pack();
                       show();
                   }
-
-                  @Override
-                  public void paint(Graphics g) {
-                  }
-
-                  void reopen() {
-                      super.show();
-                  }
               }
               """,
             """
               import java.awt.Frame;
-              import java.awt.Graphics;
 
               class MainWindow extends Frame {
                   MainWindow() {
                       pack();
                       setVisible(true);
-                  }
-
-                  @Override
-                  public void paint(Graphics g) {
-                  }
-
-                  void reopen() {
-                      super.setVisible(true);
                   }
               }
               """
@@ -114,7 +96,39 @@ class JavaAwtAPIsTest implements RewriteTest {
     }
 
     @Test
-    void callsReachingAnOverrideAreReplacedButSuperCallsFromItsClassAreKept() {
+    void keepSuperCallsThatWouldReachSubclassOverrides() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.awt.Frame;
+
+              class Base extends Frame {
+                  void open() {
+                      super.show();
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              class Tracked extends Base {
+                  int shown;
+
+                  @Override
+                  public void show() {
+                      shown++;
+                      super.show();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void callsReachingAnOverrideAreReplacedButItsSuperCallsAreKept() {
         rewriteRun(
           //language=java
           java(
@@ -153,28 +167,6 @@ class JavaAwtAPIsTest implements RewriteTest {
                   void open(CenteredDialog dialog) {
                       dialog.setVisible(true);
                   }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void keepSuperCallsFromAnonymousClassThatOverridesAnotherDeprecatedMethod() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.awt.Frame;
-
-              class Test {
-                  Frame frame = new Frame() {
-                      @Override
-                      public void hide() {
-                          dispose();
-                          super.show(false);
-                      }
-                  };
               }
               """
           )

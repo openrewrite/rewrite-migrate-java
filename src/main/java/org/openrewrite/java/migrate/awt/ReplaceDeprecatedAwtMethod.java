@@ -52,8 +52,8 @@ public class ReplaceDeprecatedAwtMethod extends Recipe {
     String displayName = "Replace a deprecated AWT method";
 
     String description = "Replace calls to an AWT method deprecated since JDK 1.1 with calls to the method that " +
-            "replaced it. Declarations are left alone, as are `super` calls from a class that overrides a deprecated " +
-            "method, as the replacements delegate back to the deprecated methods.";
+            "replaced it. Declarations and `super` calls are left alone: the replacements delegate back to the " +
+            "deprecated methods, so a rewritten `super` call would reach overrides it used to bypass.";
 
     @Override
     public String getInstanceNameSuffix() {
@@ -68,7 +68,7 @@ public class ReplaceDeprecatedAwtMethod extends Recipe {
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 JavaType.Method type = mi.getMethodType();
-                if (!matcher.matches(mi) || type == null || isSuperCallFromOverride(mi)) {
+                if (!matcher.matches(mi) || type == null || isSuperCall(mi)) {
                     return mi;
                 }
 
@@ -91,29 +91,9 @@ public class ReplaceDeprecatedAwtMethod extends Recipe {
                         .withArguments(arguments);
             }
 
-            private boolean isSuperCallFromOverride(J.MethodInvocation mi) {
-                if (!(mi.getSelect() instanceof J.Identifier) ||
-                        !"super".equals(((J.Identifier) mi.getSelect()).getSimpleName())) {
-                    return false;
-                }
-                Object enclosingClass = getCursor().dropParentUntil(v -> v instanceof J.ClassDeclaration ||
-                        v instanceof J.NewClass && ((J.NewClass) v).getBody() != null).getValue();
-                J.Block classBody = enclosingClass instanceof J.ClassDeclaration ?
-                        ((J.ClassDeclaration) enclosingClass).getBody() :
-                        ((J.NewClass) enclosingClass).getBody();
-                return classBody != null && classBody.getStatements().stream()
-                        .anyMatch(s -> s instanceof J.MethodDeclaration &&
-                                overridesDeprecatedMethod(((J.MethodDeclaration) s).getMethodType()));
-            }
-
-            private boolean overridesDeprecatedMethod(JavaType.@Nullable Method method) {
-                for (JavaType.Method m = TypeUtils.findOverriddenMethod(method).orElse(null); m != null;
-                     m = TypeUtils.findOverriddenMethod(m).orElse(null)) {
-                    if (m.getAnnotations().stream().anyMatch(a -> TypeUtils.isOfClassType(a, "java.lang.Deprecated"))) {
-                        return true;
-                    }
-                }
-                return false;
+            private boolean isSuperCall(J.MethodInvocation mi) {
+                return mi.getSelect() instanceof J.Identifier &&
+                        "super".equals(((J.Identifier) mi.getSelect()).getSimpleName());
             }
         });
     }
