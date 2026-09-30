@@ -174,6 +174,74 @@ class JavaAwtAPIsTest implements RewriteTest {
     }
 
     @Test
+    void sizePreferredSizeAndComponentCount() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.awt.Panel;
+
+              class Test {
+                  void layout(Panel panel) {
+                      panel.size();
+                      panel.preferredSize();
+                      panel.countComponents();
+                  }
+              }
+              """,
+            """
+              import java.awt.Panel;
+
+              class Test {
+                  void layout(Panel panel) {
+                      panel.getSize();
+                      panel.getPreferredSize();
+                      panel.getComponentCount();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepSizeSuperCallsThatWouldReachSubclassOverrides() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.awt.Dimension;
+              import java.awt.Panel;
+
+              class Base extends Panel {
+                  @Override
+                  public Dimension size() {
+                      return super.size();
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              class Test {
+                  void layout(Base base) {
+                      base.size();
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void layout(Base base) {
+                      base.getSize();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void keepShowOutsideOfAwt() {
         rewriteRun(
           //language=java
