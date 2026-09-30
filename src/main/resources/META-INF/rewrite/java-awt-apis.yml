@@ -37,3 +37,12 @@ recipeList:
       methodPattern: java.awt.Component hide()
       newMethodName: setVisible
       booleanArgument: false
+  - org.openrewrite.java.migrate.awt.ReplaceDeprecatedAwtMethod:
+      methodPattern: java.awt.Component size()
+      newMethodName: getSize
+  - org.openrewrite.java.migrate.awt.ReplaceDeprecatedAwtMethod:
+      methodPattern: java.awt.Component preferredSize()
+      newMethodName: getPreferredSize
+  - org.openrewrite.java.migrate.awt.ReplaceDeprecatedAwtMethod:
+      methodPattern: java.awt.Container countComponents()
+      newMethodName: getComponentCount
