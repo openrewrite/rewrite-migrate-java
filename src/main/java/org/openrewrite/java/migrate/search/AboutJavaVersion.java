@@ -15,11 +15,11 @@
  */
 package org.openrewrite.java.migrate.search;
 
-import io.micrometer.core.instrument.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.marker.JavaVersion;
@@ -81,7 +81,7 @@ public class AboutJavaVersion extends Recipe {
                         .orElse(cu);
             }
         };
-        if (StringUtils.isNotBlank(whenUsesType)) {
+        if (!StringUtils.isBlank(whenUsesType)) {
             visitor = Preconditions.check(new UsesType<>(whenUsesType, false), visitor);
         }
         return visitor;
