@@ -87,6 +87,23 @@ class UpgradeJavaVersionTest implements RewriteTest {
         );
     }
 
+    @Test
+    void alternatePomPreservesCustomCompilerPlugin() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          org.openrewrite.xml.Assertions.xml(
+            """
+              <project><build><plugins><plugin>
+                <groupId>com.example</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration><source>17</source><target>17</target></configuration>
+              </plugin></plugins></build></project>
+              """,
+            spec -> spec.path("pom.xml")
+          )
+        );
+    }
+
     @Nested
     class Maven {
         @DocumentExample

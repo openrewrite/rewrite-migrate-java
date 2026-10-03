@@ -60,6 +60,11 @@ public class UpgradeUnmodeledMavenJavaVersion extends Recipe {
                          "maven.compiler.source".equals(name) || "maven.compiler.target".equals(name));
                 boolean compilerSetting = compiler.matches(getCursor()) &&
                         ("release".equals(name) || "source".equals(name) || "target".equals(name));
+                if (compilerSetting) {
+                    Xml.Tag plugin = getCursor().getParentOrThrow().getParentOrThrow().getValue();
+                    compilerSetting = "org.apache.maven.plugins".equals(
+                            plugin.getChildValue("groupId").orElse("org.apache.maven.plugins"));
+                }
                 if (javaProperty || compilerSetting) {
                     String value = t.getValue().orElse("");
                     String major = value.startsWith("1.") ? value.substring(2) : value;
