@@ -996,6 +996,11 @@ recipeList:
       version: 3.0.x
       onlyIfUsing: javax.xml.bind..*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
+      packageName: jakarta.xml.bind
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 3.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind

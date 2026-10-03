@@ -69,7 +69,7 @@ class AddJaxbApiForUnattributedImportsTest implements RewriteTest {
     @Test
     void scopeToNearestModuleAndTestSources() {
         rewriteRun(
-          spec -> spec.recipe(new AddJaxbApiForImports()).typeValidationOptions(TypeValidation.none()),
+          spec -> spec.recipe(new AddApiDependencyForImports("javax.xml.bind", "jakarta.xml.bind", "jakarta.xml.bind-api", "2.3.x")).typeValidationOptions(TypeValidation.none()),
           java(
             "import javax.xml.bind.DatatypeConverter; class Test {}",
             spec -> spec.path("app/src/test/java/Test.java")
