@@ -136,6 +136,18 @@ class AddApiDependencyForImportsTest implements RewriteTest {
         );
     }
 
+    @Test
+    void leavesAnnotationProcessingApiAlone() {
+        rewriteRun(
+          spec -> spec.recipe(new AddApiDependencyForImports(
+            "jakarta.annotation", "jakarta.annotation", "jakarta.annotation-api", "2.0.0")),
+          mavenProject("app",
+            srcMainJava(java("import javax.annotation.processing.Processor; class A { Processor processor; }")),
+            pomXml(POM)
+          )
+        );
+    }
+
     private static String withDependency(String scope) {
         return POM.replace("</project>", """
               <dependencies>

@@ -86,7 +86,10 @@ public class AddApiDependencyForImports extends ScanningRecipe<AddApiDependencyF
                     J.CompilationUnit cu = (J.CompilationUnit) tree;
                     for (J.Import anImport : cu.getImports()) {
                         String typeName = anImport.getTypeName();
-                        if (typeName.startsWith(packageName + ".") || typeName.startsWith(javaxPackage + ".")) {
+                        if ((typeName.startsWith(packageName + ".") || typeName.startsWith(javaxPackage + ".")) &&
+                            // Still in the JDK (processing) or from JSR-305 (concurrent), not the Annotations API
+                            !typeName.startsWith("javax.annotation.processing.") &&
+                            !typeName.startsWith("javax.annotation.concurrent.")) {
                             acc.sources.add(cu.getSourcePath());
                             break;
                         }

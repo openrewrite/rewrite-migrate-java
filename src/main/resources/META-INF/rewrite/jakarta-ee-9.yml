@@ -143,6 +143,11 @@ recipeList:
       version: 2.0.x
       onlyIfUsing: javax.annotation..*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
+      packageName: jakarta.annotation
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
