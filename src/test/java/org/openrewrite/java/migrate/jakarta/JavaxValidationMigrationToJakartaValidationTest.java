@@ -41,6 +41,26 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
         );
     }
 
+    @Test
+    void migratesVersionlessMavenCoordinateLiteral() {
+        rewriteRun(
+          java(
+            """
+              class Deployment {
+                  String coordinate = "javax.validation:validation-api";
+                  String unrelated = "example:validation-api";
+              }
+              """,
+            """
+              class Deployment {
+                  String coordinate = "jakarta.validation:jakarta.validation-api";
+                  String unrelated = "example:validation-api";
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void javaxValidationToJakartaValidation() {
