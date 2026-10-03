@@ -1356,6 +1356,11 @@ recipeList:
       artifactId: ehcache-transactions
       newClassifier: jakarta
       changeManagedDependency: true
+  # Changing the classifier materializes versions managed only for the original artifact.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.ehcache
+      artifactId: "*"
+      newVersion: 3.10.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
