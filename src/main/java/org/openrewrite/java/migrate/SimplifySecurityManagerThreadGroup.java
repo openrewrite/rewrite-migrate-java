@@ -28,6 +28,7 @@ import org.openrewrite.java.tree.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -85,13 +86,27 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
                             return identifier;
                         }
                     }.visit(b, references);
-                    if (references.get() != 2) {
+                    if (references.get() != 2 || hasComments(declaration) || hasComments(ternary)) {
                         continue;
                     }
                     statements.set(i + 1, assignment.withAssignment(ternary.getFalsePart().withPrefix(ternary.getPrefix())));
                     statements.remove(i--);
                 }
                 return b.withStatements(statements);
+            }
+
+            private boolean hasComments(J tree) {
+                AtomicBoolean found = new AtomicBoolean();
+                new JavaIsoVisitor<AtomicBoolean>() {
+                    @Override
+                    public Space visitSpace(Space space, Space.Location location, AtomicBoolean comments) {
+                        if (!space.getComments().isEmpty()) {
+                            comments.set(true);
+                        }
+                        return space;
+                    }
+                }.visit(tree, found);
+                return found.get();
             }
 
             private boolean sameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {

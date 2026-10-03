@@ -67,4 +67,33 @@ class SimplifySecurityManagerThreadGroupTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void retainNestedComments() {
+        rewriteRun(
+          spec -> spec.recipe(new SimplifySecurityManagerThreadGroup())
+            .allSources(source -> version(source, 25)),
+          java(
+            """
+              class InitializerComment {
+                  ThreadGroup group;
+                  InitializerComment() {
+                      SecurityManager s = /* keep rationale */ null;
+                      group = s != null ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              class BranchComment {
+                  ThreadGroup group;
+                  BranchComment() {
+                      SecurityManager s = null;
+                      group = s != null ? /* keep rationale */ s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+                  }
+              }
+              """
+          )
+        );
+    }
 }
