@@ -973,7 +973,6 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.AddJakartaXmlBindRuntime
   - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.bind
@@ -1007,6 +1006,7 @@ recipeList:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       version: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.AddJakartaXmlBindRuntime
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.xml.bind
       newPackageName: jakarta.xml.bind

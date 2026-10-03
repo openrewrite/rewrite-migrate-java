@@ -27,6 +27,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
@@ -113,6 +114,20 @@ public class AddJakartaXmlBindRuntime extends ScanningRecipe<AddJakartaXmlBindRu
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return new MavenIsoVisitor<ExecutionContext>() {
+            private boolean isProvidedPlatform(MavenResolutionResult model, ResolvedDependency dependency) {
+                if (!dependency.isDirect() ||
+                    !("jakarta.platform".equals(dependency.getGroupId()) &&
+                      ("jakarta.jakartaee-api".equals(dependency.getArtifactId()) || "jakarta.jakartaee-web-api".equals(dependency.getArtifactId())) ||
+                      "javax".equals(dependency.getGroupId()) &&
+                      ("javaee-api".equals(dependency.getArtifactId()) || "javaee-web-api".equals(dependency.getArtifactId())))) {
+                    return false;
+                }
+                String declaredScope = model.getPom().getValue(dependency.getRequested().getScope());
+                Scope scope = declaredScope == null ? model.getPom().getManagedScope(dependency.getGroupId(),
+                        dependency.getArtifactId(), dependency.getType(), dependency.getClassifier()) : Scope.fromName(declaredScope);
+                return scope == Scope.Provided;
+            }
+
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 Path project = directory(document.getSourcePath());
@@ -137,10 +152,7 @@ public class AddJakartaXmlBindRuntime extends ScanningRecipe<AddJakartaXmlBindRu
                                 "com.sun.xml.bind".equals(d.getGroupId()) && "jaxb-impl".equals(d.getArtifactId()) ||
                                 "org.eclipse.persistence".equals(d.getGroupId()) &&
                                         ("org.eclipse.persistence.moxy".equals(d.getArtifactId()) || "eclipselink".equals(d.getArtifactId())) ||
-                                "jakarta.platform".equals(d.getGroupId()) &&
-                                        ("jakarta.jakartaee-api".equals(d.getArtifactId()) || "jakarta.jakartaee-web-api".equals(d.getArtifactId())) ||
-                                "javax".equals(d.getGroupId()) &&
-                                        ("javaee-api".equals(d.getArtifactId()) || "javaee-web-api".equals(d.getArtifactId())));
+                                isProvidedPlatform(model, d));
                 if (hasProvider || "war".equals(model.getPom().getPackaging()) || "ear".equals(model.getPom().getPackaging())) {
                     return document;
                 }

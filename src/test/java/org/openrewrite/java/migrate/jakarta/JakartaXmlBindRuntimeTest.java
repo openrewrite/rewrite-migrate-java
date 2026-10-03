@@ -16,18 +16,16 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.test.TypeValidation;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.srcMainJava;
-import static org.openrewrite.java.Assertions.srcTestJava;
-import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class JakartaXmlBindRuntimeTest implements RewriteTest {
@@ -222,6 +220,70 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
                 return pom;
             })),
             srcMainJava(java(FACTORY, FACTORY.replace("javax.xml.bind", "jakarta.xml.bind")))
+          )
+        );
+    }
+
+    @Test
+    void unattributedFactoryGetsCompileApiBeforeRuntime() {
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          mavenProject("app",
+            pomXml(POM, spec -> spec.after(pom -> {
+                assertThat(pom).contains("<artifactId>jakarta.xml.bind-api</artifactId>",
+                  "<artifactId>jaxb-runtime</artifactId>");
+                return pom;
+            })),
+            srcMainJava(java(FACTORY, FACTORY.replace("javax.xml.bind", "jakarta.xml.bind"),
+              spec -> spec.mapBeforeRecipe(cu -> (J.CompilationUnit) new JavaIsoVisitor<Integer>() {
+                  @Override
+                  public J.Identifier visitIdentifier(J.Identifier id, Integer p) {
+                      return id.getType() != null && id.getType().toString().startsWith("javax.xml.bind") ?
+                        id.withType(JavaType.Unknown.getInstance()).withFieldType(null) : id;
+                  }
+
+                  @Override
+                  public J.FieldAccess visitFieldAccess(J.FieldAccess fa, Integer p) {
+                      J.FieldAccess f = super.visitFieldAccess(fa, p);
+                      return f.getType() != null && f.getType().toString().startsWith("javax.xml.bind") ?
+                        f.withType(JavaType.Unknown.getInstance()) : f;
+                  }
+
+                  @Override
+                  public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable v, Integer p) {
+                      J.VariableDeclarations.NamedVariable n = super.visitVariable(v, p);
+                      return n.getVariableType() != null && n.getVariableType().getType().toString().startsWith("javax.xml.bind") ?
+                        n.withVariableType(n.getVariableType().withType(JavaType.Unknown.getInstance())) : n;
+                  }
+
+                  @Override
+                  public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, Integer p) {
+                      return super.visitMethodInvocation(method, p).withMethodType(null);
+                  }
+              }.visit(cu, 0))))
+          )
+        );
+    }
+
+    @Test
+    void compileScopedPlatformDoesNotProvideRuntime() {
+        rewriteRun(
+          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
+          mavenProject("app",
+            pomXml(POM.replace("</project>", """
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.platform</groupId>
+                          <artifactId>jakarta.jakartaee-api</artifactId>
+                          <version>9.1.0</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """).stripTrailing(), spec -> spec.after(pom -> {
+                assertThat(pom).contains("<artifactId>jaxb-runtime</artifactId>", "<scope>runtime</scope>");
+                return pom;
+            })),
+            srcMainJava(java(FACTORY))
           )
         );
     }
