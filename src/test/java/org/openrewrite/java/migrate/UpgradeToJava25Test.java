@@ -37,6 +37,53 @@ class UpgradeToJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25");
     }
 
+    @Test
+    void upgradeBndForJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>bundle</artifactId>
+                  <version>1</version>
+                  <build>
+                      <pluginManagement>
+                          <plugins>
+                              <plugin>
+                                  <groupId>biz.aQute.bnd</groupId>
+                                  <artifactId>bnd-maven-plugin</artifactId>
+                                  <version>6.4.0</version>
+                              </plugin>
+                          </plugins>
+                      </pluginManagement>
+                  </build>
+              </project>
+              """,
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>bundle</artifactId>
+                  <version>1</version>
+                  <build>
+                      <pluginManagement>
+                          <plugins>
+                              <plugin>
+                                  <groupId>biz.aQute.bnd</groupId>
+                                  <artifactId>bnd-maven-plugin</artifactId>
+                                  <version>7.4.0</version>
+                              </plugin>
+                          </plugins>
+                      </pluginManagement>
+                  </build>
+              </project>
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void updateCompilerVersion() {
