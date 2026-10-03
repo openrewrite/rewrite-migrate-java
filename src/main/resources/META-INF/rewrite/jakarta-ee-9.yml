@@ -30,6 +30,7 @@ preconditions:
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/9.1.0/pom.xml
 recipeList:
   - org.openrewrite.java.migrate.javaee8
+  - org.openrewrite.java.migrate.jakarta.JavaxRuntimeTypeNamesToJakarta
   - org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
   - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
   - org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication
@@ -1667,3 +1668,28 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-ear-plugin
       newVersion: 3.3.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxRuntimeTypeNamesToJakarta
+displayName: Migrate Jakarta EE runtime type names
+description: Migrate CDI, EJB, Servlet and resource annotation names used for reflective lookup and annotation matching while retaining Java SE type names.
+recipeList:
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.inject
+      newPackageName: jakarta.inject
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.enterprise
+      newPackageName: jakarta.enterprise
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.ejb
+      newPackageName: jakarta.ejb
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.servlet
+      newPackageName: jakarta.servlet
+  - org.openrewrite.java.ChangeTypeInStringLiteral:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeTypeInStringLiteral:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
