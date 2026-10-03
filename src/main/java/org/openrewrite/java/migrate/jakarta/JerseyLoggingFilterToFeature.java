@@ -30,17 +30,29 @@ import org.openrewrite.java.tree.J;
 @EqualsAndHashCode(callSuper = false)
 public class JerseyLoggingFilterToFeature extends Recipe {
     String displayName = "Replace Jersey logging filter with logging feature";
-    String description = "Replace the removed Jersey `LoggingFilter(Logger, boolean)` constructor with `LoggingFeature`, preserving the logger and entity logging setting.";
+    String description = "Replace the removed Jersey `LoggingFilter(Logger, boolean)` constructor when passed directly to JAX-RS `Configurable.register`, preserving the logger and entity logging setting. Other usages require manual migration.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
             final MethodMatcher constructor = new MethodMatcher("org.glassfish.jersey.filter.LoggingFilter <constructor>(java.util.logging.Logger, boolean)");
 
+            final MethodMatcher javaxRegister = new MethodMatcher("javax.ws.rs.core.Configurable register(..)", true);
+            final MethodMatcher jakartaRegister = new MethodMatcher("jakarta.ws.rs.core.Configurable register(..)", true);
+
             @Override
             public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass n = super.visitNewClass(newClass, ctx);
                 if (!constructor.matches(n) || n.getBody() != null) {
+                    return n;
+                }
+                Object parent = getCursor().getParentTreeCursor().getValue();
+                if (!(parent instanceof J.MethodInvocation)) {
+                    return n;
+                }
+                J.MethodInvocation registration = (J.MethodInvocation) parent;
+                if ((!javaxRegister.matches(registration) && !jakartaRegister.matches(registration)) ||
+                    registration.getArguments().get(0) != newClass) {
                     return n;
                 }
                 maybeRemoveImport("org.glassfish.jersey.filter.LoggingFilter");

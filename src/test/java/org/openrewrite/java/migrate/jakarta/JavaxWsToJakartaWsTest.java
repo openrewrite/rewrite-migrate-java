@@ -21,6 +21,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -53,7 +54,7 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            spec -> spec.after(pom -> org.assertj.core.api.Assertions.assertThat(pom)
+            spec -> spec.after(pom -> assertThat(pom)
               .containsPattern("<version>3\\.0\\.\\d+</version>")
               .actual())
           )

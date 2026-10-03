@@ -25,12 +25,15 @@ import static org.openrewrite.java.Assertions.java;
 class JerseyLoggingFilterToFeatureTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs")
+        spec.recipe(new JerseyLoggingFilterToFeature())
           .parser(JavaParser.fromJavaVersion().dependsOn("""
             package org.glassfish.jersey.filter;
             public class LoggingFilter {
                 public LoggingFilter(java.util.logging.Logger logger, boolean entities) {}
             }
+            """, """
+            package javax.ws.rs.core;
+            public interface Configurable<T> { T register(Object component); }
             """));
     }
 
@@ -41,26 +44,57 @@ class JerseyLoggingFilterToFeatureTest implements RewriteTest {
             """
               import org.glassfish.jersey.filter.LoggingFilter;
               import java.util.logging.Logger;
+              import javax.ws.rs.core.Configurable;
 
               class Test {
-                  Object filter(Logger logger, boolean entities) {
-                      return new LoggingFilter(logger, entities);
+                  Object filter(Configurable<?> config, Logger logger, boolean entities) {
+                      return config.register(new LoggingFilter(logger, entities));
                   }
               }
               """,
             """
-              import org.glassfish.jersey.logging.LoggingFeature;
-
               import java.util.logging.Level;
               import java.util.logging.Logger;
 
+              import javax.ws.rs.core.Configurable;
+
+              import org.glassfish.jersey.logging.LoggingFeature;
+
               class Test {
-                  Object filter(Logger logger, boolean entities) {
-                      return new LoggingFeature(logger, Level.INFO, entities ? LoggingFeature.Verbosity.PAYLOAD_ANY : LoggingFeature.Verbosity.HEADERS_ONLY, 8192);
+                  Object filter(Configurable<?> config, Logger logger, boolean entities) {
+                      return config.register(new LoggingFeature(logger, Level.INFO, entities ? LoggingFeature.Verbosity.PAYLOAD_ANY : LoggingFeature.Verbosity.HEADERS_ONLY, 8192));
                   }
               }
               """
           )
         );
     }
+    @Test
+    void leavesTypedDeclarationsAndReturnValuesForManualMigration() {
+        rewriteRun(
+          java(
+            """
+              import org.glassfish.jersey.filter.LoggingFilter;
+              import java.util.logging.Logger;
+
+              class Test {
+                  LoggingFilter filter(Logger logger, boolean entities) {
+                      LoggingFilter filter = new LoggingFilter(logger, entities);
+                      return filter;
+                  }
+                  Object untyped(Logger logger) {
+                      return new LoggingFilter(logger, true);
+                  }
+                  Object unrelated(Registrar registrar, Logger logger) {
+                      return registrar.register(new LoggingFilter(logger, true));
+                  }
+              }
+              class Registrar {
+                  Object register(Object component) { return component; }
+              }
+              """
+          )
+        );
+    }
+
 }
