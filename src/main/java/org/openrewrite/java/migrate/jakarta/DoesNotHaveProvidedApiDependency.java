@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.Option;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
@@ -27,14 +28,20 @@ import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 
 import java.util.Collection;
+import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class DoesNotHaveProvidedMailApi extends Recipe {
-    String displayName = "Build does not declare a provided Mail API";
+public class DoesNotHaveProvidedApiDependency extends Recipe {
+    String displayName = "Build does not declare a provided API dependency";
 
-    String description = "Find build files without an explicitly provided or compile-only Mail API, " +
+    String description = "Find build files without an explicitly provided or compile-only API, " +
             "so adding a compile dependency does not promote a container-provided API to runtime scope.";
+
+    @Option(displayName = "API coordinates",
+            description = "Legacy and Jakarta groupId:artifactId coordinates whose provided scope must be preserved.",
+            example = "javax.enterprise:cdi-api, jakarta.enterprise:jakarta.enterprise.cdi-api")
+    List<String> coordinates;
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -46,19 +53,19 @@ public class DoesNotHaveProvidedMailApi extends Recipe {
                 if (maven != null && maven.getDependencies().values().stream().flatMap(Collection::stream)
                         .anyMatch(d -> d.getDepth() == 0 &&
                                 "provided".equals(maven.getPom().getValue(d.getRequested().getScope())) &&
-                                isMailApi(d.getGroupId(), d.getArtifactId()))) {
+                                coordinates.contains(d.getGroupId() + ":" + d.getArtifactId()))) {
                     return tree;
                 }
                 GradleProject gradle = tree.getMarkers().findFirst(GradleProject.class).orElse(null);
                 if (gradle != null) {
                     GradleDependencyConfiguration compileOnly = gradle.getConfiguration("compileOnly");
-                    if (compileOnly != null &&
-                            (compileOnly.findRequestedDependency("javax.mail", "mail") != null ||
-                             compileOnly.findRequestedDependency("javax.mail", "javax.mail-api") != null ||
-                             compileOnly.findRequestedDependency("com.sun.mail", "javax.mail") != null ||
-                             compileOnly.findRequestedDependency("com.sun.mail", "jakarta.mail") != null ||
-                             compileOnly.findRequestedDependency("jakarta.mail", "jakarta.mail-api") != null)) {
-                        return tree;
+                    if (compileOnly != null) {
+                        for (String coordinate : coordinates) {
+                            String[] ga = coordinate.split(":", 2);
+                            if (ga.length == 2 && compileOnly.findRequestedDependency(ga[0], ga[1]) != null) {
+                                return tree;
+                            }
+                        }
                     }
                 }
                 return SearchResult.found(tree);
@@ -66,9 +73,4 @@ public class DoesNotHaveProvidedMailApi extends Recipe {
         };
     }
 
-    private static boolean isMailApi(String groupId, String artifactId) {
-        return "javax.mail".equals(groupId) && ("mail".equals(artifactId) || "javax.mail-api".equals(artifactId)) ||
-                "com.sun.mail".equals(groupId) && ("javax.mail".equals(artifactId) || "jakarta.mail".equals(artifactId)) ||
-                "jakarta.mail".equals(groupId) && "jakarta.mail-api".equals(artifactId);
-    }
 }
