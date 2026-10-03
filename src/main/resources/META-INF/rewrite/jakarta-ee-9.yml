@@ -523,12 +523,7 @@ recipeList:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.inject
-      artifactId: jakarta.inject-api
-      version: 2.0.x
-      onlyIfUsing: javax.inject..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
@@ -990,12 +985,7 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.ws.rs
-      artifactId: jakarta.ws.rs-api
-      version: 3.0.x
-      onlyIfUsing: javax.ws.rs.core.*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
@@ -1763,6 +1753,8 @@ description: Add the Jakarta CDI API for migrated source without promoting an ex
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
       coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
         - javax.enterprise:cdi-api
         - jakarta.enterprise:jakarta.enterprise.cdi-api
 recipeList:
@@ -1826,6 +1818,8 @@ description: Add the migrated API without promoting an explicitly provided or co
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
       coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
         - javax.ejb:javax.ejb-api
         - javax.ejb:ejb-api
         - org.glassfish.main:javax.ejb
@@ -1858,4 +1852,45 @@ recipeList:
       artifactId: jakarta.mail-api
       version: 2.0.x
       onlyIfUsing: javax.mail.*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
+displayName: Add the jakarta.inject API when needed
+description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.inject:javax.inject
+        - javax.inject:javax.inject-api
+        - jakarta.inject:jakarta.inject-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.inject
+      artifactId: jakarta.inject-api
+      version: 2.0.x
+      onlyIfUsing: javax.inject..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
+displayName: Add the jakarta.ws.rs API when needed
+description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.ws.rs:javax.ws.rs-api
+        - jakarta.ws.rs:jakarta.ws.rs-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ws.rs
+      artifactId: jakarta.ws.rs-api
+      version: 3.0.x
+      onlyIfUsing: javax.ws.rs.core.*
       acceptTransitive: true
