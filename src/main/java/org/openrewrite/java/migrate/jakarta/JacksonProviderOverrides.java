@@ -16,16 +16,21 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.VariableNameUtils;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Markers;
 
 public class JacksonProviderOverrides extends Recipe {
     @Getter
@@ -41,34 +46,37 @@ public class JacksonProviderOverrides extends Recipe {
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                J.MethodDeclaration m = super.visitMethodDeclaration(method, ctx);
-                if (!oldMethod.matches(m.getMethodType()) || m.getParameters().size() != 2) {
-                    return m;
+                if (!oldMethod.matches(method.getMethodType()) || method.getParameters().size() != 2) {
+                    return super.visitMethodDeclaration(method, ctx);
                 }
                 String viewName = VariableNameUtils.generateVariableName("defaultView", getCursor(),
                         VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER);
-                m = JavaTemplate.builder("#{}, #{}, Class<?> " + viewName).contextSensitive().build()
-                        .apply(updateCursor(m), m.getCoordinates().replaceParameters(),
-                                m.getParameters().get(0).printTrimmed(getCursor()),
-                                m.getParameters().get(1).printTrimmed(getCursor()));
+                J.MethodDeclaration m = JavaTemplate.builder("#{}, #{}, Class<?> " + viewName).contextSensitive().build()
+                        .apply(getCursor(), method.getCoordinates().replaceParameters(),
+                                method.getParameters().get(0).printTrimmed(getCursor()),
+                                method.getParameters().get(1).printTrimmed(getCursor()));
                 m = m.withParameters(ListUtils.concat(method.getParameters(), m.getParameters().get(2)));
                 J.VariableDeclarations.NamedVariable view = ((J.VariableDeclarations) m.getParameters().get(2)).getVariables().get(0);
-                if (m.getBody() != null) {
-                    m = m.withBody((J.Block) new JavaIsoVisitor<ExecutionContext>() {
-                        @Override
-                        public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
-                            J.MethodInvocation mi = super.visitMethodInvocation(invocation, ctx);
-                            if (oldMethod.matches(mi) && mi.getSelect() instanceof J.Identifier &&
-                                    "super".equals(((J.Identifier) mi.getSelect()).getSimpleName())) {
-                                return mi.withArguments(ListUtils.concat(mi.getArguments(), view.getName().withPrefix(org.openrewrite.java.tree.Space.SINGLE_SPACE)))
-                                        .withMethodType(addView(mi.getMethodType(), view.getType(), viewName));
-                            }
-                            return mi;
-                        }
-                    }.visitNonNull(m.getBody(), ctx, updateCursor(m)));
-                }
                 JavaType.Method updatedType = addView(method.getMethodType(), view.getType(), viewName);
-                return m.withMethodType(updatedType).withName(m.getName().withType(updatedType));
+                m = m.withMethodType(updatedType).withName(m.getName().withType(updatedType));
+                updateCursor(m).putMessage("jacksonDefaultView", view.getName());
+                return super.visitMethodDeclaration(m, ctx);
+            }
+
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(invocation, ctx);
+                if (!oldMethod.matches(mi)) {
+                    return mi;
+                }
+                Cursor methodCursor = getCursor().dropParentUntil(value -> value instanceof J.MethodDeclaration || value instanceof J.CompilationUnit);
+                J.Identifier view = methodCursor.getMessage("jacksonDefaultView");
+                Expression argument = view == null ?
+                        new J.Literal(Tree.randomId(), Space.SINGLE_SPACE, Markers.EMPTY, null, "null", null, JavaType.Primitive.Null) :
+                        view.withId(Tree.randomId()).withPrefix(Space.SINGLE_SPACE);
+                JavaType.Method updatedType = addView(mi.getMethodType(), JavaType.buildType("java.lang.Class"), "defaultView");
+                return mi.withArguments(ListUtils.concat(mi.getArguments(), argument)).withMethodType(updatedType)
+                        .withName(mi.getName().withType(updatedType));
             }
 
             private JavaType.Method addView(JavaType.Method method, JavaType type, String name) {

@@ -103,4 +103,36 @@ class JacksonProviderOverridesTest implements RewriteTest {
         ));
     }
 
+    @Test
+    void updatesCallsToTheMigratedOverride() {
+        rewriteRun(java(
+          """
+            import com.fasterxml.jackson.databind.ObjectMapper;
+            import com.fasterxml.jackson.jaxrs.base.ProviderBase;
+            import java.lang.annotation.Annotation;
+            class CustomProvider extends ProviderBase {
+                protected Object _configForWriting(ObjectMapper mapper, Annotation[] annotations) {
+                    return super._configForWriting(mapper, annotations);
+                }
+                Object configure(ObjectMapper mapper, Annotation[] annotations) {
+                    return _configForWriting(mapper, annotations);
+                }
+            }
+            """,
+          """
+            import com.fasterxml.jackson.databind.ObjectMapper;
+            import com.fasterxml.jackson.jaxrs.base.ProviderBase;
+            import java.lang.annotation.Annotation;
+            class CustomProvider extends ProviderBase {
+                protected Object _configForWriting(ObjectMapper mapper, Annotation[] annotations, Class<?> defaultView) {
+                    return super._configForWriting(mapper, annotations, defaultView);
+                }
+                Object configure(ObjectMapper mapper, Annotation[] annotations) {
+                    return _configForWriting(mapper, annotations, null);
+                }
+            }
+            """
+        ));
+    }
+
 }
