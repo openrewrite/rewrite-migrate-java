@@ -382,4 +382,31 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void upgradeMoxyProvider() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.eclipse.persistence</groupId>
+                          <artifactId>org.eclipse.persistence.moxy</artifactId>
+                          <version>2.5.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("<version>3\\.0\\.\\d+</version>")
+              .doesNotContain("<version>2.5.1</version>")
+              .actual())
+          )
+        );
+    }
 }
