@@ -37,7 +37,6 @@ import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -167,11 +166,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
                 return false;
             }
-            // The blocks cannot do a return as that would lead to all blocks having to do a return,
-            // the block/expression difference in return for switch statements / expressions being different...
-            if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
-                return false;
-            }
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
@@ -188,15 +182,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     (hasLastElseBlock ? 1 : 0);
         }
 
-        private boolean returns(@Nullable Statement statement) {
-            return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
-                @Override
-                public J.Return visitReturn(J.Return return_, AtomicBoolean atomicBoolean) {
-                    atomicBoolean.set(true);
-                    return return_;
-                }
-            }.reduce(statement, new AtomicBoolean(false)).get();
-        }
 
         public J.@Nullable Switch buildSwitchTemplate() {
             Optional<Expression> switchOn = switchOn();
@@ -208,22 +193,39 @@ public class IfElseIfConstructToSwitch extends Recipe {
             StringBuilder switchBody = new StringBuilder("switch (#{any()}) {\n");
             int i = 1;
             if (nullCheckedParameter != null) {
-                switchBody.append("case null -> #{any()};\n");
-                arguments[i++] = getStatement(Objects.requireNonNull(nullCheckedStatement));
+                Statement nullStmt = getStatement(Objects.requireNonNull(nullCheckedStatement));
+                if (nullStmt instanceof J.Return) {
+                    switchBody.append("case null -> {#{any()};}\n");
+                } else {
+                    switchBody.append("case null -> #{any()};\n");
+                }
+                arguments[i++] = nullStmt;
             }
             for (Map.Entry<J.InstanceOf, Statement> entry : patternMatchers.entrySet()) {
                 J.InstanceOf instanceOf = entry.getKey();
-                switchBody.append("case #{}#{} -> #{any()};\n");
+                Statement patternStmt = getStatement(entry.getValue());
+                if (patternStmt instanceof J.Return) {
+                    switchBody.append("case #{}#{} -> {#{any()};}\n");
+                } else {
+                    switchBody.append("case #{}#{} -> #{any()};\n");
+                }
                 arguments[i++] = getClassName(instanceOf);
                 arguments[i++] = getPattern(instanceOf);
-                arguments[i++] = getStatement(entry.getValue());
+                arguments[i++] = patternStmt;
             }
-            switchBody.append(nullCheckedParameter != null ? "default" : "case null, default").append(" -> #{any()};\n");
+            Statement defaultStmt;
             if (else_ != null) {
-                arguments[i] = getStatement(else_);
+                defaultStmt = getStatement(else_);
             } else {
-                arguments[i] = createEmptyBlock();
+                defaultStmt = createEmptyBlock();
             }
+            String defaultPrefix = nullCheckedParameter != null ? "default" : "case null, default";
+            if (defaultStmt instanceof J.Return) {
+                switchBody.append(defaultPrefix).append(" -> {#{any()};}\n");
+            } else {
+                switchBody.append(defaultPrefix).append(" -> #{any()};\n");
+            }
+            arguments[i] = defaultStmt;
             switchBody.append("}\n");
 
             J.Switch result = JavaTemplate.apply(switchBody.toString(), cursor, if_.getCoordinates().replace(), arguments).withPrefix(if_.getPrefix());
