@@ -41,6 +41,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
   - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
+  - org.openrewrite.java.migrate.jakarta.WeldToJakarta
   - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
   - org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
@@ -1696,3 +1697,19 @@ recipeList:
   - org.openrewrite.java.ChangeTypeInStringLiteral:
       oldFullyQualifiedTypeName: javax.annotation.Resources
       newFullyQualifiedTypeName: jakarta.annotation.Resources
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.WeldToJakarta
+displayName: Migrate Weld implementations to Jakarta CDI
+description: Replace legacy Weld core artifacts and upgrade javax-based Weld implementations to Weld 4, which implements Jakarta CDI 3.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.jboss.weld
+      oldArtifactId: weld-core
+      newArtifactId: weld-core-impl
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.jboss.weld
+      artifactId: weld-core-impl
+      newVersion: 4.0.x
