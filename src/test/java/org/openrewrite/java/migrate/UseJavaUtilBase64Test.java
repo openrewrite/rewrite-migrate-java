@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -211,6 +212,74 @@ class UseJavaUtilBase64Test implements RewriteTest {
                       String encoded = encoder.encodeToString(bBytes);
                       encoded += encoder.encodeToString(bBytes);
                       byte[] decoded = Base64.getMimeDecoder().decode(encoded);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("Import for java.util.Base64 is only added when ChangeType retypes a coder variable; without one the migrated file does not compile")
+    @Test
+    void addImportWhenNoCoderVariablePresent() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              class Test {
+                  String test(byte[] bBytes) {
+                      return new BASE64Encoder().encode(bBytes);
+                  }
+              }
+              """,
+            """
+              package test.sun.misc;
+
+              import java.util.Base64;
+
+              class Test {
+                  String test(byte[] bBytes) {
+                      return Base64.getEncoder().encodeToString(bBytes);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @ExpectedToFail("Receivers are only put back when they are identifiers; a method call receiver and its side effects are silently dropped")
+    @Test
+    void retainMethodCallReceiver() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              class Test {
+                  BASE64Encoder encoder() {
+                      return new BASE64Encoder();
+                  }
+
+                  String test(byte[] bBytes) {
+                      return encoder().encode(bBytes);
+                  }
+              }
+              """,
+            """
+              package test.sun.misc;
+
+              import java.util.Base64;
+
+              class Test {
+                  Base64.Encoder encoder() {
+                      return Base64.getEncoder();
+                  }
+
+                  String test(byte[] bBytes) {
+                      return encoder().encodeToString(bBytes);
                   }
               }
               """
