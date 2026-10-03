@@ -32,6 +32,16 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         spec.recipe(new UpgradeDockerImageVersion(25));
     }
 
+    @Test
+    void upgradeMavenBuilderJavaVersion() {
+        rewriteRun(
+          docker(
+            "FROM maven:3.9.9-eclipse-temurin-23 AS builder",
+            "FROM maven:3.9-eclipse-temurin-25 AS builder"
+          )
+        );
+    }
+
     @CsvSource({
       // Deprecated images migrate to eclipse-temurin
       "openjdk, 8, eclipse-temurin, 17, 17",
