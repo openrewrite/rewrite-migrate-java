@@ -283,6 +283,9 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: javax.validation:validation-api
+      newLiteralValue: jakarta.validation:jakarta.validation-api
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.validation
       oldArtifactId: validation-api
