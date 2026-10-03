@@ -1008,17 +1008,13 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.xml.bind
-      oldArtifactId: jaxb-api
-      newGroupId: jakarta.xml.bind
-      newArtifactId: jakarta.xml.bind-api
-      newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.ChangeJaxbApiDependency
   - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJackson
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForArquillianRecorder
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.xml.bind
       oldArtifactId: jaxb-impl

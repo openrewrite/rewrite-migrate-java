@@ -409,4 +409,89 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void retainsJavaxApiForUnmigratedArquillianRecorder() {
+        rewriteRun(
+          spec -> spec.cycles(3).expectedCyclesThatMakeChanges(1),
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.arquillian.extension</groupId>
+                          <artifactId>arquillian-recorder-screenshooter-impl-base</artifactId>
+                          <version>1.1.6.Final</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>jakarta.xml.bind</groupId>
+                          <artifactId>jakarta.xml.bind-api</artifactId>
+                          <version>2.3.3</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            source -> source.after(pom -> assertThat(pom)
+              .contains("<groupId>javax.xml.bind</groupId>")
+              .contains("<artifactId>jaxb-api</artifactId>")
+              .contains("<scope>runtime</scope>")
+              .containsPattern("<version>3\\.0\\.\\d+</version>").actual())
+          )
+        );
+    }
+
+    @Test
+    void retainsApiInRecorderModule() {
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1</version>
+                    <packaging>pom</packaging>
+                    <modules><module>child</module></modules>
+                </project>
+                """
+            ),
+            mavenProject("child",
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                          <groupId>example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                      </parent>
+                      <artifactId>child</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.arquillian.extension</groupId>
+                              <artifactId>arquillian-recorder-screenshooter-impl-base</artifactId>
+                              <version>1.1.6.Final</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                              <version>2.3.3</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                source -> source.after(pom -> assertThat(pom)
+                  .contains("<groupId>javax.xml.bind</groupId>")
+                  .contains("<artifactId>jaxb-api</artifactId>")
+                  .contains("<scope>runtime</scope>").actual())
+              )
+            )
+          )
+        );
+    }
 }
