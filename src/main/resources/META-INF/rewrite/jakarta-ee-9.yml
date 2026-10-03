@@ -742,12 +742,7 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.mail
-      artifactId: jakarta.mail-api
-      version: 2.0.x
-      onlyIfUsing: javax.mail.*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
@@ -1792,4 +1787,19 @@ recipeList:
       artifactId: jakarta.enterprise.cdi-api
       version: 3.0.x
       onlyIfUsing: javax.decorator..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
+displayName: Add the Jakarta Mail API when needed
+description: Add the Jakarta Mail API without promoting an explicitly provided or compile-only API to runtime scope.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedMailApi
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
+      version: 2.0.x
+      onlyIfUsing: javax.mail.*
       acceptTransitive: true
