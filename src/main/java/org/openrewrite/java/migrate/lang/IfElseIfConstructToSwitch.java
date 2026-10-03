@@ -345,7 +345,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private Statement getStatement(Statement statement) {
             if (statement instanceof J.Block && ((J.Block) statement).getStatements().size() == 1) {
                 Statement firstStatement = ((J.Block) statement).getStatements().get(0);
-                if (firstStatement instanceof Expression || firstStatement instanceof J.Throw) {
+                if ((firstStatement instanceof Expression || firstStatement instanceof J.Throw) &&
+                        firstStatement.getComments().isEmpty() &&
+                        statement.getComments().isEmpty() &&
+                        ((J.Block) statement).getEnd().getComments().isEmpty()) {
                     return firstStatement;
                 }
             }
