@@ -1127,10 +1127,6 @@ recipeList:
       groupId: jakarta.xml.ws
       artifactId: jakarta.xml.ws-api
       newVersion: 3.0.x
-  - org.openrewrite.maven.ChangeDependencyScope:
-      groupId: jakarta.xml.ws
-      artifactId: jakarta.xml.ws-api
-      newScope: provided
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
@@ -1139,6 +1135,11 @@ recipeList:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
       newScope: provided
+  - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
+      packageName: jakarta.xml.ws
+      groupId: jakarta.xml.ws
+      artifactId: jakarta.xml.ws-api
+      version: 3.0.x
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: com.sun.xml.ws
       artifactId: jaxws-rt
