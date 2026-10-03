@@ -284,6 +284,16 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.hibernate
+      oldArtifactId: hibernate-validator
+      newGroupId: org.hibernate.validator
+      newArtifactId: hibernate-validator
+      newVersion: 7.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.hibernate.validator
+      artifactId: hibernate-validator
+      newVersion: 7.0.x
   - org.openrewrite.java.ReplaceStringLiteralValue:
       oldLiteralValue: javax.validation:validation-api
       newLiteralValue: jakarta.validation:jakarta.validation-api

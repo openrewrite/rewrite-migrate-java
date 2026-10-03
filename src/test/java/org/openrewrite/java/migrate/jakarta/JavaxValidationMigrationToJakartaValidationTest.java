@@ -42,6 +42,46 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
     }
 
     @Test
+    void migrateLegacyHibernateValidatorProvider() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.hibernate</groupId>
+                          <artifactId>hibernate-validator</artifactId>
+                          <version>4.3.0.Final</version>
+                          <scope>test</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.hibernate.validator</groupId>
+                          <artifactId>hibernate-validator</artifactId>
+                          <version>7.0.5.Final</version>
+                          <scope>test</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
     void migratesVersionlessMavenCoordinateLiteral() {
         rewriteRun(
           java(
