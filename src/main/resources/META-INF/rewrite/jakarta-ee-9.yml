@@ -145,12 +145,7 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      version: 2.0.x
-      onlyIfUsing: javax.annotation..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaAnnotationDependency
   - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
       packageName: jakarta.annotation
       groupId: jakarta.annotation
@@ -357,12 +352,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.decorator..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
@@ -403,12 +393,7 @@ recipeList:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       newVersion: 4.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.ejb
-      artifactId: jakarta.ejb-api
-      version: 4.0.x
-      onlyIfUsing: javax.ejb..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-ejb-plugin
@@ -442,12 +427,7 @@ recipeList:
       groupId: jakarta.el
       artifactId: jakarta.el-api
       newVersion: 4.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.el
-      artifactId: jakarta.el-api
-      version: 4.0.x
-      onlyIfUsing: javax.el..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.el
       newPackageName: jakarta.el
@@ -510,12 +490,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.enterprise..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
@@ -752,12 +727,7 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.mail
-      artifactId: jakarta.mail-api
-      version: 2.0.x
-      onlyIfUsing: javax.mail.*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
@@ -1782,3 +1752,108 @@ recipeList:
       groupId: org.jboss.weld
       artifactId: weld-core-impl
       newVersion: 4.0.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
+displayName: Add the Jakarta CDI API when needed
+description: Add the Jakarta CDI API for migrated source without promoting an explicitly provided or compile-only API to a runtime dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.enterprise:cdi-api
+        - jakarta.enterprise:jakarta.enterprise.cdi-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.enterprise..*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.decorator..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaAnnotationDependency
+displayName: Add the Jakarta Annotation API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.annotation:javax.annotation-api
+        - javax.annotation:jsr250-api
+        - org.glassfish.main:javax.annotation
+        - jakarta.annotation:jakarta.annotation-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
+displayName: Add the Jakarta El API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.el:javax.el-api
+        - javax.el:el-api
+        - jakarta.el:jakarta.el-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.el
+      artifactId: jakarta.el-api
+      version: 4.0.x
+      onlyIfUsing: javax.el..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
+displayName: Add the Jakarta Ejb API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.ejb:javax.ejb-api
+        - javax.ejb:ejb-api
+        - org.glassfish.main:javax.ejb
+        - org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec
+        - jakarta.ejb:jakarta.ejb-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ejb
+      artifactId: jakarta.ejb-api
+      version: 4.0.x
+      onlyIfUsing: javax.ejb..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
+displayName: Add the Jakarta Mail API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - com.sun.mail:javax.mail
+        - com.sun.mail:jakarta.mail
+        - javax.mail:mail
+        - javax.mail:javax.mail-api
+        - jakarta.mail:jakarta.mail-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
+      version: 2.0.x
+      onlyIfUsing: javax.mail.*
+      acceptTransitive: true
