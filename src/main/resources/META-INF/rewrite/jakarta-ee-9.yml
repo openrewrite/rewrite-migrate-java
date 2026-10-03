@@ -357,12 +357,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.decorator..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
@@ -510,12 +505,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.enterprise..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
@@ -1782,3 +1772,35 @@ recipeList:
       groupId: org.jboss.weld
       artifactId: weld-core-impl
       newVersion: 4.0.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
+displayName: Add the Jakarta CDI API when needed
+description: Add the Jakarta CDI API for migrated source without promoting an explicitly provided or compile-only API to a runtime dependency.
+preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: javax.enterprise
+      artifactId: cdi-api
+      onlyDirect: true
+      scope: provided
+      configuration: compileOnly
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      onlyDirect: true
+      scope: provided
+      configuration: compileOnly
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.enterprise..*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.decorator..*
+      acceptTransitive: true
