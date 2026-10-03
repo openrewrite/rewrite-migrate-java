@@ -32,6 +32,61 @@ import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
+    @Test
+    void updatesAlternatePomWithoutMavenModel() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          org.openrewrite.xml.Assertions.xml(
+            "<project><properties><java.version>17</java.version></properties></project>",
+            "<project><properties><java.version>25</java.version></properties></project>",
+            spec -> spec.path("pom.xml")
+          )
+        );
+    }
+
+    @Test
+    void alternatePomPreservesReferencesNewerVersionsAndOtherXml() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          org.openrewrite.xml.Assertions.xml(
+            """
+              <project><properties>
+                <java.version>26</java.version>
+                <maven.compiler.release>${java.version}</maven.compiler.release>
+                <unrelated.version>17</unrelated.version>
+              </properties></project>
+              """,
+            spec -> spec.path("pom.xml")
+          ),
+          org.openrewrite.xml.Assertions.xml(
+            "<project><properties><java.version>17</java.version></properties></project>",
+            spec -> spec.path("example.xml")
+          )
+        );
+    }
+
+    @Test
+    void alternatePomUpdatesCompilerConfiguration() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          org.openrewrite.xml.Assertions.xml(
+            """
+              <project><build><plugins><plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration><source>1.8</source><target>1.8</target></configuration>
+              </plugin></plugins></build></project>
+              """,
+            """
+              <project><build><plugins><plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration><source>25</source><target>25</target></configuration>
+              </plugin></plugins></build></project>
+              """,
+            spec -> spec.path("module/pom.xml")
+          )
+        );
+    }
+
     @Nested
     class Maven {
         @DocumentExample
