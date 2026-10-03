@@ -1008,13 +1008,9 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.xml.bind
-      oldArtifactId: jaxb-api
-      newGroupId: jakarta.xml.bind
-      newArtifactId: jakarta.xml.bind-api
-      newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.ChangeJaxbApiDependency
   - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJackson
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForArquillianRecorder
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
@@ -1086,6 +1082,24 @@ recipeList:
       version: 2.3.x
       scope: runtime
       acceptTransitive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.ChangeJaxbApiDependency
+displayName: Migrate the JAXB API dependency unless Recorder still needs it
+description: >-
+  Migrate the JAXB API coordinates while retaining the legacy API needed by Arquillian Recorder 1.x binaries.
+preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: org.arquillian.extension
+      artifactId: arquillian-recorder-*
+      version: 1.x
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.xml.bind
+      oldArtifactId: jaxb-api
+      newGroupId: jakarta.xml.bind
+      newArtifactId: jakarta.xml.bind-api
+      newVersion: 3.0.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
