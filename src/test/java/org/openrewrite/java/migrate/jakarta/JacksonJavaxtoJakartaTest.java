@@ -98,6 +98,68 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void alignOlderSharedJacksonVersion() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1.0</version>
+                  <properties>
+                      <jackson.version>2.2.2</jackson.version>
+                  </properties>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                              <artifactId>jackson-jaxrs-json-provider</artifactId>
+                              <version>${jackson.version}</version>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.core</groupId>
+                          <artifactId>jackson-databind</artifactId>
+                          <version>${jackson.version}</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1.0</version>
+                  <properties>
+                      <jackson.version>2.13.5</jackson.version>
+                  </properties>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                              <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+                              <version>${jackson.version}</version>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.core</groupId>
+                          <artifactId>jackson-databind</artifactId>
+                          <version>${jackson.version}</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void migrateJacksonDependencies() {
