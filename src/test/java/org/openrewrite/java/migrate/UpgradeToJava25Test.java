@@ -38,6 +38,34 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void replacesRetiredAdoptDistributionForJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          org.openrewrite.yaml.Assertions.yaml(
+            """
+              jobs:
+                build:
+                  steps:
+                    - uses: actions/setup-java@v4
+                      with:
+                        java-version: '17'
+                        distribution: adopt
+              """,
+            """
+              jobs:
+                build:
+                  steps:
+                    - uses: actions/setup-java@v4
+                      with:
+                        java-version: '25'
+                        distribution: temurin
+              """,
+            spec -> spec.path(".github/workflows/build.yml")
+          )
+        );
+    }
+
+    @Test
     void upgradeBndForJava25() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
