@@ -125,6 +125,12 @@ preconditions:
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.annotation
+      oldArtifactId: jsr250-api
+      newGroupId: jakarta.annotation
+      newArtifactId: jakarta.annotation-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.annotation
       oldArtifactId: javax.annotation-api
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
@@ -370,6 +376,18 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.jboss.spec.javax.ejb
+      oldArtifactId: jboss-ejb-api_3.1_spec
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.ejb
+      oldArtifactId: ejb-api
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.ejb
       oldArtifactId: javax.ejb-api
       newGroupId: jakarta.ejb
@@ -408,6 +426,12 @@ description: Java EE has been rebranded to Jakarta EE, necessitating a package r
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.el
+      oldArtifactId: el-api
+      newGroupId: jakarta.el
+      newArtifactId: jakarta.el-api
+      newVersion: 4.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.el
       oldArtifactId: javax.el-api
