@@ -35,6 +35,42 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
           .allSources(source -> version(source, 21));
     }
 
+    @Test
+    void preserveSingleStatementBranchComment() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  void use(Object value) {}
+                  void test(Object value) {
+                      if (value instanceof String s) {
+                          use(s);
+                      } else if (value instanceof Integer i) { // integers need special handling
+                          use(i);
+                      } else {
+                          use(value);
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void use(Object value) {}
+                  void test(Object value) {
+                      switch (value) {
+                          case String s -> use(s);
+                          case Integer i -> { // integers need special handling
+                              use(i);
+                          }
+                          case null, default -> use(value);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void defaultSwitchBlockWithNullCheckAndFinalElseStatement() {
