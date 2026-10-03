@@ -25,6 +25,7 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.marker.SearchResult;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class HasJettyDependency extends ScanningRecipe<AtomicBoolean> {
     String displayName = "Build uses Jetty before version 12";
 
-    String description = "Mark the source set when a Maven or Gradle module depends on Jetty 8 through 11. " +
+    String description = "Mark the source set when a Maven or Gradle module depends on servlet or WebSocket artifacts relocated by the Jetty 12 migration. " +
             "This permits updating the Java baseline in parent build files as well as the module using Jetty.";
 
     @Override
@@ -48,13 +49,13 @@ public class HasJettyDependency extends ScanningRecipe<AtomicBoolean> {
                 stopAfterPreVisit();
                 tree.getMarkers().findFirst(MavenResolutionResult.class).ifPresent(model -> {
                     if (model.getDependencies().values().stream().flatMap(java.util.Collection::stream)
-                            .anyMatch(d -> isLegacyJetty(d.getGroupId(), d.getVersion()))) {
+                            .anyMatch(d -> isLegacyJetty(d.getGroupId(), d.getArtifactId(), d.getVersion()))) {
                         usesJetty.set(true);
                     }
                 });
                 tree.getMarkers().findFirst(GradleProject.class).ifPresent(model -> {
                     if (model.getConfigurations().stream().flatMap(c -> c.getDirectResolved().stream())
-                            .anyMatch(d -> isLegacyJetty(d.getGroupId(), d.getVersion()))) {
+                            .anyMatch(d -> isLegacyJetty(d.getGroupId(), d.getArtifactId(), d.getVersion()))) {
                         usesJetty.set(true);
                     }
                 });
@@ -63,9 +64,16 @@ public class HasJettyDependency extends ScanningRecipe<AtomicBoolean> {
         };
     }
 
-    private static boolean isLegacyJetty(String groupId, String version) {
-        return groupId != null && ("org.eclipse.jetty".equals(groupId) || groupId.startsWith("org.eclipse.jetty.")) &&
-                version != null && version.matches("(?:8|9|10|11)(?:\\..*)?");
+    private static boolean isLegacyJetty(String groupId, String artifactId, String version) {
+        if (version == null || !version.matches("(?:8|9|10|11)(?:\\..*)?")) {
+            return false;
+        }
+        return "org.eclipse.jetty".equals(groupId) && Arrays.asList(
+                "apache-jsp", "jetty-servlets", "jetty-servlet", "jetty-webapp", "jetty-security",
+                "jetty-proxy", "jetty-annotations").contains(artifactId) ||
+                "org.eclipse.jetty.websocket".equals(groupId) && Arrays.asList(
+                        "websocket-api", "websocket-server", "websocket-client",
+                        "javax-websocket-server-impl", "javax-websocket-client-impl").contains(artifactId);
     }
 
     @Override
