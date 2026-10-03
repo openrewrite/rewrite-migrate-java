@@ -191,5 +191,31 @@ class JettyUpgradeEE9Test implements RewriteTest {
           )
         );
     }
+    @Test
+    void leavesTransitiveServletDependenciesAlone() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <properties>
+                      <maven.compiler.source>8</maven.compiler.source>
+                      <maven.compiler.target>8</maven.compiler.target>
+                  </properties>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.eclipse.jetty</groupId>
+                          <artifactId>jetty-deploy</artifactId>
+                          <version>9.4.58.v20250814</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
 
 }

@@ -22,10 +22,11 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
-import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.marker.SearchResult;
+import org.openrewrite.maven.tree.MavenResolutionResult;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Value
@@ -48,7 +49,8 @@ public class HasJettyDependency extends ScanningRecipe<AtomicBoolean> {
             public Tree preVisit(Tree tree, ExecutionContext ctx) {
                 stopAfterPreVisit();
                 tree.getMarkers().findFirst(MavenResolutionResult.class).ifPresent(model -> {
-                    if (model.getDependencies().values().stream().flatMap(java.util.Collection::stream)
+                    if (model.getDependencies().values().stream().flatMap(Collection::stream)
+                            .filter(d -> d.getDepth() == 0)
                             .anyMatch(d -> isLegacyJetty(d.getGroupId(), d.getArtifactId(), d.getVersion()))) {
                         usesJetty.set(true);
                     }
