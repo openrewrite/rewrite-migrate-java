@@ -93,4 +93,41 @@ class JavaxEnterpriseToJakartaEnterpriseTest implements RewriteTest {
         );
     }
 
+    @Test
+    void promotesRuntimeApiForMainSource() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.enterprise.inject.spi; public interface BeanManager {}")),
+          mavenProject("demo",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>1.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.enterprise</groupId>
+                            <artifactId>cdi-api</artifactId>
+                            <version>1.0</version>
+                            <scope>runtime</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("jakarta.enterprise.cdi-api", "<scope>compile</scope>")
+                .doesNotContain("<scope>runtime</scope>").actual())
+            ),
+            srcMainJava(
+              java(
+                "class A { javax.enterprise.inject.spi.BeanManager manager; }",
+                "class A { jakarta.enterprise.inject.spi.BeanManager manager; }"
+              )
+            )
+          )
+        );
+    }
+
 }

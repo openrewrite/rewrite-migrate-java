@@ -1779,18 +1779,7 @@ name: org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
 displayName: Add the Jakarta CDI API when needed
 description: Add the Jakarta CDI API for migrated source without promoting an explicitly provided or compile-only API to a runtime dependency.
 preconditions:
-  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
-      groupId: javax.enterprise
-      artifactId: cdi-api
-      onlyDirect: true
-      scope: provided
-      configuration: compileOnly
-  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      onlyDirect: true
-      scope: provided
-      configuration: compileOnly
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedCdiApi
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.enterprise
