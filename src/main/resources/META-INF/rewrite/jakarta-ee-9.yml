@@ -561,6 +561,7 @@ recipeList:
       oldPackageName: javax.interceptor
       newPackageName: jakarta.interceptor
       recursive: true
+  - org.openrewrite.java.migrate.jakarta.InvocationContextGetConstructor
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
