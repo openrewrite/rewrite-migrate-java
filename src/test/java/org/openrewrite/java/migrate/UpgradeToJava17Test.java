@@ -37,6 +37,45 @@ class UpgradeToJava17Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava17");
     }
 
+    @Test
+    void replacesDiscontinuedMapstructJdk8BeforeUpgradingSharedVersion() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.example</groupId>
+                <artifactId>app</artifactId>
+                <version>1</version>
+                <properties>
+                  <mapstruct.version>1.2.0.Final</mapstruct.version>
+                </properties>
+                <dependencies>
+                  <dependency>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct-jdk8</artifactId>
+                    <version>${mapstruct.version}</version>
+                  </dependency>
+                  <dependency>
+                    <groupId>org.mapstruct</groupId>
+                    <artifactId>mapstruct-processor</artifactId>
+                    <version>${mapstruct.version}</version>
+                  </dependency>
+                </dependencies>
+              </project>
+              """,
+            spec -> spec.after(actual -> {
+                assertThat(actual)
+                  .doesNotContain("<artifactId>mapstruct-jdk8</artifactId>")
+                  .contains("<artifactId>mapstruct</artifactId>")
+                  .contains("<artifactId>mapstruct-processor</artifactId>")
+                  .contains("<mapstruct.version>1.6.3</mapstruct.version>");
+                return actual;
+            })
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void upgradeFromJava8ToJava17() {
