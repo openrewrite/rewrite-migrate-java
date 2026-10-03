@@ -941,6 +941,7 @@ description: Java EE has been rebranded to Jakarta EE, necessitating a package r
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.JerseyLoggingFilterToFeature
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.glassfish.jersey.core
       artifactId: "*"
