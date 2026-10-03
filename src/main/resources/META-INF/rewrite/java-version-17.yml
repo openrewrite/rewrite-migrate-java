@@ -106,6 +106,9 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 7.3
       addIfMissing: false
+  - org.openrewrite.maven.UpdateMavenWrapper:
+      distributionVersion: 3.9.x
+      addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-checkstyle-plugin
