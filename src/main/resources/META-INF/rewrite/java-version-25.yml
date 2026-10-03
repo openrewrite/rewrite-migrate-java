@@ -150,6 +150,7 @@ recipeList:
   - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
       methodPattern: java.lang.System#getSecurityManager()
       replacement: "null"
+  - org.openrewrite.java.migrate.SimplifySecurityManagerThreadGroup
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
 
 ---
