@@ -1024,6 +1024,10 @@ recipeList:
       groupId: org.glassfish.jaxb
       artifactId: jaxb-runtime
       newVersion: 3.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse.persistence
+      artifactId: org.eclipse.persistence.moxy
+      newVersion: 3.0.x
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
