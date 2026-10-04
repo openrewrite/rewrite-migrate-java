@@ -73,6 +73,62 @@ class JavaxToJakartaTest implements RewriteTest {
         }
         """;
 
+    @Test
+    void migrateRuntimeTypeNamesWithoutChangingJavaSeNames() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  String inject = "javax.inject.Inject";
+                  String named = "javax.inject.Named";
+                  String manager = "javax.enterprise.inject.spi.BeanManager";
+                  String servlet = "javax.servlet.ServletContext";
+                  String ejb = "javax.ejb.EJB";
+                  String resource = "javax.annotation.Resource";
+                  String processor = "javax.annotation.processing.Processor";
+                  String context = "javax.naming.InitialContext";
+                  String ssl = "javax.net.ssl.SSLContext";
+                  String xa = "javax.transaction.xa.XAResource";
+              }
+              """,
+            """
+              class A {
+                  String inject = "jakarta.inject.Inject";
+                  String named = "jakarta.inject.Named";
+                  String manager = "jakarta.enterprise.inject.spi.BeanManager";
+                  String servlet = "jakarta.servlet.ServletContext";
+                  String ejb = "jakarta.ejb.EJB";
+                  String resource = "jakarta.annotation.Resource";
+                  String processor = "javax.annotation.processing.Processor";
+                  String context = "javax.naming.InitialContext";
+                  String ssl = "javax.net.ssl.SSLContext";
+                  String xa = "javax.transaction.xa.XAResource";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateProgrammaticCdiServiceDescriptorPath() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  String service = "services/javax.enterprise.inject.spi.Extension";
+                  String resource = "META-INF/services/javax.enterprise.inject.spi.Extension";
+              }
+              """,
+            """
+              class A {
+                  String service = "services/jakarta.enterprise.inject.spi.Extension";
+                  String resource = "META-INF/services/jakarta.enterprise.inject.spi.Extension";
+              }
+              """
+          )
+        );
+    }
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(

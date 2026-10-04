@@ -30,6 +30,7 @@ preconditions:
 # NOTE: The spec versions in this section comes from https://github.com/jakartaee/jakartaee-api/blob/9.1.0/pom.xml
 recipeList:
   - org.openrewrite.java.migrate.javaee8
+  - org.openrewrite.java.migrate.jakarta.JavaxRuntimeTypeNamesToJakarta
   - org.openrewrite.java.migrate.jakarta.JavaxActivationMigrationToJakartaActivation
   - org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
   - org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication
@@ -40,6 +41,7 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.JavaxElToJakartaEl
   - org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
   - org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
+  - org.openrewrite.java.migrate.jakarta.WeldToJakarta
   - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.JavaxInjectMigrationToJakartaInject
   - org.openrewrite.java.migrate.jakarta.JavaxInterceptorToJakartaInterceptor
@@ -123,6 +125,12 @@ preconditions:
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.annotation
+      oldArtifactId: jsr250-api
+      newGroupId: jakarta.annotation
+      newArtifactId: jakarta.annotation-api
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.annotation
       oldArtifactId: javax.annotation-api
       newGroupId: jakarta.annotation
       newArtifactId: jakarta.annotation-api
@@ -137,12 +145,7 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.annotation
-      artifactId: jakarta.annotation-api
-      version: 2.0.x
-      onlyIfUsing: javax.annotation..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaAnnotationDependency
   - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
       packageName: jakarta.annotation
       groupId: jakarta.annotation
@@ -283,6 +286,19 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.hibernate
+      oldArtifactId: hibernate-validator
+      newGroupId: org.hibernate.validator
+      newArtifactId: hibernate-validator
+      newVersion: 7.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.hibernate.validator
+      artifactId: hibernate-validator
+      newVersion: 7.0.x
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: javax.validation:validation-api
+      newLiteralValue: jakarta.validation:jakarta.validation-api
+  - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.validation
       oldArtifactId: validation-api
       newGroupId: jakarta.validation
@@ -336,12 +352,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.decorator..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.decorator
       newPackageName: jakarta.decorator
@@ -354,6 +365,18 @@ description: Java EE has been rebranded to Jakarta EE, necessitating a package r
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.jboss.spec.javax.ejb
+      oldArtifactId: jboss-ejb-api_3.1_spec
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.ejb
+      oldArtifactId: ejb-api
+      newGroupId: jakarta.ejb
+      newArtifactId: jakarta.ejb-api
+      newVersion: 4.0.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.ejb
       oldArtifactId: javax.ejb-api
@@ -370,12 +393,7 @@ recipeList:
       groupId: jakarta.ejb
       artifactId: jakarta.ejb-api
       newVersion: 4.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.ejb
-      artifactId: jakarta.ejb-api
-      version: 4.0.x
-      onlyIfUsing: javax.ejb..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-ejb-plugin
@@ -395,6 +413,12 @@ preconditions:
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.el
+      oldArtifactId: el-api
+      newGroupId: jakarta.el
+      newArtifactId: jakarta.el-api
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.el
       oldArtifactId: javax.el-api
       newGroupId: jakarta.el
       newArtifactId: jakarta.el-api
@@ -403,12 +427,7 @@ recipeList:
       groupId: jakarta.el
       artifactId: jakarta.el-api
       newVersion: 4.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.el
-      artifactId: jakarta.el-api
-      version: 4.0.x
-      onlyIfUsing: javax.el..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.el
       newPackageName: jakarta.el
@@ -471,12 +490,7 @@ recipeList:
       groupId: jakarta.enterprise
       artifactId: jakarta.enterprise.cdi-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.enterprise
-      artifactId: jakarta.enterprise.cdi-api
-      version: 3.0.x
-      onlyIfUsing: javax.enterprise..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.enterprise
       newPackageName: jakarta.enterprise
@@ -509,12 +523,7 @@ recipeList:
       groupId: jakarta.inject
       artifactId: jakarta.inject-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.inject
-      artifactId: jakarta.inject-api
-      version: 2.0.x
-      onlyIfUsing: javax.inject..*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.inject
       newPackageName: jakarta.inject
@@ -547,6 +556,7 @@ recipeList:
       oldPackageName: javax.interceptor
       newPackageName: jakarta.interceptor
       recursive: true
+  - org.openrewrite.java.migrate.jakarta.InvocationContextGetConstructor
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxJmsToJakartaJms
@@ -713,12 +723,7 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.mail
-      artifactId: jakarta.mail-api
-      version: 2.0.x
-      onlyIfUsing: javax.mail.*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.mail
       newPackageName: jakarta.mail
@@ -980,12 +985,7 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       newVersion: 3.0.x
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: jakarta.ws.rs
-      artifactId: jakarta.ws.rs-api
-      version: 3.0.x
-      onlyIfUsing: javax.ws.rs.core.*
-      acceptTransitive: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.ws
       newPackageName: jakarta.ws
@@ -1003,17 +1003,13 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: javax.xml.bind
-      oldArtifactId: jaxb-api
-      newGroupId: jakarta.xml.bind
-      newArtifactId: jakarta.xml.bind-api
-      newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.ChangeJaxbApiDependency
   - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForJackson
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: jakarta.xml.bind
       artifactId: jakarta.xml.bind-api
       newVersion: 3.0.x
+  - org.openrewrite.java.migrate.jakarta.RetainJaxbApiForArquillianRecorder
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.xml.bind
       oldArtifactId: jaxb-impl
@@ -1254,99 +1250,98 @@ description: >-
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.JacksonProviderOverrides
+  # Raise older versions before changing coordinates, preserving newer versions and shared properties.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.fasterxml.jackson.module
+      artifactId: jackson-module-jaxb-annotations
+      newVersion: 2.13.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.fasterxml.jackson.jaxrs
+      artifactId: jackson-jaxrs-*
+      newVersion: 2.13.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.fasterxml.jackson.datatype
+      artifactId: jackson-datatype-jsr353
+      newVersion: 2.13.x
   # JAXB annotations support
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.module
       oldArtifactId: jackson-module-jaxb-annotations
       newGroupId: com.fasterxml.jackson.module
       newArtifactId: jackson-module-jakarta-xmlbind-annotations
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.module
       oldArtifactId: jackson-module-jaxb-annotations
       newGroupId: com.fasterxml.jackson.module
       newArtifactId: jackson-module-jakarta-xmlbind-annotations
-      newVersion: 2.13.x
   # JAXRS providers
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-cbor-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-cbor-provider
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-base
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-base
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-cbor-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-cbor-provider
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-json-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-json-provider
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-json-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-json-provider
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-smile-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-smile-provider
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-smile-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-smile-provider
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-xml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-xml-provider
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-xml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-xml-provider
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-yaml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-yaml-provider
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.jaxrs
       oldArtifactId: jackson-jaxrs-yaml-provider
       newGroupId: com.fasterxml.jackson.jakarta.rs
       newArtifactId: jackson-jakarta-rs-yaml-provider
-      newVersion: 2.13.x
   # JSONP datatypes
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.fasterxml.jackson.datatype
       oldArtifactId: jackson-datatype-jsr353
       newGroupId: com.fasterxml.jackson.datatype
       newArtifactId: jackson-datatype-jakarta-jsonp
-      newVersion: 2.13.x
   - org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId:
       oldGroupId: com.fasterxml.jackson.datatype
       oldArtifactId: jackson-datatype-jsr353
       newGroupId: com.fasterxml.jackson.datatype
       newArtifactId: jackson-datatype-jakarta-jsonp
-      newVersion: 2.13.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.glassfish
       oldArtifactId: javax.json
@@ -1563,6 +1558,8 @@ description: Update Jetty dependencies from version 9 to version 12.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.jakarta.UpgradeJavaForJetty12
+  - org.openrewrite.java.migrate.jakarta.JettyConnectorGetPort
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.eclipse.jetty.websocket
       oldArtifactId: websocket-api
@@ -1635,6 +1632,45 @@ recipeList:
       newGroupId: org.eclipse.jetty.ee9
       newArtifactId: jetty-ee9-annotations
       newVersion: 12.0.x
+  - org.openrewrite.java.migrate.jakarta.UpgradeJettyCoreDependencies
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.servlet
+      newPackageName: org.eclipse.jetty.ee9.servlet
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.servlets
+      newPackageName: org.eclipse.jetty.ee9.servlets
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.webapp
+      newPackageName: org.eclipse.jetty.ee9.webapp
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.annotations
+      newPackageName: org.eclipse.jetty.ee9.annotations
+      recursive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpgradeJettyCoreDependencies
+displayName: Align legacy Jetty core dependencies with Jetty 12
+description: Upgrade explicitly declared Jetty core dependencies alongside the relocated servlet dependencies.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.HasJettyDependency
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse.jetty
+      artifactId: '*'
+      newVersion: 12.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.UpgradeJavaForJetty12
+displayName: Use Java 17 for Jetty 12
+description: Update the Java baseline of builds using Jetty to the minimum required by Jetty 12.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.HasJettyDependency
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeJavaVersion:
+      version: 17
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
@@ -1667,3 +1703,194 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-ear-plugin
       newVersion: 3.3.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JavaxRuntimeTypeNamesToJakarta
+displayName: Migrate Jakarta EE runtime type names
+description: Migrate CDI, EJB, Servlet and resource annotation names used for reflective lookup and annotation matching while retaining Java SE type names.
+recipeList:
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.inject
+      newPackageName: jakarta.inject
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.enterprise
+      newPackageName: jakarta.enterprise
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.ejb
+      newPackageName: jakarta.ejb
+  - org.openrewrite.java.ChangePackageInStringLiteral:
+      oldPackageName: javax.servlet
+      newPackageName: jakarta.servlet
+  - org.openrewrite.java.ChangeTypeInStringLiteral:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeTypeInStringLiteral:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.WeldToJakarta
+displayName: Migrate Weld implementations to Jakarta CDI
+description: Replace legacy Weld core artifacts and upgrade javax-based Weld implementations to Weld 4, which implements Jakarta CDI 3.
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.jboss.weld
+      oldArtifactId: weld-core
+      newArtifactId: weld-core-impl
+      newVersion: 4.0.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.jboss.weld
+      artifactId: weld-core-impl
+      newVersion: 4.0.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaCdiDependency
+displayName: Add the Jakarta CDI API when needed
+description: Add the Jakarta CDI API for migrated source without promoting an explicitly provided or compile-only API to a runtime dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.enterprise:cdi-api
+        - jakarta.enterprise:jakarta.enterprise.cdi-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.enterprise..*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.enterprise
+      artifactId: jakarta.enterprise.cdi-api
+      version: 3.0.x
+      onlyIfUsing: javax.decorator..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaAnnotationDependency
+displayName: Add the Jakarta Annotation API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.annotation:javax.annotation-api
+        - javax.annotation:jsr250-api
+        - org.glassfish.main:javax.annotation
+        - jakarta.annotation:jakarta.annotation-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
+displayName: Add the Jakarta El API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax.el:javax.el-api
+        - javax.el:el-api
+        - jakarta.el:jakarta.el-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.el
+      artifactId: jakarta.el-api
+      version: 4.0.x
+      onlyIfUsing: javax.el..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
+displayName: Add the Jakarta Ejb API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.ejb:javax.ejb-api
+        - javax.ejb:ejb-api
+        - org.glassfish.main:javax.ejb
+        - org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec
+        - jakarta.ejb:jakarta.ejb-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ejb
+      artifactId: jakarta.ejb-api
+      version: 4.0.x
+      onlyIfUsing: javax.ejb..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
+displayName: Add the Jakarta Mail API when needed
+description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - com.sun.mail:javax.mail
+        - com.sun.mail:jakarta.mail
+        - javax.mail:mail
+        - javax.mail:javax.mail-api
+        - jakarta.mail:jakarta.mail-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.mail
+      artifactId: jakarta.mail-api
+      version: 2.0.x
+      onlyIfUsing: javax.mail.*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
+displayName: Add the jakarta.inject API when needed
+description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.inject:javax.inject
+        - javax.inject:javax.inject-api
+        - jakarta.inject:jakarta.inject-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.inject
+      artifactId: jakarta.inject-api
+      version: 2.0.x
+      onlyIfUsing: javax.inject..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
+displayName: Add the jakarta.ws.rs API when needed
+description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
+preconditions:
+  - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
+      coordinates:
+        - javax:javaee-api
+        - jakarta.platform:jakarta.jakartaee-api
+        - javax.ws.rs:javax.ws.rs-api
+        - jakarta.ws.rs:jakarta.ws.rs-api
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.ws.rs
+      artifactId: jakarta.ws.rs-api
+      version: 3.0.x
+      onlyIfUsing: javax.ws.rs.core.*
+      acceptTransitive: true

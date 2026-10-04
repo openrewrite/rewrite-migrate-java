@@ -35,6 +35,102 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
     }
 
+    @Test
+    void preserveProvidedMailApiForMainSource() {
+        rewriteRun(
+          mavenProject("app",
+            srcMainJava(
+              java(
+                "import javax.mail.Session; class A { Session session; }",
+                "import jakarta.mail.Session; class A { Session session; }"
+              )
+            ),
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.mail</groupId>
+                            <artifactId>mail</artifactId>
+                            <version>1.4.7</version>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.mail</groupId>
+                            <artifactId>jakarta.mail-api</artifactId>
+                            <version>2.0.2</version>
+                            <scope>provided</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void promoteRuntimeMailApiForMainSource() {
+        rewriteRun(
+          mavenProject("app",
+            srcMainJava(
+              java(
+                "import javax.mail.Session; class A { Session session; }",
+                "import jakarta.mail.Session; class A { Session session; }"
+              )
+            ),
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.mail</groupId>
+                            <artifactId>mail</artifactId>
+                            <version>1.4.7</version>
+                            <scope>runtime</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>jakarta.mail</groupId>
+                            <artifactId>jakarta.mail-api</artifactId>
+                            <version>2.0.2</version>
+                            <scope>compile</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
