@@ -114,7 +114,11 @@ recipeList:
       newGroupId: jakarta.xml.bind
       newArtifactId: jakarta.xml.bind-api
       newVersion: 2.3.x
-  - org.openrewrite.java.migrate.javax.AddJaxbApiForImports
+  - org.openrewrite.java.migrate.javax.AddApiDependencyForImports:
+      packageName: javax.xml.bind
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+      version: 2.3.x
   # Add the jakarta JAXB artifact if it is missing but a project uses types in java.xml.bind
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.xml.bind

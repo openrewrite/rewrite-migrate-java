@@ -22,6 +22,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
@@ -31,12 +32,36 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
+
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class AddJaxbApiForImports extends ScanningRecipe<AddJaxbApiForImports.Accumulator> {
-    String displayName = "Add JAXB API dependencies for explicit imports";
-    String description = "Add the JAXB API to the nearest Maven module importing javax.xml.bind types, " +
-            "including imports whose types could not be resolved by the parser.";
+public class AddApiDependencyForImports extends ScanningRecipe<AddApiDependencyForImports.Accumulator> {
+
+    @Option(displayName = "Package name",
+            description = "The package whose imports need the API. A `jakarta` package also matches imports of its `javax` predecessor.",
+            example = "jakarta.xml.bind")
+    String packageName;
+
+    @Option(displayName = "Group ID",
+            description = "The group ID of the API dependency.",
+            example = "jakarta.xml.bind")
+    String groupId;
+
+    @Option(displayName = "Artifact ID",
+            description = "The artifact ID of the API dependency.",
+            example = "jakarta.xml.bind-api")
+    String artifactId;
+
+    @Option(displayName = "Version",
+            description = "The version of the API dependency to add.",
+            example = "3.0.x")
+    String version;
+
+    String displayName = "Add an API dependency for explicit imports";
+    String description = "Add an API dependency to the nearest Maven module importing the package, including imports " +
+            "whose types could not be resolved by the parser because the JDK used to provide them. A module that " +
+            "already has the API in the needed scope, or from a dependency it declares as provided, is left alone.";
 
     static class Accumulator {
         final Set<Path> poms = new HashSet<>();
@@ -50,6 +75,7 @@ public class AddJaxbApiForImports extends ScanningRecipe<AddJaxbApiForImports.Ac
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+        String javaxPackage = packageName.startsWith("jakarta.") ? "javax." + packageName.substring("jakarta.".length()) : packageName;
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree preVisit(Tree tree, ExecutionContext ctx) {
@@ -59,7 +85,8 @@ public class AddJaxbApiForImports extends ScanningRecipe<AddJaxbApiForImports.Ac
                 } else if (tree instanceof J.CompilationUnit) {
                     J.CompilationUnit cu = (J.CompilationUnit) tree;
                     for (J.Import anImport : cu.getImports()) {
-                        if (anImport.getTypeName().startsWith("javax.xml.bind.")) {
+                        String typeName = anImport.getTypeName();
+                        if (typeName.startsWith(packageName + ".") || typeName.startsWith(javaxPackage + ".")) {
                             acc.sources.add(cu.getSourcePath());
                             break;
                         }
@@ -92,12 +119,29 @@ public class AddJaxbApiForImports extends ScanningRecipe<AddJaxbApiForImports.Ac
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 String scope = scopes.get(document.getSourcePath());
-                if (scope == null || !getResolutionResult().findDependencies("jakarta.xml.bind", "jakarta.xml.bind-api",
+                if (scope == null || hasProvidedApi() || !getResolutionResult().findDependencies(groupId, artifactId,
                         "test".equals(scope) ? Scope.Test : Scope.Compile).isEmpty()) {
                     return document;
                 }
-                return (Xml.Document) new AddDependencyVisitor("jakarta.xml.bind", "jakarta.xml.bind-api",
-                        "2.3.x", null, scope, null, null, null, null, null).visitNonNull(document, ctx);
+                return (Xml.Document) new AddDependencyVisitor(groupId, artifactId,
+                        version, null, scope, null, null, null, null, null).visitNonNull(document, ctx);
+            }
+
+            // The provided resolution scope also holds compile and runtime dependencies, so look at declared scopes.
+            private boolean hasProvidedApi() {
+                MavenResolutionResult model = getResolutionResult();
+                for (ResolvedDependency dependency : model.getDependencies().getOrDefault(Scope.Provided, emptyList())) {
+                    if (dependency.isDirect() && dependency.findDependency(groupId, artifactId) != null) {
+                        String declared = model.getPom().getValue(dependency.getRequested().getScope());
+                        Scope scope = declared == null ? model.getPom().getManagedScope(dependency.getGroupId(),
+                                dependency.getArtifactId(), dependency.getType(), dependency.getClassifier()) :
+                                Scope.fromName(declared);
+                        if (scope == Scope.Provided) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         };
     }
