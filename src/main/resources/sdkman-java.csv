@@ -59,14 +59,14 @@
 25.0.4+1.1-librca
 25.0.4+1.1-zulu
 25.0.4+1.1.r25-nik
-25.0.4+1.61067-jbr
 25.0.4+15-bisheng
 25.0.4-fx+1.1-librca
 25.0.4-fx+1.1.r25-nik
+25.0.4.1+63570-jbr
 25.0.4.fx-zulu
 25.0.4.r25-nik
-25.3.4+1.r25-graalce
 25.4.4+1-graal
+25.4.4.1+1-graalce
 25.r25-mandrel
 26.0.1.crac-zulu
 26.0.2-amzn
@@ -89,7 +89,8 @@
 27.0.0-crac+35-zulu
 27.0.0-fx+35-zulu
 27.0.0-fx+36-librca
-28.0.0+ea.17-open
+27.0.0.0+35-tem
+28.0.0.0+ea.18-open
 6.0.119-zulu
 7.0.352-zulu
 8.0.232-amzn
