@@ -67,6 +67,11 @@ recipeList:
       groupId: com.github.spotbugs
       artifactId: spotbugs-maven-plugin
       newVersion: 4.9.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.mapstruct
+      oldArtifactId: mapstruct-jdk8
+      newArtifactId: mapstruct
+      newVersion: 1.6.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.mapstruct
       artifactId: mapstruct*
@@ -100,6 +105,9 @@ recipeList:
       minimumJavaMajorVersion: 17
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 7.3
+      addIfMissing: false
+  - org.openrewrite.maven.UpdateMavenWrapper:
+      distributionVersion: 3.9.x
       addIfMissing: false
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins

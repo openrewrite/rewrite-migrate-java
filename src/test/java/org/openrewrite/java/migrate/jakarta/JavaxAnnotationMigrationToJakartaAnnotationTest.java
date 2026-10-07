@@ -17,9 +17,13 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
@@ -135,6 +139,63 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
                       <artifactId>jakarta\\.annotation-api</artifactId>\\s*\
                       <version>2\\.0\\.\\d+</version>""")
                     .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void addApiForUnattributedJdkAnnotation() {
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          mavenProject("app",
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Resource;
+                  class A {
+                      @Resource
+                      String value;
+                  }
+                  """,
+                """
+                  import jakarta.annotation.Resource;
+                  class A {
+                      @Resource
+                      String value;
+                  }
+                  """,
+                // Saved Java 8 models can have Unknown annotation types instead of the parser's shallow types.
+                source -> source.mapBeforeRecipe(cu -> (J.CompilationUnit)
+                  new JavaIsoVisitor<Integer>() {
+                      @Override
+                      public J.Identifier visitIdentifier(J.Identifier id, Integer p) {
+                          return id.getType() != null && id.getType().toString().startsWith("javax.annotation") ?
+                            id.withType(JavaType.Unknown.getInstance()) : id;
+                      }
+
+                      @Override
+                      public J.FieldAccess visitFieldAccess(J.FieldAccess fa, Integer p) {
+                          J.FieldAccess f = super.visitFieldAccess(fa, p);
+                          return f.getType() != null && f.getType().toString().startsWith("javax.annotation") ?
+                            f.withType(JavaType.Unknown.getInstance()) : f;
+                      }
+                  }.visit(cu, 0))
+              )
+            ),
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1.0</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<artifactId>jakarta.annotation-api</artifactId>")
+                .doesNotContain("<scope>test</scope>")
+                .actual())
             )
           )
         );

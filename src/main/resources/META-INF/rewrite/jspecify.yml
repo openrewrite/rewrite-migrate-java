@@ -46,6 +46,7 @@ recipeList:
   - org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
   - org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations
   - org.openrewrite.java.jspecify.MigrateFromMicronautAnnotations
+  - org.openrewrite.java.jspecify.MigrateFromSpotBugsAnnotations
   # Running the following recipe on current versions of Spring can cause Spring to misunderstand a nullable field.
   #   For instance, a custom Prometheus scrape endpoint with @Nullable Set<String> includedNames will fail if
   #   includedNames is null and if @Nullable is @org.jspecify.annotations.Nullable.
@@ -221,6 +222,42 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: io.micronaut.core.annotation.NonNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
+      ignoreDefinition: true
+  - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:
+      annotationType: org.jspecify.annotations.*
+  - org.openrewrite.staticanalysis.RemoveDuplicateAnnotations:
+      annotationType: org.jspecify.annotations.*
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.jspecify.MigrateFromSpotBugsAnnotations
+displayName: Migrate from SpotBugs annotations to JSpecify
+description: Migrate from SpotBugs `edu.umd.cs.findbugs.annotations` annotations to JSpecify.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.jspecify
+      artifactId: jspecify
+      version: 1.0.0
+      onlyIfUsing: edu.umd.cs.findbugs.annotations.*ull*
+      acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
+      annotationType: edu.umd.cs.findbugs.annotations.*ull*
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: edu.umd.cs.findbugs.annotations.Nullable
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: edu.umd.cs.findbugs.annotations.CheckForNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: edu.umd.cs.findbugs.annotations.PossiblyNull
+      newFullyQualifiedTypeName: org.jspecify.annotations.Nullable
+      ignoreDefinition: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: edu.umd.cs.findbugs.annotations.NonNull
       newFullyQualifiedTypeName: org.jspecify.annotations.NonNull
       ignoreDefinition: true
   - org.openrewrite.staticanalysis.java.MoveFieldAnnotationToType:

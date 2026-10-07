@@ -20,14 +20,20 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.TypeValidation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 @SuppressWarnings("LanguageMismatch")
@@ -267,6 +273,224 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void migrateOneGfwJaxbApi() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
+          //language=java
+          java(
+            """
+              import javax.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """,
+            """
+              import jakarta.xml.bind.annotation.XmlElement;
+
+              public class Test {
+                  @XmlElement
+                  private String name;
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.example.jaxb</groupId>
+                  <artifactId>jaxb-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>one.gfw</groupId>
+                          <artifactId>jaxb-api</artifactId>
+                          <version>2.3.1.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom ->
+                assertThat(pom)
+                  .doesNotContain("one.gfw")
+                  .doesNotContain("<artifactId>jaxb-api</artifactId>")
+                  .containsPattern("<groupId>jakarta.xml.bind</groupId>\\s*<artifactId>jakarta.xml.bind-api</artifactId>\\s*<version>3\\.0\\.\\d+</version>")
+                  .actual())
+          )
+        );
+    }
+
+    @Test
+    void addApiForUnattributedJdkAnnotation() {
+        rewriteRun(
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          mavenProject("app",
+            srcMainJava(
+              java(
+                """
+                  import javax.xml.bind.annotation.XmlTransient;
+                  class A {
+                      @XmlTransient
+                      String value;
+                  }
+                  """,
+                """
+                  import jakarta.xml.bind.annotation.XmlTransient;
+                  class A {
+                      @XmlTransient
+                      String value;
+                  }
+                  """,
+                // Saved Java 8 models can have Unknown JAXB types instead of the parser's shallow types.
+                source -> source.mapBeforeRecipe(cu -> (J.CompilationUnit)
+                  new JavaIsoVisitor<Integer>() {
+                      @Override
+                      public J.Identifier visitIdentifier(J.Identifier id, Integer p) {
+                          return id.getType() != null && id.getType().toString().startsWith("javax.xml.bind") ?
+                            id.withType(JavaType.Unknown.getInstance()) : id;
+                      }
+
+                      @Override
+                      public J.FieldAccess visitFieldAccess(J.FieldAccess fa, Integer p) {
+                          J.FieldAccess f = super.visitFieldAccess(fa, p);
+                          return f.getType() != null && f.getType().toString().startsWith("javax.xml.bind") ?
+                            f.withType(JavaType.Unknown.getInstance()) : f;
+                      }
+                  }.visit(cu, 0))
+              )
+            ),
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1.0</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<artifactId>jakarta.xml.bind-api</artifactId>")
+                .doesNotContain("<scope>test</scope>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradeMoxyProvider() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.eclipse.persistence</groupId>
+                          <artifactId>org.eclipse.persistence.moxy</artifactId>
+                          <version>2.5.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("<version>3\\.0\\.\\d+</version>")
+              .doesNotContain("<version>2.5.1</version>")
+              .actual())
+          )
+        );
+    }
+
+    @Test
+    void retainsJavaxApiForUnmigratedArquillianRecorder() {
+        rewriteRun(
+          spec -> spec.cycles(3).expectedCyclesThatMakeChanges(1),
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>example</groupId>
+                  <artifactId>app</artifactId>
+                  <version>1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.arquillian.extension</groupId>
+                          <artifactId>arquillian-recorder-screenshooter-impl-base</artifactId>
+                          <version>1.1.6.Final</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>jakarta.xml.bind</groupId>
+                          <artifactId>jakarta.xml.bind-api</artifactId>
+                          <version>2.3.3</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            source -> source.after(pom -> assertThat(pom)
+              .contains("<groupId>javax.xml.bind</groupId>")
+              .contains("<artifactId>jaxb-api</artifactId>")
+              .contains("<scope>runtime</scope>")
+              .containsPattern("<version>3\\.0\\.\\d+</version>").actual())
+          )
+        );
+    }
+
+    @Test
+    void retainsApiInRecorderModule() {
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1</version>
+                    <packaging>pom</packaging>
+                    <modules><module>child</module></modules>
+                </project>
+                """
+            ),
+            mavenProject("child",
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                          <groupId>example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                      </parent>
+                      <artifactId>child</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.arquillian.extension</groupId>
+                              <artifactId>arquillian-recorder-screenshooter-impl-base</artifactId>
+                              <version>1.1.6.Final</version>
+                          </dependency>
+                          <dependency>
+                              <groupId>jakarta.xml.bind</groupId>
+                              <artifactId>jakarta.xml.bind-api</artifactId>
+                              <version>2.3.3</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                source -> source.after(pom -> assertThat(pom)
+                  .contains("<groupId>javax.xml.bind</groupId>")
+                  .contains("<artifactId>jaxb-api</artifactId>")
+                  .contains("<scope>runtime</scope>").actual())
+              )
+            )
           )
         );
     }

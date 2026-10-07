@@ -600,4 +600,33 @@ class LombokValToFinalVarTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void preserveSuppressWarningsAnnotation() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import lombok.val;
+                class GenericCastDemo<T> {
+                    void bar(Object o) {
+                        @SuppressWarnings("unchecked")
+                        val foo = (T) o;
+                    }
+                }
+                """,
+              """
+                class GenericCastDemo<T> {
+                    void bar(Object o) {
+                        @SuppressWarnings("unchecked")
+                        final var foo = (T) o;
+                    }
+                }
+                """
+            ),
+            17
+          )
+        );
+    }
 }

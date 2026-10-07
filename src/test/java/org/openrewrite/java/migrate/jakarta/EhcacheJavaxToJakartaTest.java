@@ -164,4 +164,40 @@ class EhcacheJavaxToJakartaTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void importedBomManagedDependencyGetsExplicitJakartaVersion() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.springframework.boot</groupId>
+                              <artifactId>spring-boot-dependencies</artifactId>
+                              <version>1.5.10.RELEASE</version>
+                              <type>pom</type>
+                              <scope>import</scope>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.ehcache</groupId>
+                          <artifactId>ehcache</artifactId>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(actual -> assertThat(actual)
+              .containsPattern("<artifactId>ehcache</artifactId>\\s*<version>3\\.10\\.\\d+</version>\\s*<classifier>jakarta</classifier>")
+              .actual())
+          )
+        );
+    }
+
 }

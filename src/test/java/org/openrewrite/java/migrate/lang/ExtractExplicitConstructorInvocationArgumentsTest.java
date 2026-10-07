@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.condition.JRE.JAVA_25;
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -685,6 +686,32 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
                   Child(String value) {
                       int value1 = Integer.parseInt(value);
                       this(value1);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotRunOnGroovySources() {
+        rewriteRun(
+          //language=groovy
+          groovy(
+            // `@CompileStatic` gives the `super(..)` call a method type; without one the recipe returns early
+            // and this source would not reach the guard under test
+            """
+              import groovy.transform.CompileStatic
+
+              class Parent {
+                  Parent(String name) {
+                  }
+              }
+
+              @CompileStatic
+              class Child extends Parent {
+                  Child(String name) {
+                      super(name.trim())
                   }
               }
               """

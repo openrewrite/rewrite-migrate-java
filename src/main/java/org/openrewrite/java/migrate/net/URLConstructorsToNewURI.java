@@ -33,6 +33,7 @@ public class URLConstructorsToNewURI extends Recipe {
     private static final String URL_FQN = "java.net.URL";
     private static final MethodMatcher methodMatcherThreeArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
     private static final MethodMatcher methodMatcherFourArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
+    private static final MethodMatcher methodMatcherFiveArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String, java.net.URLStreamHandler)");
 
     @Getter
     final String displayName = "Convert `new URL(String, ..)` to `new URI(String, ..).toURL()`";
@@ -72,6 +73,21 @@ public class URLConstructorsToNewURI extends Recipe {
                                     nc.getArguments().get(1),
                                     nc.getArguments().get(2),
                                     nc.getArguments().get(3));
+                        }
+                        if (methodMatcherFiveArg.matches(nc)) {
+                            JavaTemplate template = JavaTemplate.builder("URL.of(new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null), #{any(java.net.URLStreamHandler)})")
+                                    .imports(URI_FQN, URL_FQN)
+                                    .contextSensitive()
+                                    .javaParser(JavaParser.fromJavaVersion())
+                                    .build();
+
+                            maybeAddImport(URI_FQN);
+                            return template.apply(getCursor(), nc.getCoordinates().replace(),
+                                    nc.getArguments().get(0),
+                                    nc.getArguments().get(1),
+                                    nc.getArguments().get(2),
+                                    nc.getArguments().get(3),
+                                    nc.getArguments().get(4));
                         }
                         return super.visitNewClass(nc, ctx);
                     }

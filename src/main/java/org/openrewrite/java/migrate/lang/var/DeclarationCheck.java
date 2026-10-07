@@ -74,7 +74,9 @@ final class DeclarationCheck {
      * @return true if single variable definition with initialization and without var
      */
     private static boolean isSingleVariableDefinition(J.VariableDeclarations vd) {
-        TypeTree typeExpression = vd.getTypeExpression();
+        if (!replaceableTypeExpression(vd.getTypeExpression())) {
+            return false;
+        }
 
         boolean definesSingleVariable = vd.getVariables().size() == 1;
         boolean isPureAssigment = JavaType.Primitive.Null == vd.getType();
@@ -90,8 +92,22 @@ final class DeclarationCheck {
 
         initializer = initializer.unwrap();
         boolean isNullAssigment = J.Literal.isLiteralValue(initializer, null);
-        boolean alreadyUseVar = typeExpression instanceof J.Identifier && "var".equals(((J.Identifier) typeExpression).getSimpleName());
-        return !isNullAssigment && !alreadyUseVar;
+        return !isNullAssigment;
+    }
+
+    /**
+     * Groovy parses {@code def x = ...} into an empty {@link J.Identifier} and prints {@code def}
+     * from a marker, so writing {@code var} there splices it onto the name ({@code def varx = ...}).
+     */
+    private static boolean replaceableTypeExpression(@Nullable TypeTree typeExpression) {
+        if (typeExpression == null) {
+            return false;
+        }
+        if (typeExpression instanceof J.Identifier) {
+            String simpleName = ((J.Identifier) typeExpression).getSimpleName();
+            return !simpleName.isEmpty() && !"var".equals(simpleName);
+        }
+        return true;
     }
 
     /**

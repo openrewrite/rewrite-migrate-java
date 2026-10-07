@@ -26,6 +26,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.ResolvedDependency;
+import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
@@ -39,6 +40,7 @@ import java.util.Set;
 public class CommentJava24KotlinCap extends Recipe {
 
     private static final String KOTLIN_GROUP = "org.jetbrains.kotlin";
+    private static final String KOTLIN_STDLIB = "kotlin-stdlib";
 
     // Stable prefix shared by every emitted comment; used to recognise (and remove) a previously added comment even
     // after the named `kotlin-stdlib` version has changed.
@@ -54,7 +56,8 @@ public class CommentJava24KotlinCap extends Recipe {
 
     String description = "Adds an explanatory comment to Maven `pom.xml` files in modules that were held at Java 24 " +
             "because they compile Kotlin and depend on `kotlin-stdlib` older than 2.3, which cannot target Java 25 " +
-            "bytecode. The comment names the `kotlin-stdlib` version found and the next step needed to reach Java 25. " +
+            "bytecode. Only modules whose resolved `kotlin-stdlib` is older than 2.3 are commented; the comment names " +
+            "that `kotlin-stdlib` version and the next step needed to reach Java 25. " +
             "Self-healing: the comment is added while the module is at Java 24 and removed again once the module " +
             "reaches a higher Java version (for instance after its Kotlin was upgraded to 2.3), so it only ever remains " +
             "on modules that truly stay at Java 24 — whether a Kotlin 1.x cap or a 2.0-2.2 module whose Kotlin upgrade " +
@@ -63,16 +66,14 @@ public class CommentJava24KotlinCap extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new MavenIsoVisitor<ExecutionContext>() {
-            @Nullable
-            String commentText;
-
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
                 if ("properties".equals(t.getName())) {
-                    if (capsJavaAt24(t)) {
+                    String kotlinStdlibVersion = capsJavaAt24(t) ? findKotlinStdlibVersionBefore23() : null;
+                    if (kotlinStdlibVersion != null) {
                         if (!hasCapComment(t)) {
-                            return addCommentAsFirstChild(t, comment());
+                            return addCommentAsFirstChild(t, comment(kotlinStdlibVersion));
                         }
                     } else if (hasCapComment(t)) {
                         return removeCapComment(t);
@@ -98,25 +99,24 @@ public class CommentJava24KotlinCap extends Recipe {
                 return false;
             }
 
-            private String comment() {
-                if (commentText == null) {
-                    commentText = COMMENT_PREFIX + " this module compiles Kotlin and depends on " + kotlinStdlibCoordinate() +
-                            ", and Kotlin before 2.3 cannot target Java 25 bytecode. " +
-                            "Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, " +
-                            "then re-run \"Migrate to Java 25\" to move this module to Java 25. ";
-                }
-                return commentText;
+            private String comment(String kotlinStdlibVersion) {
+                return COMMENT_PREFIX + " this module compiles Kotlin and depends on " + KOTLIN_STDLIB + ' ' + kotlinStdlibVersion +
+                        ", and Kotlin before 2.3 cannot target Java 25 bytecode. " +
+                        "Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, " +
+                        "then re-run \"Migrate to Java 25\" to move this module to Java 25. ";
             }
 
-            private String kotlinStdlibCoordinate() {
+            // Only the exact `kotlin-stdlib` artifact reflects the module's Kotlin version: the legacy
+            // `kotlin-stdlib-jdk7`/`-jdk8` artifacts are often pulled in transitively at an older version.
+            private @Nullable String findKotlinStdlibVersionBefore23() {
                 for (List<ResolvedDependency> deps : getResolutionResult().getDependencies().values()) {
                     for (ResolvedDependency dep : deps) {
-                        if (KOTLIN_GROUP.equals(dep.getGroupId()) && dep.getArtifactId().startsWith("kotlin-stdlib")) {
-                            return dep.getArtifactId() + ' ' + dep.getVersion();
+                        if (KOTLIN_GROUP.equals(dep.getGroupId()) && KOTLIN_STDLIB.equals(dep.getArtifactId())) {
+                            return new LatestRelease(null).compare(null, dep.getVersion(), "2.3") < 0 ? dep.getVersion() : null;
                         }
                     }
                 }
-                return "kotlin-stdlib (older than 2.3)";
+                return null;
             }
 
             private boolean hasCapComment(Xml.Tag tag) {

@@ -77,8 +77,36 @@ class LombokBestPracticesTest implements RewriteTest {
     void addCheckReturnValueAnnotationToLombokConfig() {
         rewriteRun(
           text(
-            "config.stopBubbling = true\n",
-            "config.stopBubbling = true\nlombok.checkReturnValueAnnotation += lombok\n",
+            """
+              config.stopBubbling = true
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              """,
+            """
+              config.stopBubbling = true
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              lombok.checkReturnValueAnnotation += lombok
+              """,
+            spec -> spec.path("lombok.config").noTrim()
+          )
+        );
+    }
+
+    @Test
+    void addFlagUsageToLombokConfig() {
+        rewriteRun(
+          text(
+            """
+              config.stopBubbling = true
+              lombok.checkReturnValueAnnotation += lombok
+              """,
+            """
+              config.stopBubbling = true
+              lombok.checkReturnValueAnnotation += lombok
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              """,
             spec -> spec.path("lombok.config").noTrim()
           )
         );
@@ -88,7 +116,14 @@ class LombokBestPracticesTest implements RewriteTest {
     void retainExistingCheckReturnValueAnnotation() {
         rewriteRun(
           text(
-            "lombok.checkReturnValueAnnotation += lombok\n",
+            """
+              lombok.checkReturnValueAnnotation += lombok
+              """,
+            """
+              lombok.checkReturnValueAnnotation += lombok
+              lombok.val.flagUsage = error
+              lombok.var.flagUsage = error
+              """,
             spec -> spec.path("lombok.config").noTrim()
           )
         );

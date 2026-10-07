@@ -21,7 +21,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.MaybeUsesImport;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeTree;
@@ -89,7 +88,7 @@ public class LombokValToFinalVar extends Recipe {
                 J.Identifier varType = new J.Identifier(Tree.randomId(),
                         typeExpression.getPrefix(),
                         typeExpression.getMarkers(),
-                        service(AnnotationService.class).getAllAnnotations(getCursor()),
+                        typeExpression instanceof J.Identifier ? ((J.Identifier) typeExpression).getAnnotations() : emptyList(),
                         "var",
                         nv.getType(),
                         null);

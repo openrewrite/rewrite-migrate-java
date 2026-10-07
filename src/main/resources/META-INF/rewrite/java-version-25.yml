@@ -150,6 +150,7 @@ recipeList:
   - org.openrewrite.java.ReplaceMethodInvocationWithConstant:
       methodPattern: java.lang.System#getSecurityManager()
       replacement: "null"
+  - org.openrewrite.java.migrate.SimplifySecurityManagerThreadGroup
   - org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution
 
 ---
@@ -200,6 +201,12 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: biz.aQute.bnd
+      artifactId: bnd-maven-plugin
+      newVersion: 7.4.0
+  - org.openrewrite.github.SetupJavaAdoptOpenJDKToTemurin
+  - org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
   - org.openrewrite.gradle.UpdateGradleWrapper:
@@ -299,7 +306,7 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[2.0,2.3)"
 recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
@@ -332,7 +339,7 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[0,2.0)"
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
@@ -379,9 +386,29 @@ preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.jetbrains.kotlin
-      artifactIdPattern: kotlin-stdlib*
+      artifactIdPattern: kotlin-stdlib
       version: "[0,2.3)"
       invertMarking: true
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25
+displayName: Upgrade Spring Boot 3 Maven parents for Java 25
+description: >-
+  Upgrade Spring Boot 3 Maven parents to the latest 3.5 release so that Spring's bundled ASM can read
+  Java 25 class files. Stay within Boot 3: crossing from Boot 2 requires a separate Jakarta migration,
+  and newer Boot major versions must not be downgraded.
+preconditions:
+  - org.openrewrite.maven.search.ParentPomInsight:
+      groupIdPattern: org.springframework.boot
+      artifactIdPattern: spring-boot-starter-parent
+      version: 3.x
+      recursive: false
+recipeList:
+  - org.openrewrite.maven.UpgradeParentVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-parent
+      newVersion: 3.5.x

@@ -102,6 +102,7 @@ dependencies {
     testRuntimeOnly("org.springframework:spring-core:6.1.13")
     testRuntimeOnly("io.micronaut:micronaut-core:4.10.8")
     testRuntimeOnly("com.google.code.findbugs:jsr305:3.0.2")
+    testRuntimeOnly("com.github.spotbugs:spotbugs-annotations:4.9.3")
     testRuntimeOnly("javax.mail:mail:1.4.7")
     testRuntimeOnly("javax.mail:javax.mail-api:1.6.2")
     testRuntimeOnly("javax.ws.rs:javax.ws.rs-api:2.1.1")

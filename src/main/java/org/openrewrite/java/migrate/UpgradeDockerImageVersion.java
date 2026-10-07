@@ -119,7 +119,7 @@ public class UpgradeDockerImageVersion extends Recipe {
                 }
 
                 DockerFrom image = new DockerFrom(getCursor());
-                String newTag = upgradedTag(image.getTag().orElse(""));
+                String newTag = upgradedTag(image.getImageName().orElse(""), image.getTag().orElse(""));
                 if (newTag == null) {
                     return from;
                 }
@@ -164,7 +164,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         }
 
         String newImageName = upgradedImageName(imageName);
-        String newTag = upgradedTag(tag);
+        String newTag = upgradedTag(imageName, tag);
         if (newImageName == null || newTag == null) {
             return from;
         }
@@ -194,7 +194,19 @@ public class UpgradeDockerImageVersion extends Recipe {
         if (DEPRECATED_IMAGES.contains(path)) {
             return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(path) ? imageName : null;
+        return CURRENT_IMAGES.contains(path) || "maven".equals(path) ? imageName : null;
+    }
+
+    private @Nullable String upgradedTag(String imageName, String tag) {
+        if ("maven".equals(path(imageName))) {
+            Matcher mavenTag = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)").matcher(tag);
+            if (!mavenTag.matches() || Integer.parseInt(mavenTag.group(2)) >= version) {
+                return null;
+            }
+            // Old Maven patch releases are not rebuilt with newer JDKs. Use the maintained 3.9 tag.
+            return mavenTag.group(1) + "-eclipse-temurin-" + version + mavenTag.group(3);
+        }
+        return upgradedTag(tag);
     }
 
     private @Nullable String upgradedTag(String tag) {

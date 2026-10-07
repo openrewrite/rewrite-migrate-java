@@ -21,6 +21,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -32,6 +33,55 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs");
+    }
+
+    @Test
+    void upgradesJerseyMultipartAlongsideJakartaApis() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.glassfish.jersey.media</groupId>
+                          <artifactId>jersey-media-multipart</artifactId>
+                          <version>2.18</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("<version>3\\.0\\.\\d+</version>")
+              .actual())
+          )
+        );
+    }
+
+    @Test
+    void doesNotDowngradeJerseyThreeOne() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.glassfish.jersey.media</groupId>
+                          <artifactId>jersey-media-multipart</artifactId>
+                          <version>3.1.10</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
     }
 
     @DocumentExample
