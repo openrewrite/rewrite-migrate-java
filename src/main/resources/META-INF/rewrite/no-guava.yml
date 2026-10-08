@@ -30,6 +30,11 @@ recipeList:
   - com.google.guava.InlineGuavaMethods
   - org.openrewrite.java.migrate.guava.NoGuavaJava11
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.springfox
+      artifactId: springfox-swagger2
+      newVersion: 2.10.x
+      overrideManagedVersion: true
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
@@ -103,11 +108,6 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapCopyOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableSetCopyOf
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: io.springfox
-      artifactId: springfox-swagger2
-      newVersion: 2.10.x
-      overrideManagedVersion: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21

@@ -25,6 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class NoGuavaTest implements RewriteTest {
     @Override
@@ -59,6 +60,43 @@ class NoGuavaTest implements RewriteTest {
               }
               """,
             spec -> spec.markers(javaVersion(11))
+          )
+        );
+    }
+
+    @Test
+    void upgradeSpringfoxThatStillUsesGuavaOptional() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>io.springfox</groupId>
+                          <artifactId>springfox-swagger2</artifactId>
+                          <version>2.9.2</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>io.springfox</groupId>
+                          <artifactId>springfox-swagger2</artifactId>
+                          <version>2.10.5</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
           )
         );
     }
