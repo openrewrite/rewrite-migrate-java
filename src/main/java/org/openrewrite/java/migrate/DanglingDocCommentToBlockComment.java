@@ -18,10 +18,12 @@ package org.openrewrite.java.migrate;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Comment;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 
@@ -39,6 +41,13 @@ public class DanglingDocCommentToBlockComment extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public boolean isAcceptable(SourceFile sourceFile, ExecutionContext ctx) {
+                // Kotlin, Groovy and JavaScript parse every comment, KDoc and JSDoc included, to a TextComment,
+                // so they would all look dangling. The javac lint only concerns Java sources anyway.
+                return sourceFile instanceof J.CompilationUnit;
+            }
+
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 // A leading comment is conventionally the license header, and javac does not flag it.
