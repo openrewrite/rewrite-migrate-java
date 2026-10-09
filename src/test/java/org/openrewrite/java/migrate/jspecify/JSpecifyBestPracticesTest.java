@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -254,6 +254,108 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                   private String field;
 
                   public void bar(@Nullable String baz) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void jetbrainsAnnotationMethodWithVoidReturnType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  @org.jetbrains.annotations.Nullable
+                  public void bar(int i) {
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  public void bar(int i) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void jakartaAnnotationMethodWithVoidReturnType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  @jakarta.annotation.Nullable
+                  public void bar(int i) {
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  public void bar(int i) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javaxParametersAreNonnullByDefaultOnVoidMethodMigratedToNullMarked() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.Nullable;
+              import javax.annotation.ParametersAreNonnullByDefault;
+
+              class Foo {
+                  @Nullable
+                  @ParametersAreNonnullByDefault
+                  public void bar(String s) {
+                  }
+              }
+              """,
+            """
+              import org.jspecify.annotations.NullMarked;
+
+              class Foo {
+                  @NullMarked
+                  public void bar(String s) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void spotBugsReturnValuesAreNonnullByDefaultOnVoidMethodRetained() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import edu.umd.cs.findbugs.annotations.Nullable;
+              import edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault;
+
+              class Foo {
+                  @Nullable
+                  @ReturnValuesAreNonnullByDefault
+                  public void bar(String s) {
+                  }
+              }
+              """,
+            """
+              import edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault;
+
+              class Foo {
+                  @ReturnValuesAreNonnullByDefault
+                  public void bar(String s) {
                   }
               }
               """

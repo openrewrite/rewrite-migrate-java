@@ -66,6 +66,13 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: javax.annotation.*ull*
       acceptTransitive: true
+  # Not `*ull*`, which would also remove the `*ByDefault` annotations; those are meaningful on methods
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: javax.annotation.Nullable
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: javax.annotation.CheckForNull
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: javax.annotation.Nonnull
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: javax.annotation.*ull*
   - org.openrewrite.java.ChangeType:
@@ -102,6 +109,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: jakarta.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: jakarta.annotation.*ull*
   # Not moving jakarta annotations to array brackets; they target TYPE_USE,
   # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
@@ -130,6 +139,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.jetbrains.annotations.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: org.jetbrains.annotations.*ull*
   # Not moving JetBrains annotations to array brackets; they target TYPE_USE,
   # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
@@ -158,6 +169,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: io.micrometer.core.lang.*ull*
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: io.micrometer.core.lang.*ull*
   - org.openrewrite.java.ChangeType:
@@ -186,6 +199,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: org.springframework.lang.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: org.springframework.lang.*ull*
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: org.springframework.lang.*ull*
   - org.openrewrite.java.ChangeType:
@@ -214,6 +229,8 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: io.micronaut.core.annotation.*ull*
       acceptTransitive: true
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: io.micronaut.core.annotation.*ull*
   # Not moving Micronaut annotations to array brackets; they target TYPE_USE,
   # so `@Nullable X[]` (element nullable) already differs from `X @Nullable[]` (array nullable).
   - org.openrewrite.java.ChangeType:
@@ -242,6 +259,15 @@ recipeList:
       version: 1.0.0
       onlyIfUsing: edu.umd.cs.findbugs.annotations.*ull*
       acceptTransitive: true
+  # Not `*ull*`, which would also remove the `*ByDefault` annotations; those are meaningful on methods
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: edu.umd.cs.findbugs.annotations.Nullable
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: edu.umd.cs.findbugs.annotations.CheckForNull
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: edu.umd.cs.findbugs.annotations.PossiblyNull
+  - org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod:
+      annotationType: edu.umd.cs.findbugs.annotations.NonNull
   - org.openrewrite.java.migrate.jspecify.MoveAnnotationToArrayType:
       annotationType: edu.umd.cs.findbugs.annotations.*ull*
   - org.openrewrite.java.ChangeType:
