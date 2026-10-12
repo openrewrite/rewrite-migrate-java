@@ -49,7 +49,7 @@ final class DeclarationCheck {
      */
     public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
         if (isField(vd, cursor) || isMethodParameter(vd, cursor) || !isSingleVariableDefinition(vd) ||
-                initializedByTernary(vd) || hasDimensionsAfterName(vd)) {
+                initializedByTernary(vd) || initializedByFunctionalExpression(vd) || hasDimensionsAfterName(vd)) {
             return false;
         }
 
@@ -165,6 +165,18 @@ final class DeclarationCheck {
     public static boolean initializedByTernary(J.VariableDeclarations vd) {
         Expression initializer = vd.getVariables().get(0).getInitializer();
         return initializer != null && initializer.unwrap() instanceof J.Ternary;
+    }
+
+    /**
+     * Lambdas and method references have no standalone type, so JLS 14.4.1 rejects them as {@code var} initializers.
+     */
+    private static boolean initializedByFunctionalExpression(J.VariableDeclarations vd) {
+        Expression initializer = vd.getVariables().get(0).getInitializer();
+        if (initializer == null) {
+            return false;
+        }
+        initializer = initializer.unwrap();
+        return initializer instanceof J.Lambda || initializer instanceof J.MemberReference;
     }
 
     /**
