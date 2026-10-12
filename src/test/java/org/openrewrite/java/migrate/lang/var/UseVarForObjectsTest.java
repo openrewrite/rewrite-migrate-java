@@ -491,6 +491,30 @@ class UseVarForObjectsTest extends VarBaseTest {
     @Nested
     class NotApplicable {
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1288")
+        @Test
+        void lambdaAndMethodReference() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class Demo {
+                      @FunctionalInterface
+                      interface Shouter {
+                          String shout(String s);
+                      }
+
+                      void run() {
+                          Shouter shouter = s -> s.toUpperCase() + "!";
+                          Shouter viaRef = String::trim;
+                          Shouter parenthesized = (s -> s);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
         @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
         @Test
         void genericMethod() {
