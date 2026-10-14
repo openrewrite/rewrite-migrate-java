@@ -25,7 +25,6 @@ import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class ProvidedJakartaApiScopeTest implements RewriteTest {
-    @ParameterizedTest
     @CsvSource({
       "JavaxAnnotationMigrationToJakartaAnnotation,javax.annotation,jsr250-api,1.0,annotation,Resource",
       "JavaxElToJakartaEl,javax.el,el-api,2.2,el,ExpressionFactory",
@@ -33,6 +32,7 @@ class ProvidedJakartaApiScopeTest implements RewriteTest {
       "JavaxEjbToJakartaEjb,org.jboss.spec.javax.ejb,jboss-ejb-api_3.1_spec,1.0.2.Final,ejb,EJB",
       "JavaxMailToJakartaMail,javax.mail,mail,1.4.7,mail,Session"
     })
+    @ParameterizedTest
     void migratesLegacyApiAndPreservesProvidedScope(String recipe, String group, String artifact,
                                                    String version, String namespace, String type) {
         rewriteRun(

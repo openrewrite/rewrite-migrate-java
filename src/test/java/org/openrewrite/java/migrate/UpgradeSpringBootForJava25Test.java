@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -28,6 +29,20 @@ class UpgradeSpringBootForJava25Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
+    }
+
+    @DocumentExample
+    @Test
+    void includedInJava25Migration() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25"),
+          pomXml(
+            pom("3.2.1").replace("<java.version>25", "<java.version>17"),
+            spec -> spec.after(actual -> assertThat(actual)
+              .contains("<java.version>25</java.version>")
+              .containsPattern("<version>3\\.5\\.\\d+</version>").actual())
+          )
+        );
     }
 
     @ParameterizedTest
@@ -56,19 +71,6 @@ class UpgradeSpringBootForJava25Test implements RewriteTest {
           pomXml(pom("3.2.1"), spec -> spec.path("boot3/pom.xml")
             .after(actual -> assertThat(actual).containsPattern("<version>3\\.5\\.\\d+</version>").actual())),
           pomXml(pom("4.0.0"), spec -> spec.path("boot4/pom.xml"))
-        );
-    }
-
-    @Test
-    void includedInJava25Migration() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25"),
-          pomXml(
-            pom("3.2.1").replace("<java.version>25", "<java.version>17"),
-            spec -> spec.after(actual -> assertThat(actual)
-              .contains("<java.version>25</java.version>")
-              .containsPattern("<version>3\\.5\\.\\d+</version>").actual())
-          )
         );
     }
 

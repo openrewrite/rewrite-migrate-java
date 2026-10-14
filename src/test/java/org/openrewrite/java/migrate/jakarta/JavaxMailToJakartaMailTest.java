@@ -35,6 +35,56 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
     }
 
+    @DocumentExample
+    @Test
+    void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.mail</groupId>
+                            <artifactId>javax.mail-api</artifactId>
+                            <version>1.4.7</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<groupId>javax.mail</groupId>")
+                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
+                .actual())
+            )
+          ),
+          srcMainJava(
+            //language=java
+            java(
+              """
+                import javax.mail.Session;
+                public class TestApplication {
+                }
+                """,
+              """
+                import jakarta.mail.Session;
+                public class TestApplication {
+                }
+                """
+            )
+          )
+        );
+    }
+
     @Test
     void preserveProvidedMailApiForMainSource() {
         rewriteRun(
@@ -125,56 +175,6 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                         </dependency>
                     </dependencies>
                 </project>
-                """
-            )
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
-        rewriteRun(
-          mavenProject(
-            "Sample",
-            //language=xml
-            pomXml(
-              """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.mail</groupId>
-                            <artifactId>javax.mail-api</artifactId>
-                            <version>1.4.7</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """,
-              spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
-                .containsPattern("<version>2.0.\\d+</version>")
-                .doesNotContain("<groupId>javax.mail</groupId>")
-                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
-                .actual())
-            )
-          ),
-          srcMainJava(
-            //language=java
-            java(
-              """
-                import javax.mail.Session;
-                public class TestApplication {
-                }
-                """,
-              """
-                import jakarta.mail.Session;
-                public class TestApplication {
-                }
                 """
             )
           )

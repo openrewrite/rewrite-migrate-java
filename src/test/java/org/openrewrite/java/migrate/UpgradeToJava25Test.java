@@ -29,6 +29,7 @@ import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.properties.Assertions.properties;
 import static org.openrewrite.test.SourceSpecs.other;
 import static org.openrewrite.test.SourceSpecs.text;
+import static org.openrewrite.yaml.Assertions.yaml;
 
 class UpgradeToJava25Test implements RewriteTest {
 
@@ -37,11 +38,43 @@ class UpgradeToJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25");
     }
 
+    @DocumentExample
+    @Test
+    void updateCompilerVersion() {
+        rewriteRun(
+          mavenProject("project",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
     @Test
     void replacesRetiredAdoptDistributionForJava25() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
-          org.openrewrite.yaml.Assertions.yaml(
+          yaml(
             """
               jobs:
                 build:
@@ -108,38 +141,6 @@ class UpgradeToJava25Test implements RewriteTest {
                   </build>
               </project>
               """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void updateCompilerVersion() {
-        rewriteRun(
-          mavenProject("project",
-            //language=xml
-            pomXml(
-              """
-                <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                        <maven.compiler.release>17</maven.compiler.release>
-                    </properties>
-                </project>
-                """,
-              """
-                <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                        <maven.compiler.release>25</maven.compiler.release>
-                    </properties>
-                </project>
-                """
-            )
           )
         );
     }

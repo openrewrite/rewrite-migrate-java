@@ -73,6 +73,37 @@ class JavaxToJakartaTest implements RewriteTest {
         }
         """;
 
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(
+          Environment.builder()
+            .scanRuntimeClasspath("org.openrewrite.java.migrate")
+            .build()
+            .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+        );
+    }
+
+    @DocumentExample
+    @Test
+    void changeImport() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
+          //language=java
+          java(
+            """
+              import javax.xml.bind.annotation.A;
+              public class B {
+              }
+              """,
+            """
+              import jakarta.xml.bind.annotation.A;
+              public class B {
+              }
+              """
+          )
+        );
+    }
+
     @Test
     void migrateRuntimeTypeNamesWithoutChangingJavaSeNames() {
         rewriteRun(
@@ -123,37 +154,6 @@ class JavaxToJakartaTest implements RewriteTest {
               class A {
                   String service = "services/jakarta.enterprise.inject.spi.Extension";
                   String resource = "META-INF/services/jakarta.enterprise.inject.spi.Extension";
-              }
-              """
-          )
-        );
-    }
-
-    @Override
-    public void defaults(RecipeSpec spec) {
-        spec.recipe(
-          Environment.builder()
-            .scanRuntimeClasspath("org.openrewrite.java.migrate")
-            .build()
-            .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void changeImport() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(javax, jakarta)),
-          //language=java
-          java(
-            """
-              import javax.xml.bind.annotation.A;
-              public class B {
-              }
-              """,
-            """
-              import jakarta.xml.bind.annotation.A;
-              public class B {
               }
               """
           )

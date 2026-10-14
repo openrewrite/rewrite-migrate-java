@@ -35,6 +35,7 @@ import org.openrewrite.marker.Markers;
 public class JacksonProviderOverrides extends Recipe {
     @Getter
     final String displayName = "Migrate Jackson provider configuration overrides";
+
     @Getter
     final String description = "Add and forward the default view parameter required by Jakarta Jackson providers.";
 
