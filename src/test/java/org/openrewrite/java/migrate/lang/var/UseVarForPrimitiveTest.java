@@ -141,6 +141,67 @@ class UseVarForPrimitiveTest extends VarBaseTest {
               )
             );
         }
+
+        @Test
+        void initializerOfDifferentPrimitiveType() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m(int i) {
+                        char c = 0;
+                        int fromChar = 'a';
+                        long widened = i;
+                        double fromFloat = 1.1f;
+                        float hex = 0x10;
+                        double octal = 010;
+                        float negativeOctal = -010;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void charLoopCounterInitializedWithIntLiteral() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        for (char c = 0; c < Character.MAX_VALUE; c++) {
+                        }
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void boxedInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        int i = Integer.valueOf(1);
+                    }
+                  }
+                  """
+              )
+            );
+        }
     }
 
     @Nested
@@ -433,6 +494,35 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                   class A {
                     void m() {
                         final var s = "hello";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void longFromHexOrNegativeIntLiteral() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        long l = 0x1F;
+                        long negative = -1;
+                    }
+                  }
+                  """,
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var l = 0x1FL;
+                        var negative = -1L;
                     }
                   }
                   """
