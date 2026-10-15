@@ -129,20 +129,14 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     }
                 }
 
-                // 1. Declare the extracted arguments right before the constructor invocation, preserving their order.
-                // A constructor invocation is typed as returning the constructed class, which makes a context-free
-                // template treat it as an expression and silently drop the declarations; anchoring on a `void`
-                // typed copy makes it generate statements instead.
+                // 1. Declare the extracted arguments right before the constructor invocation, preserving their order
                 JavaTemplate.Builder declarationTemplate = JavaTemplate.builder(declarations.toString());
                 for (String fqn : imports) {
                     declarationTemplate.imports(fqn);
                     maybeAddImport(fqn);
                 }
-                J.MethodInvocation anchor = superCall.withMethodType(ctorType.withReturnType(JavaType.Primitive.Void));
-                J.MethodDeclaration anchored = md.withBody(md.getBody().withStatements(ListUtils.map(md.getBody().getStatements(),
-                        statement -> statement == superCall ? anchor : statement)));
                 J.MethodDeclaration withDeclarations = declarationTemplate.build()
-                        .apply(updateCursor(anchored), anchor.getCoordinates().before(), declarationArgs.toArray());
+                        .apply(updateCursor(md), superCall.getCoordinates().before(), declarationArgs.toArray());
 
                 // 2. Attribute the declarations with the parameter types, which a context-free template cannot resolve
                 // when they are declared in other sources of the project, and point the arguments at them
@@ -160,16 +154,12 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                         return declaration;
                     }
                     if (statement.getId().equals(superCall.getId())) {
-                        J.MethodInvocation invocation = ((J.MethodInvocation) statement).withMethodType(ctorType);
+                        J.MethodInvocation invocation = (J.MethodInvocation) statement;
                         return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> names[i] == null ? arg :
                                 declared.get(names[i]).withId(Tree.randomId()).withPrefix(arg.getPrefix())));
                     }
                     return statement;
                 });
-                if (declared.size() != extractedTypes.size()) {
-                    // The declarations were not inserted, so references to them would not compile
-                    return md;
-                }
                 return withDeclarations.withBody(body.withStatements(statements));
             }
 
