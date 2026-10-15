@@ -641,14 +641,14 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
               }
               """,
             // The extracted variable is declared with a widening supertype ('Base') that lives in a sibling
-            // source and is referenced nowhere else in this unit. A context-free template still resolves it
-            // via the shared type cache, so the declared type must be a real FQ type, not Unknown.
+            // source and is referenced nowhere else in this unit, so the declared type must be a real FQ type,
+            // not Unknown.
             spec -> spec.afterRecipe(cu -> {
                 var decls = new ArrayList<J.VariableDeclarations>();
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, Integer p) {
-                        if ("b".equals(vd.getVariables().getFirst().getSimpleName())) {
+                        if ("b".equals(vd.getVariables().getFirst().getSimpleName()) && vd.getVariables().getFirst().getInitializer() != null) {
                             decls.add(vd);
                         }
                         return super.visitVariableDeclarations(vd, p);
