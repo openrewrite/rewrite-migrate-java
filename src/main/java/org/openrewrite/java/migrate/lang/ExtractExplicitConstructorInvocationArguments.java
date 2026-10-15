@@ -21,7 +21,9 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -31,13 +33,18 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.java.VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER;
 
 public class ExtractExplicitConstructorInvocationArguments extends Recipe {
@@ -97,6 +104,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                 // Plan the extraction: hoist everything but trivial, side-effect-free arguments, in order.
                 Set<String> usedNames = new LinkedHashSet<>();
                 String[] names = new String[args.size()];
+                Map<String, JavaType> extractedTypes = new HashMap<>();
                 Set<String> imports = new LinkedHashSet<>();
                 StringBuilder declarations = new StringBuilder();
                 List<Expression> declarationArgs = new ArrayList<>();
@@ -113,6 +121,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     }
                     String name = uniqueName(baseName(arg, paramNames.get(i)), usedNames);
                     names[i] = name;
+                    extractedTypes.put(name, paramType);
                     declarations.append(typeName).append(' ').append(name).append(" = #{any()};\n");
                     declarationArgs.add(arg);
                     if (paramType instanceof JavaType.FullyQualified) {
@@ -126,40 +135,47 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     declarationTemplate.imports(fqn);
                     maybeAddImport(fqn);
                 }
-                md = declarationTemplate.build()
-                        .apply(getCursor(), superCall.getCoordinates().before(), declarationArgs.toArray());
+                J.MethodDeclaration withDeclarations = declarationTemplate.build()
+                        .apply(updateCursor(md), superCall.getCoordinates().before(), declarationArgs.toArray());
 
-                // 2. Replace the now-redundant arguments with references to the new local variables
-                StringBuilder argumentList = new StringBuilder();
-                List<Expression> inlineArgs = new ArrayList<>();
-                for (int i = 0; i < args.size(); i++) {
-                    if (i > 0) {
-                        argumentList.append(", ");
-                    }
-                    if (names[i] != null) {
-                        argumentList.append(names[i]);
-                    } else {
-                        argumentList.append("#{any()}");
-                        inlineArgs.add(args.get(i));
-                    }
-                }
-                return (J.MethodDeclaration) new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx2) {
-                        // Do not descend into nested/local classes; their own `super(..)`/`this(..)` calls
-                        // are handled by their own constructor visits, not this one's argument list.
-                        return classDecl;
-                    }
-
-                    @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx2) {
-                        mi = super.visitMethodInvocation(mi, ctx2);
-                        if (isExplicitConstructorInvocation(mi)) {
-                            return JavaTemplate.apply(argumentList.toString(), getCursor(), mi.getCoordinates().replaceArguments(), inlineArgs.toArray());
+                // 2. Attribute the declarations with the parameter types, which a context-free template cannot resolve
+                // when they are declared in other sources of the project, and point the arguments at them
+                J.Block body = requireNonNull(withDeclarations.getBody());
+                Map<String, J.Identifier> declared = new HashMap<>();
+                List<Statement> statements = ListUtils.map(body.getStatements(), statement -> {
+                    if (statement instanceof J.VariableDeclarations) {
+                        J.VariableDeclarations declaration = (J.VariableDeclarations) statement;
+                        String name = declaration.getVariables().get(0).getSimpleName();
+                        JavaType type = extractedTypes.get(name);
+                        if (type != null && !declared.containsKey(name)) {
+                            declaration = withDeclaredType(declaration, type, md.getMethodType());
+                            declared.put(name, declaration.getVariables().get(0).getName());
                         }
-                        return mi;
+                        return declaration;
                     }
-                }.visitNonNull(md, ctx, getCursor().getParentOrThrow());
+                    if (statement.getId().equals(superCall.getId())) {
+                        J.MethodInvocation invocation = (J.MethodInvocation) statement;
+                        return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> names[i] == null ? arg :
+                                declared.get(names[i]).withId(Tree.randomId()).withPrefix(arg.getPrefix())));
+                    }
+                    return statement;
+                });
+                return withDeclarations.withBody(body.withStatements(statements));
+            }
+
+            private J.VariableDeclarations withDeclaredType(J.VariableDeclarations declaration, JavaType type, JavaType.@Nullable Method owner) {
+                TypeTree typeExpression = declaration.getTypeExpression();
+                if (typeExpression instanceof J.Identifier) {
+                    declaration = declaration.withTypeExpression(((J.Identifier) typeExpression).withType(type));
+                } else if (typeExpression instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) typeExpression;
+                    declaration = declaration.withTypeExpression(fieldAccess.withName(fieldAccess.getName().withType(type)).withType(type));
+                }
+                return declaration.withVariables(ListUtils.map(declaration.getVariables(), variable -> {
+                    JavaType.Variable variableType = new JavaType.Variable(null, 0, variable.getSimpleName(), owner, type, emptyList());
+                    return variable.withVariableType(variableType)
+                            .withName(variable.getName().withType(type).withFieldType(variableType));
+                }));
             }
 
             private J.@Nullable MethodInvocation findExplicitConstructorInvocation(List<Statement> statements) {

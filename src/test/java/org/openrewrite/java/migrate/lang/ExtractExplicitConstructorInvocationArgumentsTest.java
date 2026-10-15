@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -641,14 +642,14 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
               }
               """,
             // The extracted variable is declared with a widening supertype ('Base') that lives in a sibling
-            // source and is referenced nowhere else in this unit. A context-free template still resolves it
-            // via the shared type cache, so the declared type must be a real FQ type, not Unknown.
+            // source and is referenced nowhere else in this unit, so the declared type must be a real FQ type,
+            // not Unknown.
             spec -> spec.afterRecipe(cu -> {
                 var decls = new ArrayList<J.VariableDeclarations>();
                 new JavaIsoVisitor<Integer>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations vd, Integer p) {
-                        if ("b".equals(vd.getVariables().getFirst().getSimpleName())) {
+                        if ("b".equals(vd.getVariables().getFirst().getSimpleName()) && vd.getVariables().getFirst().getInitializer() != null) {
                             decls.add(vd);
                         }
                         return super.visitVariableDeclarations(vd, p);
@@ -686,6 +687,57 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
                   Child(String value) {
                       int value1 = Integer.parseInt(value);
                       this(value1);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1289")
+    @Test
+    void addImportForExtractedParameterType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package foo;
+
+              import java.util.concurrent.ScheduledExecutorService;
+
+              public class Scheduler {
+                  public Scheduler(ScheduledExecutorService executor) {
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package bar;
+
+              import foo.Scheduler;
+
+              import java.util.concurrent.Executors;
+
+              class Child extends Scheduler {
+                  Child() {
+                      super(Executors.newSingleThreadScheduledExecutor());
+                  }
+              }
+              """,
+            """
+              package bar;
+
+              import foo.Scheduler;
+
+              import java.util.concurrent.Executors;
+              import java.util.concurrent.ScheduledExecutorService;
+
+              class Child extends Scheduler {
+                  Child() {
+                      ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                      super(executor);
                   }
               }
               """
