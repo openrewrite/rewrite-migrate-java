@@ -68,7 +68,7 @@ public class OptionalStreamRecipe extends Recipe {
 
             JRightPadded<Expression> filterSelect = requireNonNull(filterInvocation.getPadding().getSelect());
             JRightPadded<Expression> mapSelect = requireNonNull(mapInvocation.getPadding().getSelect());
-            JavaType.Method mapInvocationType = requireNonNull(mapInvocation.getMethodType());
+            JavaType.Method flatMapType = requireNonNull(mapInvocation.getMethodType()).withName("flatMap");
             J.MethodInvocation flatMapInvocation = JavaTemplate.builder("#{any(java.util.stream.Stream)}.flatMap(Optional::stream)")
                     .imports("java.util.Optional")
                     .build()
@@ -79,7 +79,8 @@ public class OptionalStreamRecipe extends Recipe {
             ));
             return flatMapInvocation.getPadding()
                     .withSelect(filterSelect.withAfter(flatMapComments))
-                    .withMethodType(mapInvocationType.withName("flatMap"))
+                    .withName(flatMapInvocation.getName().withType(flatMapType))
+                    .withMethodType(flatMapType)
                     .withPrefix(mapInvocation.getPrefix());
         }
 
