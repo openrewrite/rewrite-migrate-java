@@ -86,8 +86,8 @@ public class AddJaxwsRuntime extends Recipe {
                             .orElseThrow(() -> new RuntimeException("Gradle build scripts must have a GradleProject marker"));
 
                     Set<GradleDependencyConfiguration> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-
-                    if (!apiConfigurations.isEmpty()) {
+                    // The 2.3.x runtime implements the `javax` namespace and would pull in API jars that shadow a 3.0+ `jakarta` API
+                    if (!apiConfigurations.isEmpty() && !usesJakartaNamespaceApi(gp)) {
                         Set<GradleDependencyConfiguration> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
                         if (runtimeConfigurations.isEmpty()) {
                             if (gp.getConfiguration("compileOnly") != null) {
@@ -170,7 +170,8 @@ public class AddJaxwsRuntime extends Recipe {
 
                     //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
                     Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-                    if (apiScope != null) {
+                    // The 2.3.x runtime implements the `javax` namespace and would pull in API jars that shadow a 3.0+ `jakarta` API
+                    if (apiScope != null && !usesJakartaNamespaceApi(mavenModel)) {
                         //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
                         Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
 
@@ -184,6 +185,17 @@ public class AddJaxwsRuntime extends Recipe {
                     return d;
                 }
             };
+        }
+
+        private boolean usesJakartaNamespaceApi(MavenResolutionResult mavenModel) {
+            for (List<ResolvedDependency> dependencies : mavenModel.getDependencies().values()) {
+                for (ResolvedDependency dependency : dependencies) {
+                    if (isJakartaNamespaceApi(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -208,6 +220,32 @@ public class AddJaxwsRuntime extends Recipe {
                 }
             }
             return maxScope;
+        }
+    }
+
+    private static boolean usesJakartaNamespaceApi(GradleProject gp) {
+        for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
+            ResolvedDependency resolved = gdc.findResolvedDependency(JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
+            if (resolved != null && isJakartaNamespaceApi(resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Version 3.0 of the JAX-WS API moved from the `javax.xml.ws` to the `jakarta.xml.ws` package,
+     * which the 2.3.x runtime added by this recipe does not implement.
+     */
+    private static boolean isJakartaNamespaceApi(String groupId, String artifactId, @Nullable String version) {
+        if (!JAKARTA_JAXWS_API_GROUP.equals(groupId) || !JAKARTA_JAXWS_API_ARTIFACT.equals(artifactId) || version == null) {
+            return false;
+        }
+        int dot = version.indexOf('.');
+        try {
+            return Integer.parseInt(dot < 0 ? version : version.substring(0, dot)) >= 3;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }
