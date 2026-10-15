@@ -18,24 +18,27 @@ package org.openrewrite.java.migrate.javax;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
+import org.openrewrite.marker.Markers;
+import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
+import org.openrewrite.semver.Semver;
+import org.openrewrite.semver.VersionComparator;
 import org.openrewrite.xml.tree.Xml;
 
 import java.time.Duration;
 import java.util.*;
+
+import static java.util.Objects.requireNonNull;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -43,6 +46,7 @@ public class AddJaxwsRuntime extends Recipe {
 
     private static final String JAKARTA_JAXWS_API_GROUP = "jakarta.xml.ws";
     private static final String JAKARTA_JAXWS_API_ARTIFACT = "jakarta.xml.ws-api";
+    private static final VersionComparator JAKARTA_NAMESPACE_API = requireNonNull(Semver.validate("[3,)", null).getValue());
 
     private static final String SUN_JAXWS_RUNTIME_GROUP = "com.sun.xml.ws";
     private static final String SUN_JAXWS_RUNTIME_ARTIFACT = "jaxws-rt";
@@ -77,7 +81,9 @@ public class AddJaxwsRuntime extends Recipe {
 
         @Override
         public TreeVisitor<?, ExecutionContext> getVisitor() {
-            return Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
+            return Preconditions.check(Preconditions.and(
+                    new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(),
+                    Preconditions.not(new FindJakartaNamespaceApi())), new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
                     G.CompilationUnit g = cu;
@@ -86,8 +92,8 @@ public class AddJaxwsRuntime extends Recipe {
                             .orElseThrow(() -> new RuntimeException("Gradle build scripts must have a GradleProject marker"));
 
                     Set<GradleDependencyConfiguration> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-                    // The 2.3.x runtime implements the `javax` namespace and would pull in API jars that shadow a 3.0+ `jakarta` API
-                    if (!apiConfigurations.isEmpty() && !usesJakartaNamespaceApi(gp)) {
+
+                    if (!apiConfigurations.isEmpty()) {
                         Set<GradleDependencyConfiguration> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
                         if (runtimeConfigurations.isEmpty()) {
                             if (gp.getConfiguration("compileOnly") != null) {
@@ -161,7 +167,7 @@ public class AddJaxwsRuntime extends Recipe {
 
         @Override
         public TreeVisitor<?, ExecutionContext> getVisitor() {
-            return new MavenIsoVisitor<ExecutionContext>() {
+            return Preconditions.check(Preconditions.not(new FindJakartaNamespaceApi()), new MavenIsoVisitor<ExecutionContext>() {
                 @Override
                 @SuppressWarnings({"ReassignedVariable", "ConstantConditions"})
                 public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
@@ -170,8 +176,7 @@ public class AddJaxwsRuntime extends Recipe {
 
                     //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
                     Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-                    // The 2.3.x runtime implements the `javax` namespace and would pull in API jars that shadow a 3.0+ `jakarta` API
-                    if (apiScope != null && !usesJakartaNamespaceApi(mavenModel)) {
+                    if (apiScope != null) {
                         //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
                         Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
 
@@ -184,18 +189,7 @@ public class AddJaxwsRuntime extends Recipe {
 
                     return d;
                 }
-            };
-        }
-
-        private boolean usesJakartaNamespaceApi(MavenResolutionResult mavenModel) {
-            for (List<ResolvedDependency> dependencies : mavenModel.getDependencies().values()) {
-                for (ResolvedDependency dependency : dependencies) {
-                    if (isJakartaNamespaceApi(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            });
         }
 
         /**
@@ -223,28 +217,42 @@ public class AddJaxwsRuntime extends Recipe {
         }
     }
 
-    private static boolean usesJakartaNamespaceApi(GradleProject gp) {
-        for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
-            ResolvedDependency resolved = gdc.findResolvedDependency(JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
-            if (resolved != null && isJakartaNamespaceApi(resolved.getGroupId(), resolved.getArtifactId(), resolved.getVersion())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
-     * Version 3.0 of the JAX-WS API moved from the `javax.xml.ws` to the `jakarta.xml.ws` package,
-     * which the 2.3.x runtime added by this recipe does not implement.
+     * Version 3.0 of the JAX-WS API moved from the `javax.xml.ws` to the `jakarta.xml.ws` package, which the 2.3.x
+     * runtime added by this recipe does not implement; it would pull in `javax` API jars that shadow the `jakarta` API.
      */
-    private static boolean isJakartaNamespaceApi(String groupId, String artifactId, @Nullable String version) {
-        if (!JAKARTA_JAXWS_API_GROUP.equals(groupId) || !JAKARTA_JAXWS_API_ARTIFACT.equals(artifactId) || version == null) {
+    private static class FindJakartaNamespaceApi extends TreeVisitor<Tree, ExecutionContext> {
+        @Override
+        public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
+            if (!(tree instanceof SourceFile)) {
+                return tree;
+            }
+            Markers markers = ((SourceFile) tree).getMarkers();
+            boolean found = markers.findFirst(MavenResolutionResult.class).map(FindJakartaNamespaceApi::usesJakartaNamespaceApi).orElse(false) ||
+                            markers.findFirst(GradleProject.class).map(FindJakartaNamespaceApi::usesJakartaNamespaceApi).orElse(false);
+            return found ? SearchResult.found(tree) : tree;
+        }
+
+        private static boolean usesJakartaNamespaceApi(MavenResolutionResult mavenModel) {
+            for (List<ResolvedDependency> dependencies : mavenModel.getDependencies().values()) {
+                for (ResolvedDependency dependency : dependencies) {
+                    if (JAKARTA_JAXWS_API_GROUP.equals(dependency.getGroupId()) &&
+                        JAKARTA_JAXWS_API_ARTIFACT.equals(dependency.getArtifactId()) &&
+                        JAKARTA_NAMESPACE_API.isValid(null, dependency.getVersion())) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
-        int dot = version.indexOf('.');
-        try {
-            return Integer.parseInt(dot < 0 ? version : version.substring(0, dot)) >= 3;
-        } catch (NumberFormatException e) {
+
+        private static boolean usesJakartaNamespaceApi(GradleProject gp) {
+            for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
+                ResolvedDependency resolved = gdc.findResolvedDependency(JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
+                if (resolved != null && JAKARTA_NAMESPACE_API.isValid(null, resolved.getVersion())) {
+                    return true;
+                }
+            }
             return false;
         }
     }
