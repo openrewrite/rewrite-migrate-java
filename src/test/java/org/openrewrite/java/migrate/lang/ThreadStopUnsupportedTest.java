@@ -16,11 +16,13 @@
 package org.openrewrite.java.migrate.lang;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.junit.jupiter.api.condition.JRE.JAVA_21;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -109,6 +111,8 @@ class ThreadStopUnsupportedTest implements RewriteTest {
         );
     }
 
+    // Removed from newer JDKs, which leaves the method invocation without a type to match
+    @EnabledForJreRange(max = JAVA_21)
     @Test
     void replaceResumeWithThrowsOnJava21() {
         rewriteRun(
@@ -138,6 +142,8 @@ class ThreadStopUnsupportedTest implements RewriteTest {
         );
     }
 
+    // Removed from newer JDKs, which leaves the method invocation without a type to match
+    @EnabledForJreRange(max = JAVA_21)
     @Test
     void replaceSuspendWithThrowsOnJava21() {
         rewriteRun(
