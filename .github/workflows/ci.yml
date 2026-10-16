@@ -22,7 +22,6 @@ jobs:
   build:
     uses: openrewrite/gh-automation/.github/workflows/ci-gradle.yml@main
     with:
-      java_version: 21
       additional_test_java_versions: '[25]'
     secrets:
       gradle_enterprise_access_key: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
