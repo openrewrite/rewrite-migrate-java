@@ -22,16 +22,22 @@ import org.openrewrite.*;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.VariableNameUtils;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.service.ImportService;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -40,8 +46,8 @@ public class UseEnumSetOf extends Recipe {
     private static final String METHOD_TYPE = "java.util.EnumSet";
 
     @Option(
-            displayName = "Convert empty `Set.of()` to `EnumSet.noneOf()`",
-            description = "When true, converts `Set.of()` with no arguments to `EnumSet.noneOf()`. Default true.",
+            displayName = "Convert empty `Set.of()` to an unmodifiable `EnumSet.noneOf()`",
+            description = "When true, converts `Set.of()` with no arguments to an unmodifiable `EnumSet.noneOf()`. Default true.",
             example = "true",
             required = false
     )
@@ -50,7 +56,7 @@ public class UseEnumSetOf extends Recipe {
 
     String displayName = "Prefer `EnumSet of(..)`";
 
-    String description = "Prefer `EnumSet of(..)` instead of using `Set of(..)` when the arguments are enums in Java 9 or higher.";
+    String description = "Prefer an unmodifiable `EnumSet` instead of using `Set.of(..)` when the arguments are enums in Java 9 or higher.";
 
     Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 2 );
 
@@ -70,6 +76,16 @@ public class UseEnumSetOf extends Recipe {
                         JavaType type = parent.getValue() instanceof J.Assignment ?
                                 ((J.Assignment) parent.getValue()).getType() : ((J.VariableDeclarations) parent.getValue()).getVariables().get(0).getType();
                         if (isAssignmentSetOfEnum(type)) {
+                            boolean collectionsUnavailable = isNameUnavailable("Collections", "java.util.Collections");
+                            // a declaration named `java` in scope breaks the fully qualified `java.util.Collections` fallback
+                            boolean fullyQualifiedFallbackShadowed = isNameUnavailable("java", null);
+                            if (collectionsUnavailable && fullyQualifiedFallbackShadowed) {
+                                return mi;
+                            }
+                            String collections = fullyQualifiedFallbackShadowed ? "Collections" : "java.util.Collections";
+                            if (fullyQualifiedFallbackShadowed) {
+                                maybeAddImport("java.util.Collections");
+                            }
                             maybeAddImport(METHOD_TYPE);
 
                             List<Expression> args = mi.getArguments();
@@ -83,20 +99,31 @@ public class UseEnumSetOf extends Recipe {
                                 }
                                 JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
                                 JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
-                                return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
+                                J.MethodInvocation replacement = JavaTemplate.builder(
+                                                unmodifiableSet(collections, "EnumSet.noneOf(" + shallowClass.getClassName() + ".class)"))
                                         .contextSensitive()
-                                        .imports(METHOD_TYPE)
+                                        .imports("java.util.Collections", METHOD_TYPE)
                                         .build()
                                         .apply(updateCursor(mi), mi.getCoordinates().replace());
+                                if (!collectionsUnavailable) {
+                                    doAfterVisit(service(ImportService.class).shortenFullyQualifiedTypeReferencesIn(
+                                            requireNonNull(replacement.getSelect())));
+                                }
+                                return replacement;
                             }
 
-                            StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
-                            args.forEach(o -> setOf.add("#{any()}"));
-                            return JavaTemplate.builder(setOf.toString())
+                            StringJoiner setOfArguments = new StringJoiner(", ");
+                            args.forEach(o -> setOfArguments.add("#{any()}"));
+                            J.MethodInvocation replacement = JavaTemplate.builder(unmodifiableSet(collections, "EnumSet.of(" + setOfArguments + ")"))
                                     .contextSensitive()
-                                    .imports(METHOD_TYPE)
+                                    .imports("java.util.Collections", METHOD_TYPE)
                                     .build()
                                     .apply(updateCursor(mi), mi.getCoordinates().replace(), args.toArray());
+                            if (!collectionsUnavailable) {
+                                doAfterVisit(service(ImportService.class).shortenFullyQualifiedTypeReferencesIn(
+                                        requireNonNull(replacement.getSelect())));
+                            }
+                            return replacement;
                         }
                     }
                 }
@@ -135,7 +162,70 @@ public class UseEnumSetOf extends Recipe {
                 JavaType type = args.get(0).getType();
                 return TypeUtils.asArray(type) != null;
             }
+
+            private boolean isNameUnavailable(String name, @Nullable String allowedImport) {
+                J.CompilationUnit compilationUnit = getCursor().firstEnclosingOrThrow(J.CompilationUnit.class);
+                boolean conflictingImport = compilationUnit.getImports().stream()
+                        .filter(anImport -> !anImport.isStatic())
+                        .filter(anImport -> name.equals(anImport.getQualid().getSimpleName()))
+                        .anyMatch(anImport -> allowedImport == null || !allowedImport.equals(anImport.getTypeName()));
+                if (conflictingImport) {
+                    return true;
+                }
+
+                AtomicBoolean typeDeclared = new AtomicBoolean();
+                new JavaVisitor<AtomicBoolean>() {
+                    @Override
+                    public J visitClassDeclaration(J.ClassDeclaration classDecl, AtomicBoolean found) {
+                        if (name.equals(classDecl.getSimpleName())) {
+                            found.set(true);
+                            return classDecl;
+                        }
+                        return super.visitClassDeclaration(classDecl, found);
+                    }
+
+                    @Override
+                    public J visitTypeParameter(J.TypeParameter typeParameter, AtomicBoolean found) {
+                        if (typeParameter.getName() instanceof J.Identifier &&
+                                name.equals(((J.Identifier) typeParameter.getName()).getSimpleName())) {
+                            found.set(true);
+                            return typeParameter;
+                        }
+                        return super.visitTypeParameter(typeParameter, found);
+                    }
+                }.visit(compilationUnit, typeDeclared);
+
+                boolean visibleMember = false;
+                Iterator<J.ClassDeclaration> enclosingClasses = getCursor().getPathAsStream()
+                        .filter(J.ClassDeclaration.class::isInstance)
+                        .map(J.ClassDeclaration.class::cast)
+                        .iterator();
+                while (enclosingClasses.hasNext() && !visibleMember) {
+                    JavaType.FullyQualified classType = TypeUtils.asFullyQualified(enclosingClasses.next().getType());
+                    if (classType != null) {
+                        Iterator<JavaType.Variable> members = classType.getVisibleMembers();
+                        while (members.hasNext()) {
+                            if (name.equals(members.next().getName())) {
+                                visibleMember = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                return typeDeclared.get() || visibleMember ||
+                       VariableNameUtils.findNamesInScope(getCursor()).contains(name) ||
+                       getCursor().getPathAsStream()
+                               .filter(J.ClassDeclaration.class::isInstance)
+                               .map(J.ClassDeclaration.class::cast)
+                               .anyMatch(classDecl -> name.equals(classDecl.getSimpleName()));
+            }
         });
+    }
+
+    // Wraps the EnumSet expression so every paren opens and closes in one place
+    private static String unmodifiableSet(String collections, String enumSetExpression) {
+        return collections + ".unmodifiableSet(" + enumSetExpression + ")";
     }
 
 }

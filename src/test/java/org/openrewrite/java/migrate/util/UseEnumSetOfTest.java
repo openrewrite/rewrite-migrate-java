@@ -53,6 +53,7 @@ class UseEnumSetOfTest implements RewriteTest {
               }
               """,
             """
+              import java.util.Collections;
               import java.util.EnumSet;
               import java.util.Set;
 
@@ -61,7 +62,7 @@ class UseEnumSetOfTest implements RewriteTest {
                       RED, GREEN, BLUE
                   }
                   public void method() {
-                      Set<Color> warm = EnumSet.of(Color.RED, Color.GREEN);
+                      Set<Color> warm = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
                   }
               }
               """
@@ -88,6 +89,7 @@ class UseEnumSetOfTest implements RewriteTest {
               }
               """,
             """
+              import java.util.Collections;
               import java.util.EnumSet;
               import java.util.Set;
 
@@ -97,7 +99,7 @@ class UseEnumSetOfTest implements RewriteTest {
                   }
                   public void method() {
                       Set<Color> warm;
-                      warm = EnumSet.of(Color.RED);
+                      warm = Collections.unmodifiableSet(EnumSet.of(Color.RED));
                   }
               }
               """
@@ -167,6 +169,7 @@ class UseEnumSetOfTest implements RewriteTest {
               }
               """,
             """
+              import java.util.Collections;
               import java.util.EnumSet;
               import java.util.Set;
               import java.util.concurrent.TimeUnit;
@@ -174,7 +177,7 @@ class UseEnumSetOfTest implements RewriteTest {
               class Test {
 
                   public void method() {
-                      Set<TimeUnit> warm = EnumSet.noneOf(TimeUnit.class);
+                      Set<TimeUnit> warm = Collections.unmodifiableSet(EnumSet.noneOf(TimeUnit.class));
                   }
               }
               """
@@ -238,6 +241,349 @@ class UseEnumSetOfTest implements RewriteTest {
                   public void method() {
                       Set<Color> warm = Set.of();
                   }
+              }
+              """
+          )
+        );
+    }
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/958")
+    @Test
+    void retainNonEmptyImmutableSetOf() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN, BLUE
+                  }
+
+                  static final Set<Color> CONSTANT = Set.of(Color.RED, Color.GREEN);
+
+                  Set<Color> local() {
+                      Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+                      return colors;
+                  }
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN, BLUE
+                  }
+
+                  static final Set<Color> CONSTANT = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+
+                  Set<Color> local() {
+                      Set<Color> colors = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+                      return colors;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void fullyQualifyCollectionsWhenSimpleNameIsShadowed() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+
+              class Collections {
+              }
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Collections {
+              }
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = java.util.Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void fullyQualifyCollectionsWhenVariableWithSameNameIsInScope() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Object Collections;
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Object Collections;
+                  Set<Color> colors = java.util.Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void importCollectionsWhenJavaIsShadowed() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Object java;
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Object java;
+                  Set<Color> colors = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void importCollectionsWhenNestedJavaTypeIsInScope() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  static class java {
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  static class java {
+                  }
+
+                  Set<Color> colors = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void handleTypeParameterNameCollisions() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              class CollectionsTypeParameterTest<Collections> {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class CollectionsTypeParameterTest<Collections> {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = java.util.Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              class JavaTypeParameterTest<java> {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class JavaTypeParameterTest<java> {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void handleInheritedFieldNameCollisions() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              interface CollectionsShadow {
+                  Object Collections = null;
+              }
+
+              class CollectionsFieldTest implements CollectionsShadow {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              interface CollectionsShadow {
+                  Object Collections = null;
+              }
+
+              class CollectionsFieldTest implements CollectionsShadow {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = java.util.Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import java.util.Set;
+
+              interface JavaShadow {
+                  Object java = null;
+              }
+
+              class JavaFieldTest implements JavaShadow {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              interface JavaShadow {
+                  Object java = null;
+              }
+
+              class JavaFieldTest implements JavaShadow {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Set<Color> colors = Collections.unmodifiableSet(EnumSet.of(Color.RED, Color.GREEN));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void retainSetOfWhenBothCollectionsSpellingsAreShadowed() {
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+
+              class Collections {
+              }
+
+              class Test {
+                  enum Color {
+                      RED, GREEN
+                  }
+
+                  Object java;
+                  Set<Color> colors = Set.of(Color.RED, Color.GREEN);
               }
               """
           )
