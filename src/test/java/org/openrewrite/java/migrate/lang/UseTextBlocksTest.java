@@ -1118,4 +1118,398 @@ class UseTextBlocksTest implements RewriteTest {
             }""",
             src -> src.markers(javaVersion(17))));
     }
+
+    @Test
+    void formatVariablesDisabledDoesNotModify() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, false)),
+          java(
+            """
+            class Test {
+                void test(final String name, final int count) {
+                    String query = "SELECT * FROM\\n" +
+                            name + "\\n" +
+                            "WHERE count = " + count;
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesEnabledReplacesWithFormattedTextBlock() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String table, final int id) {
+                    String query = "SELECT * FROM\\n" +
+                            table + "\\n" +
+                            "WHERE id = " + id;
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String table, final int id) {
+                    String query = \"""
+                            SELECT * FROM
+                            %s
+                            WHERE id = %d\""".formatted(table, id);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesWithPercentSignsEscapesPercentSignsToDoublePercent() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String item, final int discount) {
+                    String msg = "Special Offer: 100% genuine\\n" +
+                            item + "\\n" +
+                            "Discount: " + discount + "% off";
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String item, final int discount) {
+                    String msg = \"""
+                            Special Offer: 100%% genuine
+                            %s
+                            Discount: %d%% off\""".formatted(item, discount);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesWithVariousTypesUsesCorrectFormatSpecifiers() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(
+                        final long l,
+                        final boolean b,
+                        final char c,
+                        final double d,
+                        final Object obj,
+                        final Integer boxedInt,
+                        final Boolean boxedBool,
+                        final Character boxedChar
+                ) {
+                    String str = "Values:\\n" +
+                            l + "\\n" +
+                            b + "\\n" +
+                            c + "\\n" +
+                            d + "\\n" +
+                            obj + "\\n" +
+                            boxedInt + "\\n" +
+                            boxedBool + "\\n" +
+                            boxedChar;
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(
+                        final long l,
+                        final boolean b,
+                        final char c,
+                        final double d,
+                        final Object obj,
+                        final Integer boxedInt,
+                        final Boolean boxedBool,
+                        final Character boxedChar
+                ) {
+                    String str = \"""
+                            Values:
+                            %d
+                            %b
+                            %c
+                            %s
+                            %s
+                            %d
+                            %b
+                            %c\""".formatted(l, b, c, d, obj, boxedInt, boxedBool, boxedChar);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesWithArithmeticExpressionTreatsExpressionAsSingleArgument() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final int a, final int b) {
+                    String msg = "Result:\\n" +
+                            (a + b) + "\\n" +
+                            "Done";
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final int a, final int b) {
+                    String msg = \"""
+                            Result:
+                            %d
+                            Done\""".formatted((a + b));
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void avoidLineContinuationsWithVariablesRemovesBackslashContinuations() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, true, true)),
+          java(
+            """
+            class Test {
+                void test(final String table, final int id) {
+                    String query = "SELECT * FROM\\n" +
+                            table +
+                            " WHERE id = " + id;
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String table, final int id) {
+                    String query = \"""
+                            SELECT * FROM
+                            %s WHERE id = %d\""".formatted(table, id);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesWithVariableAtStartConvertsCorrectly() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String prefix) {
+                    String s = prefix + "\\n" +
+                            "second line";
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String prefix) {
+                    String s = \"""
+                            %s
+                            second line\""".formatted(prefix);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void multilineWithoutNewlinesInContentNotConvertedWhenConvertStringsWithoutNewlinesFalse() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(false, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String name) {
+                    String s = "Hello, " +
+                            name +
+                            "!";
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void multilineWithoutNewlinesInContentConvertedWhenConvertStringsWithoutNewlinesTrue() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String name) {
+                    String s = "Hello, " +
+                            name +
+                            "!";
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String name) {
+                    String s = \"""
+                            Hello, \\
+                            %s\\
+                            !\""".formatted(name);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    // Edge Cases
+
+    @Test
+    void formatVariablesEdgeCaseAdjacentVariablesWithoutSeparator() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String first, final String last) {
+                    String name = "User:\\n" +
+                            first + last;
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String first, final String last) {
+                    String name = \"""
+                            User:
+                            %s%s\""".formatted(first, last);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesEdgeCaseWithEscapedQuotesInStringLiterals() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String value) {
+                    String json = "{\\n" +
+                            "  \\"key\\": \\"" + value + "\\"\\n" +
+                            "}";
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String value) {
+                    String json = \"""
+                            {
+                              "key": "%s"
+                            }\\
+                            \""".formatted(value);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesEdgeCaseWithTrailingSpacesPreserved() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Test {
+                void test(final String greeting, final String name) {
+                    String msg = greeting + "   \\n" +
+                            "to: " + name;
+                }
+            }
+            """,
+            """
+            class Test {
+                void test(final String greeting, final String name) {
+                    String msg = \"""
+                            %s  \\s
+                            to: %s\""".formatted(greeting, name);
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
+
+    @Test
+    void formatVariablesEdgeCaseMethodInvocationsAndFieldAccessAsArguments() {
+        rewriteRun(
+          spec -> spec.recipe(new UseTextBlocks(true, false, true)),
+          java(
+            """
+            class Person {
+                String name;
+                int getAge() { return 30; }
+            }
+            class Test {
+                void test(final Person person) {
+                    String info = "Person:\\n" +
+                            person.name + "\\n" +
+                            "Age: " + person.getAge();
+                }
+            }
+            """,
+            """
+            class Person {
+                String name;
+                int getAge() { return 30; }
+            }
+            class Test {
+                void test(final Person person) {
+                    String info = \"""
+                            Person:
+                            %s
+                            Age: %d\""".formatted(person.name, person.getAge());
+                }
+            }
+            """,
+            src -> src.markers(javaVersion(17))
+          )
+        );
+    }
 }
+
+
+
