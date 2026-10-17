@@ -106,7 +106,8 @@ public class MXBeanRule extends Recipe {
                     modifier.getType() == Modifier.Type.Protected ||
                     modifier.getType() == Modifier.Type.Abstract);
             modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
-            return maybeAutoFormat(cd, cd.withModifiers(sortModifiers(modifiers)), ctx);
+            J.ClassDeclaration updated = cd.withModifiers(sortModifiers(modifiers));
+            return maybeAutoFormat(cd, updated, updated.getName(), ctx, getCursor().getParentTreeCursor());
         }
     }
 }
