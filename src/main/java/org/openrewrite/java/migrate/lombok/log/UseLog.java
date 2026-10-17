@@ -21,10 +21,16 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class UseLog extends UseLogRecipeTemplate {
+
+    private static final MethodMatcher CLASS_GET_NAME = new MethodMatcher("java.lang.Class getName()");
 
     @Override
     public String getDisplayName() {
@@ -52,8 +58,10 @@ public class UseLog extends UseLogRecipeTemplate {
                 fieldName) {
 
             @Override
-            protected String getFactoryParameter(String className) {
-                return className + ".class.getName()";
+            protected boolean isFactoryParameter(Expression argument, JavaType.FullyQualified classType) {
+                return argument instanceof J.MethodInvocation &&
+                        CLASS_GET_NAME.matches((J.MethodInvocation) argument) &&
+                        isClassLiteral(((J.MethodInvocation) argument).getSelect(), classType);
             }
         };
     }
