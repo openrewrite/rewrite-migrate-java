@@ -49,7 +49,7 @@ public class AnnotateTypesVisitor extends JavaIsoVisitor<Set<String>> {
                     .javaParser(JavaParser.fromJavaVersion().dependsOn(interfaceAsString))
                     .build()
                     .apply(getCursor(), cd.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
-            cd = maybeAutoFormat(classDecl, cd, cd.getName(), injectedTypes, getCursor());
+            cd = maybeAutoFormat(classDecl, cd, cd.getName(), injectedTypes, getCursor().getParentOrThrow());
         }
         return cd;
     }
