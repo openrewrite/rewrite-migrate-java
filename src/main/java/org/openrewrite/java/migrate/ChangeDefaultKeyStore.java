@@ -54,7 +54,7 @@ public class ChangeDefaultKeyStore extends Recipe {
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (KEYSTORE_METHOD_REF.matches(method)) {
-                            return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "\"jks\"", "\"jks\"", null, JavaType.Primitive.String);
+                            return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "jks", "\"jks\"", null, JavaType.Primitive.String);
                         }
                         return super.visitMethodInvocation(method, ctx);
                     }

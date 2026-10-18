@@ -216,7 +216,7 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             if (patternMember.getKey() instanceof Json.Literal) {
                 Json.Literal oldKey = (Json.Literal) patternMember.getKey();
                 String newKeySource = oldKey.getSource().replace("pattern", "glob");
-                newKey = oldKey.withSource(newKeySource);
+                newKey = oldKey.withSource(newKeySource).withValue("glob");
             } else {
                 newKey = new Json.Literal(
                         Tree.randomId(),

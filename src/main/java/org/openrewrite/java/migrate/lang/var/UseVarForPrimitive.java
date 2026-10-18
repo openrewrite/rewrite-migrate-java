@@ -76,6 +76,7 @@ public class UseVarForPrimitive extends Recipe {
                     String suffix = typeSuffix(vd.getType(), literal);
                     if (suffix != null) {
                         return DeclarationCheck.transformToVar(vd, it -> literal
+                                .withValue(valueAs(vd.getType(), literal.getValue()))
                                 .withValueSource(literal.getValueSource() + suffix)
                                 .withType(vd.getType()));
                     }
@@ -98,12 +99,14 @@ public class UseVarForPrimitive extends Recipe {
                 return null;
             }
             if (literal.getType() == Int) {
-                if (declaredType == Long) {
-                    return "L";
-                }
-                // Hex, octal and binary int literals change value when read as a floating point literal
+                // Hex, octal and binary int literals change value when read as a floating point literal, or as a
+                // long literal when they set the sign bit
                 String digits = source.startsWith("-") ? source.substring(1) : source;
                 boolean decimal = "0".equals(digits) || !digits.startsWith("0");
+                Object value = literal.getValue();
+                if (declaredType == Long && (decimal || value instanceof Integer && (Integer) value >= 0)) {
+                    return "L";
+                }
                 if (decimal && declaredType == Float) {
                     return "F";
                 }
@@ -115,6 +118,19 @@ public class UseVarForPrimitive extends Recipe {
                 return "F";
             }
             return null;
+        }
+
+        private static @Nullable Object valueAs(@Nullable JavaType type, @Nullable Object value) {
+            if (value instanceof Number) {
+                if (type == Long) {
+                    return ((Number) value).longValue();
+                } else if (type == Float) {
+                    return ((Number) value).floatValue();
+                } else if (type == Double) {
+                    return ((Number) value).doubleValue();
+                }
+            }
+            return value;
         }
     }
 }

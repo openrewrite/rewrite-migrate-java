@@ -292,22 +292,6 @@ recipeList:
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.RemovedUIComponentConstant
-displayName: Replace `CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` with `getCurrentComponent()` and `getCurrentCompositeComponent()`
-description: >-
-  Replace `jakarta.faces.component.UIComponent.CURRENT_COMPONENT` and `CURRENT_COMPOSITE_COMPONENT` constants with `jakarta.faces.component.UIComponent.getCurrentComponent()` and `getCurrentCompositeComponent()`.
-  that were added in JSF 2.0.
-preconditions:
-  - org.openrewrite.Singleton
-recipeList:
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentComponent()
-  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
-      existingFullyQualifiedConstantName: jakarta.faces.component.UIComponent.CURRENT_COMPOSITE_COMPONENT
-      fullyQualifiedConstantName: jakarta.faces.component.UIComponent.getCurrentCompositeComponent()
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
 description: >-

@@ -83,11 +83,19 @@ public class UseEnumSetOf extends Recipe {
                                 }
                                 JavaType firstTypeParameter = ((JavaType.Parameterized) type).getTypeParameters().get(0);
                                 JavaType.ShallowClass shallowClass = JavaType.ShallowClass.build(firstTypeParameter.toString());
-                                return JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
+                                JavaTemplate.Builder noneOf = JavaTemplate.builder("EnumSet.noneOf(" + shallowClass.getClassName() + ".class)")
                                         .contextSensitive()
-                                        .imports(METHOD_TYPE)
-                                        .build()
-                                        .apply(updateCursor(mi), mi.getCoordinates().replace());
+                                        .imports(METHOD_TYPE);
+                                JavaType.FullyQualified outermost = TypeUtils.asFullyQualified(firstTypeParameter);
+                                while (outermost != null && outermost.getOwningClass() != null) {
+                                    outermost = outermost.getOwningClass();
+                                }
+                                // a type in the unnamed package can't be imported
+                                if (outermost != null && !outermost.getPackageName().isEmpty()) {
+                                    maybeAddImport(outermost.getFullyQualifiedName());
+                                    noneOf.imports(outermost.getFullyQualifiedName());
+                                }
+                                return noneOf.build().apply(updateCursor(mi), mi.getCoordinates().replace());
                             }
 
                             StringJoiner setOf = new StringJoiner(", ", "EnumSet.of(", ")");
