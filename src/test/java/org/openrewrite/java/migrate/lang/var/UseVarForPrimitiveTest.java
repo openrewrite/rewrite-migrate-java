@@ -159,6 +159,7 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                         float hex = 0x10;
                         double octal = 010;
                         float negativeOctal = -010;
+                        long signBitHex = 0xFFFFFFFF;
                     }
                   }
                   """
