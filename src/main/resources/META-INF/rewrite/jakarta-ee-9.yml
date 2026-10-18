@@ -1502,12 +1502,12 @@ recipeList:
       oldFullyQualifiedTypeName: org.apache.ws.security.message.token.KerberosServiceExceptionAction
       newFullyQualifiedTypeName: org.apache.wss4j.common.kerberos.KerberosServiceExceptionAction
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.ws.security
-      newPackageName: org.apache.wss4j.common.ext
-      recursive: true
-  - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.ws.security.components.crypto
       newPackageName: org.apache.wss4j.common.crypto
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security
+      newPackageName: org.apache.wss4j.common.ext
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe

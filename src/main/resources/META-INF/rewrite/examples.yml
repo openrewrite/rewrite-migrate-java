@@ -522,6 +522,37 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.DanglingDocCommentToBlockComment
+examples:
+- description: '`DanglingDocCommentToBlockCommentTest#documentingCommentedOutCode`'
+  sources:
+  - before: |
+      class A {
+          /** The field name. */
+          private String fieldName;
+
+          /** The request. */
+          // private transient Object request = null;
+
+          /** Instantiates a new A. */
+          A() {
+          }
+      }
+    after: |
+      class A {
+          /** The field name. */
+          private String fieldName;
+
+          /* The request. */
+          // private transient Object request = null;
+
+          /** Instantiates a new A. */
+          A() {
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.DeleteDeprecatedFinalize
 examples:
 - description: '`DeleteDeprecatedFinalizeTest#deleteDeprecatedFinalize`'
@@ -1024,6 +1055,7 @@ examples:
        }
     after: |
       import java.lang.ref.WeakReference;
+      import java.lang.ref.ReferenceQueue;
       import java.lang.ref.SoftReference;
       import java.lang.ref.PhantomReference;
 
@@ -3760,6 +3792,37 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.awt.JavaAwtAPIs
+examples:
+- description: '`JavaAwtAPIsTest#showAndHideWindows`'
+  sources:
+  - before: |
+      import javax.swing.JDialog;
+      import javax.swing.JFrame;
+
+      class Test {
+          void toggle(JFrame frame, JDialog dialog, boolean visible) {
+              frame.show();
+              dialog.show();
+              frame.show(visible);
+              dialog.hide();
+          }
+      }
+    after: |
+      import javax.swing.JDialog;
+      import javax.swing.JFrame;
+
+      class Test {
+          void toggle(JFrame frame, JDialog dialog, boolean visible) {
+              frame.setVisible(true);
+              dialog.setVisible(true);
+              frame.setVisible(visible);
+              dialog.setVisible(false);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 examples:
 - description: '`JavaConcurrentAPIsTest#atomicBooleanWeakCompareAndSet`'
@@ -6291,24 +6354,26 @@ examples:
   sources:
   - before: |
       import jakarta.faces.component.UIComponent;
+      import jakarta.faces.context.FacesContext;
 
       class Bar {
-          void foo() {
-              String str = UIComponent.CURRENT_COMPONENT;
-              String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-              System.out.println(str);
-              System.out.println(str2);
+          void foo(FacesContext context) {
+              UIComponent component = (UIComponent) context.getAttributes().get(UIComponent.CURRENT_COMPONENT);
+              Object composite = FacesContext.getCurrentInstance().getAttributes().get(UIComponent.CURRENT_COMPOSITE_COMPONENT);
+              System.out.println(component);
+              System.out.println(composite);
           }
       }
     after: |
       import jakarta.faces.component.UIComponent;
+      import jakarta.faces.context.FacesContext;
 
       class Bar {
-          void foo() {
-              String str = UIComponent.getCurrentComponent();
-              String str2 = UIComponent.getCurrentCompositeComponent();
-              System.out.println(str);
-              System.out.println(str2);
+          void foo(FacesContext context) {
+              UIComponent component = UIComponent.getCurrentComponent(context);
+              Object composite = UIComponent.getCurrentCompositeComponent(FacesContext.getCurrentInstance());
+              System.out.println(component);
+              System.out.println(composite);
           }
       }
     language: java
@@ -6457,7 +6522,7 @@ examples:
       }
     after: |
       import org.apache.wss4j.common.ext.WSSecurityException;
-      import org.apache.wss4j.common.ext.components.crypto.CryptoBase;
+      import org.apache.wss4j.common.crypto.CryptoBase;
       class Test {
           void foo() {
               WSSecurityException x = new WSSecurityException(1,"");
@@ -7220,6 +7285,40 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
+examples:
+- description: '`MigrateOneGfwJaxbDependenciesTest#jaxbApiMaven`'
+  sources:
+  - before: |
+      <project>
+          <groupId>com.example.jaxb</groupId>
+          <artifactId>jaxb-example</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>one.gfw</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1.1</version>
+              </dependency>
+          </dependencies>
+      </project>
+    after: |
+      <project>
+          <groupId>com.example.jaxb</groupId>
+          <artifactId>jaxb-example</artifactId>
+          <version>1.0.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.RemoveEmbeddableId
 examples:
 - description: '`RemoveEmbeddableIdTest#removeIdFromEmbeddableObject`'
@@ -7425,6 +7524,31 @@ examples:
           Child(String name) {
               String name1 = Objects.requireNonNull(name);
               super(name1);
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.FindThreadStartInConstructor
+examples:
+- description: '`FindThreadStartInConstructorTest#findsStartInConstructor`'
+  sources:
+  - before: |
+      class Worker {
+          private final Thread thread;
+
+          Worker(Runnable r) {
+              thread = new Thread(r);
+              thread.start();
+          }
+      }
+    after: |
+      class Worker {
+          private final Thread thread;
+
+          Worker(Runnable r) {
+              thread = new Thread(r);
+              /*~~(`Thread.start()` called during construction of a non-final class. The new thread can observe a partially-initialised object, and any subclass' fields are guaranteed unset. Move the call to a separate method or declare the class `final`.)~~>*/thread.start();
           }
       }
     language: java
@@ -8045,6 +8169,27 @@ examples:
               boolean e = !s.isEmpty();
               boolean f = !(s + "!").isEmpty();
           }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.lang.UseTextBlocks
+examples:
+- description: '`UseTextBlocksTest#regular`'
+  sources:
+  - before: |
+      class Test {
+          String query = "SELECT * FROM\n" +
+                  "my_table\n" +
+                  "WHERE something = 1;";
+      }
+    after: |
+      class Test {
+          String query = """
+                  SELECT * FROM
+                  my_table
+                  WHERE something = 1;\
+                  """;
       }
     language: java
 ---

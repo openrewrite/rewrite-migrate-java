@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,6 +28,7 @@ class JavaxPersistenceXmlToJakartaPersistenceXmlTest implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml");
     }
 
+    @DocumentExample
     @Test
     void migratesCustomResourceName() {
         rewriteRun(

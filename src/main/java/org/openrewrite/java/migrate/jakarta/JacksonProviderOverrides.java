@@ -35,6 +35,7 @@ import org.openrewrite.marker.Markers;
 public class JacksonProviderOverrides extends Recipe {
     @Getter
     final String displayName = "Migrate Jackson provider configuration overrides";
+
     @Getter
     final String description = "Add and forward the default view parameter required by Jakarta Jackson providers.";
 
@@ -51,7 +52,8 @@ public class JacksonProviderOverrides extends Recipe {
                 }
                 String viewName = VariableNameUtils.generateVariableName("defaultView", getCursor(),
                         VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER);
-                J.MethodDeclaration m = JavaTemplate.builder("#{}, #{}, Class<?> " + viewName).contextSensitive().build()
+                J.MethodDeclaration m = JavaTemplate.builder("#{}, #{}, Class<?> " + viewName).contextSensitive()
+                        .imports("com.fasterxml.jackson.databind.ObjectMapper", "java.lang.annotation.Annotation").build()
                         .apply(getCursor(), method.getCoordinates().replaceParameters(),
                                 method.getParameters().get(0).printTrimmed(getCursor()),
                                 method.getParameters().get(1).printTrimmed(getCursor()));

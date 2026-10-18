@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lang.var;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -25,9 +26,9 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import static java.lang.String.format;
 import static org.openrewrite.java.tree.JavaType.Primitive.*;
 
 @EqualsAndHashCode(callSuper = false)
@@ -63,7 +64,23 @@ public class UseVarForPrimitive extends Recipe {
             if (DeclarationCheck.isPrimitive(vd) &&
                     !DeclarationCheck.declarationHasType(vd, Byte) &&
                     !DeclarationCheck.declarationHasType(vd, Short)) {
-                return DeclarationCheck.transformToVar(vd, it -> it instanceof J.Literal ? expandWithPrimitiveTypeHint(vd, it) : it);
+                Expression initializer = vd.getVariables().get(0).getInitializer();
+                if (initializer == null) {
+                    return vd;
+                }
+                if (initializer.getType() == vd.getType()) {
+                    return DeclarationCheck.transformToVar(vd);
+                }
+                if (initializer instanceof J.Literal) {
+                    J.Literal literal = (J.Literal) initializer;
+                    String suffix = typeSuffix(vd.getType(), literal);
+                    if (suffix != null) {
+                        return DeclarationCheck.transformToVar(vd, it -> literal
+                                .withValue(valueAs(vd.getType(), literal.getValue()))
+                                .withValueSource(literal.getValueSource() + suffix)
+                                .withType(vd.getType()));
+                    }
+                }
             }
             return vd;
         }
@@ -76,27 +93,44 @@ public class UseVarForPrimitive extends Recipe {
             return initializer != null && initializer.unwrap() instanceof J.Literal;
         }
 
-        private Expression expandWithPrimitiveTypeHint(J.VariableDeclarations vd, Expression initializer) {
-            String valueSource = ((J.Literal) initializer).getValueSource();
-
-            if (valueSource == null) {
-                return initializer;
+        private @Nullable String typeSuffix(@Nullable JavaType declaredType, J.Literal literal) {
+            String source = literal.getValueSource();
+            if (source == null) {
+                return null;
             }
-
-            String typNotation = null;
-            if (Long == vd.getType() && !(valueSource.endsWith("l") || valueSource.endsWith("L"))) {
-                typNotation = "L";
-            } else if (Float == vd.getType() && !(valueSource.endsWith("f") || valueSource.endsWith("F"))) {
-                typNotation = "F";
-            } else if (Double == vd.getType() && !(valueSource.endsWith("d") || valueSource.endsWith("D") || valueSource.contains("."))) {
-                typNotation = "D";
+            if (literal.getType() == Int) {
+                // Hex, octal and binary int literals change value when read as a floating point literal, or as a
+                // long literal when they set the sign bit
+                String digits = source.startsWith("-") ? source.substring(1) : source;
+                boolean decimal = "0".equals(digits) || !digits.startsWith("0");
+                Object value = literal.getValue();
+                if (declaredType == Long && (decimal || value instanceof Integer && (Integer) value >= 0)) {
+                    return "L";
+                }
+                if (decimal && declaredType == Float) {
+                    return "F";
+                }
+                if (decimal && declaredType == Double) {
+                    return "D";
+                }
+            } else if (literal.getType() == Double && declaredType == Float &&
+                    Character.isDigit(source.charAt(source.length() - 1))) {
+                return "F";
             }
+            return null;
+        }
 
-            if (typNotation != null) {
-                initializer = ((J.Literal) initializer).withValueSource(format("%s%s", valueSource, typNotation));
+        private static @Nullable Object valueAs(@Nullable JavaType type, @Nullable Object value) {
+            if (value instanceof Number) {
+                if (type == Long) {
+                    return ((Number) value).longValue();
+                } else if (type == Float) {
+                    return ((Number) value).floatValue();
+                } else if (type == Double) {
+                    return ((Number) value).doubleValue();
+                }
             }
-
-            return initializer;
+            return value;
         }
     }
 }

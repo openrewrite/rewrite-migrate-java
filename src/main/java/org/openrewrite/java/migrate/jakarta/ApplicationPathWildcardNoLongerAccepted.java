@@ -57,16 +57,16 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
                     J.Literal literal = (J.Literal) assig.getAssignment();
                     String value = literal.getValue().toString();
                     if (value.endsWith("/*")) {
-                        String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                        return a.withArguments(singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource(newValue))));
+                        String newValue = value.substring(0, value.length() - 2);
+                        return a.withArguments(singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource("\"" + newValue + "\""))));
                     }
                 } // Should we handle constants?
             } else if (it instanceof J.Literal) {
                 J.Literal literal = (J.Literal) it;
                 String value = literal.getValue().toString();
                 if (value.endsWith("/*")) {
-                    String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                    return a.withArguments(singletonList(((J.Literal) it).withValue(newValue).withValueSource(newValue)));
+                    String newValue = value.substring(0, value.length() - 2);
+                    return a.withArguments(singletonList(((J.Literal) it).withValue(newValue).withValueSource("\"" + newValue + "\"")));
                 }
             }
 

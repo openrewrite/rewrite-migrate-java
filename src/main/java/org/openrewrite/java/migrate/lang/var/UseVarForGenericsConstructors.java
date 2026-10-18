@@ -87,6 +87,13 @@ public class UseVarForGenericsConstructors extends Recipe {
                 return vd;
             }
 
+            // With a diamond, the declared type arguments are only valid on the constructor when they match what was
+            // inferred, which is not the case when the constructed class maps its type parameters differently.
+            if (rightTypes.isEmpty() && !leftTypes.isEmpty() &&
+                    !typeArgumentsMatch(leftTypes, initializer == null ? null : initializer.getType())) {
+                return vd;
+            }
+
             if (vd.getType() instanceof JavaType.FullyQualified) {
                 maybeRemoveImport((JavaType.FullyQualified) vd.getType());
             }
@@ -101,6 +108,22 @@ public class UseVarForGenericsConstructors extends Recipe {
                 }
                 return it;
             });
+        }
+
+        private static boolean typeArgumentsMatch(List<JavaType> declared, @Nullable JavaType constructed) {
+            if (!(constructed instanceof JavaType.Parameterized)) {
+                return false;
+            }
+            List<JavaType> inferred = ((JavaType.Parameterized) constructed).getTypeParameters();
+            if (declared.size() != inferred.size()) {
+                return false;
+            }
+            for (int i = 0; i < declared.size(); i++) {
+                if (!TypeUtils.isOfType(declared.get(i), inferred.get(i))) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private static Boolean anyTypeHasBounds(List<JavaType> leftTypes) {

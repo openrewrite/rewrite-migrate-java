@@ -27,21 +27,11 @@ import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.STOP_BUBBLING;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.append;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.declaresStopBubbling;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.expandImports;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.isConfig;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.isLombokConfig;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.parse;
+import static org.openrewrite.java.migrate.lombok.LombokConfig.*;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

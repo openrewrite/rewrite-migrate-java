@@ -125,7 +125,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
-            Optional<NullCheck> nullCheck = nullCheck().get(ifPart, cursor);
+            // the cursor points to the first if itself, and encloses the ifs after it
+            Optional<NullCheck> nullCheck = nullCheck().get(ifPart, ifPart == if_ ? cursor.getParentOrThrow() : cursor);
             if (nullCheck.isPresent()) {
                 nullCheckedParameter = nullCheck.get().getNullCheckedParameter();
                 nullCheckedStatement = nullCheck.get().whenNull();

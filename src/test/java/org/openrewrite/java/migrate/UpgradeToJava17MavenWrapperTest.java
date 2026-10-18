@@ -72,7 +72,7 @@ class UpgradeToJava17MavenWrapperTest implements RewriteTest {
     void doNotCreateWrapperWhenAbsent() {
         rewriteRun(
           spec -> spec.afterRecipe(run -> assertThat(run.getChangeset().getAllResults())
-            .allSatisfy(result -> assertThat(result.getAfter().getSourcePath().toString()).isEqualTo("pom.xml"))),
+            .allSatisfy(result -> assertThat( result.getAfter().getSourcePath() ).hasToString( "pom.xml" ))),
           pomXml(POM, spec -> spec.after(actual -> assertThat(actual)
             .contains("<java.version>17</java.version>")
             .doesNotContain("<version>3.7.0</version>")

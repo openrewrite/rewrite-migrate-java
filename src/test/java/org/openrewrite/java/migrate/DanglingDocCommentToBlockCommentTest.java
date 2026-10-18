@@ -20,7 +20,9 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class DanglingDocCommentToBlockCommentTest implements RewriteTest {
 
@@ -195,6 +197,38 @@ class DanglingDocCommentToBlockCommentTest implements RewriteTest {
                   void a() {
                   }
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveKotlinAlone() {
+        rewriteRun(
+          kotlin(
+            """
+              import java.util.UUID
+
+              /*******************************************************************
+               * KDoc is parsed as a plain comment, so it would otherwise look dangling.
+               */
+              val id = UUID.randomUUID()
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveGroovyAlone() {
+        rewriteRun(
+          groovy(
+            """
+              import java.util.UUID
+
+              /*******************************************************************
+               * Groovydoc is parsed as a plain comment, so it would otherwise look dangling.
+               */
+              def id = UUID.randomUUID()
               """
           )
         );

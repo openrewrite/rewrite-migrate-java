@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
@@ -38,6 +39,7 @@ class JavaxXmlWsMigrationToJakartaXmlWsTest implements RewriteTest {
             "package javax.xml.ws.http; public class HTTPException extends RuntimeException {}"));
     }
 
+    @DocumentExample
     @Test
     void addApiForTypesPreviouslySuppliedByJavaEight() {
         rewriteRun(

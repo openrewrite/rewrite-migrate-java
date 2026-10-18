@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -32,6 +33,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
         spec.recipe(new UpgradeDockerImageVersion(25));
     }
 
+    @DocumentExample
     @Test
     void upgradeMavenBuilderJavaVersion() {
         rewriteRun(
@@ -406,13 +408,13 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
     @Nested
     class NoChange {
 
+        @ParameterizedTest
         @ValueSource(strings = {
           "FROM ${IMAGE_NAME}:${IMAGE_TAG}",
           "FROM $IMAGE_NAME:$IMAGE_TAG",
           "FROM ${IMAGE_NAME}:11",
           "FROM eclipse-temurin:${IMAGE_TAG}",
         })
-        @ParameterizedTest
         void variableImageReferences(String from) {
             rewriteRun(
               docker(
@@ -479,6 +481,7 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
             );
         }
 
+        @ParameterizedTest
         @ValueSource(strings = {
           // Unrelated images are left alone
           "FROM ubuntu:22.04",
@@ -489,7 +492,6 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
           "FROM eclipse-temurin:25-jre",
           "FROM eclipse-temurin:26-jre",
         })
-        @ParameterizedTest
         void unrelatedImages(String from) {
             rewriteRun(
               docker(from)

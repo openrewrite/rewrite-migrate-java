@@ -23,11 +23,15 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 
 public class InvocationContextGetConstructor extends Recipe {
     @Getter
     final String displayName = "Complete InvocationContext decorators";
+
     @Getter
     final String description = "Delegate getConstructor() when a legacy InvocationContext wrapper delegates getMethod().";
 

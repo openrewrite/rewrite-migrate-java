@@ -30,8 +30,8 @@ class WeldToJakartaTest implements RewriteTest {
           .build().activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta"));
     }
 
-    @ParameterizedTest
     @CsvSource({"weld-core,1.1.5.Final", "weld-core,2.4.8.Final", "weld-core-impl,3.1.9.Final"})
+    @ParameterizedTest
     void migrateJavaxWeldImplementation(String artifact, String version) {
         rewriteRun(
           pomXml(
