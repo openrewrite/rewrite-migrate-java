@@ -68,6 +68,7 @@ public class ReferenceCloneMethod extends Recipe {
                             J.Identifier methodRef = (J.Identifier) method.getSelect();
                             String template = "new " + methodRef.getType().toString() + "(" + methodRef.getSimpleName() + ", new ReferenceQueue<>())";
                             getCursor().putMessageOnFirstEnclosing(J.TypeCast.class, REFERENCE_CLONE_REPLACED, true);
+                            maybeAddImport("java.lang.ref.ReferenceQueue");
                             J replacement = JavaTemplate.builder(template)
                                     .contextSensitive()
                                     .imports("java.lang.ref.ReferenceQueue")
