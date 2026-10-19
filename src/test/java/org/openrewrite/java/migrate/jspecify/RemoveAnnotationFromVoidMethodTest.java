@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -58,7 +57,6 @@ class RemoveAnnotationFromVoidMethodTest implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("RemoveAnnotationVisitor leaves a blank line when removing multiple leading annotations")
     @Test
     void removeAllMatchingAnnotations() {
         rewriteRun(
