@@ -28,6 +28,7 @@ import org.openrewrite.groovy.tree.G;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
@@ -145,10 +146,17 @@ public class AddJaxbRuntime extends ScanningRecipe<AtomicBoolean> {
                         artifactId = SUN_JAXB_RUNTIME_ARTIFACT;
                     }
                     if (rc.findResolvedDependency(groupId, artifactId) == null) {
-                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, null, null)
+                        g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(groupId, artifactId, version, null, "runtimeOnly", null, null, null, this::isTopLevel, null)
                                 .visitNonNull(g, ctx);
                     }
                     return g;
+                }
+
+                private boolean isTopLevel(Cursor cursor) {
+                    if (cursor.getValue() instanceof J.Block) {
+                        return cursor.getParentOrThrow().getValue() instanceof JavaSourceFile;
+                    }
+                    return cursor.getParentOrThrow().firstEnclosing(J.MethodInvocation.class) == null;
                 }
             });
 
