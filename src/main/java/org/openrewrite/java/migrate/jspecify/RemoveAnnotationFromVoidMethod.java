@@ -18,16 +18,15 @@ package org.openrewrite.java.migrate.jspecify;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JContainer;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -52,71 +51,23 @@ public class RemoveAnnotationFromVoidMethod extends Recipe {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
-
                 if (md.getReturnTypeExpression() == null ||
-                    md.getReturnTypeExpression().getType() != JavaType.Primitive.Void) {
+                    md.getReturnTypeExpression().getType() != JavaType.Primitive.Void ||
+                    !service(AnnotationService.class).matches(getCursor(), annotationMatcher)) {
                     return md;
                 }
 
-                // Annotations following a modifier, as in `public @Nullable static void m()`
-                md = md.withModifiers(ListUtils.map(md.getModifiers(),
-                        m -> m.withAnnotations(removeMatching(m.getAnnotations()))));
-
-                // Annotations preceding type parameters, as in `public @Nullable <T> void m()`
-                J.TypeParameters typeParameters = md.getAnnotations().getTypeParameters();
-                if (typeParameters != null) {
-                    md = md.getAnnotations().withTypeParameters(
-                            typeParameters.withAnnotations(removeMatching(typeParameters.getAnnotations())));
-                }
-
-                // Annotations directly preceding the return type, as in `public @Nullable void m()`
-                if (md.getReturnTypeExpression() instanceof J.AnnotatedType) {
-                    J.AnnotatedType annotatedType = (J.AnnotatedType) md.getReturnTypeExpression();
-                    List<J.Annotation> annotations = annotatedType.getAnnotations();
-                    List<J.Annotation> remaining = removeMatching(annotations);
-                    if (remaining.isEmpty()) {
-                        md = md.withReturnTypeExpression(annotatedType.getTypeExpression().withPrefix(
-                                annotatedType.getPrefix().withWhitespace(annotations.get(0).getPrefix().getWhitespace())));
-                    } else if (remaining != annotations) {
-                        Space firstAnnotationPrefix = annotations.get(0).getPrefix();
-                        md = md.withReturnTypeExpression(annotatedType.withAnnotations(
-                                ListUtils.mapFirst(remaining, a -> a.withPrefix(firstAnnotationPrefix))));
+                for (J.Annotation annotation : md.getAllAnnotations()) {
+                    if (annotationMatcher.matches(annotation)) {
+                        maybeRemoveImport(TypeUtils.asFullyQualified(annotation.getType()));
                     }
                 }
 
-                List<J.Annotation> original = md.getLeadingAnnotations();
-                List<J.Annotation> leading = removeMatching(original);
-                if (leading == original) {
-                    return md;
-                }
-
-                Space firstPrefix = original.get(0).getPrefix();
-                if (!leading.isEmpty()) {
-                    leading = ListUtils.mapFirst(leading, a -> a.withPrefix(firstPrefix));
-                    return md.withLeadingAnnotations(leading);
-                }
-
-                md = md.withLeadingAnnotations(leading);
-                if (!md.getModifiers().isEmpty()) {
-                    return md.withModifiers(Space.formatFirstPrefix(md.getModifiers(),
-                            Space.firstPrefix(md.getModifiers()).withWhitespace(firstPrefix.getWhitespace())));
-                }
-                if (md.getPadding().getTypeParameters() != null) {
-                    return md.getPadding().withTypeParameters(md.getPadding().getTypeParameters().withPrefix(
-                            md.getPadding().getTypeParameters().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
-                }
-                return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(
-                        md.getReturnTypeExpression().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
-            }
-
-            private List<J.Annotation> removeMatching(List<J.Annotation> annotations) {
-                return ListUtils.filter(annotations, a -> {
-                    if (annotationMatcher.matches(a)) {
-                        maybeRemoveImport(TypeUtils.asFullyQualified(a.getType()));
-                        return false;
-                    }
-                    return true;
-                });
+                // Leave parameter and body annotations alone by only visiting the method header
+                J.MethodDeclaration header = md.getPadding().withParameters(JContainer.empty()).withBody(null);
+                header = (J.MethodDeclaration) new RemoveAnnotationVisitor(annotationMatcher)
+                        .visitNonNull(header, ctx, getCursor().getParentOrThrow());
+                return header.getPadding().withParameters(md.getPadding().getParameters()).withBody(md.getBody());
             }
         });
     }
