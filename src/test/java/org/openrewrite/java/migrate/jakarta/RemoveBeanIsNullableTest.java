@@ -29,7 +29,7 @@ class RemoveBeanIsNullableTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipe(new RemoveBeanIsNullable())
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.0-M4"));
+            .classpathFromResources(new InMemoryExecutionContext(), "jakarta.enterprise.cdi-api-3.0.1"));
     }
 
     @DocumentExample
