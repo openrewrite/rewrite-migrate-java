@@ -8,7 +8,7 @@ description = "Migrate to later Java versions. Automatically."
 
 recipeDependencies {
     parserClasspath("org.projectlombok:lombok:latest.release")
-    parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0-M4")
+    parserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.1")
     parserClasspath("jakarta.inject:jakarta.inject-api:2.0.1")
     parserClasspath("jakarta.servlet:jakarta.servlet-api:6.0.0")
     parserClasspath("javax.persistence:javax.persistence-api:2.2")
@@ -22,7 +22,6 @@ recipeDependencies {
     testParserClasspath("jakarta.el:jakarta.el-api:4.0.0")
     testParserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1")
     testParserClasspath("jakarta.faces:jakarta.faces-api:3.0.0")
-    testParserClasspath("jakarta.faces:jakarta.faces-api:4.0.0-M6")
     testParserClasspath("jakarta.faces:jakarta.faces-api:4.0.1")
     testParserClasspath("jakarta.servlet:jakarta.servlet-api:4.0.2")
     testParserClasspath("jakarta.servlet:jakarta.servlet-api:5.0.0")
