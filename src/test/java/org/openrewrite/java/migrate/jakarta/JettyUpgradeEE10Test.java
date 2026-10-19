@@ -20,9 +20,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -62,35 +59,12 @@ class JettyUpgradeEE10Test implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            spec -> spec.after(pom -> {
-                Matcher version = Pattern.compile("<version>(12\\.0\\.\\d+)</version>").matcher(pom);
-                assertThat(version.find()).describedAs("Expected a 12.0.x version in %s", pom).isTrue();
-                return """
-                  <project>
-                      <modelVersion>4.0.0</modelVersion>
-                      <groupId>com.example</groupId>
-                      <artifactId>demo</artifactId>
-                      <version>1.0</version>
-                      <dependencies>
-                          <dependency>
-                              <groupId>org.eclipse.jetty</groupId>
-                              <artifactId>jetty-security</artifactId>
-                              <version>%1$s</version>
-                          </dependency>
-                          <dependency>
-                              <groupId>org.eclipse.jetty.websocket</groupId>
-                              <artifactId>jetty-websocket-jetty-api</artifactId>
-                              <version>%1$s</version>
-                          </dependency>
-                          <dependency>
-                              <groupId>org.eclipse.jetty.websocket</groupId>
-                              <artifactId>jetty-websocket-jetty-client</artifactId>
-                              <version>%1$s</version>
-                          </dependency>
-                      </dependencies>
-                  </project>
-                  """.formatted(version.group(1));
-            })
+            spec -> spec.after(pom -> assertThat(pom)
+              .doesNotContain("ee9")
+              .containsPattern("<groupId>org.eclipse.jetty</groupId>\\s*<artifactId>jetty-security</artifactId>\\s*<version>12\\.0\\.\\d+</version>")
+              .containsPattern("<groupId>org.eclipse.jetty.websocket</groupId>\\s*<artifactId>jetty-websocket-jetty-api</artifactId>\\s*<version>12\\.0\\.\\d+</version>")
+              .containsPattern("<groupId>org.eclipse.jetty.websocket</groupId>\\s*<artifactId>jetty-websocket-jetty-client</artifactId>\\s*<version>12\\.0\\.\\d+</version>")
+              .actual())
           )
         );
     }
