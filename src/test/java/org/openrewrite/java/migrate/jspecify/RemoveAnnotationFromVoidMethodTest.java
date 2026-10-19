@@ -124,12 +124,14 @@ class RemoveAnnotationFromVoidMethodTest implements RewriteTest {
           //language=java
           java(
             """
+              import org.jetbrains.annotations.Nullable;
+
               class Foo {
-                  @org.jetbrains.annotations.Nullable
+                  @Nullable
                   void bar() {
                   }
 
-                  @org.jetbrains.annotations.Nullable
+                  @Nullable
                   <T> void baz(T t) {
                   }
               }
@@ -140,6 +142,34 @@ class RemoveAnnotationFromVoidMethodTest implements RewriteTest {
                   }
 
                   <T> void baz(T t) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void removeFullyQualifiedAnnotation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  @org.jetbrains.annotations.Nullable
+                  public void bar() {
+                  }
+
+                  public @org.jetbrains.annotations.Nullable void baz() {
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  public void bar() {
+                  }
+
+                  public void baz() {
                   }
               }
               """
