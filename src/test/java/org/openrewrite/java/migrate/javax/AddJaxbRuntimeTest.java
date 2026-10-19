@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,12 +32,6 @@ import static org.openrewrite.java.Assertions.java;
 class AddJaxbRuntimeTest implements RewriteTest {
 
     // language=java
-    private static final String XML_ELEMENT_STUB = """
-      package javax.xml.bind.annotation;
-      public @interface XmlElement {}
-      """;
-
-    // language=java
     private static final String CLASS_USING_XML_BIND = """
       import javax.xml.bind.annotation.XmlElement;
 
@@ -48,13 +44,13 @@ class AddJaxbRuntimeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddJaxbRuntime("glassfish"))
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api"))
           .beforeRecipe(withToolingApi());
     }
 
     @Test
     void doNotAddToBuildscriptDependencies() {
         rewriteRun(
-          java(XML_ELEMENT_STUB),
           java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
@@ -110,7 +106,6 @@ class AddJaxbRuntimeTest implements RewriteTest {
     @Test
     void addTopLevelDependenciesBlockWhenOnlyBuildscriptHasOne() {
         rewriteRun(
-          java(XML_ELEMENT_STUB),
           java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
