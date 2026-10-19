@@ -445,7 +445,7 @@ recipeList:
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
       newArtifactId: commons-fileupload2-jakarta-servlet5
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
