@@ -19,8 +19,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -47,7 +47,7 @@ public class RemoveAnnotationFromVoidMethod extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesType<>(annotationType, null), new JavaIsoVisitor<ExecutionContext>() {
-            final TypeMatcher typeMatcher = new TypeMatcher(annotationType);
+            final AnnotationMatcher annotationMatcher = new AnnotationMatcher("@" + annotationType);
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
@@ -98,31 +98,25 @@ public class RemoveAnnotationFromVoidMethod extends Recipe {
 
                 md = md.withLeadingAnnotations(leading);
                 if (!md.getModifiers().isEmpty()) {
-                    md = md.withModifiers(Space.formatFirstPrefix(md.getModifiers(),
+                    return md.withModifiers(Space.formatFirstPrefix(md.getModifiers(),
                             Space.firstPrefix(md.getModifiers()).withWhitespace(firstPrefix.getWhitespace())));
-                } else if (md.getPadding().getTypeParameters() != null) {
-                    md = md.getPadding().withTypeParameters(md.getPadding().getTypeParameters().withPrefix(
-                            md.getPadding().getTypeParameters().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
-                } else {
-                    md = md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(
-                            md.getReturnTypeExpression().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
                 }
-                return md;
+                if (md.getPadding().getTypeParameters() != null) {
+                    return md.getPadding().withTypeParameters(md.getPadding().getTypeParameters().withPrefix(
+                            md.getPadding().getTypeParameters().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
+                }
+                return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(
+                        md.getReturnTypeExpression().getPrefix().withWhitespace(firstPrefix.getWhitespace())));
             }
 
             private List<J.Annotation> removeMatching(List<J.Annotation> annotations) {
-                return ListUtils.map(annotations, a -> {
-                    if (matchesType(a)) {
+                return ListUtils.filter(annotations, a -> {
+                    if (annotationMatcher.matches(a)) {
                         maybeRemoveImport(TypeUtils.asFullyQualified(a.getType()));
-                        return null;
+                        return false;
                     }
-                    return a;
+                    return true;
                 });
-            }
-
-            private boolean matchesType(J.Annotation ann) {
-                JavaType.FullyQualified fq = TypeUtils.asFullyQualified(ann.getType());
-                return fq != null && typeMatcher.matches(fq);
             }
         });
     }
