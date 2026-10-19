@@ -24,6 +24,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -40,7 +41,9 @@ public class FindCompletableFutureDefaultExecutor extends Recipe {
     private static final MethodMatcher COMPLETABLE_FUTURE_ASYNC =
             new MethodMatcher("java.util.concurrent.CompletableFuture *Async(..)", true);
     private static final MethodMatcher DELAYED_EXECUTOR =
-            new MethodMatcher("java.util.concurrent.CompletableFuture delayedExecutor(long, java.util.concurrent.TimeUnit)");
+            new MethodMatcher("java.util.concurrent.CompletableFuture delayedExecutor(..)");
+    private static final MethodMatcher COMMON_POOL =
+            new MethodMatcher("java.util.concurrent.ForkJoinPool commonPool()");
 
     String displayName = "Find `CompletableFuture` async calls without an `Executor`";
 
@@ -49,6 +52,8 @@ public class FindCompletableFutureDefaultExecutor extends Recipe {
                          "`ForkJoinPool.commonPool()`. Before JDK 25, a common pool with parallelism of 1 or less " +
                          "(e.g. on a 2-CPU host) made `CompletableFuture` fall back to a new thread per task; from " +
                          "JDK 25 that fallback is gone, so blocking work queues behind a single worker thread. " +
+                         "Calls that pass `ForkJoinPool.commonPool()` explicitly are also found, because they got " +
+                         "the same fallback before JDK 25. " +
                          "Review each call and pass a dedicated `Executor` where the task blocks.";
 
     @Override
@@ -62,11 +67,15 @@ public class FindCompletableFutureDefaultExecutor extends Recipe {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-                        if (DELAYED_EXECUTOR.matches(mi)) {
-                            return SearchResult.found(mi, "delayedExecutor without a base Executor runs tasks on ForkJoinPool.commonPool()");
+                        if (!DELAYED_EXECUTOR.matches(mi) && !COMPLETION_STAGE_ASYNC.matches(mi) && !COMPLETABLE_FUTURE_ASYNC.matches(mi)) {
+                            return mi;
                         }
-                        if ((COMPLETION_STAGE_ASYNC.matches(mi) || COMPLETABLE_FUTURE_ASYNC.matches(mi)) && !hasExecutorArgument(mi)) {
+                        if (!hasExecutorArgument(mi)) {
                             return SearchResult.found(mi, mi.getSimpleName() + " without an Executor runs on ForkJoinPool.commonPool()");
+                        }
+                        List<Expression> args = mi.getArguments();
+                        if (COMMON_POOL.matches(args.get(args.size() - 1))) {
+                            return SearchResult.found(mi, mi.getSimpleName() + " with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25");
                         }
                         return mi;
                     }

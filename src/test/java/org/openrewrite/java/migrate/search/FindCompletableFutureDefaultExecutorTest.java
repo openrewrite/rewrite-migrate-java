@@ -206,9 +206,44 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Retry {
                   void retryLater(Runnable r, CompletableFuture<String> f) {
-                      Executor later = /*~~(delayedExecutor without a base Executor runs tasks on ForkJoinPool.commonPool())~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS);
+                      Executor later = /*~~(delayedExecutor without an Executor runs on ForkJoinPool.commonPool())~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS);
                       CompletableFuture.runAsync(r, later);
                       /*~~(completeAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/f.completeAsync(() -> "done");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void explicitCommonPool() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.concurrent.CompletableFuture;
+              import java.util.concurrent.ForkJoinPool;
+              import java.util.concurrent.TimeUnit;
+
+              class Shared {
+                  void run(CompletableFuture<String> f) {
+                      CompletableFuture.supplyAsync(() -> "x", ForkJoinPool.commonPool());
+                      f.thenApplyAsync(String::length, ForkJoinPool.commonPool());
+                      CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS, ForkJoinPool.commonPool());
+                  }
+              }
+              """,
+            """
+              import java.util.concurrent.CompletableFuture;
+              import java.util.concurrent.ForkJoinPool;
+              import java.util.concurrent.TimeUnit;
+
+              class Shared {
+                  void run(CompletableFuture<String> f) {
+                      /*~~(supplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/CompletableFuture.supplyAsync(() -> "x", ForkJoinPool.commonPool());
+                      /*~~(thenApplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/f.thenApplyAsync(String::length, ForkJoinPool.commonPool());
+                      /*~~(delayedExecutor with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS, ForkJoinPool.commonPool());
                   }
               }
               """
