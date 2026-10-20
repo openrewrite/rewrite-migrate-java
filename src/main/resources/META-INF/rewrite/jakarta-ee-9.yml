@@ -151,17 +151,60 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.0.x
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation
-      newPackageName: jakarta.annotation
-      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
-      recursive: false
+  # `javax.annotation` is shared with JSR-305 (`CheckReturnValue`, `CheckForNull`, `ParametersAreNonnullByDefault`, ...),
+  # which never moved to Jakarta. Rename the types `jakarta.annotation-api` has by name.
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Generated
+      newFullyQualifiedTypeName: jakarta.annotation.Generated
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ManagedBean
+      newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PostConstruct
+      newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PreDestroy
+      newFullyQualifiedTypeName: jakarta.annotation.PreDestroy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Priority
+      newFullyQualifiedTypeName: jakarta.annotation.Priority
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
+  # `jakarta.annotation-api` 2.1 added its own `Nonnull` and `Nullable`
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nonnull
+      newFullyQualifiedTypeName: jakarta.annotation.Nonnull
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Nullable
+      newFullyQualifiedTypeName: jakarta.annotation.Nullable
+  - org.openrewrite.java.migrate.jakarta.ChangeUnresolvedJavaxAnnotationPackage
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.security
       newPackageName: jakarta.annotation.security
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.sql
       newPackageName: jakarta.annotation.sql
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.ChangeUnresolvedJavaxAnnotationPackage
+displayName: Migrate unresolved `javax.annotation` types to `jakarta.annotation`
+description: >-
+  Rename `javax.annotation` references whose types could not be resolved, such as annotations that came from the JDK
+  in Java 8 models. Files that still use a resolved `javax.annotation` type keep their package, as those are JSR-305
+  annotations without a Jakarta equivalent.
+preconditions:
+  - org.openrewrite.java.search.DoesNotUseType:
+      fullyQualifiedTypeName: javax.annotation.*
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.annotation
+      newPackageName: jakarta.annotation
+      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
+      recursive: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAuthenticationMigrationToJakartaAuthentication

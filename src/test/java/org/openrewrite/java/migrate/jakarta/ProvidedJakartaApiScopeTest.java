@@ -64,8 +64,8 @@ class ProvidedJakartaApiScopeTest implements RewriteTest {
             ),
             srcMainJava(
               java(
-                "class A { javax." + namespace + "." + type + " api; }",
-                "class A { jakarta." + namespace + "." + type + " api; }"
+                "import javax." + namespace + "." + type + ";\n\nclass A { " + type + " api; }",
+                "import jakarta." + namespace + "." + type + ";\n\nclass A { " + type + " api; }"
               )
             )
           )
