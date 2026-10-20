@@ -35,6 +35,7 @@ recipeDependencies {
     testParserClasspath("javax.servlet.jsp:javax.servlet.jsp-api:2.3.3")
     testParserClasspath("javax.transaction:javax.transaction-api:1.3")
     testParserClasspath("javax.validation:validation-api:2.0.1.Final")
+    testParserClasspath("javax.xml.bind:jaxb-api:2.3.1")
     testParserClasspath("org.apache.ws.security:wss4j:1.6.19")
     testParserClasspath("org.apache.wss4j:wss4j-ws-security-common:2.0.0")
     testParserClasspath("org.apache.wss4j:wss4j-ws-security-dom:2.0.0")

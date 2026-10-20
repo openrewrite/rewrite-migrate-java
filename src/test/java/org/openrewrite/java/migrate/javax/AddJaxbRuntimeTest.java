@@ -17,20 +17,35 @@ package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.properties.Assertions.properties;
 
 class AddJaxbRuntimeTest implements RewriteTest {
 
+    // language=java
+    private static final String CLASS_USING_XML_BIND = """
+      import javax.xml.bind.annotation.XmlElement;
+
+      public class Test {
+          @XmlElement
+          private String name;
+      }
+      """;
+
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new AddJaxbRuntime("glassfish"));
+        spec.recipe(new AddJaxbRuntime("glassfish"))
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api-2.3.1"));
     }
 
     @DocumentExample
@@ -152,6 +167,113 @@ class AddJaxbRuntimeTest implements RewriteTest {
                   runtimeOnly "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void doNotAddToBuildscriptDependencies() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          java(CLASS_USING_XML_BIND),
+          buildGradle(
+            //language=gradle
+            """
+              buildscript {
+                  repositories {
+                      mavenCentral()
+                  }
+                  dependencies {
+                  }
+              }
+
+              apply plugin: 'java'
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+              }
+              """,
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    (?m)^dependencies \\{
+                        implementation "jakarta\\.xml\\.bind:jakarta\\.xml\\.bind-api:2\\.3\\.2"
+
+                        runtimeOnly "org\\.glassfish\\.jaxb:jaxb-runtime:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
+          )
+        );
+    }
+
+    @Test
+    void addTopLevelDependenciesBlockWhenOnlyBuildscriptHasOne() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          java(CLASS_USING_XML_BIND),
+          buildGradle(
+            //language=gradle
+            """
+              buildscript {
+                  repositories {
+                      mavenCentral()
+                  }
+                  dependencies {
+                  }
+              }
+
+              apply plugin: 'java'
+
+              repositories {
+                  mavenCentral()
+              }
+
+              apply from: "dependencies.gradle"
+              """,
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    apply from: "dependencies\\.gradle"
+
+                    dependencies \\{
+                        runtimeOnly "org\\.glassfish\\.jaxb:jaxb-runtime:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
+          ),
+          buildGradle(
+            //language=gradle
+            """
+              dependencies {
+                  implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+              }
+              """,
+            spec -> spec.path("dependencies.gradle")
           )
         );
     }
