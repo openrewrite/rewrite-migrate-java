@@ -19,11 +19,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.AddDependencyVisitor;
@@ -83,6 +86,7 @@ public class AddJaxwsRuntime extends Recipe {
         public TreeVisitor<?, ExecutionContext> getVisitor() {
             return Preconditions.check(Preconditions.and(
                     new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(),
+                    new IsBuildGradle<>(true),
                     Preconditions.not(new FindJakartaNamespaceApi())), new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
@@ -148,8 +152,15 @@ public class AddJaxwsRuntime extends Recipe {
                 }
 
                 private G.CompilationUnit addJaxWsRuntimeDependency(String apiConfiguration, G.CompilationUnit g, ExecutionContext ctx) {
-                    return (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, null, null)
+                    return (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT, "2.3.x", null, apiConfiguration, null, null, null, this::isTopLevel, null)
                             .visitNonNull(g, ctx);
+                }
+
+                private boolean isTopLevel(Cursor cursor) {
+                    if (cursor.getValue() instanceof J.Block) {
+                        return cursor.getParentOrThrow().getValue() instanceof JavaSourceFile;
+                    }
+                    return cursor.getParentOrThrow().firstEnclosing(J.MethodInvocation.class) == null;
                 }
             });
         }
