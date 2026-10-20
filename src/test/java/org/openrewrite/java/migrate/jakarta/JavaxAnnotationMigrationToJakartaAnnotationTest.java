@@ -200,4 +200,198 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void keepsJsr305Annotations() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(
+              "package javax.annotation; public @interface CheckReturnValue {}",
+              "package javax.annotation; public @interface CheckForNull {}",
+              "package javax.annotation; public @interface Nonnegative {}",
+              "package javax.annotation; public @interface ParametersAreNonnullByDefault {}",
+              "package javax.annotation; public @interface WillClose {}",
+              "package javax.annotation.concurrent; public @interface ThreadSafe {}"
+            )),
+          //language=java
+          java(
+            """
+              import javax.annotation.CheckForNull;
+              import javax.annotation.CheckReturnValue;
+              import javax.annotation.Nonnegative;
+              import javax.annotation.ParametersAreNonnullByDefault;
+              import javax.annotation.WillClose;
+              import javax.annotation.concurrent.ThreadSafe;
+
+              @ThreadSafe
+              @ParametersAreNonnullByDefault
+              class Jsr305 {
+                  @CheckForNull
+                  String name() {
+                      return null;
+                  }
+
+                  @CheckReturnValue
+                  @Nonnegative
+                  int size() {
+                      return 0;
+                  }
+
+                  void close(@WillClose AutoCloseable closeable) throws Exception {
+                      closeable.close();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migratesJsr250AnnotationsNextToJsr305() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(
+              "package javax.annotation; public @interface CheckReturnValue {}",
+              "package javax.annotation; public @interface PostConstruct {}"
+            )),
+          //language=java
+          java(
+            """
+              import javax.annotation.CheckReturnValue;
+              import javax.annotation.PostConstruct;
+
+              class Bean {
+                  @PostConstruct
+                  void init() {
+                  }
+
+                  @CheckReturnValue
+                  Bean self() {
+                      return this;
+                  }
+              }
+              """,
+            """
+              import jakarta.annotation.PostConstruct;
+
+              import javax.annotation.CheckReturnValue;
+
+              class Bean {
+                  @PostConstruct
+                  void init() {
+                  }
+
+                  @CheckReturnValue
+                  Bean self() {
+                      return this;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void splitsWildcardImportBetweenJakartaAndJsr305() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(
+              "package javax.annotation; public @interface CheckReturnValue {}",
+              "package javax.annotation; public @interface PostConstruct {}",
+              "package javax.annotation; public @interface PreDestroy {}"
+            )),
+          //language=java
+          java(
+            """
+              import javax.annotation.*;
+
+              class Bean {
+                  @PostConstruct
+                  void init() {
+                  }
+
+                  @PreDestroy
+                  void stop() {
+                  }
+
+                  @CheckReturnValue
+                  Bean self() {
+                      return this;
+                  }
+              }
+              """,
+            """
+              import jakarta.annotation.PostConstruct;
+              import jakarta.annotation.PreDestroy;
+
+              import javax.annotation.CheckReturnValue;
+
+              class Bean {
+                  @PostConstruct
+                  void init() {
+                  }
+
+                  @PreDestroy
+                  void stop() {
+                  }
+
+                  @CheckReturnValue
+                  Bean self() {
+                      return this;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migratesEveryJakartaAnnotationApiType() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .dependsOn(
+              "package javax.annotation; public @interface Generated { String[] value(); }",
+              "package javax.annotation; public @interface PreDestroy {}",
+              "package javax.annotation; public @interface Priority { int value(); }",
+              "package javax.annotation; public @interface Resource { String name() default \"\"; }"
+            )),
+          //language=java
+          java(
+            """
+              import javax.annotation.Generated;
+              import javax.annotation.PreDestroy;
+              import javax.annotation.Priority;
+              import javax.annotation.Resource;
+
+              @Generated("com.example.Generator")
+              @Priority(1)
+              class Bean {
+                  @Resource(name = "jdbc/ds")
+                  Object dataSource;
+
+                  @PreDestroy
+                  void shutdown() {
+                  }
+              }
+              """,
+            """
+              import jakarta.annotation.Generated;
+              import jakarta.annotation.PreDestroy;
+              import jakarta.annotation.Priority;
+              import jakarta.annotation.Resource;
+
+              @Generated("com.example.Generator")
+              @Priority(1)
+              class Bean {
+                  @Resource(name = "jdbc/ds")
+                  Object dataSource;
+
+                  @PreDestroy
+                  void shutdown() {
+                  }
+              }
+              """
+          )
+        );
+    }
 }
