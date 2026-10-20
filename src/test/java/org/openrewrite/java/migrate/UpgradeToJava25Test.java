@@ -709,7 +709,6 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void addsLombokAnnotationProcessor() {
         rewriteRun(
-          spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           mavenProject("project",
             pomXml(
               //language=xml
