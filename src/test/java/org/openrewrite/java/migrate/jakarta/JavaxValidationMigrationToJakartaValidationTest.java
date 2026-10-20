@@ -125,7 +125,7 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
                       <dependency>
                           <groupId>org.hibernate.validator</groupId>
                           <artifactId>hibernate-validator</artifactId>
-                          <version>7.0.5.Final</version>
+                          <version>7.0.6.Final</version>
                           <scope>test</scope>
                       </dependency>
                   </dependencies>
