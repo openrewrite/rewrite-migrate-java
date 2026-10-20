@@ -131,8 +131,7 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
     void retainJaxbApiWhenJacksonJaxbAnnotationsPresent() {
         rewriteRun(
           spec -> spec.beforeRecipe(withToolingApi())
-            .parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB))
-            .expectedCyclesThatMakeChanges(2),
+            .parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
           //language=java
           java(
             """
@@ -182,8 +181,7 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
     @Test
     void retainJaxbApiWhenJacksonJaxbAnnotationsPresentMaven() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB))
-            .expectedCyclesThatMakeChanges(2),
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(XML_ELEMENT_STUB, JAKARTA_XML_ELEMENT_STUB)),
           //language=java
           java(
             """

@@ -22,6 +22,8 @@ description: >-
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  # Runs before the Lombok upgrade so the annotation processor path it adds is upgraded too.
+  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations
   - org.openrewrite.java.migrate.lombok.UseLombokGetter
@@ -40,7 +42,6 @@ recipeList:
   - org.openrewrite.maven.ExcludeDependency:
       groupId: org.projectlombok
       artifactId: lombok
-  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.text.AppendToTextFile:
       relativeFileName: '{,**/}lombok.config'
       content: lombok.checkReturnValueAnnotation += lombok
