@@ -169,7 +169,6 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
     void replacePredicatesAndNestedCalls() {
         //language=java
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(2),
           java(
             """
               import com.google.common.base.Predicate;
@@ -200,7 +199,6 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
     void replacePredicatesOrNestedCalls() {
         //language=java
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(2),
           java(
             """
               import com.google.common.base.Predicate;

@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.gradle.ChangeDependency;
+import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -26,6 +27,7 @@ import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
@@ -127,7 +129,9 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(Preconditions.and(
+                new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(),
+                new IsBuildGradle<>(true)), new GroovyIsoVisitor<ExecutionContext>() {
             @Override
             public G.CompilationUnit visitCompilationUnit(G.CompilationUnit g, ExecutionContext ctx) {
                 if (!acc.usesJaxb.get()) {
@@ -147,10 +151,17 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
                 }
 
                 if (rc.findResolvedDependency(runtimeGroupId(), runtimeArtifactId()) == null) {
-                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null, "runtimeOnly", null, null, null, null, null)
+                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null, "runtimeOnly", null, null, null, this::isTopLevel, null)
                             .visitNonNull(g, ctx);
                 }
                 return g;
+            }
+
+            private boolean isTopLevel(Cursor cursor) {
+                if (cursor.getValue() instanceof J.Block) {
+                    return cursor.getParentOrThrow().getValue() instanceof JavaSourceFile;
+                }
+                return cursor.getParentOrThrow().firstEnclosing(J.MethodInvocation.class) == null;
             }
         });
 

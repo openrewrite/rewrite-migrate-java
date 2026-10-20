@@ -19,6 +19,7 @@ recipeDependencies {
 
     testParserClasspath("com.sun.faces:jsf-api:2.1.29-11")
     testParserClasspath("com.sun.istack:istack-commons-runtime:4.1.2")
+    testParserClasspath("commons-fileupload:commons-fileupload:1.5")
     testParserClasspath("jakarta.el:jakarta.el-api:4.0.0")
     testParserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1")
     testParserClasspath("jakarta.faces:jakarta.faces-api:3.0.0")
@@ -35,6 +36,9 @@ recipeDependencies {
     testParserClasspath("javax.servlet.jsp:javax.servlet.jsp-api:2.3.3")
     testParserClasspath("javax.transaction:javax.transaction-api:1.3")
     testParserClasspath("javax.validation:validation-api:2.0.1.Final")
+    testParserClasspath("javax.xml.bind:jaxb-api:2.3.1")
+    testParserClasspath("org.apache.commons:commons-fileupload2-jakarta:2.0.0-M1")
+    testParserClasspath("org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M5")
     testParserClasspath("org.apache.ws.security:wss4j:1.6.19")
     testParserClasspath("org.apache.wss4j:wss4j-ws-security-common:2.0.0")
     testParserClasspath("org.apache.wss4j:wss4j-ws-security-dom:2.0.0")

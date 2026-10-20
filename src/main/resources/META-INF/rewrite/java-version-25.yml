@@ -274,6 +274,7 @@ description: >-
   applied automatically. As a safety net the module is also floored at Java 24: if the Kotlin upgrade cannot be applied
   (for instance because the version is managed externally by a parent or BOM), the module still lands on Java 24 rather
   than being left behind, and is raised the rest of the way to Java 25 only once it actually reaches Kotlin 2.3.
+causesAnotherCycle: true
 tags:
   - java25
   - kotlin
