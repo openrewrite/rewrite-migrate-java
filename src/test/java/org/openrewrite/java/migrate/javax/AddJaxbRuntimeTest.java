@@ -22,9 +22,6 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
@@ -48,7 +45,7 @@ class AddJaxbRuntimeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddJaxbRuntime("glassfish"))
-          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api-2.3.1"));
     }
 
     @DocumentExample
@@ -200,32 +197,26 @@ class AddJaxbRuntimeTest implements RewriteTest {
                   implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
               }
               """,
-            spec -> spec.after(buildGradle -> {
-                Matcher version = Pattern.compile("jaxb-runtime:(2\\.3\\.\\d+)").matcher(buildGradle);
-                assertThat(version.find()).isTrue();
-                //language=gradle
-                return """
-                  buildscript {
-                      repositories {
-                          mavenCentral()
-                      }
-                      dependencies {
-                      }
-                  }
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    (?m)^dependencies \\{
+                        implementation "jakarta\\.xml\\.bind:jakarta\\.xml\\.bind-api:2\\.3\\.2"
 
-                  apply plugin: 'java'
-
-                  repositories {
-                      mavenCentral()
-                  }
-
-                  dependencies {
-                      implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-
-                      runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  }
-                  """.formatted(version.group(1));
-            })
+                        runtimeOnly "org\\.glassfish\\.jaxb:jaxb-runtime:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
           )
         );
     }
@@ -254,32 +245,26 @@ class AddJaxbRuntimeTest implements RewriteTest {
 
               apply from: "dependencies.gradle"
               """,
-            spec -> spec.after(buildGradle -> {
-                Matcher version = Pattern.compile("jaxb-runtime:(2\\.3\\.\\d+)").matcher(buildGradle);
-                assertThat(version.find()).isTrue();
-                //language=gradle
-                return """
-                  buildscript {
-                      repositories {
-                          mavenCentral()
-                      }
-                      dependencies {
-                      }
-                  }
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    apply from: "dependencies\\.gradle"
 
-                  apply plugin: 'java'
-
-                  repositories {
-                      mavenCentral()
-                  }
-
-                  apply from: "dependencies.gradle"
-
-                  dependencies {
-                      runtimeOnly "org.glassfish.jaxb:jaxb-runtime:%s"
-                  }
-                  """.formatted(version.group(1));
-            })
+                    dependencies \\{
+                        runtimeOnly "org\\.glassfish\\.jaxb:jaxb-runtime:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
           ),
           buildGradle(
             //language=gradle

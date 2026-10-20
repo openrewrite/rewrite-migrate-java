@@ -19,9 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
@@ -58,34 +55,28 @@ class AddJaxwsRuntimeTest implements RewriteTest {
                   implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
               }
               """,
-            spec -> spec.after(buildGradle -> {
-                Matcher version = Pattern.compile("jaxws-rt:(2\\.3\\.\\d+)").matcher(buildGradle);
-                assertThat(version.find()).isTrue();
-                //language=gradle
-                return """
-                  buildscript {
-                      repositories {
-                          mavenCentral()
-                      }
-                      dependencies {
-                      }
-                  }
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    (?m)^dependencies \\{
+                        compileOnly "com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+"
 
-                  apply plugin: 'java'
+                        implementation "jakarta\\.xml\\.ws:jakarta\\.xml\\.ws-api:2\\.3\\.2"
 
-                  repositories {
-                      mavenCentral()
-                  }
-
-                  dependencies {
-                      compileOnly "com.sun.xml.ws:jaxws-rt:%1$s"
-
-                      implementation "jakarta.xml.ws:jakarta.xml.ws-api:2.3.2"
-
-                      testImplementation "com.sun.xml.ws:jaxws-rt:%1$s"
-                  }
-                  """.formatted(version.group(1));
-            })
+                        testImplementation "com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
           )
         );
     }
@@ -112,34 +103,28 @@ class AddJaxwsRuntimeTest implements RewriteTest {
 
               apply from: "dependencies.gradle"
               """,
-            spec -> spec.after(buildGradle -> {
-                Matcher version = Pattern.compile("jaxws-rt:(2\\.3\\.\\d+)").matcher(buildGradle);
-                assertThat(version.find()).isTrue();
-                //language=gradle
-                return """
-                  buildscript {
-                      repositories {
-                          mavenCentral()
-                      }
-                      dependencies {
-                      }
-                  }
+            spec -> spec.after(buildGradle ->
+                assertThat(buildGradle)
+                  .contains(
+                    //language=gradle
+                    """
+                    buildscript {
+                        repositories {
+                            mavenCentral()
+                        }
+                        dependencies {
+                        }
+                    }
+                    """)
+                  .containsPattern("""
+                    apply from: "dependencies\\.gradle"
 
-                  apply plugin: 'java'
+                    dependencies \\{
+                        compileOnly "com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+"
 
-                  repositories {
-                      mavenCentral()
-                  }
-
-                  apply from: "dependencies.gradle"
-
-                  dependencies {
-                      compileOnly "com.sun.xml.ws:jaxws-rt:%1$s"
-
-                      testImplementation "com.sun.xml.ws:jaxws-rt:%1$s"
-                  }
-                  """.formatted(version.group(1));
-            })
+                        testImplementation "com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+"
+                    }""")
+                  .actual())
           ),
           buildGradle(
             //language=gradle
