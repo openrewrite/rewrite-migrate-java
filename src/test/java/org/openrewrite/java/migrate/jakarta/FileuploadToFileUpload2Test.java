@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -28,16 +29,10 @@ class FileuploadToFileUpload2Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2")
-          .parser(JavaParser.fromJavaVersion().dependsOn(
-            "package org.apache.commons.fileupload; public interface FileItem {}",
-            "package org.apache.commons.fileupload; public class FileUploadException extends Exception {}",
-            "package org.apache.commons.fileupload.disk; public class DiskFileItemFactory {}",
-            "package org.apache.commons.fileupload.servlet; public class ServletFileUpload {}",
-            "package org.apache.commons.fileupload.servlet; public class ServletRequestContext {}",
-            "package org.apache.commons.fileupload.servlet; public class FileCleanerCleanup {}",
-            "package org.apache.commons.fileupload2.jakarta; public class JakartaServletFileUpload {}",
-            "package org.apache.commons.fileupload2.jakarta.servlet5; public class JakartaServletFileUpload {}"
-          ));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(),
+            "commons-fileupload-1.5",
+            "commons-fileupload2-jakarta-2.0.0-M1",
+            "commons-fileupload2-jakarta-servlet5-2.0.0-M5"));
     }
 
     @DocumentExample
