@@ -23,7 +23,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -36,14 +36,10 @@ import java.util.List;
 @Value
 public class FindCompletableFutureDefaultExecutor extends Recipe {
 
-    private static final MethodMatcher COMPLETION_STAGE_ASYNC =
-            new MethodMatcher("java.util.concurrent.CompletionStage *Async(..)", true);
-    private static final MethodMatcher COMPLETABLE_FUTURE_ASYNC =
-            new MethodMatcher("java.util.concurrent.CompletableFuture *Async(..)", true);
-    private static final MethodMatcher DELAYED_EXECUTOR =
-            new MethodMatcher("java.util.concurrent.CompletableFuture delayedExecutor(..)");
-    private static final MethodMatcher COMMON_POOL =
-            new MethodMatcher("java.util.concurrent.ForkJoinPool commonPool()");
+    private static final MethodMatcher COMPLETION_STAGE_ASYNC = new MethodMatcher("java.util.concurrent.CompletionStage *Async(..)", true);
+    private static final MethodMatcher COMPLETABLE_FUTURE_ASYNC = new MethodMatcher("java.util.concurrent.CompletableFuture *Async(..)", true);
+    private static final MethodMatcher DELAYED_EXECUTOR = new MethodMatcher("java.util.concurrent.CompletableFuture delayedExecutor(..)");
+    private static final MethodMatcher COMMON_POOL = new MethodMatcher("java.util.concurrent.ForkJoinPool commonPool()");
 
     String displayName = "Find `CompletableFuture` async calls without an `Executor`";
 
@@ -60,8 +56,9 @@ public class FindCompletableFutureDefaultExecutor extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.or(
-                        new UsesType<>("java.util.concurrent.CompletableFuture", false),
-                        new UsesType<>("java.util.concurrent.CompletionStage", false)
+                        new UsesMethod<>(COMPLETION_STAGE_ASYNC),
+                        new UsesMethod<>(COMPLETABLE_FUTURE_ASYNC),
+                        new UsesMethod<>(DELAYED_EXECUTOR)
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
@@ -70,24 +67,15 @@ public class FindCompletableFutureDefaultExecutor extends Recipe {
                         if (!DELAYED_EXECUTOR.matches(mi) && !COMPLETION_STAGE_ASYNC.matches(mi) && !COMPLETABLE_FUTURE_ASYNC.matches(mi)) {
                             return mi;
                         }
-                        if (!hasExecutorArgument(mi)) {
-                            return SearchResult.found(mi, mi.getSimpleName() + " without an Executor runs on ForkJoinPool.commonPool()");
+                        List<JavaType> parameterTypes = mi.getMethodType().getParameterTypes();
+                        if (parameterTypes.isEmpty() || !TypeUtils.isAssignableTo("java.util.concurrent.Executor", parameterTypes.get(parameterTypes.size() - 1))) {
+                            return SearchResult.found(mi, mi.getSimpleName() + " without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks");
                         }
                         List<Expression> args = mi.getArguments();
                         if (COMMON_POOL.matches(args.get(args.size() - 1))) {
-                            return SearchResult.found(mi, mi.getSimpleName() + " with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25");
+                            return SearchResult.found(mi, mi.getSimpleName() + " with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25, which can lead to performance degradation for blocking tasks");
                         }
                         return mi;
-                    }
-
-                    private boolean hasExecutorArgument(J.MethodInvocation mi) {
-                        JavaType.Method methodType = mi.getMethodType();
-                        if (methodType == null) {
-                            return true;
-                        }
-                        List<JavaType> parameterTypes = methodType.getParameterTypes();
-                        return !parameterTypes.isEmpty() &&
-                               TypeUtils.isAssignableTo("java.util.concurrent.Executor", parameterTypes.get(parameterTypes.size() - 1));
                     }
                 }
         );

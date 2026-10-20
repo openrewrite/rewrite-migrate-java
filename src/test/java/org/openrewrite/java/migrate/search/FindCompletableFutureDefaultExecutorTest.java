@@ -57,7 +57,7 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class BatchLoader {
                   CompletionStage<List<String>> load(List<String> keys) {
-                      return /*~~(supplyAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/CompletableFuture.supplyAsync(() -> doLoad(keys));
+                      return /*~~(supplyAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.supplyAsync(() -> doLoad(keys));
                   }
 
                   List<String> doLoad(List<String> keys) {
@@ -88,7 +88,7 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Audit {
                   void audit(Runnable post) {
-                      /*~~(runAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/CompletableFuture.runAsync(post);
+                      /*~~(runAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.runAsync(post);
                   }
               }
               """
@@ -118,7 +118,7 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Checkout {
                   CompletableFuture<String> checkout(Executor ioPool) {
-                      return /*~~(thenComposeAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/CompletableFuture.supplyAsync(() -> "quote", ioPool)
+                      return /*~~(thenComposeAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.supplyAsync(() -> "quote", ioPool)
                         .thenComposeAsync(quote -> CompletableFuture.completedFuture(quote + " charged"));
                   }
               }
@@ -146,7 +146,7 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Offers {
                   CompletableFuture<String> offer(CompletableFuture<String> quote, CompletableFuture<Integer> stock) {
-                      return /*~~(thenCombineAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/quote.thenCombineAsync(stock, (q, s) -> q + s);
+                      return /*~~(thenCombineAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/quote.thenCombineAsync(stock, (q, s) -> q + s);
                   }
               }
               """
@@ -173,7 +173,7 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Tracker {
                   void track(CompletionStage<String> stage) {
-                      /*~~(whenCompleteAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/stage.whenCompleteAsync((r, e) -> System.out.println(r));
+                      /*~~(whenCompleteAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/stage.whenCompleteAsync((r, e) -> System.out.println(r));
                   }
               }
               """
@@ -206,9 +206,9 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Retry {
                   void retryLater(Runnable r, CompletableFuture<String> f) {
-                      Executor later = /*~~(delayedExecutor without an Executor runs on ForkJoinPool.commonPool())~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS);
+                      Executor later = /*~~(delayedExecutor without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS);
                       CompletableFuture.runAsync(r, later);
-                      /*~~(completeAsync without an Executor runs on ForkJoinPool.commonPool())~~>*/f.completeAsync(() -> "done");
+                      /*~~(completeAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/f.completeAsync(() -> "done");
                   }
               }
               """
@@ -241,9 +241,9 @@ class FindCompletableFutureDefaultExecutorTest implements RewriteTest {
 
               class Shared {
                   void run(CompletableFuture<String> f) {
-                      /*~~(supplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/CompletableFuture.supplyAsync(() -> "x", ForkJoinPool.commonPool());
-                      /*~~(thenApplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/f.thenApplyAsync(String::length, ForkJoinPool.commonPool());
-                      /*~~(delayedExecutor with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25)~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS, ForkJoinPool.commonPool());
+                      /*~~(supplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25, which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.supplyAsync(() -> "x", ForkJoinPool.commonPool());
+                      /*~~(thenApplyAsync with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25, which can lead to performance degradation for blocking tasks)~~>*/f.thenApplyAsync(String::length, ForkJoinPool.commonPool());
+                      /*~~(delayedExecutor with ForkJoinPool.commonPool() has no thread-per-task fallback from JDK 25, which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS, ForkJoinPool.commonPool());
                   }
               }
               """
