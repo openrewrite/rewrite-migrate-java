@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -28,6 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.properties.Assertions.properties;
 
 class AddJaxbRuntimeTest implements RewriteTest {
 
@@ -44,13 +48,136 @@ class AddJaxbRuntimeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddJaxbRuntime("glassfish"))
-          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api"))
-          .beforeRecipe(withToolingApi());
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jaxb-api"));
+    }
+
+    @DocumentExample
+    @Test
+    void swapRuntimeVersionedByParentProperty() {
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <properties>
+                        <jaxb.version>2.2.11</jaxb.version>
+                    </properties>
+                    <modules>
+                        <module>child</module>
+                    </modules>
+                </project>
+                """,
+              //language=xml
+              """
+                <project>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.0.0</version>
+                    <packaging>pom</packaging>
+                    <properties>
+                        <jaxb.version>2.3.9</jaxb.version>
+                    </properties>
+                    <modules>
+                        <module>child</module>
+                    </modules>
+                </project>
+                """
+            ),
+            mavenProject("child",
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <parent>
+                          <groupId>com.example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1.0.0</version>
+                      </parent>
+                      <artifactId>child</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.sun.xml.bind</groupId>
+                              <artifactId>jaxb-impl</artifactId>
+                              <version>${jaxb.version}</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                      <parent>
+                          <groupId>com.example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1.0.0</version>
+                      </parent>
+                      <artifactId>child</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.glassfish.jaxb</groupId>
+                              <artifactId>jaxb-runtime</artifactId>
+                              <version>${jaxb.version}</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void swapRuntimeVersionedByGradleProperty() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          properties(
+            "jaxbVersion=2.2.11",
+            "jaxbVersion=2.3.9",
+            spec -> spec.path("gradle.properties")
+          ),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  runtimeOnly "com.sun.xml.bind:jaxb-impl:${jaxbVersion}"
+              }
+              """,
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  runtimeOnly "org.glassfish.jaxb:jaxb-runtime:${jaxbVersion}"
+              }
+              """
+          )
+        );
     }
 
     @Test
     void doNotAddToBuildscriptDependencies() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
           java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
@@ -106,6 +233,7 @@ class AddJaxbRuntimeTest implements RewriteTest {
     @Test
     void addTopLevelDependenciesBlockWhenOnlyBuildscriptHasOne() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
           java(CLASS_USING_XML_BIND),
           buildGradle(
             //language=gradle
