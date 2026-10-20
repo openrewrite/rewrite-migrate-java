@@ -728,6 +728,69 @@ recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.eclipse.jetty.util.resource.ResourceCollection
       newFullyQualifiedTypeName: org.eclipse.jetty.util.resource.Resource
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.servlets
+      newPackageName: org.eclipse.jetty.ee10.servlets
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.servlet
+      newPackageName: org.eclipse.jetty.ee10.servlet
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.webapp
+      newPackageName: org.eclipse.jetty.ee10.webapp
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.annotations
+      newPackageName: org.eclipse.jetty.ee10.annotations
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.apache.jsp
+      newPackageName: org.eclipse.jetty.ee10.apache.jsp
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.jsp
+      newPackageName: org.eclipse.jetty.ee10.jsp
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.proxy
+      newPackageName: org.eclipse.jetty.ee10.proxy
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.websocket.server
+      newPackageName: org.eclipse.jetty.ee10.websocket.server
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.websocket.jakarta
+      newPackageName: org.eclipse.jetty.ee10.websocket.jakarta
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.websocket.api
+      newPackageName: org.eclipse.jetty.websocket.api
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.websocket.client
+      newPackageName: org.eclipse.jetty.websocket.client
+      recursive: true
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.ee9.security.ConstraintAware
+      newFullyQualifiedTypeName: org.eclipse.jetty.ee10.servlet.security.ConstraintAware
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.ee9.security.ConstraintMapping
+      newFullyQualifiedTypeName: org.eclipse.jetty.ee10.servlet.security.ConstraintMapping
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.ee9.security.ConstraintSecurityHandler
+      newFullyQualifiedTypeName: org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.ee9.security.authentication.LoginCallback
+      newFullyQualifiedTypeName: org.eclipse.jetty.ee10.servlet.security.authentication.LoginCallback
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.eclipse.jetty.ee9.security.authentication.LoginCallbackImpl
+      newFullyQualifiedTypeName: org.eclipse.jetty.ee10.servlet.security.authentication.LoginCallbackImpl
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee9.security
+      newPackageName: org.eclipse.jetty.security
+      recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10

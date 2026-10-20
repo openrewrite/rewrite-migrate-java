@@ -51,7 +51,7 @@ public class UpdateBeanManagerMethods extends Recipe {
                     if (arguments.size() <= 1) {
                         return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
                                 ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
-                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.1"))
                                 .build()
                                 .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
                     }
@@ -67,13 +67,13 @@ public class UpdateBeanManagerMethods extends Recipe {
                             ".select(" + String.join(", ", nCopies(arguments.size() - 1, "#{any(java.lang.annotation.Annotation)}")) + ')' +
                             ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})";
                     return JavaTemplate.builder(template)
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.1"))
                             .build()
                             .apply(updateCursor(mi), mi.getCoordinates().replace(), args);
                 }
                 if (createInjectionTargetMatcher.matches(method) && mi.getSelect() != null) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
-                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.0-M4"))
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.1"))
                             .build()
                             .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), arguments.get(0));
                 }

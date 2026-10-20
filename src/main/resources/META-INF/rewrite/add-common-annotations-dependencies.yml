@@ -43,10 +43,67 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       newScope: provided
+  # Only the JSR-250 types; other javax.annotation types come from JSR-305 or the JDK
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 1.3.x
-      onlyIfUsing: javax.annotation..*
+      onlyIfUsing: javax.annotation.Generated
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.ManagedBean
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.PostConstruct
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.PreDestroy
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.Priority
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.Resource
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.Resources
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.security.*
+      scope: provided
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 1.3.x
+      onlyIfUsing: javax.annotation.sql.*
       scope: provided
       acceptTransitive: true
