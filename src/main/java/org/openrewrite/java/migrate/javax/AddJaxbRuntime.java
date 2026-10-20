@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.gradle.ChangeDependency;
+import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -128,7 +129,9 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(), new GroovyIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> gradleVisitor = Preconditions.check(Preconditions.and(
+                new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(),
+                new IsBuildGradle<>(true)), new GroovyIsoVisitor<ExecutionContext>() {
             @Override
             public G.CompilationUnit visitCompilationUnit(G.CompilationUnit g, ExecutionContext ctx) {
                 if (!acc.usesJaxb.get()) {

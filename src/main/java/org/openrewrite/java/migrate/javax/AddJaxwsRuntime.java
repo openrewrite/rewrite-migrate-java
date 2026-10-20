@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.gradle.IsBuildGradle;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -85,6 +86,7 @@ public class AddJaxwsRuntime extends Recipe {
         public TreeVisitor<?, ExecutionContext> getVisitor() {
             return Preconditions.check(Preconditions.and(
                     new FindGradleProject(FindGradleProject.SearchCriteria.Marker).getVisitor(),
+                    new IsBuildGradle<>(true),
                     Preconditions.not(new FindJakartaNamespaceApi())), new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public G.CompilationUnit visitCompilationUnit(G.CompilationUnit cu, ExecutionContext ctx) {
