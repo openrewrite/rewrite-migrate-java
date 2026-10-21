@@ -236,12 +236,7 @@ recipeList:
       oldArtifactId: aspectj-maven-plugin
       newGroupId: dev.aspectj
       newVersion: 1.14.x
-  - org.openrewrite.maven.AddPluginDependency:
-      pluginGroupId: dev.aspectj
-      pluginArtifactId: aspectj-maven-plugin
-      groupId: org.aspectj
-      artifactId: aspectjtools
-      version: 1.9.25.1
+  - org.openrewrite.java.migrate.AddAspectJToolsToAspectJMavenPlugin
   - org.openrewrite.xml.ChangeTagValue:
       elementName: //plugin[artifactId='aspectj-maven-plugin']/configuration/complianceLevel
       newValue: "25"
@@ -261,6 +256,27 @@ recipeList:
       artifactId: mockito-*
       newVersion: 5.20.x
   - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AddAspectJToolsToAspectJMavenPlugin
+displayName: Add `aspectjtools` to the AspectJ Maven plugin
+description: >-
+  Pins `aspectjtools` 1.9.25.1 on the `dev.aspectj:aspectj-maven-plugin`, as the AspectJ compiler bundled with the
+  plugin is too old to read Java 25 bytecode. An existing `aspectjtools` plugin dependency is left for
+  `UpgradeDependencyVersion` to upgrade, rather than being reset to this version.
+tags:
+  - java25
+preconditions:
+  - org.openrewrite.xml.search.FindTags:
+      xPath: "//plugin[groupId='dev.aspectj' and artifactId='aspectj-maven-plugin' and not(dependencies/dependency/artifactId='aspectjtools')]"
+recipeList:
+  - org.openrewrite.maven.AddPluginDependency:
+      pluginGroupId: dev.aspectj
+      pluginArtifactId: aspectj-maven-plugin
+      groupId: org.aspectj
+      artifactId: aspectjtools
+      version: 1.9.25.1
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
