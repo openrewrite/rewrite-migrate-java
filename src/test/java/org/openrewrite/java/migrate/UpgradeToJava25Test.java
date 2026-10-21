@@ -912,7 +912,7 @@ class UpgradeToJava25Test implements RewriteTest {
                   .contains("<maven.compiler.source>25</maven.compiler.source>")
                   .doesNotContain("org.codehaus.mojo")
                   .containsPattern("<groupId>dev.aspectj</groupId>\\s*<artifactId>aspectj-maven-plugin</artifactId>\\s*<version>1\\.14\\.")
-                  .containsPattern("<artifactId>aspectjtools</artifactId>\\s*<version>1\\.9\\.25")
+                  .containsPattern("<artifactId>aspectjtools</artifactId>\\s*<version>1\\.9\\.(2[5-9]|[3-9]\\d)")
                   .contains("<complianceLevel>25</complianceLevel>")
                   .containsPattern("<artifactId>aspectjrt</artifactId>\\s*<version>1\\.9\\.")
                   .actual())
