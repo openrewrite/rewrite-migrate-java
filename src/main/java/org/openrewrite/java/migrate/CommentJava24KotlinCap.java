@@ -141,8 +141,8 @@ public class CommentJava24KotlinCap extends Recipe {
 
             @SuppressWarnings("unchecked")
             private Xml.Tag removeCapComment(Xml.Tag tag) {
-                return tag.withContent(ListUtils.map((List<Content>) tag.getContent(), c ->
-                        c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX) ? null : c));
+                return tag.withContent(ListUtils.filter((List<Content>) tag.getContent(), c ->
+                        !(c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX))));
             }
         };
     }
