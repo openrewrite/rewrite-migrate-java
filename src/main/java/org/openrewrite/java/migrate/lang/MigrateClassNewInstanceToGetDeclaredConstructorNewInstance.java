@@ -50,7 +50,7 @@ public class MigrateClassNewInstanceToGetDeclaredConstructorNewInstance extends 
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.and(
                         new UsesJavaVersion<>(9),
-                        new UsesMethod<>("java.lang.Class newInstance()")),
+                        new UsesMethod<>(NEW_INSTANCE_MATCHER)),
                 new NewInstanceToDeclaredConstructorVisitor());
     }
 
