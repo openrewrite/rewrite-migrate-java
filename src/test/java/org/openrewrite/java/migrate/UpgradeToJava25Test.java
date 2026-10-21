@@ -752,6 +752,41 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradesMockitoToVersionWhoseByteBuddySupportsJava25() {
+        // Mockito 5.17 brings Byte Buddy 1.15.11, which only supports up to Java 24; 5.20 is the first with 1.17.7.
+        // Byte Buddy usually arrives transitively, so the byte-buddy upgrade alone does not reach it.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>5.14.0</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("mockito-core</artifactId>\\s*<version>5\\.(2\\d|[3-9]\\d)\\.")
+                  .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void mockitoInlineFoldedIntoMockitoCore() {
         // mockito-inline was last published as 5.2.0, so bumping a shared mockito version property would otherwise
         // leave it unresolvable; inline mocking is the default in mockito-core 5.x.
@@ -783,7 +818,7 @@ class UpgradeToJava25Test implements RewriteTest {
                   .contains("<maven.compiler.release>25</maven.compiler.release>")
                   .doesNotContain("mockito-inline")
                   .contains("<artifactId>mockito-core</artifactId>")
-                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .containsPattern("<mockito.version>5\\.(2\\d|[3-9]\\d)\\.")
                   .actual())
             )
           )
@@ -825,7 +860,7 @@ class UpgradeToJava25Test implements RewriteTest {
                 assertThat(actual)
                   .doesNotContain("mockito-inline")
                   .containsOnlyOnce("<artifactId>mockito-core</artifactId>")
-                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .containsPattern("<mockito.version>5\\.(2\\d|[3-9]\\d)\\.")
                   .actual())
             )
           )
