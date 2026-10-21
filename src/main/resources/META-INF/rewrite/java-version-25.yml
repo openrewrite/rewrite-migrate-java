@@ -256,8 +256,6 @@ recipeList:
       oldArtifactId: mockito-inline
       newArtifactId: mockito-core
   - org.openrewrite.maven.RemoveDuplicateDependencies
-  # Mockito brings Byte Buddy transitively, out of reach of the byte-buddy bump above; 5.20 is the first release whose
-  # Byte Buddy (1.17.7) supports Java 25.
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.mockito
       artifactId: mockito-*
