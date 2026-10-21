@@ -89,9 +89,7 @@ public class UseAllArgsConstructor extends Recipe {
                             String template = UseRequiredArgsConstructor.buildAnnotationTemplate(
                                     "AllArgsConstructor", accessLevel, constructorAnnotations);
                             maybeAddImport("lombok.AllArgsConstructor");
-                            if (accessLevel != AccessLevel.PUBLIC) {
-                                maybeAddImport("lombok.AccessLevel");
-                            }
+                            maybeAddImport("lombok.AccessLevel");
                             return JavaTemplate.builder(template)
                                     .imports("lombok.*")
                                     .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "lombok"))
