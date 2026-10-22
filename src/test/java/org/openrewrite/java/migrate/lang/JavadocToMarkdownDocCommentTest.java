@@ -830,7 +830,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
               }
               """,
             spec -> spec.afterRecipe(cu -> {
-                J.MethodDeclaration m = (J.MethodDeclaration) cu.getClasses().get(0).getBody().getStatements().get(0);
+                var m = (J.MethodDeclaration) cu.getClasses().getFirst().getBody().getStatements().getFirst();
                 assertThat(m.getComments()).singleElement().isInstanceOfSatisfying(Javadoc.DocComment.class, doc -> {
                     assertThat(doc.getMarkers().findFirst(LineComment.class)).isPresent();
                     assertThat(doc.getBody()).filteredOn(Javadoc.Parameter.class::isInstance).singleElement()
