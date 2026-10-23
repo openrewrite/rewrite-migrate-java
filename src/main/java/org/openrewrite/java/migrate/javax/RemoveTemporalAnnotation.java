@@ -113,7 +113,10 @@ public class RemoveTemporalAnnotation extends Recipe {
                             return multiVariable;
                         }
 
-                        // Remove @Temporal annotation
+                        // Remove @Temporal annotation. RemoveAnnotation's visitor runs on this declaration only,
+                        // so its own import removal never reaches the compilation unit.
+                        maybeRemoveImport("javax.persistence.Temporal");
+                        maybeRemoveImport("javax.persistence.TemporalType");
                         return (J.VariableDeclarations) new RemoveAnnotation("javax.persistence.Temporal").getVisitor().visit(multiVariable, ctx, getCursor().getParentOrThrow());
                     }
                 }
