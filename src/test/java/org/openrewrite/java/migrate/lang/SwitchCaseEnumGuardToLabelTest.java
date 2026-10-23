@@ -114,7 +114,6 @@ class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
               }
               """,
             """
-              import suits.Suit;
               import static suits.Suit.JOKER;
               class Test {
                   void score(Object obj) {

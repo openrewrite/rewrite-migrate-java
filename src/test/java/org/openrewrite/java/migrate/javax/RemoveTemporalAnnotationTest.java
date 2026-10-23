@@ -65,8 +65,6 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
               }
               """,
             """
-              import javax.persistence.Temporal;
-              import javax.persistence.TemporalType;
               import java.sql.Date;
               import java.sql.Time;
               import java.sql.Timestamp;

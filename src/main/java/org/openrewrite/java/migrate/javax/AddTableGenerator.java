@@ -73,6 +73,7 @@ public class AddTableGenerator extends Recipe {
                         if (!GENERATED_VALUE.matches(annotation) && !GENERATED_VALUE_AUTO.matches(annotation)) {
                             return annotation;
                         }
+                        maybeRemoveImport("javax.persistence.GenerationType");
                         return JavaTemplate.builder("strategy = javax.persistence.GenerationType.TABLE, generator = \"OPENJPA_SEQUENCE_TABLE\"")
                                 .contextSensitive()
                                 .build()
