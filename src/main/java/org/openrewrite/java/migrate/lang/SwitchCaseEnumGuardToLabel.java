@@ -66,6 +66,7 @@ public class SwitchCaseEnumGuardToLabel extends Recipe {
                     if (guardedEnum != null) {
                         J modifiedBody = enumReferencesToEnumValue(label.getSimpleName(), guardedEnum)
                                 .visit(visitedCase.getBody(), ctx);
+                        maybeRemoveImport(((JavaType.Class) type).getFullyQualifiedName());
                         return visitedCase.withGuard(null)
                                 .withCaseLabels(singletonList(guardedEnum.withPrefix(visitedCase.getCaseLabels().get(0).getPrefix())))
                                 .withBody(modifiedBody);
