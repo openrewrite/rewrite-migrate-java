@@ -231,6 +231,117 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
     }
 
     @Test
+    void legacyAlias() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <forkMode>pertest</forkMode>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>false</reuseForks>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void executionConfiguration() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-failsafe-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <executions>
+                                    <execution>
+                                        <goals>
+                                            <goal>integration-test</goal>
+                                        </goals>
+                                        <configuration>
+                                            <forkMode>never</forkMode>
+                                        </configuration>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-failsafe-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <executions>
+                                    <execution>
+                                        <goals>
+                                            <goal>integration-test</goal>
+                                        </goals>
+                                        <configuration>
+                                            <forkCount>0</forkCount>
+                                        </configuration>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
     void perthreadWithoutThreadCountIsLeftUntouched() {
         rewriteRun(
           mavenProject("project",
@@ -276,7 +387,7 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
                                 <artifactId>maven-surefire-plugin</artifactId>
                                 <version>3.5.2</version>
                                 <configuration>
-                                    <forkMode>pertest</forkMode>
+                                    <forkMode>sometimes</forkMode>
                                 </configuration>
                             </plugin>
                         </plugins>

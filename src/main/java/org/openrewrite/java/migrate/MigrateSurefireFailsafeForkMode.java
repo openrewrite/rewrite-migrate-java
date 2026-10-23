@@ -33,6 +33,7 @@ import java.util.Optional;
 public class MigrateSurefireFailsafeForkMode extends Recipe {
 
     private static final XPathMatcher PLUGIN_CONFIGURATION = new XPathMatcher("//plugins/plugin/configuration");
+    private static final XPathMatcher EXECUTION_CONFIGURATION = new XPathMatcher("//plugins/plugin/executions/execution/configuration");
 
     @Getter
     final String displayName = "Migrate Surefire/Failsafe `forkMode` to `forkCount`/`reuseForks`";
@@ -44,6 +45,7 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
             "[Surefire fork options documentation](https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html): " +
             "`never` to `forkCount=0`; `once` to `forkCount=1`, `reuseForks=true`; `always` to `forkCount=1`, " +
             "`reuseForks=false`; and `perthread` to `forkCount=<threadCount>`, `reuseForks=false`. " +
+            "The legacy `none` and `pertest` values are treated as `never` and `always`. " +
             "As in Surefire before 3.0.0-M8, the values implied by `forkMode` override any `forkCount` or `reuseForks` already present. " +
             "A `perthread` without a `threadCount`, or an unrecognized value, is left untouched.";
 
@@ -54,12 +56,19 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
                 Optional<Xml.Tag> forkMode = t.getChild("forkMode");
-                if (!forkMode.isPresent() || !PLUGIN_CONFIGURATION.matches(getCursor()) ||
-                    !isSurefireOrFailsafePlugin(getCursor().getParentTreeCursor())) {
+                if (!forkMode.isPresent() || !isSurefireOrFailsafeConfiguration()) {
                     return t;
                 }
                 Xml.Tag migrated = migrate(t, forkMode.get());
                 return migrated == t ? t : autoFormat(migrated, ctx, getCursor().getParentOrThrow());
+            }
+
+            private boolean isSurefireOrFailsafeConfiguration() {
+                if (PLUGIN_CONFIGURATION.matches(getCursor())) {
+                    return isSurefireOrFailsafePlugin(getCursor().getParentTreeCursor());
+                }
+                return EXECUTION_CONFIGURATION.matches(getCursor()) &&
+                       isSurefireOrFailsafePlugin(getCursor().getParentTreeCursor().getParentTreeCursor().getParentTreeCursor());
             }
         };
     }
@@ -75,12 +84,14 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
         Xml.Tag c;
         switch (forkMode.getValue().orElse("").trim().toLowerCase(Locale.ROOT)) {
             case "never":
+            case "none":
                 c = set(config, forkMode, "forkCount", "0");
                 break;
             case "once":
                 c = setIfAbsent(setIfAbsent(config, forkMode, "forkCount", "1"), forkMode, "reuseForks", "true");
                 break;
             case "always":
+            case "pertest":
                 c = set(set(config, forkMode, "forkCount", "1"), forkMode, "reuseForks", "false");
                 break;
             case "perthread":
