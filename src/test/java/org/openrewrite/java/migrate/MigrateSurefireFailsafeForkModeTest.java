@@ -474,6 +474,100 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
         );
     }
 
+    @Test
+    void migratesWhenNoVersionIsDeclared() {
+        // No explicit version: either nothing pins the plugin to a pre-2.14 release in practice, or -
+        // when this recipe runs as part of a composite that bumps the version first - it is already
+        // current by the time this visitor sees it.
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <configuration>
+                                  <forkMode>once</forkMode>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <configuration>
+                                  <forkCount>1</forkCount>
+                                  <reuseForks>true</reuseForks>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void migratesAtExactly2_14() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>2.14</version>
+                              <configuration>
+                                  <forkMode>never</forkMode>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>2.14</version>
+                              <configuration>
+                                  <forkCount>0</forkCount>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """
+          )
+        );
+    }
+
     @Nested
     class NoChange {
         @Test
@@ -520,6 +614,66 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
                                   <version>3.5.2</version>
                                   <configuration>
                                       <forkMode>sometimes</forkMode>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """
+              )
+            );
+        }
+
+        @Test
+        void explicitVersionBelow2_14() {
+            // ccfmaster's actual pre-migration pom (#1227): surefire 2.8.1 predates forkCount/reuseForks
+            // (introduced in 2.14) entirely, so it would silently ignore them while the forkMode it did
+            // understand gets removed - this is the exact regression this recipe exists to prevent.
+            rewriteRun(
+              pomXml(
+                """
+                  <project>
+                      <groupId>com.collabnet.ccf</groupId>
+                      <artifactId>ccfmaster</artifactId>
+                      <version>1.0.0</version>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>org.apache.maven.plugins</groupId>
+                                  <artifactId>maven-surefire-plugin</artifactId>
+                                  <version>2.8.1</version>
+                                  <configuration>
+                                      <forkMode>always</forkMode>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """
+              )
+            );
+        }
+
+        @Test
+        void unparseableVersion() {
+            rewriteRun(
+              pomXml(
+                """
+                  <project>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>my-app</artifactId>
+                      <version>1</version>
+                      <properties>
+                          <surefire.version>3.5.2</surefire.version>
+                      </properties>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>org.apache.maven.plugins</groupId>
+                                  <artifactId>maven-surefire-plugin</artifactId>
+                                  <version>${surefire.version}</version>
+                                  <configuration>
+                                      <forkMode>always</forkMode>
                                   </configuration>
                               </plugin>
                           </plugins>

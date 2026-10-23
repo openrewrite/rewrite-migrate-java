@@ -22,6 +22,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.MavenIsoVisitor;
+import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
@@ -52,7 +53,9 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
             "change this recipe exists to avoid. " +
             "The legacy `none` and `pertest` values are treated as `never` and `always`. " +
             "As in Surefire before 3.0.0-M8, the values implied by `forkMode` override any `forkCount` or `reuseForks` already present. " +
-            "A `perthread` without a `threadCount`, or an unrecognized value, is left untouched.";
+            "A `perthread` without a `threadCount`, an unrecognized value, or a plugin with an explicit version below " +
+            "2.14 (which predates `forkCount`/`reuseForks` and would silently ignore them while the `forkMode` it " +
+            "understood is removed), is left untouched.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -82,7 +85,26 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
         Xml.Tag plugin = cursor.getValue();
         String artifactId = plugin.getChildValue("artifactId").orElse("");
         return ("maven-surefire-plugin".equals(artifactId) || "maven-failsafe-plugin".equals(artifactId)) &&
-               "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins"));
+               "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins")) &&
+               isVersionSafeToMigrate(plugin);
+    }
+
+    /**
+     * `forkCount`/`reuseForks` were introduced in Surefire 2.14; an explicit older version does not
+     * recognize them and would silently ignore the replacement while the `forkMode` it did understand
+     * is removed. An absent `<version>` is treated as safe: either nothing pins the plugin that old in
+     * practice today, or - when this recipe runs as part of a composite that bumps the version first,
+     * such as `UpgradePluginsForJava25` - the version is already current by the time this visitor runs.
+     * A version that can't be confidently parsed (a property placeholder, for instance) is treated as
+     * unsafe, since there is nothing to verify it against.
+     */
+    private static boolean isVersionSafeToMigrate(Xml.Tag plugin) {
+        Optional<String> version = plugin.getChildValue("version");
+        if (!version.isPresent()) {
+            return true;
+        }
+        LatestRelease comparator = new LatestRelease(null);
+        return comparator.isValid(null, version.get()) && comparator.compare(null, version.get(), "2.14") >= 0;
     }
 
     private static Xml.Tag migrate(Xml.Tag config, Xml.Tag forkMode) {
