@@ -152,10 +152,8 @@ class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
               }
               """,
             """
-              import java.awt.GraphicsDevice;
               import java.awt.GraphicsDevice.WindowTranslucency;
               import java.awt.GraphicsEnvironment;
-              import java.awt.Window;
               
               class Test {
                   void foo() {
