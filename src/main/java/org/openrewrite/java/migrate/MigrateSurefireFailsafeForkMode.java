@@ -16,37 +16,36 @@
 package org.openrewrite.java.migrate;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.MavenIsoVisitor;
+import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-
 public class MigrateSurefireFailsafeForkMode extends Recipe {
+
+    private static final XPathMatcher PLUGIN_CONFIGURATION = new XPathMatcher("//plugins/plugin/configuration");
 
     @Getter
     final String displayName = "Migrate Surefire/Failsafe `forkMode` to `forkCount`/`reuseForks`";
 
     @Getter
-    final String description = "The Surefire and Failsafe `forkMode` parameter (`once`, `always`, `never`, `perthread`) " +
-            "was deprecated in Surefire 2.14 in favor of `forkCount`/`reuseForks`, and Surefire 3 silently ignores it " +
-            "entirely, changing fork behaviour out from under any build that still sets it. This recipe migrates it to " +
-            "the exact modern equivalent, per the [Surefire fork options documentation](https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html): " +
+    final String description = "The `forkMode` parameter of the Maven Surefire and Failsafe plugins was deprecated in 2.14 " +
+            "and removed in 3.0.0-M8, after which it is ignored, changing how tests are forked in any build that still sets it. " +
+            "This recipe replaces it with the equivalent `forkCount` and `reuseForks`, per the " +
+            "[Surefire fork options documentation](https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html): " +
             "`never` to `forkCount=0`; `once` to `forkCount=1`, `reuseForks=true`; `always` to `forkCount=1`, " +
-            "`reuseForks=false`; and `perthread` (which requires a paired `threadCount`) to `forkCount=<threadCount>`, " +
-            "`reuseForks=false`. A `perthread` configuration with no `threadCount` present has nothing to migrate to " +
-            "and is left untouched, as is any `forkMode` alongside an existing `forkCount` or `reuseForks`, since " +
-            "Surefire 3 already ignores `forkMode` in that case.";
+            "`reuseForks=false`; and `perthread` to `forkCount=<threadCount>`, `reuseForks=false`. " +
+            "As in Surefire before 3.0.0-M8, the values implied by `forkMode` override any `forkCount` or `reuseForks` already present. " +
+            "A `perthread` without a `threadCount`, or an unrecognized value, is left untouched.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -54,92 +53,63 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                if (!isSurefireOrFailsafePlugin(t)) {
+                Optional<Xml.Tag> forkMode = t.getChild("forkMode");
+                if (!forkMode.isPresent() || !PLUGIN_CONFIGURATION.matches(getCursor()) ||
+                    !isSurefireOrFailsafePlugin(getCursor().getParentTreeCursor())) {
                     return t;
                 }
-
-                Optional<Xml.Tag> configTag = t.getChild("configuration");
-                if (!configTag.isPresent()) {
-                    return t;
-                }
-                Xml.Tag config = configTag.get();
-                Optional<Xml.Tag> forkModeTag = config.getChild("forkMode");
-                if (!forkModeTag.isPresent()) {
-                    return t;
-                }
-                Xml.Tag forkMode = forkModeTag.get();
-
-                // Surefire 3 ignores `forkMode` outright once `forkCount`/`reuseForks` are present;
-                // only the now-dead `forkMode` tag needs removing.
-                if (config.getChild("forkCount").isPresent() || config.getChild("reuseForks").isPresent()) {
-                    return withConfig(t, config, removeTag(config, forkMode), ctx);
-                }
-
-                List<Xml.Tag> replacement = replacementFor(forkMode.getValue().orElse("").trim(), config);
-                if (replacement == null) {
-                    return t;
-                }
-
-                List<Content> configContents = new ArrayList<>();
-                //noinspection unchecked
-                for (Content c : (List<Content>) config.getContent()) {
-                    if (c == forkMode) {
-                        configContents.addAll(replacement);
-                    } else {
-                        configContents.add(c);
-                    }
-                }
-                return withConfig(t, config, config.withContent(configContents), ctx);
-            }
-
-            private List<Xml.Tag> replacementFor(String mode, Xml.Tag config) {
-                switch (mode.toLowerCase(Locale.ROOT)) {
-                    case "never":
-                        return singletonList(Xml.Tag.build("<forkCount>0</forkCount>"));
-                    case "once":
-                        return asList(Xml.Tag.build("<forkCount>1</forkCount>"), Xml.Tag.build("<reuseForks>true</reuseForks>"));
-                    case "always":
-                        return asList(Xml.Tag.build("<forkCount>1</forkCount>"), Xml.Tag.build("<reuseForks>false</reuseForks>"));
-                    case "perthread": {
-                        Optional<Xml.Tag> threadCount = config.getChild("threadCount");
-                        if (!threadCount.isPresent()) {
-                            // No `threadCount` to carry over as `forkCount`; nothing safe to migrate to.
-                            return null;
-                        }
-                        String count = threadCount.get().getValue().orElse(null);
-                        if (count == null) {
-                            return null;
-                        }
-                        return asList(Xml.Tag.build("<forkCount>" + count + "</forkCount>"), Xml.Tag.build("<reuseForks>false</reuseForks>"));
-                    }
-                    default:
-                        // Not one of the four historical values; nothing safe to assume.
-                        return null;
-                }
-            }
-
-            private Xml.Tag removeTag(Xml.Tag config, Xml.Tag toRemove) {
-                return config.withContent(ListUtils.filter((List<Content>) config.getContent(), c -> c != toRemove));
-            }
-
-            private Xml.Tag withConfig(Xml.Tag plugin, Xml.Tag oldConfig, Xml.Tag newConfig, ExecutionContext ctx) {
-                //noinspection unchecked
-                Xml.Tag updated = plugin.withContent(ListUtils.map((List<Content>) plugin.getContent(),
-                        c -> c == oldConfig ? newConfig : c));
-                return autoFormat(updated, ctx);
-            }
-
-            private boolean isSurefireOrFailsafePlugin(Xml.Tag tag) {
-                if (!"plugin".equals(tag.getName())) {
-                    return false;
-                }
-                String artifactId = tag.getChildValue("artifactId").orElse("");
-                if (!"maven-surefire-plugin".equals(artifactId) && !"maven-failsafe-plugin".equals(artifactId)) {
-                    return false;
-                }
-                String groupId = tag.getChildValue("groupId").orElse("org.apache.maven.plugins");
-                return "org.apache.maven.plugins".equals(groupId);
+                Xml.Tag migrated = migrate(t, forkMode.get());
+                return migrated == t ? t : autoFormat(migrated, ctx, getCursor().getParentOrThrow());
             }
         };
+    }
+
+    private static boolean isSurefireOrFailsafePlugin(Cursor cursor) {
+        Xml.Tag plugin = cursor.getValue();
+        String artifactId = plugin.getChildValue("artifactId").orElse("");
+        return ("maven-surefire-plugin".equals(artifactId) || "maven-failsafe-plugin".equals(artifactId)) &&
+               "org.apache.maven.plugins".equals(plugin.getChildValue("groupId").orElse("org.apache.maven.plugins"));
+    }
+
+    private static Xml.Tag migrate(Xml.Tag config, Xml.Tag forkMode) {
+        Xml.Tag c;
+        switch (forkMode.getValue().orElse("").trim().toLowerCase(Locale.ROOT)) {
+            case "never":
+                c = set(config, forkMode, "forkCount", "0");
+                break;
+            case "once":
+                c = setIfAbsent(setIfAbsent(config, forkMode, "forkCount", "1"), forkMode, "reuseForks", "true");
+                break;
+            case "always":
+                c = set(set(config, forkMode, "forkCount", "1"), forkMode, "reuseForks", "false");
+                break;
+            case "perthread":
+                Optional<String> threadCount = config.getChildValue("threadCount");
+                if (!threadCount.isPresent()) {
+                    return config;
+                }
+                c = setIfAbsent(set(config, forkMode, "forkCount", threadCount.get()), forkMode, "reuseForks", "false");
+                break;
+            default:
+                return config;
+        }
+        return c.withContent(ListUtils.filter(c.getContent(), content -> content != forkMode));
+    }
+
+    private static Xml.Tag set(Xml.Tag config, Xml.Tag forkMode, String name, String value) {
+        return config.getChild(name).isPresent() ?
+                config.withChildValue(name, value) :
+                insertBefore(config, forkMode, name, value);
+    }
+
+    private static Xml.Tag setIfAbsent(Xml.Tag config, Xml.Tag forkMode, String name, String value) {
+        return config.getChild(name).isPresent() ? config : insertBefore(config, forkMode, name, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Xml.Tag insertBefore(Xml.Tag config, Xml.Tag forkMode, String name, String value) {
+        List<Content> content = (List<Content>) config.getContent();
+        Xml.Tag tag = Xml.Tag.build("<" + name + ">" + value + "</" + name + ">");
+        return config.withContent(ListUtils.insert(content, tag, content.indexOf(forkMode)));
     }
 }

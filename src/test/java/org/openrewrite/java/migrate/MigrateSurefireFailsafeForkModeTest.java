@@ -289,7 +289,7 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
     }
 
     @Test
-    void redundantForkModeAlongsideForkCountIsRemoved() {
+    void forkModeOverridesExistingForkCountAndReuseForks() {
         rewriteRun(
           mavenProject("project",
             pomXml(
@@ -306,6 +306,57 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
                                 <version>3.5.2</version>
                                 <configuration>
                                     <forkMode>always</forkMode>
+                                    <forkCount>2</forkCount>
+                                    <reuseForks>true</reuseForks>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <forkCount>1</forkCount>
+                                    <reuseForks>false</reuseForks>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void onceKeepsExistingForkCount() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <build>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-surefire-plugin</artifactId>
+                                <version>3.5.2</version>
+                                <configuration>
+                                    <forkMode>once</forkMode>
                                     <forkCount>2</forkCount>
                                     <reuseForks>true</reuseForks>
                                 </configuration>
