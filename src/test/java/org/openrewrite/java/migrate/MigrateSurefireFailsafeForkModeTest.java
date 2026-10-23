@@ -208,8 +208,57 @@ class MigrateSurefireFailsafeForkModeTest implements RewriteTest {
                               <version>3.5.2</version>
                               <configuration>
                                   <forkCount>4</forkCount>
-                                  <reuseForks>false</reuseForks>
                                   <threadCount>4</threadCount>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
+    void perthreadLeavesExistingReuseForksUntouched() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>3.5.2</version>
+                              <configuration>
+                                  <forkMode>perthread</forkMode>
+                                  <threadCount>4</threadCount>
+                                  <reuseForks>false</reuseForks>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>3.5.2</version>
+                              <configuration>
+                                  <forkCount>4</forkCount>
+                                  <threadCount>4</threadCount>
+                                  <reuseForks>false</reuseForks>
                               </configuration>
                           </plugin>
                       </plugins>

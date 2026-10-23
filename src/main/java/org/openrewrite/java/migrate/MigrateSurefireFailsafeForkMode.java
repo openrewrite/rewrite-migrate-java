@@ -44,7 +44,12 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
             "This recipe replaces it with the equivalent `forkCount` and `reuseForks`, per the " +
             "[Surefire fork options documentation](https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html): " +
             "`never` to `forkCount=0`; `once` to `forkCount=1`, `reuseForks=true`; `always` to `forkCount=1`, " +
-            "`reuseForks=false`; and `perthread` to `forkCount=<threadCount>`, `reuseForks=false`. " +
+            "`reuseForks=false`; and `perthread` to `forkCount=<threadCount>`, leaving `reuseForks` untouched. " +
+            "The documented mapping sets `reuseForks=false` for `perthread` too, but Surefire's own " +
+            "`convertDeprecatedForkMode`, from 2.14 up to 3.0.0-M7, left it at its default of `true` - what " +
+            "most real builds actually ran. Following the documented mapping instead would silently make " +
+            "those builds' tests noticeably slower (a fresh JVM per class) on upgrade, the exact kind of " +
+            "change this recipe exists to avoid. " +
             "The legacy `none` and `pertest` values are treated as `never` and `always`. " +
             "As in Surefire before 3.0.0-M8, the values implied by `forkMode` override any `forkCount` or `reuseForks` already present. " +
             "A `perthread` without a `threadCount`, or an unrecognized value, is left untouched.";
@@ -99,7 +104,9 @@ public class MigrateSurefireFailsafeForkMode extends Recipe {
                 if (!threadCount.isPresent()) {
                     return config;
                 }
-                c = setIfAbsent(set(config, forkMode, "forkCount", threadCount.get()), forkMode, "reuseForks", "false");
+                // Unlike the other modes, Surefire's own pre-3.0.0-M8 conversion left `reuseForks` at its
+                // default of `true` for `perthread`, so it is left untouched here too, not set to `false`.
+                c = set(config, forkMode, "forkCount", threadCount.get());
                 break;
             default:
                 return config;
