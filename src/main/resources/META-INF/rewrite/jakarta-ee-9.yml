@@ -435,8 +435,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
-displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
-description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`.
+displayName: Migrate `commons-fileupload` to `commons-fileupload2-jakarta-servlet5`
+description: Migrate Apache Commons FileUpload 1.x and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -445,22 +445,35 @@ recipeList:
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
       newArtifactId: commons-fileupload2-jakarta-servlet5
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
       newArtifactId: commons-fileupload2-jakarta-servlet5
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.disk
-      newPackageName: org.apache.commons.fileload2.core
+      oldPackageName: org.apache.commons.fileupload2.jakarta
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletFileUpload
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletRequestContext
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletRequestContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.FileCleanerCleanup
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaFileCleaner
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileupload.disk
+      newPackageName: org.apache.commons.fileupload2.core
       recursive: true
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.servlet
+      oldPackageName: org.apache.commons.fileupload.servlet
       newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
       recursive: true
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload
-      newPackageName: org.apache.commons.fileload2.core
+      oldPackageName: org.apache.commons.fileupload
+      newPackageName: org.apache.commons.fileupload2.core
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe

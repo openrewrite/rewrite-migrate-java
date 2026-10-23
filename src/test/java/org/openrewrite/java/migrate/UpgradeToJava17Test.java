@@ -481,7 +481,6 @@ class UpgradeToJava17Test implements RewriteTest {
     @Test
     void lombokBumpedGoingTo17() {
         rewriteRun(
-          spec -> spec.cycles(2).expectedCyclesThatMakeChanges(2),
           mavenProject("project",
             //language=xml
             pomXml(

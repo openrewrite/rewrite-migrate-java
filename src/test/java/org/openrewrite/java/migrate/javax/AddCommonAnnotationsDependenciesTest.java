@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -129,6 +130,105 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
                       <artifactId>jakarta.annotation-api</artifactId>
                       <version>1.3.5</version>
                       <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void addSingleDependencyForMultipleJsr250Annotations() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.annotation; public @interface PostConstruct {}",
+            "package javax.annotation.security; public @interface RolesAllowed { String[] value(); }")),
+          mavenProject("my-project",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.PostConstruct;
+                  import javax.annotation.security.RolesAllowed;
+
+                  @RolesAllowed("admin")
+                  class A {
+                      @PostConstruct
+                      void init() {
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>1.3.5</version>
+                      <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1312")
+    @Test
+    void doNotAddDependencyForJsr305Annotations() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.annotation; public @interface Nullable {}",
+            "package javax.annotation.concurrent; public @interface ThreadSafe {}")),
+          mavenProject("my-project",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Nullable;
+                  import javax.annotation.concurrent.ThreadSafe;
+
+                  @ThreadSafe
+                  class A {
+                      @Nullable
+                      private String name;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>com.google.code.findbugs</groupId>
+                      <artifactId>jsr305</artifactId>
+                      <version>3.0.2</version>
                     </dependency>
                   </dependencies>
                 </project>

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
+import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -27,17 +28,17 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaPrinter;
 import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.marker.LineComment;
 import org.openrewrite.java.marker.Varargs;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 
 public class JavadocToMarkdownDocComment extends Recipe {
 
@@ -74,7 +75,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 String spaceWhitespace = space.getWhitespace();
                 return space.withComments(ListUtils.flatMap(space.getComments(), comment ->
-                        comment instanceof Javadoc.DocComment ?
+                        comment instanceof Javadoc.DocComment &&
+                        !comment.getMarkers().findFirst(LineComment.class).isPresent() ?
                                 convertDocComment((Javadoc.DocComment) comment, spaceWhitespace) :
                                 comment));
             }
@@ -91,23 +93,23 @@ public class JavadocToMarkdownDocComment extends Recipe {
 
         // Strip one leading space (from the space after * in javadoc), right-trim, drop
         // leading/trailing blank lines, and collapse consecutive blank lines
-        List<String> lines = normalizeLines(converter.getLines());
+        List<List<Object>> lines = normalizeLines(converter.getLines());
 
-        if (lines.isEmpty()) {
-            lines = singletonList("");
-        }
-
-        String interLineSuffix = "\n" + indentation;
-        return ListUtils.mapLast(toTextComments(lines, interLineSuffix),
-                comment -> comment.withSuffix(docComment.getSuffix()));
+        return singletonList(new Javadoc.DocComment(
+                Tree.randomId(),
+                Markers.build(singletonList(new LineComment(Tree.randomId()))),
+                toBody(lines, "\n" + indentation + "///"),
+                docComment.getSuffix()));
     }
 
-    private static List<String> normalizeLines(List<String> raw) {
+    private static List<List<Object>> normalizeLines(List<List<Object>> raw) {
         // Strip one leading space and right-trim
-        List<String> lines = new ArrayList<>(raw.size());
-        for (String line : raw) {
-            String stripped = line.startsWith(" ") ? line.substring(1) : line;
-            lines.add(stripped.replaceAll("\\s+$", ""));
+        List<List<Object>> lines = new ArrayList<>(raw.size());
+        for (List<Object> line : raw) {
+            List<Object> stripped = ListUtils.mapFirst(line, part -> part instanceof String ?
+                    emptyToNull(stripLeadingSpace((String) part)) : part);
+            lines.add(ListUtils.mapLast(stripped, part -> part instanceof String ?
+                    emptyToNull(((String) part).replaceAll("\\s+$", "")) : part));
         }
 
         // Trim leading and trailing blank lines
@@ -121,10 +123,10 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         // Collapse consecutive blank lines
-        List<String> result = new ArrayList<>();
+        List<List<Object>> result = new ArrayList<>();
         boolean prevBlank = false;
         for (int i = start; i < end; i++) {
-            String line = lines.get(i);
+            List<Object> line = lines.get(i);
             boolean blank = line.isEmpty();
             if (!blank || !prevBlank) {
                 result.add(line);
@@ -134,38 +136,154 @@ public class JavadocToMarkdownDocComment extends Recipe {
         return result;
     }
 
-    private static List<Comment> toTextComments(List<String> lines, String suffix) {
-        List<Comment> result = new ArrayList<>(lines.size());
-        for (String lineContent : lines) {
-            // TextComment(false, text, suffix, markers) prints as "// + text"
-            // So text="/ content" produces "/// content"
-            String text = lineContent.isEmpty() ? "/" : "/ " + lineContent;
-            result.add(new TextComment(false, text, suffix, Markers.EMPTY));
+    private static @Nullable String emptyToNull(String s) {
+        return s.isEmpty() ? null : s;
+    }
+
+    private static String stripLeadingSpace(String s) {
+        return s.startsWith(" ") ? s.substring(1) : s;
+    }
+
+    /**
+     * As the parser lays out a Markdown documentation comment, a block tag holds what follows it up to the next one.
+     */
+    private static List<Javadoc> toBody(List<List<Object>> lines, String margin) {
+        List<Javadoc> body = new ArrayList<>();
+        Tag blockTag = null;
+        List<Javadoc> description = null;
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) {
+                (description == null ? body : description)
+                        .add(new Javadoc.LineBreak(Tree.randomId(), margin, Markers.EMPTY));
+            }
+            boolean first = true;
+            for (Object part : lines.get(i)) {
+                String leadingSpace = first ? " " : "";
+                first = false;
+                if (part instanceof Tag && ((Tag) part).isBlock()) {
+                    if (blockTag != null) {
+                        body.add(blockTag.describe(description));
+                    }
+                    if (!leadingSpace.isEmpty()) {
+                        body.add(text(leadingSpace));
+                    }
+                    blockTag = (Tag) part;
+                    description = new ArrayList<>();
+                    continue;
+                }
+                List<Javadoc> target = description == null ? body : description;
+                if (part instanceof String) {
+                    target.add(text(leadingSpace + part));
+                } else {
+                    if (!leadingSpace.isEmpty()) {
+                        target.add(text(leadingSpace));
+                    }
+                    target.add(((Tag) part).getTree());
+                }
+            }
         }
-        return result;
+        if (blockTag != null) {
+            body.add(blockTag.describe(description));
+        }
+        return body;
+    }
+
+    private static Javadoc.Text text(String text) {
+        return new Javadoc.Text(Tree.randomId(), Markers.EMPTY, text);
+    }
+
+    /**
+     * A tag kept from the Javadoc, so that the references it holds stay attributed. {@code text} is its Markdown.
+     */
+    @Value
+    static class Tag {
+        Javadoc tree;
+        String text;
+
+        @Nullable
+        Function<List<Javadoc>, Javadoc> withDescription;
+
+        boolean isBlock() {
+            return withDescription != null;
+        }
+
+        Javadoc describe(List<Javadoc> description) {
+            return requireNonNull(withDescription).apply(description);
+        }
     }
 
     static class JavadocToMarkdownConverter {
-        private final List<String> lines = new ArrayList<>();
+        private final List<List<Object>> lines = new ArrayList<>();
+        private List<Object> currentParts = new ArrayList<>();
         private StringBuilder currentLine = new StringBuilder();
         private boolean inPre = false;
         private boolean suppressNextLineBreak = false;
         private final Deque<String> listStack = new ArrayDeque<>();
         private final Deque<Integer> listCounterStack = new ArrayDeque<>();
 
-        List<String> getLines() {
+        List<List<Object>> getLines() {
             flushLine();
             return lines;
         }
 
         private void flushLine() {
+            if (!currentLineIsEmpty() || lines.isEmpty()) {
+                endLine();
+            }
+        }
+
+        private boolean currentLineIsEmpty() {
+            return currentParts.isEmpty() && currentLine.length() == 0;
+        }
+
+        private boolean currentLineIsBlank() {
+            return currentParts.isEmpty() && StringUtils.isBlank(currentLine.toString());
+        }
+
+        private void endLine() {
             if (currentLine.length() > 0) {
-                lines.add(currentLine.toString());
-                currentLine = new StringBuilder();
-            } else if (lines.isEmpty()) {
-                lines.add(currentLine.toString());
+                currentParts.add(currentLine.toString());
+            }
+            lines.add(currentParts);
+            currentParts = new ArrayList<>();
+            currentLine = new StringBuilder();
+        }
+
+        private void addLine(String text) {
+            List<Object> line = new ArrayList<>(1);
+            if (!text.isEmpty()) {
+                line.add(text);
+            }
+            lines.add(line);
+        }
+
+        private int startTag() {
+            if (currentLine.length() > 0) {
+                currentParts.add(currentLine.toString());
                 currentLine = new StringBuilder();
             }
+            return lines.size();
+        }
+
+        /**
+         * Replace the text written since {@link #startTag} with the tag, unless the tag spans lines, as it would
+         * still print their Javadoc margins.
+         */
+        @SafeVarargs
+        private final void keepTag(int start, Javadoc tag, @Nullable Function<List<Javadoc>, Javadoc> withDescription,
+                                   List<Javadoc>... spaces) {
+            if (lines.size() != start) {
+                return;
+            }
+            for (List<Javadoc> space : spaces) {
+                for (Javadoc j : space) {
+                    if (j instanceof Javadoc.LineBreak) {
+                        return;
+                    }
+                }
+            }
+            currentParts.add(new Tag(tag, currentLine.toString(), withDescription));
+            currentLine = new StringBuilder();
         }
 
         void convert(List<Javadoc> body) {
@@ -183,8 +301,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                 currentLine.append(decodeHtmlEntities(((Javadoc.Text) node).getText()));
             } else if (node instanceof Javadoc.LineBreak) {
                 if (!afterBr) {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+                    endLine();
                 }
             } else if (node instanceof Javadoc.Literal) {
                 convertLiteral((Javadoc.Literal) node);
@@ -209,11 +326,15 @@ public class JavadocToMarkdownDocComment extends Recipe {
             } else if (node instanceof Javadoc.Deprecated) {
                 convertDeprecated((Javadoc.Deprecated) node);
             } else if (node instanceof Javadoc.InheritDoc) {
+                int start = startTag();
                 currentLine.append("{@inheritDoc}");
+                keepTag(start, node, null, ((Javadoc.InheritDoc) node).getEndBrace());
             } else if (node instanceof Javadoc.Snippet) {
                 convertSnippet((Javadoc.Snippet) node);
             } else if (node instanceof Javadoc.DocRoot) {
+                int start = startTag();
                 currentLine.append("{@docRoot}");
+                keepTag(start, node, null, ((Javadoc.DocRoot) node).getEndBrace());
             } else if (node instanceof Javadoc.InlinedValue) {
                 convertInlinedValue((Javadoc.InlinedValue) node);
             } else if (node instanceof Javadoc.Version) {
@@ -242,11 +363,11 @@ public class JavadocToMarkdownDocComment extends Recipe {
             if (content.contains("\n")) {
                 // Multi-line: use fenced code block
                 currentLine.append("```");
-                lines.add(currentLine.toString());
+                endLine();
                 for (String line : content.split("\n", -1)) {
-                    lines.add(line);
+                    addLine(line);
                 }
-                currentLine = new StringBuilder("```");
+                currentLine.append("```");
             } else {
                 currentLine.append('`').append(content).append('`');
             }
@@ -271,8 +392,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     // code content starts fresh; otherwise the first code line would be
                     // consumed as the fenced code block's info string.
                     currentLine.append(extractCodeLanguage(element));
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+                    endLine();
                     return;
                 }
                 renderHtmlStartElement(element);
@@ -290,17 +410,15 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     break;
                 case "p":
                     // Blank line for paragraph
-                    lines.add(currentLine.toString());
-                    lines.add("");
-                    currentLine = new StringBuilder();
+                    endLine();
+                    addLine("");
                     break;
                 case "br":
                     // Line break: end the current line. Suppress the physical line break that
                     // usually follows so the two collapse into a single break rather than a
                     // blank line; a redundant break before a `<p>` is absorbed when blank lines
                     // are collapsed.
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+                    endLine();
                     suppressNextLineBreak = true;
                     break;
                 case "em":
@@ -313,14 +431,12 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     break;
                 case "ul":
                     listStack.push("ul");
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+                    endLine();
                     break;
                 case "ol":
                     listStack.push("ol");
                     listCounterStack.push(1);
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
+                    endLine();
                     break;
                 case "li":
                     if (!listStack.isEmpty()) {
@@ -397,9 +513,8 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     // Flush any trailing inline code (e.g. `...);</code></pre>`) so the
                     // closing fence sits on its own line, as Markdown requires. Only flush
                     // real content; a whitespace-only line means the fence is already alone.
-                    if (!StringUtils.isBlank( currentLine.toString() )) {
-                        lines.add(currentLine.toString());
-                        currentLine = new StringBuilder();
+                    if (!currentLineIsBlank()) {
+                        endLine();
                     }
                     currentLine.append("```");
                     break;
@@ -443,6 +558,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertParameter(Javadoc.Parameter param) {
+            int start = startTag();
             currentLine.append("@param");
             convert(param.getSpaceBeforeName());
             J name = param.getName();
@@ -461,24 +577,30 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     currentLine.append(printJ(name));
                 }
             }
+            keepTag(start, param, param::withDescription, param.getSpaceBeforeName());
             convert(param.getDescription());
         }
 
         private void convertReturn(Javadoc.Return ret) {
+            int start = startTag();
             currentLine.append("@return");
+            keepTag(start, ret, ret::withDescription);
             convert(ret.getDescription());
         }
 
         private void convertThrows(Javadoc.Throws thr) {
+            int start = startTag();
             currentLine.append(thr.isThrowsKeyword() ? "@throws " : "@exception ");
             J exceptionName = thr.getExceptionName();
             if (exceptionName != null) {
                 currentLine.append(printJ(exceptionName));
             }
+            keepTag(start, thr, thr::withDescription, thr.getSpaceBeforeExceptionName());
             convert(thr.getDescription());
         }
 
         private void convertSee(Javadoc.See see) {
+            int start = startTag();
             currentLine.append("@see");
             for (Javadoc node : see.getSpaceBeforeTree()) {
                 convertNode(node);
@@ -492,21 +614,28 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     currentLine.append(printJRef(tree));
                 }
             }
+            keepTag(start, see, see::withReference, see.getSpaceBeforeTree());
             convert(see.getReference());
         }
 
         private void convertSince(Javadoc.Since since) {
+            int start = startTag();
             currentLine.append("@since");
+            keepTag(start, since, since::withDescription);
             convert(since.getDescription());
         }
 
         private void convertAuthor(Javadoc.Author author) {
+            int start = startTag();
             currentLine.append("@author");
+            keepTag(start, author, author::withName);
             convert(author.getName());
         }
 
         private void convertDeprecated(Javadoc.Deprecated deprecated) {
+            int start = startTag();
             currentLine.append("@deprecated");
+            keepTag(start, deprecated, deprecated::withDescription);
             convert(deprecated.getDescription());
         }
 
@@ -518,21 +647,27 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertInlinedValue(Javadoc.InlinedValue value) {
+            int start = startTag();
             currentLine.append("{@value");
             J tree = value.getTree();
             if (tree != null) {
                 currentLine.append(' ').append(printJ(tree));
             }
             currentLine.append('}');
+            keepTag(start, value, null, value.getSpaceBeforeTree(), value.getEndBrace());
         }
 
         private void convertVersion(Javadoc.Version version) {
+            int start = startTag();
             currentLine.append("@version");
+            keepTag(start, version, version::withBody);
             convert(version.getBody());
         }
 
         private void convertHidden(Javadoc.Hidden hidden) {
+            int start = startTag();
             currentLine.append("@hidden");
+            keepTag(start, hidden, hidden::withBody);
             convert(hidden.getBody());
         }
 
@@ -550,7 +685,9 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertUnknownBlock(Javadoc.UnknownBlock block) {
+            int start = startTag();
             currentLine.append('@').append(block.getName());
+            keepTag(start, block, block::withContent);
             convert(block.getContent());
         }
 
@@ -564,8 +701,15 @@ public class JavadocToMarkdownDocComment extends Recipe {
             JavadocToMarkdownConverter inlineConverter = new JavadocToMarkdownConverter();
             inlineConverter.inPre = this.inPre;
             inlineConverter.convert(body);
-            List<String> inlineLines = inlineConverter.getLines();
-            return String.join("\n", inlineLines);
+            StringJoiner text = new StringJoiner("\n");
+            for (List<Object> line : inlineConverter.getLines()) {
+                StringBuilder lineText = new StringBuilder();
+                for (Object part : line) {
+                    lineText.append(part instanceof Tag ? ((Tag) part).getText() : part);
+                }
+                text.add(lineText);
+            }
+            return text.toString();
         }
 
         private static String printReference(Javadoc.@Nullable Reference ref) {
@@ -664,10 +808,6 @@ public class JavadocToMarkdownDocComment extends Recipe {
             } catch (Exception e) {
                 return tree.toString();
             }
-        }
-
-        private static String stripLeadingSpace(String s) {
-            return s.startsWith(" ") ? s.substring(1) : s;
         }
 
         private static String decodeHtmlEntities(String text) {

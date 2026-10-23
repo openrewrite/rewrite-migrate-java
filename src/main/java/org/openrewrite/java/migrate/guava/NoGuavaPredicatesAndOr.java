@@ -57,14 +57,18 @@ public class NoGuavaPredicatesAndOr extends Recipe {
         return Preconditions.check(precondition, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (PREDICATES_AND.matches(method)) {
-                    return handlePredicatesMethod(method, "and");
+                J j = super.visitMethodInvocation(method, ctx);
+                if (!(j instanceof J.MethodInvocation)) {
+                    return j;
                 }
-                if (PREDICATES_OR.matches(method)) {
-                    return handlePredicatesMethod(method, "or");
+                J.MethodInvocation m = (J.MethodInvocation) j;
+                if (PREDICATES_AND.matches(m)) {
+                    return handlePredicatesMethod(m, "and");
                 }
-
-                return super.visitMethodInvocation(method, ctx);
+                if (PREDICATES_OR.matches(m)) {
+                    return handlePredicatesMethod(m, "or");
+                }
+                return m;
             }
 
             private J handlePredicatesMethod(J.MethodInvocation method, String operation) {

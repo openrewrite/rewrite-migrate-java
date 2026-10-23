@@ -29,6 +29,8 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  # Runs before the Lombok and compiler plugin upgrades so they also apply to the annotation processor path it adds.
+  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
@@ -77,7 +79,6 @@ recipeList:
       artifactId: mapstruct*
       newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
-  - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

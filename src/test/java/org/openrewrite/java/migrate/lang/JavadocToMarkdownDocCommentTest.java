@@ -19,9 +19,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.marker.LineComment;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Javadoc;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.TypedTree;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
@@ -798,6 +805,47 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
+    @Test
+    void keepReferencesOfBlockTags() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * Does something.
+                   *
+                   * @param a the number
+                   * @throws IllegalArgumentException if invalid
+                   */
+                  public void m(int a) {}
+              }
+              """,
+            """
+              public class A {
+                  /// Does something.
+                  ///
+                  /// @param a the number
+                  /// @throws IllegalArgumentException if invalid
+                  public void m(int a) {}
+              }
+              """,
+            spec -> spec.afterRecipe(cu -> {
+                var m = (J.MethodDeclaration) cu.getClasses().getFirst().getBody().getStatements().getFirst();
+                assertThat(m.getComments()).singleElement().isInstanceOfSatisfying(Javadoc.DocComment.class, doc -> {
+                    assertThat(doc.getMarkers().findFirst(LineComment.class)).isPresent();
+                    assertThat(doc.getBody()).filteredOn(Javadoc.Parameter.class::isInstance).singleElement()
+                      .satisfies(param -> assertThat(requireNonNull(((Javadoc.Parameter) param).getNameReference()).getTree())
+                        .isInstanceOfSatisfying(J.Identifier.class, name -> assertThat(name.getSimpleName()).isEqualTo("a")));
+                    assertThat(doc.getBody()).filteredOn(Javadoc.Throws.class::isInstance).singleElement()
+                      .satisfies(thr -> assertThat(TypeUtils.isOfClassType(
+                        ((TypedTree) ((Javadoc.Throws) thr).getExceptionName()).getType(),
+                        "java.lang.IllegalArgumentException")).isTrue());
+                });
+            })
+          )
+        );
+    }
+
     @Nested
     class Jep467FlagshipExamples {
 
@@ -1031,7 +1079,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
             );
         }
 
-        @ExpectedToFail("@see with qualified names uses # instead of . for package separators")
+        @ExpectedToFail("`{@link}` and `{@code}` split across lines are joined onto one line or fenced")
         @Test
         void javadocHashCodeExample() {
             rewriteRun(
