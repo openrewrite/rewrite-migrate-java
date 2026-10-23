@@ -24,6 +24,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Javadoc;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.TypedTree;
+import org.openrewrite.test.RecipeQualityValidation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -152,6 +153,8 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void javadocWithLinkTag() {
         rewriteRun(
+          // The LST gives the Markdown link [List] no type, so the List import it needs looks unused
+          spec -> spec.recipeQualityValidation(RecipeQualityValidation.builder().removeUnusedImports(false).build()),
           java(
             """
               import java.util.List;
