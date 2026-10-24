@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.test.RecipeQualityValidation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -29,6 +30,8 @@ class ExplicitRecordImportTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ExplicitRecordImport())
+          // The recipe imports a same-package Record on purpose, so it is not read as java.lang.Record
+          .recipeQualityValidation(RecipeQualityValidation.builder().removeUnusedImports(false).build())
           //language=java
           .parser(JavaParser.fromJavaVersion().dependsOn("""
                 package com.acme.music;

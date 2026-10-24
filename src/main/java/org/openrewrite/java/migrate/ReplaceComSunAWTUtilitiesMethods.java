@@ -122,16 +122,12 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 super.visitMethodInvocation(mi, ctx);
                 if (getAWTIsWindowsTranslucencyMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    maybeAddImport("java.awt.GraphicsDevice", false);
                     maybeAddImport("java.awt.GraphicsEnvironment", false);
-                    maybeAddImport("java.awt.Window", false);
                     maybeAddImport("java.awt.GraphicsDevice.WindowTranslucency", false);
                     String templateString = "GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency." +
                                             ((J.FieldAccess) mi.getArguments().get(0)).getSimpleName();
                     return JavaTemplate.builder(templateString).
-                            imports("java.awt.GraphicsDevice",
-                                    "java.awt.GraphicsEnvironment",
-                                    "java.awt.Window",
+                            imports("java.awt.GraphicsEnvironment",
                                     "java.awt.GraphicsDevice.WindowTranslucency")
                             .build()
                             .apply(getCursor(), mi.getCoordinates().replace())

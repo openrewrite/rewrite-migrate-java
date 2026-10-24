@@ -740,6 +740,58 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
         }
 
         @Test
+        void doNotMergeWhenNullCheckHasElse() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              formatted = "You did not enter the test yet";
+                          } else {
+                              System.out.println("Entered");
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenNullCheckHasElseIf() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              formatted = "You did not enter the test yet";
+                          } else if (obj.isEmpty()) {
+                              System.out.println("Empty");
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void doNotMergeForExistingNullCase() {
             rewriteRun(
               //language=java

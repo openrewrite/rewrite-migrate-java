@@ -615,6 +615,96 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         );
     }
 
+    @Test
+    void continueAndNestedBreakKeepTheirTarget() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+
+              class Test {
+                  void b() {}
+                  void test(List<Object> xs) {
+                      for (Object o : xs) {
+                          if (o instanceof String s) {
+                              continue;
+                          } else if (o instanceof Integer i) {
+                              while (true) {
+                                  break;
+                              }
+                          } else {
+                              b();
+                          }
+                      }
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  void b() {}
+                  void test(List<Object> xs) {
+                      for (Object o : xs) {
+                          switch (o) {
+                              case String s -> {
+                                  continue;
+                              }
+                              case Integer i -> {
+                                  while (true) {
+                                      break;
+                                  }
+                              }
+                              case null, default -> b();
+                          }
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void subtypePatternBeforeSupertype() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void a(String s) {}
+                  void b(CharSequence cs) {}
+                  void c() {}
+                  void test(Object o) {
+                      if (o instanceof String s) {
+                          a(s);
+                      } else if (o instanceof CharSequence cs) {
+                          b(cs);
+                      } else {
+                          c();
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void a(String s) {}
+                  void b(CharSequence cs) {}
+                  void c() {}
+                  void test(Object o) {
+                      switch (o) {
+                          case String s -> a(s);
+                          case CharSequence cs -> b(cs);
+                          case null, default -> c();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Throws {
         @Test
@@ -990,6 +1080,115 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               return "Unknown test result";
                           }
                           return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWhenNullCheckIsOnAnotherVariable() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a() {}
+                      void b(Integer i) {}
+                      void c(Long l) {}
+                      void d() {}
+                      void test(Object o, Object other) {
+                          if (other == null) {
+                              a();
+                          } else if (o instanceof Integer i) {
+                              b(i);
+                          } else if (o instanceof Long l) {
+                              c(l);
+                          } else {
+                              d();
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWithSecondNullCheck() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a() {}
+                      void b(Integer i) {}
+                      void c() {}
+                      void d(Long l) {}
+                      void test(Object o) {
+                          if (o == null) {
+                              a();
+                          } else if (o instanceof Integer i) {
+                              b(i);
+                          } else if (o == null) {
+                              c();
+                          } else if (o instanceof Long l) {
+                              d(l);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWhenBranchBreaksOutOfEnclosingLoop() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.List;
+
+                  class Test {
+                      void a(Integer i) {}
+                      void b() {}
+                      void test(List<Object> xs) {
+                          for (Object o : xs) {
+                              if (o instanceof String s) {
+                                  break;
+                              } else if (o instanceof Integer i) {
+                                  a(i);
+                              } else {
+                                  b();
+                              }
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWhenSupertypePatternPrecedesSubtype() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a(CharSequence cs) {}
+                      void b(String s) {}
+                      void c() {}
+                      void test(Object o) {
+                          if (o instanceof CharSequence cs) {
+                              a(cs);
+                          } else if (o instanceof String s) {
+                              b(s);
+                          } else {
+                              c();
+                          }
                       }
                   }
                   """
