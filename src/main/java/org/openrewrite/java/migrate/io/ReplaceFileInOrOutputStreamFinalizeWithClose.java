@@ -32,6 +32,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 
 @EqualsAndHashCode(callSuper = false)
@@ -61,7 +62,9 @@ public class ReplaceFileInOrOutputStreamFinalizeWithClose extends Recipe {
                             JavaType type = select != null ? select.getType() : getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class).getType();
                             if (TypeUtils.isAssignableTo(JAVA_IO_FILE_INPUT_STREAM, type) ||
                                 TypeUtils.isAssignableTo(JAVA_IO_FILE_OUTPUT_STREAM, type)) {
-                                return mi.withName(mi.getName().withSimpleName("close"));
+                                return TypeUtils.findDeclaredMethod(TypeUtils.asFullyQualified(type), "close", emptyList())
+                                        .map(close -> mi.withName(mi.getName().withSimpleName("close").withType(close)).withMethodType(close))
+                                        .orElse(mi);
                             }
                         }
                         return mi;
