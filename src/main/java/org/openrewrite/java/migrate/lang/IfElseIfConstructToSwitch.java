@@ -28,10 +28,13 @@ import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.TypedTree;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -186,6 +189,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
             })) {
                 return false;
             }
+            if (hasDominatedPattern()) {
+                return false;
+            }
             boolean nullCaseInSwitch = nullCheckedParameter != null;
             boolean hasLastElseBlock = else_ != null;
 
@@ -193,6 +199,22 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean hasDominatedPattern() {
+            List<@Nullable JavaType> earlierTypes = new ArrayList<>();
+            for (J.InstanceOf instanceOf : patternMatchers.keySet()) {
+                @Nullable JavaType type = erasure(((TypedTree) instanceOf.getClazz()).getType());
+                if (earlierTypes.stream().anyMatch(earlier -> TypeUtils.isAssignableTo(earlier, type))) {
+                    return true;
+                }
+                earlierTypes.add(type);
+            }
+            return false;
+        }
+
+        private static @Nullable JavaType erasure(@Nullable JavaType type) {
+            return type instanceof JavaType.Parameterized ? ((JavaType.Parameterized) type).getType() : type;
         }
 
         private boolean returns(@Nullable Statement statement) {

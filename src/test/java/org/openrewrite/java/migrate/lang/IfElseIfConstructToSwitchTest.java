@@ -666,6 +666,45 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         );
     }
 
+    @Test
+    void subtypePatternBeforeSupertype() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void a(String s) {}
+                  void b(CharSequence cs) {}
+                  void c() {}
+                  void test(Object o) {
+                      if (o instanceof String s) {
+                          a(s);
+                      } else if (o instanceof CharSequence cs) {
+                          b(cs);
+                      } else {
+                          c();
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void a(String s) {}
+                  void b(CharSequence cs) {}
+                  void c() {}
+                  void test(Object o) {
+                      switch (o) {
+                          case String s -> a(s);
+                          case CharSequence cs -> b(cs);
+                          case null, default -> c();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Throws {
         @Test
@@ -1124,6 +1163,31 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               } else {
                                   b();
                               }
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWhenSupertypePatternPrecedesSubtype() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a(CharSequence cs) {}
+                      void b(String s) {}
+                      void c() {}
+                      void test(Object o) {
+                          if (o instanceof CharSequence cs) {
+                              a(cs);
+                          } else if (o instanceof String s) {
+                              b(s);
+                          } else {
+                              c();
                           }
                       }
                   }
