@@ -127,7 +127,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
         private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
             // the cursor points to the first if itself, and encloses the ifs after it
             Optional<NullCheck> nullCheck = nullCheck().get(ifPart, ifPart == if_ ? cursor.getParentOrThrow() : cursor);
-            if (nullCheck.isPresent()) {
+            if (nullCheck.isPresent() && nullCheckedParameter == null) {
                 nullCheckedParameter = nullCheck.get().getNullCheckedParameter();
                 nullCheckedStatement = nullCheck.get().whenNull();
                 Statement elsePart = nullCheck.get().whenNotNull();
@@ -163,6 +163,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     .allMatch(it -> SemanticallyEqual.areEqual(switchOn.get(), it))) {
                 return false;
             }
+            if (nullCheckedParameter != null && !SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get())) {
+                return false;
+            }
             // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching
             // (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
@@ -180,7 +183,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
             })) {
                 return false;
             }
-            boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
+            boolean nullCaseInSwitch = nullCheckedParameter != null;
             boolean hasLastElseBlock = else_ != null;
 
             // we need at least 3 cases to use a switch

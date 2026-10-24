@@ -996,6 +996,62 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
               )
             );
         }
+
+        @Test
+        void noSwitchBlockWhenNullCheckIsOnAnotherVariable() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a() {}
+                      void b(Integer i) {}
+                      void c(Long l) {}
+                      void d() {}
+                      void test(Object o, Object other) {
+                          if (other == null) {
+                              a();
+                          } else if (o instanceof Integer i) {
+                              b(i);
+                          } else if (o instanceof Long l) {
+                              c(l);
+                          } else {
+                              d();
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWithSecondNullCheck() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      void a() {}
+                      void b(Integer i) {}
+                      void c() {}
+                      void d(Long l) {}
+                      void test(Object o) {
+                          if (o == null) {
+                              a();
+                          } else if (o instanceof Integer i) {
+                              b(i);
+                          } else if (o == null) {
+                              c();
+                          } else if (o instanceof Long l) {
+                              d(l);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 
     @Test
