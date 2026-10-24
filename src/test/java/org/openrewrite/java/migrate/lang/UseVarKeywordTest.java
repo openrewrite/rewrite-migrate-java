@@ -24,6 +24,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 import static org.openrewrite.java.Assertions.version;
 
 class UseVarKeywordTest implements RewriteTest {
@@ -35,7 +36,7 @@ class UseVarKeywordTest implements RewriteTest {
               .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
               .build()
               .activateRecipes("org.openrewrite.java.migrate.lang.UseVar"))
-          .allSources(sources -> version(sources, 10))
+          .allSources(s -> s.markers(javaVersion(10)))
         ;
     }
 

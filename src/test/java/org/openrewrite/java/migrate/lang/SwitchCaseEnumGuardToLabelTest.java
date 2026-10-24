@@ -21,14 +21,14 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class SwitchCaseEnumGuardToLabelTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new SwitchCaseEnumGuardToLabel())
-          .allSources(source -> version(source, 21));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample
