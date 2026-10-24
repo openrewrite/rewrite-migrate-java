@@ -213,6 +213,60 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
     }
 
     @Test
+    void addsJakartaWsApiDependencyWhenOnlyUsingResourceAnnotations() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.ws.rs.GET;
+                  import javax.ws.rs.Path;
+
+                  @Path("/hello")
+                  public class HelloResource {
+                      @GET
+                      public String hello() {
+                          return "hello";
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.ws.rs.GET;
+                  import jakarta.ws.rs.Path;
+
+                  @Path("/hello")
+                  public class HelloResource {
+                      @GET
+                      public String hello() {
+                          return "hello";
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.ws.rs</groupId>")
+                .contains("<artifactId>jakarta.ws.rs-api</artifactId>")
+                .containsPattern("<version>3.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void ignoresJakartaWsApiDependencyIfAlreadyExisting() {
         rewriteRun(
           mavenProject(

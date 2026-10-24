@@ -47,7 +47,6 @@ recipeList:
   - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
   - org.openrewrite.java.migrate.SwitchPatternMatching
-  - org.openrewrite.java.migrate.RemoveIllegalSemicolons
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
