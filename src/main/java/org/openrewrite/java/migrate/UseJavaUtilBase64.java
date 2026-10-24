@@ -17,20 +17,25 @@ package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.ChangeType;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.template.Semantics;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markup;
 import org.openrewrite.staticanalysis.UnnecessaryCatch;
 
 import java.util.Base64;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
@@ -65,6 +70,9 @@ public class UseJavaUtilBase64 extends Recipe {
         MethodMatcher base64EncodeMethod = new MethodMatcher(sunPackage + ".CharacterEncoder *(byte[])");
         MethodMatcher base64DecodeBuffer = new MethodMatcher(sunPackage + ".CharacterDecoder decodeBuffer(String)");
 
+        MethodMatcher anyEncoderMethod = new MethodMatcher(sunPackage + ".CharacterEncoder *(..)", true);
+        MethodMatcher anyDecoderMethod = new MethodMatcher(sunPackage + ".CharacterDecoder *(..)", true);
+
         MethodMatcher newBase64Encoder = new MethodMatcher(sunPackage + ".BASE64Encoder <constructor>()");
         MethodMatcher newBase64Decoder = new MethodMatcher(sunPackage + ".BASE64Decoder <constructor>()");
 
@@ -75,6 +83,11 @@ public class UseJavaUtilBase64 extends Recipe {
                     return Markup.warn(cu, new IllegalStateException(
                             "Already using a class named Base64 other than java.util.Base64. Manual intervention required."));
                 }
+                if (usesLegacyTypeUntranslatably(cu)) {
+                    // Migrating only part of the file would either not compile or leave a `sun.misc` reference
+                    // behind, so leave the whole file for a human
+                    return cu;
+                }
                 J.CompilationUnit c = (J.CompilationUnit) super.visitCompilationUnit(cu, ctx);
 
                 c = (J.CompilationUnit) new ChangeType(sunPackage + ".BASE64Encoder", "java.util.Base64$Encoder", true)
@@ -83,11 +96,123 @@ public class UseJavaUtilBase64 extends Recipe {
                         .getVisitor().visitNonNull(c, ctx);
             }
 
+            /**
+             * True when a legacy coder type appears somewhere this recipe cannot translate: an expression statically
+             * typed as {@code CharacterEncoder} or {@code CharacterDecoder}, which {@link ChangeType} never retypes; a
+             * subclass or anonymous body, since {@code Base64.Encoder} has no accessible constructor; a call with no
+             * {@code java.util.Base64} equivalent, or on a receiver not typed as one of the two coders; a method
+             * reference, which is never rewritten; or a value passed to a parameter that stays a legacy coder.
+             */
+            private boolean usesLegacyTypeUntranslatably(J.CompilationUnit cu) {
+                AtomicBoolean found = new AtomicBoolean(false);
+                new JavaIsoVisitor<AtomicBoolean>() {
+                    @Override
+                    public J.Import visitImport(J.Import anImport, AtomicBoolean found) {
+                        // `ChangeType` rewrites imports, and no value flows through one
+                        return anImport;
+                    }
+
+                    @Override
+                    public Expression visitExpression(Expression expression, AtomicBoolean found) {
+                        if (isLegacySupertype(expression.getType())) {
+                            found.set(true);
+                        }
+                        return super.visitExpression(expression, found);
+                    }
+
+                    @Override
+                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, AtomicBoolean found) {
+                        if (classDecl.getExtends() != null && isLegacyCoderType(classDecl.getExtends().getType())) {
+                            found.set(true);
+                        }
+                        return super.visitClassDeclaration(classDecl, found);
+                    }
+
+                    @Override
+                    public J.NewClass visitNewClass(J.NewClass newClass, AtomicBoolean found) {
+                        // An anonymous creation's type is the anonymous class, so walk its supertypes too
+                        if (newClass.getBody() != null &&
+                            (TypeUtils.isAssignableTo(sunPackage + ".CharacterEncoder", newClass.getType()) ||
+                             TypeUtils.isAssignableTo(sunPackage + ".CharacterDecoder", newClass.getType())) ||
+                            takesLegacySupertypeParameter(newClass.getMethodType())) {
+                            found.set(true);
+                        }
+                        return super.visitNewClass(newClass, found);
+                    }
+
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, AtomicBoolean found) {
+                        if (isLegacyCoderMethod(method.getMethodType())) {
+                            Expression select = method.getSelect();
+                            if (!(encodeToString(method) || base64DecodeBuffer.matches(method)) ||
+                                select == null || !isRetypedCoderClass(select.getType())) {
+                                found.set(true);
+                            }
+                        } else if (takesLegacySupertypeParameter(method.getMethodType())) {
+                            found.set(true);
+                        }
+                        return super.visitMethodInvocation(method, found);
+                    }
+
+                    @Override
+                    public J.MemberReference visitMemberReference(J.MemberReference memberRef, AtomicBoolean found) {
+                        JavaType.Method methodType = memberRef.getMethodType();
+                        if (isLegacyCoderMethod(methodType) ||
+                            methodType == null && isLegacyCoderType(memberRef.getContaining().getType()) ||
+                            methodType != null && (isRetypedCoderClass(methodType.getDeclaringType()) ||
+                                                   takesLegacySupertypeParameter(methodType))) {
+                            found.set(true);
+                        }
+                        return super.visitMemberReference(memberRef, found);
+                    }
+                }.visit(cu, found);
+                return found.get();
+            }
+
+            private boolean isLegacyCoderMethod(JavaType.@Nullable Method methodType) {
+                return methodType != null && (anyEncoderMethod.matches(methodType) || anyDecoderMethod.matches(methodType));
+            }
+
+            private boolean isRetypedCoderClass(@Nullable JavaType type) {
+                return TypeUtils.isOfClassType(type, sunPackage + ".BASE64Encoder") ||
+                       TypeUtils.isOfClassType(type, sunPackage + ".BASE64Decoder");
+            }
+
+            private boolean isLegacySupertype(@Nullable JavaType type) {
+                if (type instanceof JavaType.Array) {
+                    return isLegacySupertype(((JavaType.Array) type).getElemType());
+                }
+                return TypeUtils.isOfClassType(type, sunPackage + ".CharacterEncoder") ||
+                       TypeUtils.isOfClassType(type, sunPackage + ".CharacterDecoder");
+            }
+
+            private boolean isLegacyCoderType(@Nullable JavaType type) {
+                if (type instanceof JavaType.Array) {
+                    return isLegacyCoderType(((JavaType.Array) type).getElemType());
+                }
+                return isRetypedCoderClass(type) || isLegacySupertype(type);
+            }
+
+            private boolean takesLegacySupertypeParameter(JavaType.@Nullable Method methodType) {
+                if (methodType != null) {
+                    for (JavaType parameterType : methodType.getParameterTypes()) {
+                        if (isLegacySupertype(parameterType)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            private boolean encodeToString(J.MethodInvocation method) {
+                return base64EncodeMethod.matches(method) &&
+                       ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()));
+            }
+
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-                if (base64EncodeMethod.matches(m) &&
-                    ("encode".equals(method.getSimpleName()) || "encodeBuffer".equals(method.getSimpleName()))) {
+                if (encodeToString(m)) {
                     m = JavaTemplate.builder(useMimeCoder ? "Base64.getMimeEncoder().encodeToString(#{anyArray(byte)})" : "Base64.getEncoder().encodeToString(#{anyArray(byte)})")
                             .imports("java.util.Base64")
                             .build()
