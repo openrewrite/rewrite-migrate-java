@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -25,7 +26,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 
@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static org.openrewrite.internal.StringUtils.uncapitalize;
 
 @EqualsAndHashCode(callSuper = false)
@@ -68,7 +69,7 @@ public class DontOverfetchDto extends Recipe {
 
                     Set<String> allUses = usesForArgument.getValue();
                     if (allUses.size() == 1 && allUses.iterator().next().equals(dtoDataElement)) {
-                        AtomicReference<JavaType.FullyQualified> memberTypeAtomic = new AtomicReference<>();
+                        AtomicReference<JavaType.Variable> dataElementVariable = new AtomicReference<>();
 
                         m = m.withParameters(ListUtils.map(m.getParameters(), p -> {
                             if (p instanceof J.VariableDeclarations) {
@@ -79,20 +80,25 @@ public class DontOverfetchDto extends Recipe {
                                         for (JavaType.Variable member : dtoType.getMembers()) {
                                             if (member.getName().equals(dtoDataElement)) {
                                                 JavaType.FullyQualified memberType = TypeUtils.asFullyQualified(member.getType());
-                                                memberTypeAtomic.set(memberType);
                                                 if (memberType != null) {
                                                     maybeRemoveImport(dtoType);
                                                     maybeAddImport(memberType);
                                                     return v
                                                             .withType(memberType)
-                                                            .withTypeExpression(TypeTree.build(memberType.getFullyQualifiedName()))
+                                                            .withTypeExpression(new J.Identifier(Tree.randomId(),
+                                                                    requireNonNull(v.getTypeExpression()).getPrefix(), Markers.EMPTY,
+                                                                    emptyList(), memberType.getClassName(), memberType, null))
                                                             .withVariables(ListUtils.map(v.getVariables(), nv -> {
                                                                 JavaType.Variable fieldType = nv.getName().getFieldType();
+                                                                JavaType.Variable variableType = fieldType == null ? null :
+                                                                        fieldType.withName(dtoDataElement).withType(memberType);
+                                                                dataElementVariable.set(variableType);
                                                                 return nv
-                                                                        .withName(nv.getName().withSimpleName(dtoDataElement).withType(memberType))
-                                                                        .withType(memberType)
-                                                                        .withVariableType(fieldType
-                                                                                .withName(dtoDataElement).withOwner(memberType));
+                                                                        .withName(nv.getName()
+                                                                                .withSimpleName(dtoDataElement)
+                                                                                .withType(memberType)
+                                                                                .withFieldType(variableType))
+                                                                        .withVariableType(variableType);
                                                             }));
                                                 }
                                             }
@@ -103,7 +109,7 @@ public class DontOverfetchDto extends Recipe {
                             return p;
                         }));
 
-                        m = (J.MethodDeclaration) new ReplaceWithDtoElement(dtoVariableName, memberTypeAtomic.get()).visitNonNull(m, ctx,
+                        m = (J.MethodDeclaration) new ReplaceWithDtoElement(dtoVariableName, dataElementVariable.get()).visitNonNull(m, ctx,
                                 getCursor().getParentOrThrow());
                     }
                 }
@@ -131,14 +137,15 @@ public class DontOverfetchDto extends Recipe {
     @RequiredArgsConstructor
     private class ReplaceWithDtoElement extends JavaVisitor<ExecutionContext> {
         private final String dtoVariableName;
-        private final JavaType.FullyQualified memberType;
+        private final JavaType.@Nullable Variable dataElementVariable;
 
         @Override
         public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             if (method.getSelect() instanceof J.Identifier && ((J.Identifier) method.getSelect()).getSimpleName()
                     .equals(dtoVariableName)) {
                 return new J.Identifier(Tree.randomId(), method.getPrefix(),
-                        Markers.EMPTY, emptyList(), dtoDataElement, memberType, null);
+                        Markers.EMPTY, emptyList(), dtoDataElement,
+                        dataElementVariable == null ? null : dataElementVariable.getType(), dataElementVariable);
             }
             return super.visitMethodInvocation(method, ctx);
         }

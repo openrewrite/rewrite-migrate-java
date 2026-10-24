@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -29,8 +28,7 @@ class DontOverfetchDtoTest implements RewriteTest {
     @Test
     void findDtoOverfetching() {
         rewriteRun(
-          spec -> spec.recipe(new DontOverfetchDto("animals.Dog", "name"))
-            .typeValidationOptions(TypeValidation.none()),
+          spec -> spec.recipe(new DontOverfetchDto("animals.Dog", "name")),
           //language=java
           java(
             """
@@ -62,7 +60,7 @@ class DontOverfetchDtoTest implements RewriteTest {
               """,
             """
               class Test {
-                  boolean test(java.lang.String name, int age) {
+                  boolean test(String name, int age) {
                       if(name != null) {
                           return true;
                       }
