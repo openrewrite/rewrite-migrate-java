@@ -24,6 +24,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 
@@ -43,7 +44,9 @@ public class OptionalStreamRecipe extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(optionalIsPresentMatcher), new OptionalStreamVisitor());
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(9), new UsesMethod<>(optionalIsPresentMatcher)),
+                new OptionalStreamVisitor());
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {

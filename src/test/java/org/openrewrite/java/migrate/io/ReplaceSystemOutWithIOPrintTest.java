@@ -64,6 +64,22 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void noChangeBeforeJava25() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  void test() {
+                      System.out.print("Hello");
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
     void replaceSystemOutPrintln() {
         rewriteRun(
           java(
