@@ -370,6 +370,65 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     }
 
     @Test
+    void escapedHtmlTagStaysEscapedInProse() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              public class A {
+                  /**
+                   * Returns a List&lt;String&gt;, as does <code>List&lt;String&gt; m()</code>.
+                   */
+                  public List<String> m() { return null; }
+              }
+              """,
+            """
+              import java.util.List;
+
+              public class A {
+                  /// Returns a List&lt;String&gt;, as does `List<String> m()`.
+                  public List<String> m() { return null; }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void codeOnSameLineMovesToNextLine() {
+        rewriteRun(
+          java(
+            """
+              public enum Color {
+                  /** Red */ RED,
+                  /** Green */ GREEN
+              }
+              """,
+            """
+              public enum Color {
+                  /// Red
+                  RED,
+                  /// Green
+                  GREEN
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocSharingLineWithPrecedingCodeIsKept() {
+        rewriteRun(
+          java(
+            """
+              public enum Color { /** Red */ RED, /** Green */ GREEN }
+              """
+          )
+        );
+    }
+
+    @Test
     void javadocWithInheritDoc() {
         rewriteRun(
           java(
