@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javaee;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
@@ -34,17 +35,20 @@ class HttpSessionInvalidateTest implements RewriteTest {
 
     @DocumentExample
     @Test
-    void useLogoutWhenHttpServletRequestExistsInScope() {
+    void addLogoutBeforeInvalidate() {
         rewriteRun(
           //language=java
           java(
             """
+              import javax.servlet.ServletException;
               import javax.servlet.http.HttpServletResponse;
               import javax.servlet.http.HttpServletRequest;
               import javax.servlet.http.HttpSession;
 
+              import java.io.IOException;
+
               class Foo {
-                  void logOut(HttpServletRequest req, HttpServletResponse res) {
+                  void logOut(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       HttpSession session = req.getSession(false);
                       session.invalidate();
                       res.sendRedirect("login.html");
@@ -52,55 +56,17 @@ class HttpSessionInvalidateTest implements RewriteTest {
               }
               """,
             """
+              import javax.servlet.ServletException;
               import javax.servlet.http.HttpServletResponse;
               import javax.servlet.http.HttpServletRequest;
               import javax.servlet.http.HttpSession;
 
+              import java.io.IOException;
+
               class Foo {
-                  void logOut(HttpServletRequest req, HttpServletResponse res) {
+                  void logOut(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
                       HttpSession session = req.getSession(false);
                       req.logout();
-                      res.sendRedirect("login.html");
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noChangeNeeded() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import javax.servlet.http.HttpServletResponse;
-              import javax.servlet.http.HttpServletRequest;
-              import javax.servlet.http.HttpSession;
-
-              class Foo {
-                  void logOut(HttpServletRequest req, HttpServletResponse res) {
-                      HttpSession session = req.getSession();
-                      req.logout();
-                      res.sendRedirect("login.html");
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void noChangeCannotFindServletRequest() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import javax.servlet.http.HttpServletResponse;
-              import javax.servlet.http.HttpSession;
-
-              class Foo {
-                  void logOut(HttpSession session, HttpServletResponse res) {
                       session.invalidate();
                       res.sendRedirect("login.html");
                   }
@@ -108,5 +74,215 @@ class HttpSessionInvalidateTest implements RewriteTest {
               """
           )
         );
+    }
+
+    @Test
+    void addLogoutWhenSupertypeOfServletExceptionIsCaught() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.servlet.http.HttpServletRequest;
+
+              class Foo {
+                  void logOut(HttpServletRequest req) {
+                      try {
+                          req.getSession().invalidate();
+                      } catch (Exception e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """,
+            """
+              import javax.servlet.http.HttpServletRequest;
+
+              class Foo {
+                  void logOut(HttpServletRequest req) {
+                      try {
+                          req.logout();
+                          req.getSession().invalidate();
+                      } catch (Exception e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void addLogoutWhenServletExceptionIsMultiCaught() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.servlet.ServletException;
+              import javax.servlet.http.HttpServletResponse;
+              import javax.servlet.http.HttpServletRequest;
+
+              import java.io.IOException;
+
+              class Foo {
+                  void reauthenticate(HttpServletRequest req, HttpServletResponse res) {
+                      try {
+                          req.getSession().invalidate();
+                          req.authenticate(res);
+                      } catch (IOException | ServletException e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """,
+            """
+              import javax.servlet.ServletException;
+              import javax.servlet.http.HttpServletResponse;
+              import javax.servlet.http.HttpServletRequest;
+
+              import java.io.IOException;
+
+              class Foo {
+                  void reauthenticate(HttpServletRequest req, HttpServletResponse res) {
+                      try {
+                          req.logout();
+                          req.getSession().invalidate();
+                          req.authenticate(res);
+                      } catch (IOException | ServletException e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Nested
+    class NoChange {
+        @Test
+        void servletExceptionNotHandled() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.http.HttpServletResponse;
+                  import javax.servlet.http.HttpServletRequest;
+                  import javax.servlet.http.HttpSession;
+
+                  import java.io.IOException;
+
+                  class Foo {
+                      void logOut(HttpServletRequest req, HttpServletResponse res) throws IOException {
+                          HttpSession session = req.getSession(false);
+                          session.invalidate();
+                          res.sendRedirect("login.html");
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void alreadyLoggedOut() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.ServletException;
+                  import javax.servlet.http.HttpServletRequest;
+
+                  class Foo {
+                      void logOut(HttpServletRequest req) throws ServletException {
+                          req.logout();
+                          req.getSession().invalidate();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void cannotFindServletRequest() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.ServletException;
+                  import javax.servlet.http.HttpSession;
+
+                  class Foo {
+                      void logOut(HttpSession session) throws ServletException {
+                          session.invalidate();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void notAStandaloneStatement() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.ServletException;
+                  import javax.servlet.http.HttpServletRequest;
+                  import javax.servlet.http.HttpSession;
+
+                  class Foo {
+                      void logOut(HttpServletRequest req) throws ServletException {
+                          HttpSession session = req.getSession(false);
+                          if (session != null) session.invalidate();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void lambdaInFieldInitializer() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.http.HttpSession;
+
+                  import java.util.function.Consumer;
+
+                  class Foo {
+                      Consumer<HttpSession> invalidate = session -> {
+                          session.invalidate();
+                      };
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void lambdaInsideMethodThatThrowsServletException() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import javax.servlet.ServletException;
+                  import javax.servlet.http.HttpServletRequest;
+
+                  class Foo {
+                      Runnable logOut(HttpServletRequest req) throws ServletException {
+                          return () -> {
+                              req.getSession().invalidate();
+                          };
+                      }
+                  }
+                  """
+              )
+            );
+        }
     }
 }
