@@ -8278,7 +8278,7 @@ examples:
       import java.lang.SecurityManager;
 
       class Test {
-          public void method() {
+          public void method() throws Exception {
               InetAddress maddr = InetAddress.getByName("127.0.0.1");
               byte b = 100;
               new SecurityManager().checkMulticast(maddr, b);
@@ -8291,7 +8291,7 @@ examples:
       import java.lang.SecurityManager;
 
       class Test {
-          public void method() {
+          public void method() throws Exception {
               InetAddress maddr = InetAddress.getByName("127.0.0.1");
               byte b = 100;
               new SecurityManager().checkMulticast(maddr);
