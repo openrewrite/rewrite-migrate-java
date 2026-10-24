@@ -126,4 +126,29 @@ class MigrateFastjsonForJakarta10Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void jsonFieldAnnotation() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.alibaba.fastjson.annotation.JSONField;
+
+              class User {
+                  @JSONField(name = "user_name")
+                  String name;
+              }
+              """,
+            """
+              import com.alibaba.fastjson2.annotation.JSONField;
+
+              class User {
+                  @JSONField(name = "user_name")
+                  String name;
+              }
+              """
+          )
+        );
+    }
 }
