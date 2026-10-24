@@ -21,7 +21,6 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -194,8 +193,6 @@ class LombokValToFinalVarTest implements RewriteTest {
     void preserveStarImportWithoutVarUsage() {
         //language=java
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion())
-            .typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """
@@ -221,8 +218,6 @@ class LombokValToFinalVarTest implements RewriteTest {
     void preserveStarImportWithVarUsage() {
         //language=java
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion())
-            .typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """
@@ -245,8 +240,6 @@ class LombokValToFinalVarTest implements RewriteTest {
     void removeExplicitVarImport() {
         //language=java
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion())
-            .typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """
@@ -274,8 +267,6 @@ class LombokValToFinalVarTest implements RewriteTest {
     void removeStarImportWhenOnlyValUsed() {
         //language=java
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion())
-            .typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """
@@ -307,8 +298,6 @@ class LombokValToFinalVarTest implements RewriteTest {
         // other lombok types still need. An unused import is preferable to broken code.
         //language=java
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion())
-            .typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """

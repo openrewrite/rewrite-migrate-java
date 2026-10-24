@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -36,9 +35,6 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
     void globalToGetGlobal() {
         //language=java
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.builder()
-            .methodInvocations(false)
-            .build()),
           java(
             """
               package org.openrewrite.example;
