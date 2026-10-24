@@ -94,4 +94,36 @@ class UpdateGetRealPathTest implements RewriteTest {
         );
     }
 
+    @Test
+    void unqualifiedInsideWrapperSubclass() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletRequestWrapper;
+              class MyWrapper extends HttpServletRequestWrapper {
+                  MyWrapper(HttpServletRequest request) {
+                      super(request);
+                  }
+                  String root() {
+                      return getRealPath("/");
+                  }
+              }
+              """,
+            """
+              import jakarta.servlet.http.HttpServletRequest;
+              import jakarta.servlet.http.HttpServletRequestWrapper;
+              class MyWrapper extends HttpServletRequestWrapper {
+                  MyWrapper(HttpServletRequest request) {
+                      super(request);
+                  }
+                  String root() {
+                      return getServletContext().getRealPath("/");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
