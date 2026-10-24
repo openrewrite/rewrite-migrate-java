@@ -20,6 +20,7 @@ recipeDependencies {
     testParserClasspath("com.sun.faces:jsf-api:2.1.29-11")
     testParserClasspath("com.sun.istack:istack-commons-runtime:4.1.2")
     testParserClasspath("commons-fileupload:commons-fileupload:1.5")
+    testParserClasspath("io.micrometer:micrometer-core:1.15.4")
     testParserClasspath("jakarta.el:jakarta.el-api:4.0.0")
     testParserClasspath("jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1")
     testParserClasspath("jakarta.faces:jakarta.faces-api:3.0.0")
