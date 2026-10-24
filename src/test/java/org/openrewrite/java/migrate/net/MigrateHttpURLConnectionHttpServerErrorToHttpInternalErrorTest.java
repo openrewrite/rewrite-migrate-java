@@ -26,7 +26,7 @@ import static org.openrewrite.java.Assertions.java;
 class MigrateHttpURLConnectionHttpServerErrorToHttpInternalErrorTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MigrateHttpURLConnectionHttpServerErrorToHttpInternalError());
+        spec.recipeFromResources("org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError");
     }
 
     @DocumentExample

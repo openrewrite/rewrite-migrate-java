@@ -29,3 +29,17 @@ recipeList:
   - org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError
   - org.openrewrite.java.migrate.net.MigrateURLDecoderDecode
   - org.openrewrite.java.migrate.net.MigrateURLEncoderEncode
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError
+displayName: Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR`
+description: Use `java.net.HttpURLConnection.HTTP_INTERNAL_ERROR` instead of the deprecated `java.net.HttpURLConnection.HTTP_SERVER_ERROR`.
+tags:
+  - deprecated
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: java.net.HttpURLConnection.HTTP_SERVER_ERROR
+      fullyQualifiedConstantName: java.net.HttpURLConnection.HTTP_INTERNAL_ERROR

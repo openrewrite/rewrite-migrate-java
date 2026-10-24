@@ -30,7 +30,7 @@ class NoGuavaMapsNewTreeMapTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaMapsNewTreeMap())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
