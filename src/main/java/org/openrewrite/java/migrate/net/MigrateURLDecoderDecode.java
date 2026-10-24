@@ -51,7 +51,6 @@ public class MigrateURLDecoderDecode extends Recipe {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
                     m = JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
-                            .contextSensitive()
                             .imports("java.nio.charset.StandardCharsets")
                             .build().apply(
                                     getCursor(),

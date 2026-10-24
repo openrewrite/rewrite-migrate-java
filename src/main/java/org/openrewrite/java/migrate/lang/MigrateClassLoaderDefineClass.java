@@ -43,16 +43,12 @@ public class MigrateClassLoaderDefineClass extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
-                    .contextSensitive()
-                    .build();
-
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (DEFINE_CLASS_MATCHER.matches(m) && m.getArguments().size() == 3) {
-                    m = template.apply(
+                    m = JavaTemplate.apply("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}",
                             updateCursor(m),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0),
