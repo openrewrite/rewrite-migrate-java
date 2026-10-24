@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class IfElseIfConstructToSwitchTest implements RewriteTest {
 
@@ -32,7 +32,7 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new IfElseIfConstructToSwitch())
-          .allSources(source -> version(source, 21));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample

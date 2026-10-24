@@ -31,6 +31,7 @@ import org.openrewrite.test.RewriteTest;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 import static org.openrewrite.java.Assertions.version;
 
 class JavadocToMarkdownDocCommentTest implements RewriteTest {
@@ -38,7 +39,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new JavadocToMarkdownDocComment());
-        spec.allSources(source -> version(source, 23));
+        spec.allSources(s -> s.markers(javaVersion(23)));
     }
 
     @DocumentExample
