@@ -142,8 +142,9 @@ class LombokUtils {
 
         // Check there's no up/down cast between parameter and field
         J.VariableDeclarations.NamedVariable param = ((J.VariableDeclarations) method.getParameters().get(0)).getVariables().get(0);
-        Expression variable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
-        if (param.getType() != variable.getType()) {
+        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
+        Expression variable = assignment.getVariable();
+        if (param.getType() != variable.getType() || !isReferenceTo(assignment.getAssignment(), param)) {
             return false;
         }
 
