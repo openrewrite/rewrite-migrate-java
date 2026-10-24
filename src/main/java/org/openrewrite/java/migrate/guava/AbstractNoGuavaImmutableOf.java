@@ -19,6 +19,7 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
@@ -103,45 +105,20 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 maybeRemoveImport(guavaType);
                 maybeAddImport(javaType);
 
-                String template;
-                Object[] templateArguments;
-                List<Expression> methodArguments = mi.getArguments();
-                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
-                    template = getShortType(javaType) + "." + methodName + "()";
-                    templateArguments = new Object[]{};
-                } else if ("of".equals(methodName) && "com.google.common.collect.ImmutableMap".equals(guavaType)) {
-                    template = getShortType(javaType) + "." + methodName + "(#{any()}, #{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
-                } else {
-                    template = getShortType(javaType) + "." + methodName + "(#{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0)};
-                }
-
+                Object[] templateArguments = mi.getArguments().stream()
+                        .filter(arg -> !(arg instanceof J.Empty))
+                        .toArray();
+                String template = getShortType(javaType) + "." + methodName +
+                                  "(" + String.join(", ", nCopies(templateArguments.length, "#{any()}")) + ")";
                 J.MethodInvocation m = JavaTemplate.builder(template)
                         .imports(javaType)
+                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "guava"))
                         .build()
                         .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
-                m = m.getPadding().withArguments(mi.getPadding().getArguments());
-                JavaType.Method newType = withJavaDeclaringType(mi.getMethodType(), m.getMethodType());
-                m = m.withMethodType(newType)
-                        .withName(m.getName().withType(newType))
+                m = m.getPadding().withArguments(mi.getPadding().getArguments())
                         .withPrefix(mi.getPrefix());
 
                 return super.visitMethodInvocation(m, ctx);
-            }
-
-            // The template binds only the leading arguments, so keep Guava's parameter types
-            private JavaType.@Nullable Method withJavaDeclaringType(JavaType.@Nullable Method guavaMethod, JavaType.@Nullable Method templateMethod) {
-                if (guavaMethod == null) {
-                    return templateMethod;
-                }
-                JavaType.FullyQualified declaringType = templateMethod != null ?
-                        templateMethod.getDeclaringType() :
-                        (JavaType.FullyQualified) JavaType.buildType(javaType);
-                JavaType returnType = guavaMethod.getReturnType() instanceof JavaType.Parameterized ?
-                        ((JavaType.Parameterized) guavaMethod.getReturnType()).withType(declaringType) :
-                        declaringType;
-                return guavaMethod.withDeclaringType(declaringType).withReturnType(returnType);
             }
 
             @Override
