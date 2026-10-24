@@ -18,11 +18,14 @@ package org.openrewrite.java.migrate.guava;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
@@ -37,8 +40,6 @@ class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
     @Test
     void predicatesEqualToToPredicateIsEqual() {
         rewriteRun(
-          // XXX Pending JavaTemplate support for MemberReference
-          spec -> spec.afterTypeValidationOptions(TypeValidation.none()),
           //language=java
           java(
             """
@@ -63,7 +64,17 @@ class NoGuavaPredicatesInstanceOfTest implements RewriteTest {
                       return Iterables.all(collection, String.class::isInstance);
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> new JavaIsoVisitor<Integer>() {
+                @Override
+                public J.MemberReference visitMemberReference(J.MemberReference memberRef, Integer p) {
+                    assertThat(TypeUtils.isOfClassType(memberRef.getType(), "com.google.common.base.Predicate")).isTrue();
+                    assertThat(memberRef.getMethodType()).isNotNull();
+                    assertThat(memberRef.getMethodType().getDeclaringType().getFullyQualifiedName()).isEqualTo("java.lang.Class");
+                    assertThat(memberRef.getMethodType().getName()).isEqualTo("isInstance");
+                    return memberRef;
+                }
+            }.visit(cu, 0))
           )
         );
     }

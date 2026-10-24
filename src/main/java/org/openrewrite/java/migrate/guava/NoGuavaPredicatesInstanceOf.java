@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -51,7 +52,6 @@ public class NoGuavaPredicatesInstanceOf extends Recipe {
                             maybeRemoveImport("com.google.common.base.Predicates");
                             Expression clazz = method.getArguments().get(0);
                             // XXX `JavaTemplate.builder("#{any()}::isInstance")` failed here
-                            // TODO Add type information for reference and identifier
                             return new J.MemberReference(
                                     Tree.randomId(),
                                     method.getPrefix(),
@@ -66,11 +66,23 @@ public class NoGuavaPredicatesInstanceOf extends Recipe {
                                             "isInstance",
                                             null,
                                             null)),
-                                    null,
-                                    null,
+                                    method.getType(),
+                                    isInstanceMethod(clazz.getType()),
                                     null);
                         }
                         return super.visitMethodInvocation(method, ctx);
+                    }
+
+                    private JavaType.@Nullable Method isInstanceMethod(@Nullable JavaType classType) {
+                        JavaType.FullyQualified fq = TypeUtils.asFullyQualified(classType);
+                        if (fq != null) {
+                            for (JavaType.Method m : fq.getMethods()) {
+                                if ("isInstance".equals(m.getName())) {
+                                    return m;
+                                }
+                            }
+                        }
+                        return null;
                     }
                 }
         );
