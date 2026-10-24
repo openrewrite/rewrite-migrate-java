@@ -374,6 +374,7 @@ recipeList:
       configuration: annotationProcessor
       acceptTransitive: false
   - org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
+  - org.openrewrite.java.migrate.AddLombokAnnotationProcessorPath
   - org.openrewrite.maven.AddAnnotationProcessor:
       groupId: org.projectlombok
       artifactId: lombok-mapstruct-binding
