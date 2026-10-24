@@ -859,7 +859,7 @@ recipeList:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
       version: 5.0.x
-      onlyIfUsing: javax.servlet.*
+      onlyIfUsing: javax.servlet..*
       acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet
@@ -1864,7 +1864,7 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       version: 2.0.x
-      onlyIfUsing: javax.mail.*
+      onlyIfUsing: javax.mail..*
       acceptTransitive: true
 
 ---
@@ -1905,5 +1905,5 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       version: 3.0.x
-      onlyIfUsing: javax.ws.rs.core.*
+      onlyIfUsing: javax.ws.rs..*
       acceptTransitive: true
