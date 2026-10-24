@@ -26,7 +26,6 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.migrate.jakarta.Faces2xMigrationToJakartaFaces3x
   - org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi41
   - org.openrewrite.java.migrate.jakarta.OmniFacesNamespaceMigration
