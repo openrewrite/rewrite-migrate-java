@@ -36,6 +36,7 @@ import org.openrewrite.marker.SearchResult;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
@@ -74,16 +75,25 @@ public class JavadocToMarkdownDocComment extends Recipe {
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 String spaceWhitespace = space.getWhitespace();
-                return space.withComments(ListUtils.flatMap(space.getComments(), comment ->
-                        comment instanceof Javadoc.DocComment &&
-                        !comment.getMarkers().findFirst(LineComment.class).isPresent() ?
-                                convertDocComment((Javadoc.DocComment) comment, spaceWhitespace) :
-                                comment));
+                List<Comment> comments = space.getComments();
+                return space.withComments(ListUtils.map(comments, (i, comment) -> {
+                    if (!(comment instanceof Javadoc.DocComment) ||
+                        comment.getMarkers().findFirst(LineComment.class).isPresent()) {
+                        return comment;
+                    }
+                    // A `///` comment runs to the end of the line, so code after it moves to the next line;
+                    // a Javadoc with code on both sides has no line of its own to convert into
+                    String precedingWhitespace = i == 0 ? spaceWhitespace : comments.get(i - 1).getSuffix();
+                    if (!comment.getSuffix().contains("\n") && !precedingWhitespace.contains("\n")) {
+                        return comment;
+                    }
+                    return convertDocComment((Javadoc.DocComment) comment, spaceWhitespace);
+                }));
             }
         });
     }
 
-    private static List<Comment> convertDocComment(Javadoc.DocComment docComment, String spaceWhitespace) {
+    private static Comment convertDocComment(Javadoc.DocComment docComment, String spaceWhitespace) {
         // Derive the indentation from the space whitespace (e.g., "\n    " → "    ")
         int lastNewline = spaceWhitespace.lastIndexOf('\n');
         String indentation = lastNewline >= 0 ? spaceWhitespace.substring(lastNewline + 1) : spaceWhitespace;
@@ -95,11 +105,12 @@ public class JavadocToMarkdownDocComment extends Recipe {
         // leading/trailing blank lines, and collapse consecutive blank lines
         List<List<Object>> lines = normalizeLines(converter.getLines());
 
-        return singletonList(new Javadoc.DocComment(
+        String suffix = docComment.getSuffix().contains("\n") ? docComment.getSuffix() : "\n" + indentation;
+        return new Javadoc.DocComment(
                 Tree.randomId(),
                 Markers.build(singletonList(new LineComment(Tree.randomId()))),
                 toBody(lines, "\n" + indentation + "///"),
-                docComment.getSuffix()));
+                suffix);
     }
 
     private static List<List<Object>> normalizeLines(List<List<Object>> raw) {
@@ -213,10 +224,13 @@ public class JavadocToMarkdownDocComment extends Recipe {
     }
 
     static class JavadocToMarkdownConverter {
+        private static final Pattern ESCAPED_HTML_TAG = Pattern.compile("&lt;[A-Za-z/!?]");
+
         private final List<List<Object>> lines = new ArrayList<>();
         private List<Object> currentParts = new ArrayList<>();
         private StringBuilder currentLine = new StringBuilder();
         private boolean inPre = false;
+        private boolean inCode = false;
         private boolean suppressNextLineBreak = false;
         private final Deque<String> listStack = new ArrayDeque<>();
         private final Deque<Integer> listCounterStack = new ArrayDeque<>();
@@ -287,7 +301,13 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         void convert(List<Javadoc> body) {
-            for (Javadoc node : body) {
+            for (int i = 0; i < body.size(); i++) {
+                Javadoc node = body.get(i);
+                // Each entity is a text node of its own, so join adjacent text to decode entities in context
+                while (node instanceof Javadoc.Text && i + 1 < body.size() && body.get(i + 1) instanceof Javadoc.Text) {
+                    Javadoc.Text text = (Javadoc.Text) node;
+                    node = text.withText(text.getText() + ((Javadoc.Text) body.get(++i)).getText());
+                }
                 convertNode(node);
             }
         }
@@ -357,7 +377,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private void convertLiteral(Javadoc.Literal literal) {
-            String content = stripLeadingSpace(renderInline(literal.getDescription()));
+            String content = stripLeadingSpace(renderInline(literal.getDescription(), true));
             // Both {@code} and {@literal} map to backticks in Markdown.
             // {@literal} prevents HTML interpretation; backticks achieve the same in Markdown.
             if (content.contains("\n")) {
@@ -405,6 +425,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     break;
                 case "code":
                     if (!inPre) {
+                        inCode = true;
                         currentLine.append('`');
                     }
                     break;
@@ -520,6 +541,7 @@ public class JavadocToMarkdownDocComment extends Recipe {
                     break;
                 case "code":
                     if (!inPre) {
+                        inCode = false;
                         currentLine.append('`');
                     }
                     break;
@@ -698,8 +720,13 @@ public class JavadocToMarkdownDocComment extends Recipe {
         }
 
         private String renderInline(List<Javadoc> body) {
+            return renderInline(body, inCode);
+        }
+
+        private String renderInline(List<Javadoc> body, boolean code) {
             JavadocToMarkdownConverter inlineConverter = new JavadocToMarkdownConverter();
             inlineConverter.inPre = this.inPre;
+            inlineConverter.inCode = code;
             inlineConverter.convert(body);
             StringJoiner text = new StringJoiner("\n");
             for (List<Object> line : inlineConverter.getLines()) {
@@ -810,13 +837,17 @@ public class JavadocToMarkdownDocComment extends Recipe {
             }
         }
 
-        private static String decodeHtmlEntities(String text) {
+        private String decodeHtmlEntities(String text) {
             if (!text.contains("&")) {
                 return text;
             }
+            // Outside code, Markdown would read a decoded `<T>` as an HTML tag and hide it
+            if (inPre || inCode || !ESCAPED_HTML_TAG.matcher(text).find()) {
+                text = text
+                        .replace("&lt;", "<")
+                        .replace("&gt;", ">");
+            }
             return text
-                    .replace("&lt;", "<")
-                    .replace("&gt;", ">")
                     .replace("&amp;", "&")
                     .replace("&quot;", "\"")
                     .replace("&apos;", "'")
