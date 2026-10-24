@@ -21,11 +21,13 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
@@ -116,7 +118,15 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
         MethodMatcher setComponentMixingCutoutShapePatternMethod = new MethodMatcher(setComponentMixingCutoutShapePattern);
         MethodMatcher setWindowOpacityPatternMethod = new MethodMatcher(setWindowOpacityPattern);
 
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(getAWTIsWindowsTranslucencyMethod),
+                new UsesMethod<>(getWindowOpacityPatternMethod),
+                new UsesMethod<>(getWindowShapePatternMethod),
+                new UsesMethod<>(isWindowOpaquePatternMethod),
+                new UsesMethod<>(isTranslucencyCapablePatternMethod),
+                new UsesMethod<>(setComponentMixingCutoutShapePatternMethod),
+                new UsesMethod<>(setWindowOpacityPatternMethod)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
                 super.visitMethodInvocation(mi, ctx);
@@ -165,6 +175,6 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 }
                 return mi;
             }
-        };
+        });
     }
 }

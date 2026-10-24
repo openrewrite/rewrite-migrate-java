@@ -17,12 +17,14 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.TextComment;
@@ -45,7 +47,11 @@ public class ThreadStopUnsupported extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(THREAD_STOP_MATCHER),
+                new UsesMethod<>(THREAD_RESUME_MATCHER),
+                new UsesMethod<>(THREAD_SUSPEND_MATCHER)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J j = super.visitMethodInvocation(method, ctx);
@@ -74,6 +80,6 @@ public class ThreadStopUnsupported extends Recipe {
                                 prefixWhitespace + " ";
                 return j.withComments(singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
             }
-        };
+        });
     }
 }

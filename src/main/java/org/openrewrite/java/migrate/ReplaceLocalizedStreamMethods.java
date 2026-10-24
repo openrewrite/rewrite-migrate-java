@@ -21,10 +21,12 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
@@ -60,17 +62,19 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher LocalizedInputStreamMethod = new MethodMatcher(localizedInputStreamMethodMatcher, false);
-            private final MethodMatcher localizedOutputStreamMethod = new MethodMatcher(localizedOutputStreamMethodMatcher, false);
-
+        MethodMatcher localizedInputStreamMethod = new MethodMatcher(localizedInputStreamMethodMatcher, false);
+        MethodMatcher localizedOutputStreamMethod = new MethodMatcher(localizedOutputStreamMethodMatcher, false);
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(localizedInputStreamMethod),
+                new UsesMethod<>(localizedOutputStreamMethod)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
-                if (LocalizedInputStreamMethod.matches(mi) || localizedOutputStreamMethod.matches(mi)) {
+                if (localizedInputStreamMethod.matches(mi) || localizedOutputStreamMethod.matches(mi)) {
                     return mi.getArguments().get(0).withPrefix(mi.getPrefix());
                 }
                 return super.visitMethodInvocation(mi, ctx);
             }
-        };
+        });
     }
 }

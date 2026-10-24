@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.Getter;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
@@ -26,6 +27,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.VariableNameUtils;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -41,7 +43,7 @@ public class JacksonProviderOverrides extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>("com.fasterxml.jackson.jaxrs.base.ProviderBase", false), new JavaIsoVisitor<ExecutionContext>() {
             final MethodMatcher oldMethod = new MethodMatcher(
                     "com.fasterxml.jackson.jaxrs.base.ProviderBase _configForWriting(com.fasterxml.jackson.databind.ObjectMapper, java.lang.annotation.Annotation[])", true);
 
@@ -85,6 +87,6 @@ public class JacksonProviderOverrides extends Recipe {
                 return method.withParameterTypes(ListUtils.concat(method.getParameterTypes(), type))
                         .withParameterNames(ListUtils.concat(method.getParameterNames(), name));
             }
-        };
+        });
     }
 }

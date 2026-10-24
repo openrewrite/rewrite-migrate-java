@@ -18,10 +18,12 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -36,7 +38,7 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new ApplicationPathTrailingSlashVisitor();
+        return Preconditions.check(new UsesType<>("jakarta.ws.rs.ApplicationPath", false), new ApplicationPathTrailingSlashVisitor());
     }
 
     @RequiredArgsConstructor

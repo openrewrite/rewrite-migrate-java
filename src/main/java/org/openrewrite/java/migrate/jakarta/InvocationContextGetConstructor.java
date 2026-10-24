@@ -18,11 +18,13 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.Getter;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
@@ -37,7 +39,7 @@ public class InvocationContextGetConstructor extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesType<>("jakarta.interceptor.InvocationContext", false), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass n = super.visitNewClass(newClass, ctx);
@@ -97,6 +99,6 @@ public class InvocationContextGetConstructor extends Recipe {
                                 "package jakarta.interceptor; public interface InvocationContext { java.lang.reflect.Method getMethod(); java.lang.reflect.Constructor<?> getConstructor(); }"))
                         .build().apply(new Cursor(parent, body), body.getCoordinates().lastStatement(), delegate);
             }
-        };
+        });
     }
 }

@@ -17,12 +17,14 @@ package org.openrewrite.java.migrate.jakarta;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -31,6 +33,9 @@ import java.util.List;
 import static java.util.Collections.nCopies;
 
 public class UpdateBeanManagerMethods extends Recipe {
+    private static final MethodMatcher FIRE_EVENT = new MethodMatcher("*.enterprise.inject.spi.BeanManager fireEvent(..)", false);
+    private static final MethodMatcher CREATE_INJECTION_TARGET = new MethodMatcher("*.enterprise.inject.spi.BeanManager createInjectionTarget(..)", false);
+
     @Getter
     final String displayName = "Update `fireEvent()` and `createInjectionTarget()` calls";
 
@@ -39,15 +44,16 @@ public class UpdateBeanManagerMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            private final MethodMatcher fireEventMatcher = new MethodMatcher("*.enterprise.inject.spi.BeanManager fireEvent(..)", false);
-            private final MethodMatcher createInjectionTargetMatcher = new MethodMatcher("*.enterprise.inject.spi.BeanManager createInjectionTarget(..)", false);
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(FIRE_EVENT),
+                new UsesMethod<>(CREATE_INJECTION_TARGET)
+        ), new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 List<Expression> arguments = mi.getArguments();
-                if (fireEventMatcher.matches(method) && mi.getSelect() != null) {
+                if (FIRE_EVENT.matches(method) && mi.getSelect() != null) {
                     if (arguments.size() <= 1) {
                         return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getEvent()" +
                                 ".fire(#{any(jakarta.enterprise.inject.spi.BeforeBeanDiscovery)})")
@@ -71,7 +77,7 @@ public class UpdateBeanManagerMethods extends Recipe {
                             .build()
                             .apply(updateCursor(mi), mi.getCoordinates().replace(), args);
                 }
-                if (createInjectionTargetMatcher.matches(method) && mi.getSelect() != null) {
+                if (CREATE_INJECTION_TARGET.matches(method) && mi.getSelect() != null) {
                     return JavaTemplate.builder("#{any(jakarta.enterprise.inject.spi.BeanManager)}.getInjectionTargetFactory(#{any(jakarta.enterprise.inject.spi.AnnotatedType)}).createInjectionTarget(null)")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.enterprise.cdi-api-3.0.1"))
                             .build()
@@ -79,7 +85,6 @@ public class UpdateBeanManagerMethods extends Recipe {
                 }
                 return mi;
             }
-
-        };
+        });
     }
 }

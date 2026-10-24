@@ -48,7 +48,7 @@ public class UseSlf4j extends UseLogRecipeTemplate {
         return new LogVisitor("org.slf4j.Logger",
                 "org.slf4j.LoggerFactory getLogger(..)",
                 "lombok.extern.slf4j.Slf4j",
-                fieldName);
+                fieldName).withPrecondition();
     }
 
 }
