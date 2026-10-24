@@ -305,8 +305,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferCharCompare
-displayName: Prefer `java.lang.Char#compare`
-description: Prefer `java.lang.Char#compare` instead of using `com.google.common.primitives.Chars#compare`.
+displayName: Prefer `Character#compare`
+description: Prefer `java.lang.Character#compare` instead of using `com.google.common.primitives.Chars#compare`.
 tags:
   - guava
 preconditions:
@@ -314,7 +314,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Chars compare(char, char)
-      fullyQualifiedTargetTypeName: java.lang.Char
+      fullyQualifiedTargetTypeName: java.lang.Character
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
