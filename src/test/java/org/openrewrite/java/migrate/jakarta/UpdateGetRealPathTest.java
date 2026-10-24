@@ -62,4 +62,36 @@ class UpdateGetRealPathTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void nestedInArgumentsAndSelect() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import jakarta.servlet.ServletRequest;
+              import java.nio.file.Paths;
+              class Foo {
+                  void bar(ServletRequest request) {
+                      Paths.get(request.getRealPath("/"));
+                      request.getRealPath("/").length();
+                      System.out.println(request.getRealPath(request.getRealPath("/")));
+                  }
+              }
+              """,
+            """
+              import jakarta.servlet.ServletRequest;
+              import java.nio.file.Paths;
+              class Foo {
+                  void bar(ServletRequest request) {
+                      Paths.get(request.getServletContext().getRealPath("/"));
+                      request.getServletContext().getRealPath("/").length();
+                      System.out.println(request.getServletContext().getRealPath(request.getServletContext().getRealPath("/")));
+                  }
+              }
+              """
+          )
+        );
+    }
+
 }

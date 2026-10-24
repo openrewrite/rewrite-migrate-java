@@ -39,16 +39,17 @@ public class UpdateGetRealPath extends Recipe {
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (METHOD_PATTERN.matches(method)) {
+                J.MethodInvocation m = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
+                if (METHOD_PATTERN.matches(m)) {
                     return JavaTemplate.builder("#{any()}.getServletContext().getRealPath(#{any(String)})")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.servlet-api-6.0.0"))
                             .build()
-                            .apply(updateCursor(method),
-                                    method.getCoordinates().replace(),
-                                    method.getSelect(),
-                                    method.getArguments().get(0));
+                            .apply(updateCursor(m),
+                                    m.getCoordinates().replace(),
+                                    m.getSelect(),
+                                    m.getArguments().get(0));
                 }
-                return method;
+                return m;
             }
         };
     }
