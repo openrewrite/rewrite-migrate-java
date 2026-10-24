@@ -16,26 +16,22 @@
 package org.openrewrite.java.migrate.io;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.search.FindMissingTypes;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
+import static org.junit.jupiter.api.condition.JRE.JAVA_25;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
+@EnabledForJreRange(min = JAVA_25)
 class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ReplaceSystemOutWithIOPrint())
-          .afterTypeValidationOptions(TypeValidation.all().allowMissingType(o -> {
-              assert o instanceof FindMissingTypes.MissingTypeResult;
-              var result = (FindMissingTypes.MissingTypeResult) o;
-              return result.getPrintedTree().contains("IO");
-          })) // TODO remove once tests run on Java 25+
           .parser(JavaParser.fromJavaVersion())
           .allSources(s -> s.markers(javaVersion(25)));
     }
