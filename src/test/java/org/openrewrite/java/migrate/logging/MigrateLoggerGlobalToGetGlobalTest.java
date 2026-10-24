@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -28,7 +27,7 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MigrateLoggerGlobalToGetGlobal());
+        spec.recipeFromResources("org.openrewrite.java.migrate.logging.MigrateLoggerGlobalToGetGlobal");
     }
 
     @DocumentExample
@@ -36,9 +35,6 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
     void globalToGetGlobal() {
         //language=java
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.builder()
-            .methodInvocations(false)
-            .build()),
           java(
             """
               package org.openrewrite.example;
@@ -60,6 +56,52 @@ class MigrateLoggerGlobalToGetGlobalTest implements RewriteTest {
                   public static void method() {
                       Logger logger = Logger.getGlobal();
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void fullyQualifiedGlobalToGetGlobal() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  java.util.logging.Logger logger = java.util.logging.Logger.global;
+              }
+              """,
+            """
+              import java.util.logging.Logger;
+
+              class Test {
+                  Logger logger = Logger.getGlobal();
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void staticallyImportedGlobalToGetGlobal() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.logging.Logger;
+
+              import static java.util.logging.Logger.global;
+
+              class Test {
+                  Logger logger = global;
+              }
+              """,
+            """
+              import java.util.logging.Logger;
+
+              class Test {
+                  Logger logger = Logger.getGlobal();
               }
               """
           )
