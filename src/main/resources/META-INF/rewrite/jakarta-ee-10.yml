@@ -336,27 +336,6 @@ description: >-
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequest
-      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequest
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletRequestWrapper
-      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletRequestWrapper
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponse
-      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponse
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.http.HttpServletResponseWrapper
-      newFullyQualifiedTypeName: jakarta.servlet.http.HttpServletResponseWrapper
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.http.HttpSession
-      newFullyQualifiedTypeName: jakarta.servlet.http.HttpSession
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.ServletContext
-      newFullyQualifiedTypeName: jakarta.servlet.ServletContext
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.servlet.UnavailableException
-      newFullyQualifiedTypeName: jakarta.servlet.UnavailableException
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: jakarta.servlet.http.HttpServletRequest  isRequestedSessionIdFromUrl()
       newMethodName: isRequestedSessionIdFromURL

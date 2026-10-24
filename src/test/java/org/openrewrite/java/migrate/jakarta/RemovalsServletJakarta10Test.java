@@ -187,4 +187,25 @@ class RemovalsServletJakarta10Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void leavesJavaxServletForJakartaMigration() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.servlet-api-4.0.1")),
+          //language=java
+          java(
+            """
+              import javax.servlet.ServletException;
+              import javax.servlet.http.HttpServletRequest;
+
+              class Test {
+                  void doGet(HttpServletRequest req) throws ServletException {
+                      req.isRequestedSessionIdFromUrl();
+                  }
+              }
+              """
+          )
+        );
+    }
 }
