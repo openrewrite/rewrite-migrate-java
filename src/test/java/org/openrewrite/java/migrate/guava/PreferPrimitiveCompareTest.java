@@ -56,4 +56,82 @@ class PreferPrimitiveCompareTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void intsCompare() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferIntegerCompare"),
+          //language=java
+          java(
+            """
+              import com.google.common.primitives.Ints;
+
+              class Test {
+                  int compare(int a, int b) {
+                      return Ints.compare(a, b);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  int compare(int a, int b) {
+                      return Integer.compare(a, b);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void longsCompare() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferLongCompare"),
+          //language=java
+          java(
+            """
+              import com.google.common.primitives.Longs;
+
+              class Test {
+                  int compare(long a, long b) {
+                      return Longs.compare(a, b);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  int compare(long a, long b) {
+                      return Long.compare(a, b);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void shortsCompare() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferShortCompare"),
+          //language=java
+          java(
+            """
+              import com.google.common.primitives.Shorts;
+
+              class Test {
+                  int compare(short a, short b) {
+                      return Shorts.compare(a, b);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  int compare(short a, short b) {
+                      return Short.compare(a, b);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
