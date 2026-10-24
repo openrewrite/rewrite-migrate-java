@@ -25,8 +25,9 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.DeclaresMethod;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -57,14 +58,18 @@ public class JREThrowableFinalMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        MethodMatcher METHOD_ADDSUPPRESSED = new MethodMatcher(methodPatternAddSuppressed, false);
+        MethodMatcher METHOD_GETSUPPRESSED = new MethodMatcher(methodPatternGetSuppressed, false);
         return Preconditions.check(
                 Preconditions.and(
                         new UsesJavaVersion<>(1, 6),
-                        new UsesType<>("java.lang.Throwable", true)
+                        Preconditions.or(
+                                new DeclaresMethod<>(METHOD_ADDSUPPRESSED),
+                                new DeclaresMethod<>(METHOD_GETSUPPRESSED),
+                                new UsesMethod<>(METHOD_ADDSUPPRESSED),
+                                new UsesMethod<>(METHOD_GETSUPPRESSED))
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    private final MethodMatcher METHOD_ADDSUPPRESSED = new MethodMatcher(methodPatternAddSuppressed, false);
-                    private final MethodMatcher METHOD_GETSUPPRESSED = new MethodMatcher(methodPatternGetSuppressed, false);
                     private final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
 
                     @Override

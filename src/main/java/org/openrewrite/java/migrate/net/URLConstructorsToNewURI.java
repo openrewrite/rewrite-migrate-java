@@ -24,7 +24,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class URLConstructorsToNewURI extends Recipe {
@@ -43,7 +43,10 @@ public class URLConstructorsToNewURI extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>(URL_FQN, false),
+        return Preconditions.check(Preconditions.or(
+                        new UsesMethod<>(methodMatcherThreeArg),
+                        new UsesMethod<>(methodMatcherFourArg),
+                        new UsesMethod<>(methodMatcherFiveArg)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
