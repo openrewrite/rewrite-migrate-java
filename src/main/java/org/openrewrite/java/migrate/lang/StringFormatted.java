@@ -25,6 +25,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
@@ -72,15 +73,18 @@ public class StringFormatted extends Recipe {
                     return methodInvocation;
                 }
 
-                maybeRemoveImport("java.lang.String.format");
-                J.MethodInvocation mi = methodInvocation.withName(methodInvocation.getName().withSimpleName("formatted"));
-                mi = mi.withMethodType(methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
+                JavaType.Method formatted = methodInvocation.getMethodType().getDeclaringType().getMethods().stream()
                         .filter(it -> "formatted".equals(it.getName()))
                         .findAny()
-                        .orElse(null));
-                if (mi.getName().getType() != null) {
-                    mi = mi.withName(mi.getName().withType(mi.getMethodType()));
+                        .orElse(null);
+                if (formatted == null) {
+                    return methodInvocation;
                 }
+
+                maybeRemoveImport("java.lang.String.format");
+                J.MethodInvocation mi = methodInvocation
+                        .withName(methodInvocation.getName().withSimpleName("formatted").withType(formatted))
+                        .withMethodType(formatted);
                 mi = mi.withSelect(wrapperNeeded ?
                         new J.Parentheses<>(randomId(), Space.EMPTY, Markers.EMPTY,
                                 JRightPadded.build(arguments.get(0))) :

@@ -18,9 +18,13 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -56,7 +60,10 @@ class StreamFindFirstTest implements RewriteTest {
                       String first = collection.getFirst();
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.SequencedCollection getFirst()"))
+              .singleElement()
+              .satisfies(getFirst -> assertThat(TypeUtils.isString(((J.MethodInvocation) getFirst).getType())).isTrue()))
           )
         );
     }

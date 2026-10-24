@@ -331,12 +331,17 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                     .collect(joining(TO_STRING_MEMBER_DELIMITER));
         }
 
-        private static JavaType.Class buildRecordType(J.ClassDeclaration classDeclaration) {
-            assert classDeclaration.getType() != null : "Class type must not be null";
-            String className = classDeclaration.getType().getFullyQualifiedName();
-
-            return JavaType.ShallowClass.build(className)
-                    .withKind(JavaType.FullyQualified.Kind.Record);
+        private static JavaType.Class buildRecordType(JavaType.Class classType, Set<String> memberNames) {
+            return classType
+                    .withKind(JavaType.FullyQualified.Kind.Record)
+                    .withSupertype(JavaType.ShallowClass.build("java.lang.Record"))
+                    .withMethods(ListUtils.map(classType.getMethods(), method -> {
+                        String accessorName = getterMethodNameToFluentMethodName(method.getName());
+                        return method.getParameterTypes().isEmpty() &&
+                               (method.getName().startsWith(STANDARD_GETTER_PREFIX) || method.getName().startsWith(BOOLEAN_GETTER_PREFIX)) &&
+                               memberNames.contains(accessorName) ?
+                                method.withName(accessorName) : method;
+                    }));
         }
 
         @Override
@@ -372,7 +377,7 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             classDeclaration = classDeclaration
                     .getPadding().withKind(kind)
                     .withModifiers(mappedModifiers)
-                    .withType(buildRecordType(classDeclaration))
+                    .withType(buildRecordType((JavaType.Class) classType, recordTypeToMembers.get(classType.getFullyQualifiedName())))
                     .withBody(classDeclaration.getBody()
                             .withStatements(bodyStatements)
                     )

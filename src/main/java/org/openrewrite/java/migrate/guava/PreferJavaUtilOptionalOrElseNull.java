@@ -21,14 +21,19 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.marker.Markers;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Collections.singletonList;
+import static org.openrewrite.Tree.randomId;
 
 public class PreferJavaUtilOptionalOrElseNull extends Recipe {
 
@@ -61,8 +66,11 @@ public class PreferJavaUtilOptionalOrElseNull extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (OPTIONAL_OR_NULL_MATCHER.matches(mi)) {
-                mi = mi.withName(mi.getName().withSimpleName("orElse"));
-                mi = JavaTemplate.apply( "null", updateCursor( mi ), mi.getCoordinates().replaceArguments() );
+                JavaType.Method orNull = mi.getMethodType();
+                JavaType.Method orElse = orNull.withName("orElse").withParameterTypes(singletonList(orNull.getReturnType()));
+                mi = mi.withName(mi.getName().withSimpleName("orElse").withType(orElse))
+                        .withMethodType(orElse)
+                        .withArguments(singletonList(new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, null, "null", null, JavaType.Primitive.Null)));
             }
             return mi;
         }

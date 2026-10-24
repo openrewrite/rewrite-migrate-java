@@ -20,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.java.ChangeMethodInvocationReturnType;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;

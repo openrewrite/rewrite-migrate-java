@@ -22,9 +22,13 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -90,7 +94,12 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
                       return optional.orElse(null);
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.Optional orElse(..)"))
+              .singleElement()
+              .satisfies(orElse -> assertThat(((J.MethodInvocation) orElse).getMethodType().getParameterTypes())
+                .singleElement()
+                .satisfies(type -> assertThat(TypeUtils.isString(type)).isTrue())))
           )
         );
     }

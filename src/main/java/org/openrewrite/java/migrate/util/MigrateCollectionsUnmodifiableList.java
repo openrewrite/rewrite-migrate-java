@@ -29,6 +29,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
+import static java.util.Collections.nCopies;
+
 public class MigrateCollectionsUnmodifiableList extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_LIST = new MethodMatcher("java.util.Collections unmodifiableList(java.util.List)");
     private static final MethodMatcher ARRAYS_AS_LIST = new MethodMatcher("java.util.Arrays asList(..)");
@@ -57,15 +59,16 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
                             maybeRemoveImport("java.util.Arrays");
                             maybeAddImport("java.util.List");
 
-                            // Build the List.of() invocation while preserving the original method's formatting
-                            J.MethodInvocation listOf = JavaTemplate.builder("List.of()")
+                            Object[] elements = arraysInvocation.getArguments().stream()
+                                    .filter(arg -> !(arg instanceof J.Empty))
+                                    .toArray();
+                            J.MethodInvocation listOf = JavaTemplate.builder("List.of(" + String.join(", ", nCopies(elements.length, "#{any()}")) + ")")
                                     .imports("java.util.List")
                                     .build()
-                                    .apply(updateCursor(m), m.getCoordinates().replace());
+                                    .apply(updateCursor(m), m.getCoordinates().replace(), elements);
 
                             // Replace the arguments while preserving their original formatting, comments, and padding
-                            return listOf.withArguments(arraysInvocation.getArguments())
-                                    .getPadding().withArguments(arraysInvocation.getPadding().getArguments());
+                            return listOf.getPadding().withArguments(arraysInvocation.getPadding().getArguments());
                         }
                     }
                 }

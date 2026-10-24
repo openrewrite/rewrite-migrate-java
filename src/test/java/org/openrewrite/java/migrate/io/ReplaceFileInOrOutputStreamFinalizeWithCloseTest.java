@@ -17,9 +17,11 @@ package org.openrewrite.java.migrate.io;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.search.FindMethods;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -59,7 +61,8 @@ class ReplaceFileInOrOutputStreamFinalizeWithCloseTest implements RewriteTest {
                      obj.close();
                  }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.io.FileInputStream close()")).hasSize(1))
           )
         );
     }
