@@ -23,7 +23,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
@@ -87,9 +87,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(minJavaVersion),
-                new UsesType<>(guavaType, false));
         final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " " + methodName + "(..)");
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(minJavaVersion),
+                new UsesMethod<>(IMMUTABLE_MATCHER));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -122,12 +122,26 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                         .build()
                         .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
                 m = m.getPadding().withArguments(mi.getPadding().getArguments());
-                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
+                JavaType.Method newType = withJavaDeclaringType(mi.getMethodType(), m.getMethodType());
                 m = m.withMethodType(newType)
                         .withName(m.getName().withType(newType))
                         .withPrefix(mi.getPrefix());
 
                 return super.visitMethodInvocation(m, ctx);
+            }
+
+            // The template binds only the leading arguments, so keep Guava's parameter types
+            private JavaType.@Nullable Method withJavaDeclaringType(JavaType.@Nullable Method guavaMethod, JavaType.@Nullable Method templateMethod) {
+                if (guavaMethod == null) {
+                    return templateMethod;
+                }
+                JavaType.FullyQualified declaringType = templateMethod != null ?
+                        templateMethod.getDeclaringType() :
+                        (JavaType.FullyQualified) JavaType.buildType(javaType);
+                JavaType returnType = guavaMethod.getReturnType() instanceof JavaType.Parameterized ?
+                        ((JavaType.Parameterized) guavaMethod.getReturnType()).withType(declaringType) :
+                        declaringType;
+                return guavaMethod.withDeclaringType(declaringType).withReturnType(returnType);
             }
 
             @Override
