@@ -176,6 +176,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
                 return false;
             }
+            if (breaksOutOfChain(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::breaksOutOfChain) || breaksOutOfChain(else_)) {
+                return false;
+            }
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
@@ -198,6 +201,48 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 public J.Return visitReturn(J.Return return_, AtomicBoolean atomicBoolean) {
                     atomicBoolean.set(true);
                     return return_;
+                }
+            }.reduce(statement, new AtomicBoolean(false)).get();
+        }
+
+        private boolean breaksOutOfChain(@Nullable Statement statement) {
+            return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.Break visitBreak(J.Break break_, AtomicBoolean atomicBoolean) {
+                    if (break_.getLabel() == null) {
+                        atomicBoolean.set(true);
+                    }
+                    return break_;
+                }
+
+                @Override
+                public J.ForLoop visitForLoop(J.ForLoop forLoop, AtomicBoolean atomicBoolean) {
+                    return forLoop;
+                }
+
+                @Override
+                public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, AtomicBoolean atomicBoolean) {
+                    return forLoop;
+                }
+
+                @Override
+                public J.WhileLoop visitWhileLoop(J.WhileLoop whileLoop, AtomicBoolean atomicBoolean) {
+                    return whileLoop;
+                }
+
+                @Override
+                public J.DoWhileLoop visitDoWhileLoop(J.DoWhileLoop doWhileLoop, AtomicBoolean atomicBoolean) {
+                    return doWhileLoop;
+                }
+
+                @Override
+                public J.Switch visitSwitch(J.Switch switch_, AtomicBoolean atomicBoolean) {
+                    return switch_;
+                }
+
+                @Override
+                public J.SwitchExpression visitSwitchExpression(J.SwitchExpression switch_, AtomicBoolean atomicBoolean) {
+                    return switch_;
                 }
             }.reduce(statement, new AtomicBoolean(false)).get();
         }

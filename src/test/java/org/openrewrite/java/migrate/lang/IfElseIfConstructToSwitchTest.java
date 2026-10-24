@@ -615,6 +615,57 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
         );
     }
 
+    @Test
+    void continueAndNestedBreakKeepTheirTarget() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.List;
+
+              class Test {
+                  void b() {}
+                  void test(List<Object> xs) {
+                      for (Object o : xs) {
+                          if (o instanceof String s) {
+                              continue;
+                          } else if (o instanceof Integer i) {
+                              while (true) {
+                                  break;
+                              }
+                          } else {
+                              b();
+                          }
+                      }
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Test {
+                  void b() {}
+                  void test(List<Object> xs) {
+                      for (Object o : xs) {
+                          switch (o) {
+                              case String s -> {
+                                  continue;
+                              }
+                              case Integer i -> {
+                                  while (true) {
+                                      break;
+                                  }
+                              }
+                              case null, default -> b();
+                          }
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class Throws {
         @Test
@@ -1045,6 +1096,34 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                               c();
                           } else if (o instanceof Long l) {
                               d(l);
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void noSwitchBlockWhenBranchBreaksOutOfEnclosingLoop() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import java.util.List;
+
+                  class Test {
+                      void a(Integer i) {}
+                      void b() {}
+                      void test(List<Object> xs) {
+                          for (Object o : xs) {
+                              if (o instanceof String s) {
+                                  break;
+                              } else if (o instanceof Integer i) {
+                                  a(i);
+                              } else {
+                                  b();
+                              }
                           }
                       }
                   }
