@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -629,6 +630,86 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-core</artifactId>
                             <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromMicrometerAnnotationsToJspecify() {
+        rewriteRun(
+          spec -> spec
+            .recipeFromResource(
+              "/META-INF/rewrite/jspecify.yml",
+              "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations")
+            .parser(JavaParser.fromJavaVersion()
+              .classpath("jspecify")
+              .classpathFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micrometer.core.lang.NonNull;
+                  import io.micrometer.core.lang.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.4</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
                         </dependency>
                     </dependencies>
                 </project>
