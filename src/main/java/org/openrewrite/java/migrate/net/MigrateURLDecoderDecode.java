@@ -57,7 +57,7 @@ public class MigrateURLDecoderDecode extends Recipe {
                                     getCursor(),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().toArray());
-                    maybeAddImport("java.nio.charset.StandardCharsets", null, false);
+                    maybeAddImport("java.nio.charset.StandardCharsets");
                 }
                 return super.visitMethodInvocation(m, ctx);
             }
