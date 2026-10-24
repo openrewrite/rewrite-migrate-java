@@ -63,6 +63,6 @@ public class UseLog extends UseLogRecipeTemplate {
                         CLASS_GET_NAME.matches((J.MethodInvocation) argument) &&
                         isClassLiteral(((J.MethodInvocation) argument).getSelect(), classType);
             }
-        };
+        }.withPrecondition();
     }
 }

@@ -17,14 +17,21 @@ package org.openrewrite.java.migrate;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class RemovedSecurityManagerMethods extends Recipe {
+    private static final MethodMatcher METHOD_PATTERN_QUE = new MethodMatcher("java.lang.SecurityManager checkAwtEventQueueAccess()", false);
+    private static final MethodMatcher METHOD_PATTERN_CLIP = new MethodMatcher("java.lang.SecurityManager checkSystemClipboardAccess()", false);
+    private static final MethodMatcher METHOD_PATTERN_MEMBER = new MethodMatcher("java.lang.SecurityManager checkMemberAccess(..)", false);
+    private static final MethodMatcher METHOD_PATTERN_WINDOW = new MethodMatcher("java.lang.SecurityManager checkTopLevelWindow(..)", false);
+
     @Getter
     final String displayName = "Replace deprecated methods in`SecurityManager`";
 
@@ -35,12 +42,12 @@ public class RemovedSecurityManagerMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher METHOD_PATTERN_QUE = new MethodMatcher("java.lang.SecurityManager checkAwtEventQueueAccess()", false);
-            private final MethodMatcher METHOD_PATTERN_CLIP = new MethodMatcher("java.lang.SecurityManager checkSystemClipboardAccess()", false);
-            private final MethodMatcher METHOD_PATTERN_MEMBER = new MethodMatcher("java.lang.SecurityManager checkMemberAccess(..)", false);
-            private final MethodMatcher METHOD_PATTERN_WINDOW = new MethodMatcher("java.lang.SecurityManager checkTopLevelWindow(..)", false);
-
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(METHOD_PATTERN_QUE),
+                new UsesMethod<>(METHOD_PATTERN_CLIP),
+                new UsesMethod<>(METHOD_PATTERN_MEMBER),
+                new UsesMethod<>(METHOD_PATTERN_WINDOW)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (METHOD_PATTERN_QUE.matches(method) || METHOD_PATTERN_CLIP.matches(method) || METHOD_PATTERN_MEMBER.matches(method) || METHOD_PATTERN_WINDOW.matches(method)) {
@@ -51,6 +58,6 @@ public class RemovedSecurityManagerMethods extends Recipe {
                 }
                 return method;
             }
-        };
+        });
     }
 }

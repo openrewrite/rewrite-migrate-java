@@ -22,6 +22,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 @SuppressWarnings("deprecation")
 class JavaConcurrentAPIsTest implements RewriteTest {
@@ -31,7 +32,27 @@ class JavaConcurrentAPIsTest implements RewriteTest {
         spec.recipe(Environment.builder()
           .scanRuntimeClasspath("org.openrewrite.java.migrate.concurrent")
           .build()
-          .activateRecipes("org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs"));
+          .activateRecipes("org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs"))
+          .allSources(s -> s.markers(javaVersion(9)));
+    }
+
+    @Test
+    void noChangeBeforeJava9() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.concurrent.atomic.AtomicBoolean;
+              public class Test {
+                  public boolean method() {
+                      AtomicBoolean value = new AtomicBoolean();
+                      return value.weakCompareAndSet(true, true);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
     }
 
     @DocumentExample

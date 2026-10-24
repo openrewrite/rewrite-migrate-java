@@ -27,7 +27,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.marker.SearchResult;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -52,6 +54,9 @@ public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientA
         }
         public boolean isEntity(JavaType type) {
             return entityClasses.contains(type);
+        }
+        public boolean isUsedIn(JavaSourceFile sourceFile) {
+            return sourceFile.getTypesInUse().getTypesInUse().stream().anyMatch(entityClasses::contains);
         }
     }
 
@@ -83,7 +88,14 @@ public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientA
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(EntityAccumulator acc) {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        TreeVisitor<?, ExecutionContext> usesEntity = new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J preVisit(J tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
+                return tree instanceof JavaSourceFile && acc.isUsedIn((JavaSourceFile) tree) ? SearchResult.found(tree) : tree;
+            }
+        };
+        return Preconditions.check(usesEntity, new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                 // Exit if attribute is not an Entity class
@@ -104,6 +116,6 @@ public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientA
                         .build()
                         .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
             }
-        };
+        });
     }
 }
