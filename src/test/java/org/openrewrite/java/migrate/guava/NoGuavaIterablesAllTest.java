@@ -29,7 +29,7 @@ class NoGuavaIterablesAllTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaIterablesAll())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaIterablesAll")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 

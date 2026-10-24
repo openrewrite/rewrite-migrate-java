@@ -29,7 +29,7 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaSetsNewLinkedHashSet())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
@@ -110,6 +110,26 @@ class NoGuavaSetsNewLinkedHashSetTest implements RewriteTest {
 
               class Test {
                   Set<Integer> cardinalsWorldSeries = new LinkedHashSet<>(2);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepNewLinkedHashSetFromIterable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              import java.util.Set;
+
+              class Test {
+                  Set<Integer> copy(Iterable<Integer> iterable) {
+                      return Sets.newLinkedHashSet(iterable);
+                  }
               }
               """
           )

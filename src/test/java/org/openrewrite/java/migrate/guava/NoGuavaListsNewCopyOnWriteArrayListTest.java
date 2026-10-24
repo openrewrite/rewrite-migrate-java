@@ -29,7 +29,7 @@ class NoGuavaListsNewCopyOnWriteArrayListTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaListsNewCopyOnWriteArrayList())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
