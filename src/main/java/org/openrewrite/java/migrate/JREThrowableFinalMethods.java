@@ -85,7 +85,7 @@ public class JREThrowableFinalMethods extends Recipe {
                     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration methodDecl, ExecutionContext ctx) {
                         J.MethodDeclaration md = super.visitMethodDeclaration(methodDecl, ctx);
                         JavaType.Method mt = md.getMethodType();
-                        if (mt != null && TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, mt.getDeclaringType())) {
+                        if (declaredOnThrowableSubclass(mt)) {
                             J.ClassDeclaration classDeclaration = getCursor().firstEnclosing(J.ClassDeclaration.class);
                             if (classDeclaration != null) {
                                 if (addSuppressed.matches(md, classDeclaration)) {
@@ -107,7 +107,7 @@ public class JREThrowableFinalMethods extends Recipe {
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation methodInv, ExecutionContext ctx) {
                         J.MethodInvocation mi = super.visitMethodInvocation(methodInv, ctx);
                         JavaType.Method mt = mi.getMethodType();
-                        if (mt != null && TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, mt.getDeclaringType())) {
+                        if (declaredOnThrowableSubclass(mt)) {
                             if (addSuppressed.matches(mi)) {
                                 JavaType.Method myAddSuppressed = mt.withName("myAddSuppressed");
                                 mi = mi.withName(mi.getName().withSimpleName("myAddSuppressed").withType(myAddSuppressed))
@@ -119,6 +119,12 @@ public class JREThrowableFinalMethods extends Recipe {
                             }
                         }
                         return mi;
+                    }
+
+                    private boolean declaredOnThrowableSubclass(JavaType.@Nullable Method mt) {
+                        return mt != null &&
+                               TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, mt.getDeclaringType()) &&
+                               !TypeUtils.isOfClassType(mt.getDeclaringType(), JAVA_THROWABLE_CLASS);
                     }
                 }
         );
