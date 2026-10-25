@@ -35,6 +35,9 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
 public class JacksonProviderOverrides extends Recipe {
+    private static final MethodMatcher CONFIG_FOR_WRITING = new MethodMatcher(
+            "com.fasterxml.jackson.jaxrs.base.ProviderBase _configForWriting(com.fasterxml.jackson.databind.ObjectMapper, java.lang.annotation.Annotation[])", true);
+
     @Getter
     final String displayName = "Migrate Jackson provider configuration overrides";
 
@@ -44,12 +47,9 @@ public class JacksonProviderOverrides extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new UsesType<>("com.fasterxml.jackson.jaxrs.base.ProviderBase", false), new JavaIsoVisitor<ExecutionContext>() {
-            final MethodMatcher oldMethod = new MethodMatcher(
-                    "com.fasterxml.jackson.jaxrs.base.ProviderBase _configForWriting(com.fasterxml.jackson.databind.ObjectMapper, java.lang.annotation.Annotation[])", true);
-
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (!oldMethod.matches(method.getMethodType()) || method.getParameters().size() != 2) {
+                if (!CONFIG_FOR_WRITING.matches(method.getMethodType()) || method.getParameters().size() != 2) {
                     return super.visitMethodDeclaration(method, ctx);
                 }
                 String viewName = VariableNameUtils.generateVariableName("defaultView", getCursor(),
@@ -70,7 +70,7 @@ public class JacksonProviderOverrides extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(invocation, ctx);
-                if (!oldMethod.matches(mi)) {
+                if (!CONFIG_FOR_WRITING.matches(mi)) {
                     return mi;
                 }
                 Cursor methodCursor = getCursor().dropParentUntil(value -> value instanceof J.MethodDeclaration || value instanceof J.CompilationUnit);

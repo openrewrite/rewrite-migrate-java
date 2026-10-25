@@ -30,6 +30,7 @@ import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
+    private static final AnnotationMatcher LOMBOK_NON_NULL = new AnnotationMatcher("@lombok.NonNull");
 
     static boolean isGetter(Cursor cursor) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
@@ -245,7 +246,7 @@ class LombokUtils {
             }
             boolean isFinal = varDecls.hasModifier(Final);
             boolean hasNonNull = varDecls.getLeadingAnnotations().stream()
-                    .anyMatch(new AnnotationMatcher("@lombok.NonNull")::matches);
+                    .anyMatch(LOMBOK_NON_NULL::matches);
             if (!isFinal && !hasNonNull) {
                 continue;
             }

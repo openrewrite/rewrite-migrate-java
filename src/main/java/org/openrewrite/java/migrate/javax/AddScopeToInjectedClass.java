@@ -31,6 +31,7 @@ import java.util.Set;
 public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";
     private static final String JAVAX_ENTERPRISE_CONTEXT_DEPENDENT = "javax.enterprise.context.Dependent";
+    private static final AnnotationMatcher INJECT = new AnnotationMatcher('@' + JAVAX_INJECT_INJECT);
 
     @Getter
     final String displayName = "Add scope annotation to injected classes";
@@ -59,14 +60,12 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
                 return cd;
             }
 
-            private final AnnotationMatcher matcher = new AnnotationMatcher('@' + JAVAX_INJECT_INJECT);
-
             private boolean variableTypeRequiresScope(JavaType.@Nullable Variable memberVariable) {
                 if (memberVariable == null) {
                     return false;
                 }
                 for (JavaType.FullyQualified fullYQualifiedAnnotation : memberVariable.getAnnotations()) {
-                    if (matcher.matchesAnnotationOrMetaAnnotation(fullYQualifiedAnnotation)) {
+                    if (INJECT.matchesAnnotationOrMetaAnnotation(fullYQualifiedAnnotation)) {
                         return true;
                     }
                 }

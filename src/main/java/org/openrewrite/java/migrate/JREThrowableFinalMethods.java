@@ -34,6 +34,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 @EqualsAndHashCode(callSuper = false)
 public class JREThrowableFinalMethods extends Recipe {
+    private static final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
 
     private final String methodPatternAddSuppressed;
     private final String methodPatternGetSuppressed;
@@ -70,8 +71,6 @@ public class JREThrowableFinalMethods extends Recipe {
                                 new UsesMethod<>(METHOD_GETSUPPRESSED))
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    private final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
-
                     @Override
                     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration methodDecl, ExecutionContext ctx) {
                         J.MethodDeclaration md = super.visitMethodDeclaration(methodDecl, ctx);

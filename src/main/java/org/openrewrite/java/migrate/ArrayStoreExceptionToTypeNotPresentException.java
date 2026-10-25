@@ -32,6 +32,7 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
 
     private static final String ARRAY_STORE_EXCEPTION = "java.lang.ArrayStoreException";
     private static final String TYPE_NOT_PRESENT_EXCEPTION = "java.lang.TypeNotPresentException";
+    private static final String CLASS_GET_ANNOTATION = "java.lang.Class getAnnotation(java.lang.Class)";
 
     @Getter
     final String displayName = "Catch `TypeNotPresentException` thrown by `Class.getAnnotation()`";
@@ -41,12 +42,11 @@ public class ArrayStoreExceptionToTypeNotPresentException extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String classGetAnnotationPattern = "java.lang.Class getAnnotation(java.lang.Class)";
-        return Preconditions.check(new UsesMethod<>(classGetAnnotationPattern), new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesMethod<>(CLASS_GET_ANNOTATION), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.Try visitTry(J.Try tryStatement, ExecutionContext ctx) {
                 J.Try try_ = super.visitTry(tryStatement, ctx);
-                if (FindMethods.find(try_, classGetAnnotationPattern).isEmpty()) {
+                if (FindMethods.find(try_, CLASS_GET_ANNOTATION).isEmpty()) {
                     return try_;
                 }
                 return try_.withCatches(ListUtils.map(try_.getCatches(), catch_ -> {
