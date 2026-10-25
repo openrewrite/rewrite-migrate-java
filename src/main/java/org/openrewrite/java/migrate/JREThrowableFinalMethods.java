@@ -20,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -35,7 +36,16 @@ import org.openrewrite.java.tree.TypeUtils;
 @EqualsAndHashCode(callSuper = false)
 public class JREThrowableFinalMethods extends Recipe {
 
+    @Option(displayName = "Method pattern for `addSuppressed`",
+            description = "A method pattern matching the `addSuppressed(Throwable)` declarations and invocations to rename to `myAddSuppressed`.",
+            required = false,
+            example = "*..* addSuppressed(Throwable)")
     private final String methodPatternAddSuppressed;
+
+    @Option(displayName = "Method pattern for `getSuppressed`",
+            description = "A method pattern matching the `getSuppressed()` declarations and invocations to rename to `myGetSuppressed`.",
+            required = false,
+            example = "*..* getSuppressed()")
     private final String methodPatternGetSuppressed;
 
     @JsonCreator
