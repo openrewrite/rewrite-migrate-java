@@ -21,7 +21,7 @@ displayName: Migrate to Java 21
 description: >-
   This recipe will apply changes commonly needed when migrating to Java 21. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 21 as the
-  target/source and plugins will be also be upgraded to versions that are compatible with Java 21.
+  target/source and plugins will also be upgraded to versions that are compatible with Java 21.
 tags:
   - java21
 preconditions:
@@ -64,7 +64,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava21
 displayName: Upgrade plugins to Java 21 compatible versions
-description: Updates plugins and dependencies to version compatible with Java 21.
+description: Updates plugins and dependencies to versions compatible with Java 21.
 tags:
   - java21
 preconditions:
@@ -117,7 +117,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedSubjectMethods
-displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods`
+displayName: Adopt `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()` methods
 description: >-
   Replaces the `javax.security.auth.Subject.getSubject()` and `javax.security.auth.Subject.doAs()` methods
   with `javax.security.auth.Subject.current()` and `javax.security.auth.Subject.callAs()`.

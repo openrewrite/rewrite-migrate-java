@@ -35,7 +35,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
 displayName: Removed OpenJPA providers in the persistence.xml file
 description: >-
-  When migrating  to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors,
+  When migrating to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors,
   the recipe removes the flagged OpenJPA provider from the persistence.xml.
 preconditions:
   - org.openrewrite.Singleton

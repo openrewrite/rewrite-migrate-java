@@ -330,7 +330,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
-displayName: Replace  deprecated Jakarta Servlet methods and classes
+displayName: Replace deprecated Jakarta Servlet methods and classes
 description: >-
   This recipe replaces the classes and methods deprecated in Jakarta Servlet 6.0.
 preconditions:
@@ -392,7 +392,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.DeprecatedCDIAPIsRemoved40
-displayName: Remove deprecated API's not supported in CDI4.0
+displayName: Remove deprecated APIs not supported in CDI 4.0
 description: >-
   Deprecated APIs have been removed in CDI 4.0. This recipe removes and updates the corresponding deprecated methods.
 preconditions:
@@ -774,7 +774,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
 displayName: Update plugins for Jakarta EE 10
-description: Update plugin to be compatible with Jakarta EE 10.
+description: Update plugins to be compatible with Jakarta EE 10.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

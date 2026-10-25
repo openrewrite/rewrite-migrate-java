@@ -48,7 +48,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ServletIsRequestedSessionIdFromURL
 displayName: Replace `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` with `isRequestedSessionIdFromURL()`
-description: The  method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in JavaEE8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`.
+description: The method `HttpServletRequestWrapper.isRequestedSessionIdFromUrl()` is deprecated in Java EE 8 and is replaced by `HttpServletRequestWrapper.isRequestedSessionIdFromURL()`.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

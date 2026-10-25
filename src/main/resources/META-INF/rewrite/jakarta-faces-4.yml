@@ -291,7 +291,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
-description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
+description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE 10 versions.
 tags:
   - jakarta
   - faces
