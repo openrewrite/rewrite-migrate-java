@@ -37,7 +37,7 @@ public class BeanDiscovery extends Recipe {
 
     String displayName = "Add `version` and `bean-discovery-mode` to `beans.xml` files without a version";
 
-    String description = "Alters beans with missing version attribute to include this attribute as well as the bean-discovery-mode=\"all\" attribute to maintain an explicit bean archive.";
+    String description = "Alters `beans.xml` files with a missing `version` attribute to include this attribute as well as `bean-discovery-mode=\"all\"`, to maintain an explicit bean archive.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

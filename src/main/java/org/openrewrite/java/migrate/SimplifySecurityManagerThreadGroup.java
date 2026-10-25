@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EqualsAndHashCode(callSuper = false)
 public class SimplifySecurityManagerThreadGroup extends Recipe {
     String displayName = "Simplify the removed security manager's thread group fallback";
-    String description = "Remove a null SecurityManager local used only by the immediately following thread group conditional.";
+    String description = "Remove a `null` `SecurityManager` local used only by the immediately following thread group conditional.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

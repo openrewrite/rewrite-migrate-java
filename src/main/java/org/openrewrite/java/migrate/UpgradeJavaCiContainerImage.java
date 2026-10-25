@@ -35,7 +35,7 @@ public class UpgradeJavaCiContainerImage extends Recipe {
     Integer version;
 
     String displayName = "Upgrade CircleCI OpenJDK job images";
-    String description = "Upgrade cimg/openjdk job containers in GitHub Actions and CircleCI to the target Java version, " +
+    String description = "Upgrade `cimg/openjdk` job containers in GitHub Actions and CircleCI to the target Java version, " +
             "preserving newer versions and unrelated service images.";
 
     private static final Pattern IMAGE = Pattern.compile("cimg/openjdk:(\\d+)\\.\\d+(?:\\.\\d+)?(-[a-z0-9-]+)?");

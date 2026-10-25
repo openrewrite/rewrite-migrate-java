@@ -38,7 +38,7 @@ import org.openrewrite.xml.tree.Xml;
 public class UpgradeMavenEjbPluginConfiguration extends Recipe {
 
 
-    String displayName = "Set `maven-ejb-plugin` ejbVersion to 4.0";
+    String displayName = "Set `maven-ejb-plugin` `ejbVersion` to `4.0`";
 
     String description = "Updates the `<ejbVersion>` configuration of `maven-ejb-plugin` to `4.0` when the current value " +
             "(or its resolved Maven property) indicates EJB 3.x. Handles the common pattern where `<ejbVersion>` " +

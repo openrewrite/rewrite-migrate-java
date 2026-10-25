@@ -60,8 +60,8 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     String displayName = "Upgrade Docker image Java version";
     String description = "Upgrade Docker image tags to use the specified Java version. " +
-            "Updates common Java Docker images including eclipse-temurin, amazoncorretto, azul/zulu-openjdk, " +
-            "and others. Also migrates deprecated images (openjdk, adoptopenjdk) to eclipse-temurin, " +
+            "Updates common Java Docker images including `eclipse-temurin`, `amazoncorretto`, `azul/zulu-openjdk`, " +
+            "and others. Also migrates deprecated images (`openjdk`, `adoptopenjdk`) to `eclipse-temurin`, " +
             "preserving any tag suffix such as `-jre-alpine`. When a `FROM` is built from a build argument, the " +
             "default value of the corresponding global `ARG` is upgraded instead, such that `ARG java_version=17` " +
             "used as `FROM eclipse-temurin:${java_version}` becomes `ARG java_version=25`. Image references built " +
