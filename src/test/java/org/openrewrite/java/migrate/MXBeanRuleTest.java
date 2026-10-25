@@ -259,6 +259,28 @@ class MXBeanRuleTest implements RewriteTest {
         }
 
         @Test
+        void otherMBeanTypesInFileWithNonPublicInterface() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  public interface FooMBean {
+                  }
+
+                  abstract class AbstractBarMBean implements FooMBean {
+                  }
+
+                  class BazMBean extends AbstractBarMBean {
+                  }
+
+                  interface Unrelated {
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void suffixMXBeanButAlreadyPublic() {
             rewriteRun(
               //language=java

@@ -81,6 +81,9 @@ public class MXBeanRule extends Recipe {
         private static final AnnotationMatcher MX_BEAN_VALUE_TRUE = new AnnotationMatcher("@javax.management.MXBean(value=true)");
 
         private boolean shouldUpdate(J.ClassDeclaration classDecl) {
+            if (classDecl.getKind() != Interface || classDecl.hasModifier(Modifier.Type.Public)) {
+                return false;
+            }
             // Annotation with no argument, or explicit true argument
             List<J.Annotation> leadingAnnotations = classDecl.getLeadingAnnotations();
             Optional<J.Annotation> firstAnnotation = leadingAnnotations.stream().filter(MX_BEAN::matches).findFirst();
