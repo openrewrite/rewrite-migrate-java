@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
-class MigrateInflaterDeflaterToAutoCloseableTest implements RewriteTest {
+class MigrateInflaterDeflaterToCloseTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
