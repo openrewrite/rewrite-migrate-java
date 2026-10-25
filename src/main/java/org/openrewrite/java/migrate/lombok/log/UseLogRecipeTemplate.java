@@ -28,7 +28,7 @@ abstract class UseLogRecipeTemplate extends Recipe {
 
     protected String getDescription(String annotation, String pathToLogger) {
         //language=markdown
-        return String.format("Prefer the lombok annotation `%s` over explicitly written out `%s` fields.", annotation, pathToLogger);
+        return String.format("Prefer the Lombok annotation `%s` over explicitly written out `%s` fields.", annotation, pathToLogger);
     }
 
 }

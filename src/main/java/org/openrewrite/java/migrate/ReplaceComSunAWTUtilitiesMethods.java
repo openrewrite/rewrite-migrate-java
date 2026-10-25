@@ -104,7 +104,7 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
 
     String displayName = "Replace `com.sun.awt.AWTUtilities` static method invocations";
 
-    String description = "This recipe replaces several static calls  in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
+    String description = "This recipe replaces several static calls in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
                "The methods replaced are `AWTUtilities.isTranslucencySupported()`, `AWTUtilities.setWindowOpacity()`, `AWTUtilities.getWindowOpacity()`, " +
                "`AWTUtilities.getWindowShape()`, `AWTUtilities.isWindowOpaque()`, `AWTUtilities.isTranslucencyCapable()` and `AWTUtilities.setComponentMixingCutoutShape()`.";
 

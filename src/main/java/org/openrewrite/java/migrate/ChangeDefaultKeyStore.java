@@ -35,7 +35,7 @@ public class ChangeDefaultKeyStore extends Recipe {
     private static final MethodMatcher KEYSTORE_METHOD_REF = new MethodMatcher("java.security.KeyStore getDefaultType()");
 
     @Getter
-    final String displayName = "Return String `jks` when  `KeyStore.getDefaultType()` is called";
+    final String displayName = "Return String `jks` when `KeyStore.getDefaultType()` is called";
 
     @Getter
     final String description = "In Java 11 the default keystore was updated from JKS to PKCS12. " +
