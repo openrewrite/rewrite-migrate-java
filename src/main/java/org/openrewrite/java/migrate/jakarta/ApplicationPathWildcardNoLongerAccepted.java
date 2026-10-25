@@ -31,7 +31,7 @@ import static java.util.Collections.singletonList;
 
 public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
     @Getter
-    final String displayName = "Remove trailing slash from `jakarta.ws.rs.ApplicationPath` values";
+    final String displayName = "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values";
 
     @Getter
     final String description = "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values.";

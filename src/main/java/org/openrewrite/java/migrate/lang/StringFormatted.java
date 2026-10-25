@@ -44,7 +44,7 @@ public class StringFormatted extends Recipe {
 
     @Option(displayName = "Add parentheses around the first argument",
             description = "Add parentheses around the first argument if it is not a simple expression. " +
-                          "Default true; if false no change will be made. ",
+                          "Default true; if false, calls whose first argument would need parentheses are left unchanged.",
             required = false)
     @Nullable
     Boolean addParentheses;

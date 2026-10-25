@@ -35,7 +35,7 @@ public class OptionalStreamRecipe extends Recipe {
     final String displayName = "Replace `filter(Optional::isPresent).map(Optional::get)` with `flatMap(Optional::stream)`";
 
     @Getter
-    final String description = "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
+    final String description = "Replace `Stream<Optional>.filter(Optional::isPresent).map(Optional::get)` with `.flatMap(Optional::stream)` in Java 9 or higher.";
 
     private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
     private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");

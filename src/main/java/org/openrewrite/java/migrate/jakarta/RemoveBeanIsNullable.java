@@ -37,7 +37,9 @@ public class RemoveBeanIsNullable extends Recipe {
     final String displayName = "Remove `Bean.isNullable()`";
 
     @Getter
-    final String description = "`Bean.isNullable()` has been removed in CDI 4.0.0, and now always returns `false`.";
+    final String description = "`Bean.isNullable()` was deprecated in CDI 1.1, after which implementations should always return `false`, " +
+            "and was removed in CDI 4.0. " +
+            "Replace calls with `false` and simplify the resulting conditionals.";
 
     private static final MethodMatcher BEAN_ISNULLABLE = new MethodMatcher("jakarta.enterprise.inject.spi.Bean isNullable()", false);
 

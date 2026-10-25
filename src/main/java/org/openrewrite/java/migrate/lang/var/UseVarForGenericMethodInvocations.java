@@ -38,7 +38,8 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
     @Getter
     final String description = "Apply `var` to variables initialized by invocations of generic methods. " +
-            "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
+            "Invocations with neither type nor method arguments are left alone, as their type arguments are inferred from the declared type, " +
+            "which `var` would lose.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
