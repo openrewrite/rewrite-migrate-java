@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class JakartaXmlBindRuntimeTest implements RewriteTest {
+class AddJakartaXmlBindRuntimeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind")
+        spec.recipe(new AddJakartaXmlBindRuntime())
           .parser(JavaParser.fromJavaVersion().dependsOn(
             "package javax.xml.bind; public abstract class JAXBContext { public static JAXBContext newInstance(Class<?>... types) { return null; } }"));
     }
@@ -41,6 +41,7 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void addsRuntimeForContextFactory() {
         rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind"),
           mavenProject("app",
             pomXml(
               """
@@ -97,7 +98,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void onlyFactoryGetsTestScope() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jaxb-runtime</artifactId>", "<scope>test</scope>" ).actual();
@@ -110,7 +110,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void doesNotAddRuntimeForApiReferencesWithoutFactoryCalls() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM),
             srcMainJava(java("import javax.xml.bind.JAXBContext; class A { JAXBContext context; }"))
@@ -121,7 +120,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void leavesOtherModulesAlone() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jaxb-runtime</artifactId>", "<scope>runtime</scope>" ).actual();
@@ -136,7 +134,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void respectsExplicitMoxyProvider() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM.replace("</project>", """
                   <dependencies>
@@ -156,7 +153,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void respectsProvidedJakartaPlatform() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM.replace("</project>", """
                   <dependencies>
@@ -177,7 +173,7 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void recognizesUnattributedFactoryCalls() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()).typeValidationOptions(TypeValidation.none()),
+          spec -> spec.typeValidationOptions(TypeValidation.none()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jaxb-runtime</artifactId>", "<scope>runtime</scope>" ).actual();
@@ -195,7 +191,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void productionUsageWinsOverTestUsage() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jaxb-runtime</artifactId>", "<scope>runtime</scope>" )
@@ -210,6 +205,7 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void dependencyFreeApplicationGetsCompileApiAndRuntime() {
         rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind"),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jakarta.xml.bind-api</artifactId>",
@@ -223,7 +219,8 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void unattributedFactoryGetsCompileApiBeforeRuntime() {
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind")
+            .typeValidationOptions(TypeValidation.none()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jakarta.xml.bind-api</artifactId>",
@@ -263,7 +260,6 @@ class JakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void compileScopedPlatformDoesNotProvideRuntime() {
         rewriteRun(
-          spec -> spec.recipe(new AddJakartaXmlBindRuntime()),
           mavenProject("app",
             pomXml(POM.replace("</project>", """
                   <dependencies>

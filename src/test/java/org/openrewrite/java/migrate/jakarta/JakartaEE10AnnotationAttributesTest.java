@@ -24,7 +24,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class UpdateAnnotationAttributeJavaxToJakartaTest implements RewriteTest {
+class JakartaEE10AnnotationAttributesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

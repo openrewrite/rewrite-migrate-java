@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class MigrateJaxwsMavenPluginTest implements RewriteTest {
+class MigrateJaxBWSPluginTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
