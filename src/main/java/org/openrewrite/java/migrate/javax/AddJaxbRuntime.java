@@ -56,7 +56,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
     private static final String RUNTIME_VERSION = "2.3.x";
 
     @Option(displayName = "JAXB run-time",
-            description = "Which implementation of the JAXB run-time that will be added to maven projects that have transitive dependencies on the JAXB API",
+            description = "Which implementation of the JAXB run-time to add to projects that have transitive dependencies on the JAXB API.",
             valid = {"glassfish", "sun"},
             example = "glassfish")
     String runtime;

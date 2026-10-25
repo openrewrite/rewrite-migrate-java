@@ -33,14 +33,16 @@ import org.openrewrite.java.tree.J;
 @Value
 public class ReplaceLocalizedStreamMethods extends Recipe {
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getLocalizedInputStream` method pattern",
+            description = "A method pattern matching the `getLocalizedInputStream(InputStream)` method to replace. " +
+                          "Defaults to the method on `java.lang.Runtime`.",
             example = "java.lang.Runtime getLocalizedInputStream(java.io.InputStream)",
             required = false)
     String localizedInputStreamMethodMatcher;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getLocalizedOutputStream` method pattern",
+            description = "A method pattern matching the `getLocalizedOutputStream(OutputStream)` method to replace. " +
+                          "Defaults to the method on `java.lang.Runtime`.",
             example = "java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)",
             required = false)
     String localizedOutputStreamMethodMatcher;

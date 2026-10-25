@@ -42,8 +42,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     private final String methodName;
     private final int minJavaVersion;
 
-    @Option(displayName = "Whether to convert return type (the default value is false).",
-            description = "converting the return type from Guava Type to Java Type " +
+    @Option(displayName = "Convert return type",
+            description = "Also convert declared types from the Guava type to the Java type. " +
                           "The default value is false.",
             example = "true",
             required = false)

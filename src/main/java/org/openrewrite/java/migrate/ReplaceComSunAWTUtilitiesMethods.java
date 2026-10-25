@@ -34,45 +34,52 @@ import org.openrewrite.java.tree.J;
 @Value
 public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isTranslucencySupported` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isTranslucencySupported(Translucency)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)",
             required = false)
     String getAWTIsWindowsTranslucencyPattern;
 
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isWindowOpaque` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isWindowOpaque(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities isWindowOpaque(java.awt.Window)",
             required = false)
     String isWindowOpaquePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isTranslucencyCapable` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isTranslucencyCapable(GraphicsConfiguration)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)",
             required = false)
     String isTranslucencyCapablePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`setWindowOpacity` method pattern",
+            description = "A method pattern matching the `AWTUtilities.setWindowOpacity(Window, float)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities setWindowOpacity(java.awt.Window, float)",
             required = false)
     String setWindowOpacityPattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getWindowOpacity` method pattern",
+            description = "A method pattern matching the `AWTUtilities.getWindowOpacity(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities getWindowOpacity(java.awt.Window)",
             required = false)
     String getWindowOpacityPattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getWindowShape` method pattern",
+            description = "A method pattern matching the `AWTUtilities.getWindowShape(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilitiesTest getWindowShape(java.awt.Window)",
             required = false)
     String getWindowShapePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`setComponentMixingCutoutShape` method pattern",
+            description = "A method pattern matching the `AWTUtilities.setComponentMixingCutoutShape(Component, Shape)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)",
             required = false)
     String setComponentMixingCutoutShapePattern;

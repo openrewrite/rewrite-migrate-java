@@ -33,14 +33,14 @@ import org.openrewrite.java.tree.TypedTree;
 @Value
 public class ReplaceAWTGetPeerMethod extends Recipe {
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getPeer` method pattern",
+            description = "A method pattern matching the `getPeer()` method to replace.",
             example = "java.awt.* getPeer()",
             required = false)
     String getPeerMethodPattern;
 
-    @Option(displayName = "The LightweightPeer interface FQCN",
-            description = "The fully qualified class name of the LightweightPeer interface to replace in `instanceof`.",
+    @Option(displayName = "`LightweightPeer` interface",
+            description = "The fully qualified name of the `LightweightPeer` interface to replace in `instanceof`.",
             example = "java.awt.peer.LightweightPeer",
             required = false)
     String lightweightPeerFQCN;
