@@ -42,7 +42,7 @@ public class URLConstructorToURICreate extends Recipe {
 
     private static final String URI_FQN = "java.net.URI";
     private static final String URL_FQN = "java.net.URL";
-    private static final MethodMatcher methodMatcherSingleArg = new MethodMatcher(URL_FQN + "#<init>(java.lang.String)");
+    private static final MethodMatcher SINGLE_ARG_CONSTRUCTOR = new MethodMatcher(URL_FQN + "#<init>(java.lang.String)");
 
     @Getter
     final String displayName = "Convert `new URL(String)` to `URI.create(String).toURL()`";
@@ -52,11 +52,11 @@ public class URLConstructorToURICreate extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(methodMatcherSingleArg),
+        return Preconditions.check(new UsesMethod<>(SINGLE_ARG_CONSTRUCTOR),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                        if (methodMatcherSingleArg.matches(nc)) {
+                        if (SINGLE_ARG_CONSTRUCTOR.matches(nc)) {
                             String path = extractPath(nc.getArguments().get(0));
                             if (isNotValidPath(path)) {
                                 return nc;

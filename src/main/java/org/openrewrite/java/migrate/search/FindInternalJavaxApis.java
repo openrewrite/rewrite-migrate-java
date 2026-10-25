@@ -35,6 +35,7 @@ import static java.util.stream.Collectors.joining;
 @EqualsAndHashCode(callSuper = false)
 @RequiredArgsConstructor
 public class FindInternalJavaxApis extends Recipe {
+    private static final TypeMatcher JAVAX_TYPE = new TypeMatcher("javax..*");
 
     private final transient MethodCalls methodCalls = new MethodCalls(this);
 
@@ -55,7 +56,6 @@ public class FindInternalJavaxApis extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TypeMatcher javaxType = new TypeMatcher("javax..*");
         return Preconditions.check(new UsesType<>("javax..*", null),
                 (StringUtils.isBlank(methodPattern) ? new MethodAccess.Matcher() : new MethodAccess.Matcher(methodPattern))
                         .asVisitor((ma, ctx) -> {
@@ -65,12 +65,12 @@ public class FindInternalJavaxApis extends Recipe {
                             if (methodType == null || methodType.getReturnType() == null || methodType.getReturnType() instanceof JavaType.Unknown) {
                                 return call;
                             }
-                            if (TypeUtils.isAssignableTo(javaxType::matches, methodType.getReturnType())) {
+                            if (TypeUtils.isAssignableTo(JAVAX_TYPE::matches, methodType.getReturnType())) {
                                 insertRow(ma, ctx, methodType);
                                 return SearchResult.found(call);
                             }
                             for (JavaType parameterType : methodType.getParameterTypes()) {
-                                if (TypeUtils.isAssignableTo(javaxType::matches, parameterType)) {
+                                if (TypeUtils.isAssignableTo(JAVAX_TYPE::matches, parameterType)) {
                                     insertRow(ma, ctx, methodType);
                                     return SearchResult.found(call);
                                 }
