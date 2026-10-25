@@ -21,6 +21,7 @@ import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.AddDependencyVisitor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.Plugin;
@@ -48,12 +49,19 @@ public class AddLombokMapstructBindingMavenDependencyOnly extends Recipe {
                     return document;
                 }
                 ResolvedPom pom = getResolutionResult().getPom();
-                if (hasBindingProcessor(pom, pom.getPlugins()) ||
-                        !overridesManagedProcessorPaths(pom.getPlugins()) && hasBindingProcessor(pom, pom.getPluginManagement())) {
+                // The resolved model can omit even locally declared plugins with inherited=false.
+                List<Plugin> plugins = ListUtils.concatAll(pom.getPlugins(), nonInheritedPlugins(pom.getRequested().getPlugins()));
+                List<Plugin> managedPlugins = ListUtils.concatAll(pom.getPluginManagement(), nonInheritedPlugins(pom.getRequested().getPluginManagement()));
+                if (hasBindingProcessor(pom, plugins) ||
+                        !overridesManagedProcessorPaths(plugins) && hasBindingProcessor(pom, managedPlugins)) {
                     return document;
                 }
                 return (Xml.Document) new AddDependencyVisitor("org.projectlombok", "lombok-mapstruct-binding", "0.2.0",
                         null, null, null, null, null, null, null).visitNonNull(document, ctx);
+            }
+
+            private List<Plugin> nonInheritedPlugins(List<Plugin> plugins) {
+                return ListUtils.map(plugins, plugin -> "false".equals(plugin.getInherited()) ? plugin : null);
             }
 
             private boolean overridesManagedProcessorPaths(List<Plugin> plugins) {

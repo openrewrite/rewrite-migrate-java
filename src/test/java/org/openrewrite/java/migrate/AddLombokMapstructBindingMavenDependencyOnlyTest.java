@@ -233,6 +233,18 @@ class AddLombokMapstructBindingMavenDependencyOnlyTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
+    void nonInheritedCompilerProcessorIsActiveInDeclaringPom(boolean managed) {
+        String compiler = plugin("maven-compiler-plugin", PROCESSOR)
+          .replace("<version>3.13.0</version>", "<version>3.13.0</version>\n                <inherited>false</inherited>");
+        if (managed) {
+            compiler = compiler.replace("<plugins>", "<pluginManagement>\n        <plugins>")
+              .replace("</plugins>", "</plugins>\n    </pluginManagement>");
+        }
+        rewriteRun(pomXml(pom(DEPENDENCIES, compiler)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
     void compilerProcessorNotInheritedByChild(boolean managed) {
         String compiler = plugin("maven-compiler-plugin", PROCESSOR)
           .replace("<version>3.13.0</version>", "<version>3.13.0</version>\n                <inherited>false</inherited>");
