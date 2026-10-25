@@ -24,15 +24,6 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-/**
- * Sets the {@code <ejbVersion>} configuration of the {@code maven-ejb-plugin} to {@code 4.0},
- * handling both literal values (e.g. {@code 3.2}) and Maven property references
- * (e.g. {@code ${jee.ejb.api}}) whose resolved value matches the EJB 3.x range.
- * <p>
- * This complements {@code UpgradePluginVersion} (which already handles property-referenced
- * plugin versions via {@code ChangePropertyValue}) and replaces the YAML-only
- * {@code ChangeTagValue} step that could not resolve property expressions.
- */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UpgradeMavenEjbPluginConfiguration extends Recipe {
