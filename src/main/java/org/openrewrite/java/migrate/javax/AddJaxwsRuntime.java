@@ -217,7 +217,8 @@ public class AddJaxwsRuntime extends Recipe {
     }
 
     private static boolean isJavaxProvider(@Nullable ResolvedDependency dependency) {
-        if (dependency == null) {
+        if (dependency == null || dependency.getClassifier() != null ||
+            dependency.getType() != null && !"jar".equals(dependency.getType()) && !"bundle".equals(dependency.getType())) {
             return false;
         }
         String major = Semver.majorVersion(dependency.getVersion());

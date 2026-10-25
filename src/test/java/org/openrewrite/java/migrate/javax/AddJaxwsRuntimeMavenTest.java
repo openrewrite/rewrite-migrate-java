@@ -128,6 +128,15 @@ class AddJaxwsRuntimeMavenTest implements RewriteTest {
           spec -> spec.after(after -> metro(after, "provided"))));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"pom", "sources"})
+    void nonRuntimeProviderArtifact(String artifactKind) {
+        String provider = cxf("compile", "3.5.5");
+        String element = "pom".equals(artifactKind) ? "type" : "classifier";
+        provider = provider.replace("<version>3.5.5</version>", "<version>3.5.5</version>\n            <" + element + ">" + artifactKind + "</" + element + ">");
+        rewriteRun(pomXml(pom(api("compile") + provider), spec -> spec.after(after -> metro(after, "provided"))));
+    }
+
     @Test
     void modernApiGuard() {
         rewriteRun(pomXml(pom(dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "3.0.1", "compile"))));

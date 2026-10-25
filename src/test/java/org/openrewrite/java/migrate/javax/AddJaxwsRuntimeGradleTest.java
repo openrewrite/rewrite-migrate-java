@@ -100,7 +100,7 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
     @Test
     void transitiveProvider() {
         ResolvedDependency provider = dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "3.5.5").withDepth(1);
-        ResolvedDependency library = dependency("org.sample", "ws-client", "1").withDependencies(singletonList(provider));
+        ResolvedDependency library = dependency("org.apache.cxf", "cxf-spring-boot-starter-jaxws", "3.5.5").withDependencies(singletonList(provider));
         Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();
         declarations.put("implementation", Arrays.asList(api(), library));
         rewriteRun(buildGradle(script(declarations), spec -> spec.markers(project("app", declarations))));
@@ -123,6 +123,21 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
     @CsvSource({"org.apache.cxf,cxf-rt-transports-http,3.5.5", "org.springframework.ws,spring-ws-core,3.1.3", "org.apache.cxf,cxf-rt-frontend-jaxws,4.0.0"})
     void incompatibleOrUnrelatedProvider(String group, String artifact, String version) {
         Map<String, List<ResolvedDependency>> declarations = declarations("implementation", "implementation", group, artifact, version);
+        rewriteRun(buildGradle(script(declarations), spec -> spec.markers(project("app", declarations))
+          .after(after -> metro(after, "compileOnly", "testImplementation"))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"pom", "sources"})
+    void nonRuntimeProviderArtifact(String artifactKind) {
+        ResolvedDependency provider = dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "3.5.5");
+        if ("pom".equals(artifactKind)) {
+            provider = provider.withType("pom").withRequested(provider.getRequested().withType("pom"));
+        } else {
+            provider = provider.withClassifier("sources").withRequested(provider.getRequested().withClassifier("sources"));
+        }
+        Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();
+        declarations.put("implementation", Arrays.asList(api(), provider));
         rewriteRun(buildGradle(script(declarations), spec -> spec.markers(project("app", declarations))
           .after(after -> metro(after, "compileOnly", "testImplementation"))));
     }
@@ -237,13 +252,20 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
     private static String script(Map<String, List<ResolvedDependency>> declarations) {
         StringBuilder script = new StringBuilder("apply plugin: 'java'\nrepositories { mavenCentral() }\ndependencies {\n");
         declarations.forEach((configuration, dependencies) -> dependencies.forEach(d -> {
+            String coordinate = d.getGroupId() + ":" + d.getArtifactId() + ":" + d.getVersion();
+            if (d.getClassifier() != null) {
+                coordinate += ":" + d.getClassifier();
+            }
+            if (d.getType() != null && !"jar".equals(d.getType())) {
+                coordinate += "@" + d.getType();
+            }
             script.append("    ").append(configuration);
             if ("org.apache.cxf".equals(d.getGroupId()) && "cxf-rt-frontend-jaxws".equals(d.getArtifactId())) {
                 // A direct API declaration does not defeat Gradle's newest-version conflict resolution.
-                script.append("('").append(d.getGroupId()).append(':').append(d.getArtifactId()).append(':').append(d.getVersion())
+                script.append("('").append(coordinate)
                   .append("') { exclude group: 'jakarta.xml.ws', module: 'jakarta.xml.ws-api' }\n");
             } else {
-                script.append(" '").append(d.getGroupId()).append(':').append(d.getArtifactId()).append(':').append(d.getVersion()).append("'\n");
+                script.append(" '").append(coordinate).append("'\n");
             }
         }));
         return script.append("}\n").toString();
