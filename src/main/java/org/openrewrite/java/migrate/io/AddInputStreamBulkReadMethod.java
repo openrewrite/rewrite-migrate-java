@@ -24,7 +24,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.DeclaresType;
 import org.openrewrite.java.tree.*;
-import org.openrewrite.marker.SearchResult;
+import org.openrewrite.trait.Comments;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,7 +37,7 @@ import static java.util.Collections.emptyList;
 @EqualsAndHashCode(callSuper = false)
 public class AddInputStreamBulkReadMethod extends Recipe {
 
-    private static final String MARKER_MESSAGE = "Missing bulk read method may cause significant performance degradation";
+    private static final String TODO_COMMENT = " TODO: Missing bulk read method may cause significant performance degradation ";
     private static final String JAVA_IO_INPUT_STREAM = "java.io.InputStream";
 
     String displayName = "Add bulk read method to `InputStream` implementations";
@@ -46,7 +46,9 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                 "`read()` method. Java's default `InputStream.read(byte[], int, int)` implementation calls the " +
                 "single-byte `read()` method in a loop, which can cause severe performance degradation (up to 350x " +
                 "slower) for bulk reads. This recipe detects `InputStream` implementations that delegate to another " +
-                "stream and adds the missing bulk read method to delegate bulk reads as well.";
+                "stream and adds the missing bulk read method to delegate bulk reads as well. Implementations whose " +
+                "`read()` body is too complex to delegate safely get a `TODO` comment instead, to implement the bulk " +
+                "read method by hand.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -97,9 +99,10 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     return tree;
                 }
 
-                // No delegate found or complex body - add marker for manual implementation
+                // No delegate found or complex body - add a TODO comment for manual implementation
                 if (result.getDelegate() == null || result.isComplex()) {
-                    return SearchResult.found(tree, MARKER_MESSAGE);
+                    return Comments.of(new Cursor(getCursor().getParentOrThrow(), tree))
+                            .multilineComment(TODO_COMMENT, Comments.Placement.BEFORE, lineBreakBefore(tree));
                 }
 
                 // Simple delegation - add bulk read method right after the single-byte read method
@@ -114,6 +117,12 @@ public class AddInputStreamBulkReadMethod extends Recipe {
                     return (T) ((J.NewClass) tree).withBody(newBody);
                 }
                 return tree;
+            }
+
+            private @Nullable String lineBreakBefore(J tree) {
+                String whitespace = tree.getPrefix().getWhitespace();
+                int lastNewline = whitespace.lastIndexOf('\n');
+                return lastNewline < 0 ? null : whitespace.substring(lastNewline);
             }
 
             private @Nullable AnalysisResult analyzeClass(List<Statement> statements) {

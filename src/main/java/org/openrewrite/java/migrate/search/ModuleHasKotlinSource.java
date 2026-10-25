@@ -72,8 +72,10 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
     public TreeVisitor<?, ExecutionContext> getVisitor(Set<JavaProject> acc) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
-            public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
-                assert tree != null;
+            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
+                if (tree == null) {
+                    return null;
+                }
                 boolean shouldInvert = Boolean.TRUE.equals(invertMarking);
                 Optional<JavaProject> maybeJp = tree.getMarkers().findFirst(JavaProject.class);
                 if (!maybeJp.isPresent()) {

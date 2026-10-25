@@ -18,7 +18,7 @@ package org.openrewrite.java.migrate;
 import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
@@ -79,9 +79,9 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
     public TreeVisitor<?, ExecutionContext> getVisitor(Set<String> acc) {
         return Preconditions.check(
                 new UsesType<>("jakarta.enterprise.inject.Produces", false),
-                new JavaVisitor<ExecutionContext>() {
+                new JavaIsoVisitor<ExecutionContext>() {
                     @Override
-                    public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                    public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         if (!multiVariable.hasModifier(J.Modifier.Type.Static) &&
                             hasAnnotation(multiVariable, "@jakarta.enterprise.inject.Produces") &&
                             (isInSessionBean() || isInXml())) {

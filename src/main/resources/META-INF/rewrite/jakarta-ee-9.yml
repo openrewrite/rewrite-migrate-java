@@ -155,7 +155,6 @@ recipeList:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
       # Avoid changing javax.annotation.concurrent and javax.annotation.processing
-      recursive: false
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.security
       newPackageName: jakarta.annotation.security
@@ -902,7 +901,6 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
-      recursive: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
