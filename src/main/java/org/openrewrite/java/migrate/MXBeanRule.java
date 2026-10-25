@@ -24,7 +24,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -53,9 +52,9 @@ public class MXBeanRule extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
-                        new JavaVisitor<ExecutionContext>() {
+                        new JavaIsoVisitor<ExecutionContext>() {
                             @Override
-                            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                 if (!classDecl.hasModifier(Modifier.Type.Public) && classDecl.getKind() == Interface) {
                                     return SearchResult.found(classDecl, "Not yet public interface");
                                 }
@@ -64,9 +63,9 @@ public class MXBeanRule extends Recipe {
                         },
                         Preconditions.or(
                                 new UsesType("javax.management.MXBean", true),
-                                new JavaVisitor<ExecutionContext>() {
+                                new JavaIsoVisitor<ExecutionContext>() {
                                     @Override
-                                    public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                         String className = classDecl.getName().getSimpleName();
                                         if (className.endsWith("MXBean") || className.endsWith("MBean")) {
                                             return SearchResult.found(classDecl, "Matching class name");
