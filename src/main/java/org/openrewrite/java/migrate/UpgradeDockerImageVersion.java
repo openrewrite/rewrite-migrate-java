@@ -54,6 +54,7 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     private static final int OLDEST_VERSION = 8;
     private static final Pattern VERSIONED_TAG = Pattern.compile("(\\d{1,3})(\\D.*)?");
+    private static final Pattern MAVEN_TAG = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)");
 
     private static final String ARG_DEFAULTS = "argDefaults";
     private static final String ARG_UPGRADES = "argUpgrades";
@@ -194,7 +195,7 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     private @Nullable String upgradedTag(String imageName, String tag) {
         if ("maven".equals(path(imageName))) {
-            Matcher mavenTag = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)").matcher(tag);
+            Matcher mavenTag = MAVEN_TAG.matcher(tag);
             if (!mavenTag.matches() || Integer.parseInt(mavenTag.group(2)) >= version) {
                 return null;
             }

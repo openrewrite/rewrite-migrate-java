@@ -81,8 +81,8 @@ public class NoGuavaCreateTempDir extends Recipe {
 
         private boolean isIOExceptionOrException(JavaType.@Nullable FullyQualified fqCatch) {
             return fqCatch != null &&
-                    ("java.io.IOException".matches(fqCatch.getFullyQualifiedName()) ||
-                            "java.lang.Exception".matches(fqCatch.getFullyQualifiedName()));
+                    ("java.io.IOException".equals(fqCatch.getFullyQualifiedName()) ||
+                            "java.lang.Exception".equals(fqCatch.getFullyQualifiedName()));
         }
 
         private J.MethodInvocation toFilesCreateTempDir(J.MethodInvocation methodInvocation) {
