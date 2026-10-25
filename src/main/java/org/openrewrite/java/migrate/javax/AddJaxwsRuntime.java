@@ -95,60 +95,35 @@ public class AddJaxwsRuntime extends Recipe {
                     GradleProject gp = g.getMarkers().findFirst(GradleProject.class)
                             .orElseThrow(() -> new RuntimeException("Gradle build scripts must have a GradleProject marker"));
 
-                    Set<GradleDependencyConfiguration> apiConfigurations = getTransitiveDependencyConfiguration(gp, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
+                    GradleDependencyConfiguration compileClasspath = gp.getConfiguration("compileClasspath");
+                    GradleDependencyConfiguration runtimeClasspath = gp.getConfiguration("runtimeClasspath");
+                    GradleDependencyConfiguration testCompileClasspath = gp.getConfiguration("testCompileClasspath");
+                    GradleDependencyConfiguration testRuntimeClasspath = gp.getConfiguration("testRuntimeClasspath");
 
-                    if (!apiConfigurations.isEmpty()) {
-                        Set<GradleDependencyConfiguration> runtimeConfigurations = getTransitiveDependencyConfiguration(gp, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
-                        if (runtimeConfigurations.isEmpty()) {
-                            if (gp.getConfiguration("compileOnly") != null) {
-                                g = addJaxWsRuntimeDependency("compileOnly", g, ctx);
-                            }
-                            if (gp.getConfiguration("testImplementation") != null) {
-                                g = addJaxWsRuntimeDependency("testImplementation", g, ctx);
-                            }
-                        } else {
-                            for (GradleDependencyConfiguration apiConfiguration : apiConfigurations) {
-                                List<GradleDependencyConfiguration> apiTransitives = gp.configurationsExtendingFrom(apiConfiguration, true);
-                                for (GradleDependencyConfiguration runtimeConfiguration : runtimeConfigurations) {
-                                    List<GradleDependencyConfiguration> runtimeTransitives = gp.configurationsExtendingFrom(runtimeConfiguration, true);
-                                    if (apiTransitives.stream().noneMatch(runtimeTransitives::contains) && apiConfiguration.isCanBeDeclared()) {
-                                        g = addJaxWsRuntimeDependency(apiConfiguration.getName(), g, ctx);
-                                    }
-                                }
-                            }
-                        }
+                    // Match the recipe's provided/compileOnly contract for main code, and actual test runtime coverage.
+                    boolean mainApi = hasApi(compileClasspath) || hasApi(runtimeClasspath);
+                    boolean testApi = hasApi(testCompileClasspath) || hasApi(testRuntimeClasspath);
+                    boolean mainProvider = hasProvider(compileClasspath) || hasProvider(runtimeClasspath);
+                    if (mainApi && !mainProvider && gp.getConfiguration("compileOnly") != null) {
+                        g = addJaxWsRuntimeDependency("compileOnly", g, ctx);
                     }
-
+                    if (testApi && !hasProvider(testRuntimeClasspath) && gp.getConfiguration("testImplementation") != null) {
+                        g = addJaxWsRuntimeDependency("testImplementation", g, ctx);
+                    }
                     return g;
                 }
 
-                private Set<GradleDependencyConfiguration> getTransitiveDependencyConfiguration(GradleProject gp, String groupId, String artifactId) {
-                    Set<GradleDependencyConfiguration> configurations = new HashSet<>();
-                    for (GradleDependencyConfiguration gdc : gp.getConfigurations()) {
-                        if (gdc.findRequestedDependency(groupId, artifactId) != null || gdc.findResolvedDependency(groupId, artifactId) != null) {
-                            configurations.add(gdc);
-                        }
-                    }
+                private boolean hasApi(@Nullable GradleDependencyConfiguration configuration) {
+                    return configuration != null &&
+                           configuration.findResolvedDependency(JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT) != null;
+                }
 
-                    Set<GradleDependencyConfiguration> tmpConfigurations = new HashSet<>(configurations);
-                    for (GradleDependencyConfiguration tmpConfiguration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(tmpConfiguration.getName());
-                        for (GradleDependencyConfiguration transitive : gp.configurationsExtendingFrom(gdc, true)) {
-                            configurations.remove(transitive);
-                        }
+                private boolean hasProvider(@Nullable GradleDependencyConfiguration configuration) {
+                    if (configuration == null) {
+                        return false;
                     }
-
-                    tmpConfigurations = new HashSet<>(configurations);
-                    for (GradleDependencyConfiguration configuration : tmpConfigurations) {
-                        GradleDependencyConfiguration gdc = gp.getConfiguration(configuration.getName());
-                        for (GradleDependencyConfiguration extendsFrom : gdc.allExtendsFrom()) {
-                            if (configurations.contains(extendsFrom)) {
-                                configurations.remove(configuration);
-                            }
-                        }
-                    }
-
-                    return configurations;
+                    return isJavaxProvider(configuration.findResolvedDependency(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT)) ||
+                           isJavaxProvider(configuration.findResolvedDependency("org.apache.cxf", "cxf-rt-frontend-jaxws"));
                 }
 
                 private G.CompilationUnit addJaxWsRuntimeDependency(String apiConfiguration, G.CompilationUnit g, ExecutionContext ctx) {
@@ -188,10 +163,7 @@ public class AddJaxwsRuntime extends Recipe {
                     //Find the highest scope of a transitive dependency on the JAX-WS API (if it exists at all)
                     Scope apiScope = getTransitiveDependencyScope(mavenModel, JAKARTA_JAXWS_API_GROUP, JAKARTA_JAXWS_API_ARTIFACT);
                     if (apiScope != null) {
-                        //Find the highest scope of a transitive dependency on the JAX-WS runtime (if it exists at all)
-                        Scope runtimeScope = getTransitiveDependencyScope(mavenModel, SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT);
-
-                        if (runtimeScope == null || !apiScope.isInClasspathOf(runtimeScope)) {
+                        if (!hasProvider(mavenModel, apiScope)) {
                             String resolvedScope = apiScope == Scope.Test ? "test" : "provided";
                             d = (Xml.Document) new AddDependencyVisitor(SUN_JAXWS_RUNTIME_GROUP, SUN_JAXWS_RUNTIME_ARTIFACT,
                                     "2.3.x", null, resolvedScope, null, null, null, null, null).visit(d, ctx);
@@ -201,6 +173,22 @@ public class AddJaxwsRuntime extends Recipe {
                     return d;
                 }
             });
+        }
+
+        private boolean hasProvider(MavenResolutionResult model, Scope apiScope) {
+            for (Map.Entry<Scope, List<ResolvedDependency>> entry : model.getDependencies().entrySet()) {
+                // A main API needs a main provider; a test-only API can use any main/test provider.
+                // Main providers in provided scope satisfy the same contract as the Metro dependency we would add.
+                if (apiScope != Scope.Test && entry.getKey() == Scope.Test) {
+                    continue;
+                }
+                for (ResolvedDependency dependency : entry.getValue()) {
+                    if (isJavaxProvider(dependency)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -226,6 +214,17 @@ public class AddJaxwsRuntime extends Recipe {
             }
             return maxScope;
         }
+    }
+
+    private static boolean isJavaxProvider(@Nullable ResolvedDependency dependency) {
+        if (dependency == null) {
+            return false;
+        }
+        String major = Semver.majorVersion(dependency.getVersion());
+        return SUN_JAXWS_RUNTIME_GROUP.equals(dependency.getGroupId()) &&
+               SUN_JAXWS_RUNTIME_ARTIFACT.equals(dependency.getArtifactId()) && "2".equals(major) ||
+               "org.apache.cxf".equals(dependency.getGroupId()) && "cxf-rt-frontend-jaxws".equals(dependency.getArtifactId()) &&
+               ("2".equals(major) || "3".equals(major));
     }
 
     /**
