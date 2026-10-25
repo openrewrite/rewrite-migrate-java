@@ -26,10 +26,6 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.tree.Xml;
 
-/**
- * This imperative recipe will add the maven jar plugin to a maven project. The maven jar plugin will be configured to suppress
- * Illegal Reflection Warnings. In the case of a multi-module project, this recipe will attempt to add the plugin to only the top level project.
- */
 @EqualsAndHashCode(callSuper = false)
 @Getter
 @Incubating(since = "0.2.0")

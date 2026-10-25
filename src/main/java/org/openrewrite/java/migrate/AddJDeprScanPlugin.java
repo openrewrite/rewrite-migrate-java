@@ -25,10 +25,6 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.MavenVisitor;
 import org.openrewrite.xml.tree.Xml;
 
-/**
- * This imperative recipe will add the jdeprscan plugin to a maven project. In the case of a multi-module project,
- * this recipe will attempt to add the plugin to only the top level project.
- */
 @Getter
 @Incubating(since = "0.2.0")
 @RequiredArgsConstructor

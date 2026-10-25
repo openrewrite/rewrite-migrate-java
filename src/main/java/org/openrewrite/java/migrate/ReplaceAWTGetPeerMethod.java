@@ -77,7 +77,9 @@ public class ReplaceAWTGetPeerMethod extends Recipe {
                     mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(
                             getPeerMethodPattern.split(" ")[0] + " isDisplayable()", "boolean")
                             .getVisitor().visit(mi, ctx);
-                    assert mi != null;
+                    if (mi == null) {
+                        return bi;
+                    }
                     return mi.withPrefix(bi.getPrefix());
                 }
 
@@ -113,7 +115,9 @@ public class ReplaceAWTGetPeerMethod extends Recipe {
                         mi = (J.MethodInvocation) new ChangeMethodInvocationReturnType(
                                 getPeerMethodPattern.split(" ")[0] + " isLightweight()", "boolean")
                                 .getVisitor().visit(mi, ctx);
-                        assert mi != null;
+                        if (mi == null) {
+                            return instanceOfVar;
+                        }
                         maybeRemoveImport(lightweightPeerFQCN);
                         return mi.withPrefix(instanceOfVar.getPrefix());
                     }
