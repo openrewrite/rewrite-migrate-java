@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -80,6 +81,67 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                 }
                 """
             )
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1319")
+    @Test
+    void bindingAlreadyOnAnnotationProcessorPath() {
+        rewriteRun(
+          pomXml(
+            """
+            <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>com.example</groupId>
+              <artifactId>example-service</artifactId>
+              <version>1.0.0</version>
+            
+              <dependencies>
+                <dependency>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                  <version>1.18.36</version>
+                  <scope>provided</scope>
+                </dependency>
+                <dependency>
+                  <groupId>org.mapstruct</groupId>
+                  <artifactId>mapstruct</artifactId>
+                  <version>1.6.3</version>
+                </dependency>
+              </dependencies>
+            
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                      <annotationProcessorPaths>
+                        <path>
+                          <groupId>org.projectlombok</groupId>
+                          <artifactId>lombok</artifactId>
+                          <version>1.18.36</version>
+                        </path>
+                        <path>
+                          <groupId>org.projectlombok</groupId>
+                          <artifactId>lombok-mapstruct-binding</artifactId>
+                          <version>0.2.0</version>
+                        </path>
+                        <path>
+                          <groupId>org.mapstruct</groupId>
+                          <artifactId>mapstruct-processor</artifactId>
+                          <version>1.6.3</version>
+                        </path>
+                      </annotationProcessorPaths>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """
           )
         );
     }
