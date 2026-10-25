@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -159,6 +161,101 @@ class AddLombokMapstructBindingMavenDependencyOnlyTest implements RewriteTest {
           .replace("<plugins>", "<pluginManagement>\n        <plugins>")
           .replace("</plugins>", "</plugins>\n    </pluginManagement>");
         rewriteRun(pomXml(pom(DEPENDENCIES, compiler)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"annotationProcessorPaths", "configuration"})
+    void explicitOverrideContainingBinding(String overriddenElement) {
+        rewriteRun(pomXml(pom(DEPENDENCIES, plugin("maven-compiler-plugin", PROCESSOR)
+          .replace("<" + overriddenElement + ">", "<" + overriddenElement + " combine.self=\"override\">"))));
+    }
+
+    @Test
+    void managedProcessorInheritedByChildWithoutProcessorPaths() {
+        String managedCompiler = plugin("maven-compiler-plugin", PROCESSOR)
+          .replace("<plugins>", "<pluginManagement>\n        <plugins>")
+          .replace("</plugins>", "</plugins>\n    </pluginManagement>");
+        String parent = pom("", managedCompiler)
+          .replace("<artifactId>app</artifactId>", "<artifactId>parent</artifactId>")
+          .replace("<version>1</version>", "<version>1</version>\n    <packaging>pom</packaging>");
+        String child = pom(DEPENDENCIES, """
+              <build>
+                  <plugins>
+                      <plugin>
+                          <artifactId>maven-compiler-plugin</artifactId>
+                          <configuration>
+                              <source>17</source>
+                          </configuration>
+                      </plugin>
+                  </plugins>
+              </build>
+            """)
+          .replace("<groupId>com.example</groupId>", """
+              <parent>
+                  <groupId>com.example</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1</version>
+              </parent>""");
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(parent),
+            mavenProject("child", pomXml(child))
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"annotationProcessorPaths", "configuration"})
+    void managedProcessorOverriddenInChild(String overriddenElement) {
+        String managedCompiler = plugin("maven-compiler-plugin", PROCESSOR)
+          .replace("<plugins>", "<pluginManagement>\n        <plugins>")
+          .replace("</plugins>", "</plugins>\n    </pluginManagement>");
+        String parent = pom("", managedCompiler)
+          .replace("<artifactId>app</artifactId>", "<artifactId>parent</artifactId>")
+          .replace("<version>1</version>", "<version>1</version>\n    <packaging>pom</packaging>");
+        String processors = PROCESSOR.replace("lombok-mapstruct-binding", "lombok").replace("0.2.0", "1.18.36") +
+          PROCESSOR.replace("org.projectlombok", "org.mapstruct").replace("lombok-mapstruct-binding", "mapstruct-processor").replace("0.2.0", "1.6.3");
+        String child = pom(DEPENDENCIES, plugin("maven-compiler-plugin", processors)
+          .replace("<" + overriddenElement + ">", "<" + overriddenElement + " combine.self=\"override\">"))
+          .replace("<groupId>com.example</groupId>", """
+              <parent>
+                  <groupId>com.example</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1</version>
+              </parent>""");
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(parent),
+            mavenProject("child", pomXml(child, withBinding(child)))
+          )
+        );
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void compilerProcessorNotInheritedByChild(boolean managed) {
+        String compiler = plugin("maven-compiler-plugin", PROCESSOR)
+          .replace("<version>3.13.0</version>", "<version>3.13.0</version>\n                <inherited>false</inherited>");
+        if (managed) {
+            compiler = compiler.replace("<plugins>", "<pluginManagement>\n        <plugins>")
+              .replace("</plugins>", "</plugins>\n    </pluginManagement>");
+        }
+        String parent = pom("", compiler)
+          .replace("<artifactId>app</artifactId>", "<artifactId>parent</artifactId>")
+          .replace("<version>1</version>", "<version>1</version>\n    <packaging>pom</packaging>");
+        String child = pom(DEPENDENCIES, "")
+          .replace("<groupId>com.example</groupId>", """
+              <parent>
+                  <groupId>com.example</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1</version>
+              </parent>""");
+        rewriteRun(
+          mavenProject("parent",
+            pomXml(parent),
+            mavenProject("child", pomXml(child, withBinding(child)))
+          )
+        );
     }
 
     @Test

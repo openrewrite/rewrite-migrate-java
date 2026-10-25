@@ -48,11 +48,28 @@ public class AddLombokMapstructBindingMavenDependencyOnly extends Recipe {
                     return document;
                 }
                 ResolvedPom pom = getResolutionResult().getPom();
-                if (hasBindingProcessor(pom, pom.getPlugins()) || hasBindingProcessor(pom, pom.getPluginManagement())) {
+                if (hasBindingProcessor(pom, pom.getPlugins()) ||
+                        !overridesManagedProcessorPaths(pom.getPlugins()) && hasBindingProcessor(pom, pom.getPluginManagement())) {
                     return document;
                 }
                 return (Xml.Document) new AddDependencyVisitor("org.projectlombok", "lombok-mapstruct-binding", "0.2.0",
                         null, null, null, null, null, null, null).visitNonNull(document, ctx);
+            }
+
+            private boolean overridesManagedProcessorPaths(List<Plugin> plugins) {
+                for (Plugin plugin : plugins) {
+                    if (!"org.apache.maven.plugins".equals(plugin.getGroupId()) ||
+                            !"maven-compiler-plugin".equals(plugin.getArtifactId())) {
+                        continue;
+                    }
+                    JsonNode configuration = plugin.getConfiguration();
+                    if (configuration != null &&
+                            ("override".equals(configuration.path("combine.self").asText()) ||
+                             "override".equals(configuration.path("annotationProcessorPaths").path("combine.self").asText()))) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             private boolean hasBindingProcessor(ResolvedPom pom, List<Plugin> plugins) {
