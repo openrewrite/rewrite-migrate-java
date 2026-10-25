@@ -25,11 +25,14 @@ import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
+    private static final AnnotationMatcher LOMBOK_NON_NULL = new AnnotationMatcher("@lombok.NonNull");
+    private static final Pattern IS_PREFIX = Pattern.compile("is[A-Z]");
 
     static boolean isGetter(Cursor cursor) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
@@ -103,9 +106,7 @@ class LombokUtils {
 
     public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
         if (type == JavaType.Primitive.Boolean) {
-            boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
-                    fieldName.substring(0, 3).matches("is[A-Z]");
-            if (alreadyStartsWithIs) {
+            if (IS_PREFIX.matcher(fieldName).lookingAt()) {
                 return fieldName;
             }
             return "is" + StringUtils.capitalize(fieldName);
@@ -232,7 +233,7 @@ class LombokUtils {
             }
             boolean isFinal = varDecls.hasModifier(Final);
             boolean hasNonNull = varDecls.getLeadingAnnotations().stream()
-                    .anyMatch(new AnnotationMatcher("@lombok.NonNull")::matches);
+                    .anyMatch(LOMBOK_NON_NULL::matches);
             if (!isFinal && !hasNonNull) {
                 continue;
             }

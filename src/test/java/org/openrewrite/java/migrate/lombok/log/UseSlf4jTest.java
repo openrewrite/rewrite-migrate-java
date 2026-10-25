@@ -25,7 +25,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class ConvertToLogAnnotationTest implements RewriteTest {
+class UseSlf4jTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -212,111 +212,4 @@ class ConvertToLogAnnotationTest implements RewriteTest {
           )
         );
     }
-
-    @Test
-    void replaceLog4j() {
-        rewriteRun(
-          spec -> spec.recipe(new UseLog4j2(null))
-            .parser(JavaParser.fromJavaVersion()
-              .logCompilationWarningsAndErrors(true)
-              .classpath("log4j-api")),
-          // language=java
-          java(
-            """
-              import org.apache.logging.log4j.Logger;
-              import org.apache.logging.log4j.LogManager;
-              class A {
-                  private static final Logger log = LogManager.getLogger(A.class);
-              }
-              """,
-            """
-              import lombok.extern.log4j.Log4j2;
-
-              @Log4j2
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceLog() {
-        rewriteRun(
-          spec -> spec.recipe(new UseLog(null))
-            .parser(JavaParser.fromJavaVersion()
-              .logCompilationWarningsAndErrors(true)),
-
-          // language=java
-          java(
-            """
-              import java.util.logging.Logger;
-              class A {
-                  private static final Logger log = Logger.getLogger(A.class.getName());
-              }
-              """,
-            """
-              import lombok.extern.java.Log;
-
-              @Log
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceJbossLog() {
-        rewriteRun(
-          spec -> spec.recipe(new UseJBossLog(null))
-            .parser(JavaParser.fromJavaVersion()
-              .logCompilationWarningsAndErrors(true)
-              .classpath("jboss-logging")),
-          // language=java
-          java(
-            """
-              import org.jboss.logging.Logger;
-              class A {
-                  private static final Logger log = Logger.getLogger(A.class);
-              }
-              """,
-            """
-              import lombok.extern.jbosslog.JBossLog;
-
-              @JBossLog
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceCommonsLog() {
-        rewriteRun(
-          spec -> spec.recipe(new UseCommonsLog(null))
-            .parser(JavaParser.fromJavaVersion()
-              .logCompilationWarningsAndErrors(true)
-              .classpath("commons-logging")),
-          // language=java
-          java(
-            """
-              import org.apache.commons.logging.Log;
-              import org.apache.commons.logging.LogFactory;
-              class A {
-                  private static final Log log = LogFactory.getLog(A.class);
-              }
-              """,
-            """
-              import lombok.extern.apachecommons.CommonsLog;
-
-              @CommonsLog
-              class A {
-              }
-              """
-          )
-        );
-    }
-
 }

@@ -36,6 +36,9 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class AddTableGenerator extends Recipe {
+    private static final AnnotationMatcher GENERATED_VALUE = new AnnotationMatcher("@javax.persistence.GeneratedValue");
+    private static final AnnotationMatcher GENERATED_VALUE_AUTO = new AnnotationMatcher("@javax.persistence.GeneratedValue(strategy=javax.persistence.GenerationType.AUTO)");
+
     String displayName = "Add a `@TableGenerator` to automatically generated `@GeneratedValue` attributes";
 
     String description = "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
@@ -45,9 +48,6 @@ public class AddTableGenerator extends Recipe {
         return Preconditions.check(
                 new UsesType<>("javax.persistence.GeneratedValue", false),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    private final AnnotationMatcher GENERATED_VALUE = new AnnotationMatcher("@javax.persistence.GeneratedValue");
-                    private final AnnotationMatcher GENERATED_VALUE_AUTO = new AnnotationMatcher("@javax.persistence.GeneratedValue(strategy=javax.persistence.GenerationType.AUTO)");
-
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         Set<J.Annotation> generatedValueAnnotations = FindAnnotations.find(multiVariable, "@javax.persistence.GeneratedValue");

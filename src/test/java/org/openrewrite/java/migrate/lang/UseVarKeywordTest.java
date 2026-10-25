@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.lang;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,13 +29,8 @@ class UseVarKeywordTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-            Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate.lang")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.lang.UseVar"))
-          .allSources(s -> s.markers(javaVersion(10)))
-        ;
+        spec.recipeFromResources("org.openrewrite.java.migrate.lang.UseVar")
+          .allSources(s -> s.markers(javaVersion(10)));
     }
 
     @Nested

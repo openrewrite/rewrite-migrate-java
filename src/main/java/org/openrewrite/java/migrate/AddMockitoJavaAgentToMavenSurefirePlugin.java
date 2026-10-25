@@ -57,6 +57,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG =
             "<execution><id>get-mockito-agent-path</id><goals><goal>" + PROPERTIES_GOAL + "</goal></goals></execution>";
 
+    // The newline before the comment keeps auto-format from attaching it to a preceding sibling as a trailing comment
+    private static final String CONFIGURATION_TAG_TEMPLATE = "<configuration>\n<!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
+
     @Getter
     final String displayName = "Add Mockito Java agent to Maven Surefire plugin";
 
@@ -69,9 +72,6 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new DependencyInsight("org.mockito", "mockito-core", "test", null, false), new MavenIsoVisitor<ExecutionContext>() {
-            // The newline before the comment keeps auto-format from attaching it to a preceding sibling as a trailing comment
-            private final String CONFIGURATION_TAG_TEMPLATE = "<configuration>\n<!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
-
             private String getArgLineJavaAgentArgument() {
                 String mockitoCoreVersion = getResolutionResult().getDependencies().getOrDefault(Scope.Test, emptyList()).stream()
                         .filter(dependency -> "org.mockito".equals(dependency.getGroupId()) && "mockito-core"

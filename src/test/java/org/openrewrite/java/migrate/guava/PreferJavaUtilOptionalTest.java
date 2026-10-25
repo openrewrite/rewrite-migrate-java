@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
-import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.search.FindMethods;
 import org.openrewrite.java.tree.J;
@@ -36,12 +35,7 @@ import static org.openrewrite.java.Assertions.javaVersion;
 class PreferJavaUtilOptionalTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(
-            Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate.guava")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.guava.NoGuava")
-          )
+        spec.recipeFromResources("org.openrewrite.java.migrate.guava.PreferJavaUtilOptional")
           .parser(JavaParser.fromJavaVersion().classpath("rewrite-java", "guava"));
     }
 
@@ -160,6 +154,9 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     void orSupplierToOrElseGetWithSupplierArgument() {
         //language=java
         rewriteRun(
+          spec -> spec.recipeFromResources(
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilOptional",
+            "org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier"),
           java(
             """
               import com.google.common.base.Optional;
@@ -295,7 +292,6 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
     @Nested
     class NotYetImplemented {
 
-        @DocumentExample
         @ExpectedToFail("Not yet implemented")
         @Test
         void getCatchIllegalStateExceptionToNoSuchElementException() {

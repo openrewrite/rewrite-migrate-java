@@ -230,8 +230,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesEcmaScript
-displayName: Migrate JSF values inside EcmaScript files
-description: Convert JSF to Faces values inside JavaScript,TypeScript, and Properties files.
+displayName: Migrate JSF values inside ECMAScript files
+description: Convert JSF to Faces values inside JavaScript, TypeScript, and properties files.
 tags:
   - jakarta
   - faces
@@ -254,9 +254,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesJNDINamesChanged
-displayName: >-
-  JNDI name `jsf/ClientSideSecretKey` has been renamed to `faces/ClientSideSecretKey`,
-  and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`
+displayName: Rename the `jsf/ClientSideSecretKey` and `jsf/FlashSecretKey` JNDI names to `faces/*`
 description: >-
   The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`,
   and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
@@ -407,7 +405,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces3OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
-description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE9 versions.
+description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE 9 versions.
 tags:
   - jakarta
   - faces

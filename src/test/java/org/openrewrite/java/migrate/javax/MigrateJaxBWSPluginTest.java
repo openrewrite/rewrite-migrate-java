@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.migrate.maven;
+package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -22,7 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class MigrateJaxwsMavenPluginTest implements RewriteTest {
+class MigrateJaxBWSPluginTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

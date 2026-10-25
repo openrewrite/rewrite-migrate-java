@@ -22,7 +22,7 @@ description: >-
   This recipe will apply changes commonly needed when migrating to Java 17. Specifically, for those
   applications that are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no
   longer directly bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a
-  clear migration strategy. Build files will also be updated to use Java 17 as the target/source and plugins will be
+  clear migration strategy. Build files will also be updated to use Java 17 as the target/source and plugins will
   also be upgraded to versions that are compatible with Java 17.
 tags:
   - java17
@@ -96,7 +96,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava17
 displayName: Upgrade plugins to Java 17 compatible versions
-description: Updates plugins to version compatible with Java 17.
+description: Updates plugins to versions compatible with Java 17.
 tags:
   - java17
 preconditions:
@@ -208,7 +208,7 @@ name: org.openrewrite.java.migrate.RemovedZipFinalizeMethods
 displayName: Replace `finalize` method in `java.util.zip.ZipFile`, `java.util.zip.Inflater` and `java.util.zip.Deflater`
 description: >-
   The `finalize` method in `java.util.zip.ZipFile` is replaced with the `close` method and is replaced by the `end` method in
-   `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
+  `java.util.zip.Inflater` and `java.util.zip.Deflater` as it is no longer available in Java SE 12 and later.
 tags:
   - java17
 preconditions:
@@ -276,9 +276,9 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.DeprecatedCountStackFramesMethod
 displayName: Remove `Thread.countStackFrames()` method
 description: >-
-  `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`
-   This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
-   For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
+  `Thread.countStackFrames()` has been removed in Java SE 14 and has been changed in this release to unconditionally throw `UnsupportedOperationException`.
+  This recipe removes the usage of this method in your application as long as the method is not assigned to a variable.
+  For more information on the Java SE 14 deprecation of this method, see https://bugs.java.com/bugdatabase/view_bug?bug_id=8205132.
 tags:
   - java17
 preconditions:
@@ -289,7 +289,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedFileIOFinalizeMethods
-displayName: Replace `finalize` method in `java.io.FileInputStream`  and `java.io.FileOutputStream`
+displayName: Replace `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream`
 description: >-
   The `finalize` method in `java.io.FileInputStream` and `java.io.FileOutputStream` is no longer available in Java SE 12 and later. The recipe replaces it with the `close` method.
 tags:
@@ -321,10 +321,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
-displayName: Change `java.lang.reflect.Modifier` and ` java.lang.invoke.ConstantBootstraps` method calls to static
+displayName: Change `java.lang.reflect.Modifier` and `java.lang.invoke.ConstantBootstraps` method calls to static
 description: >-
   The `java.lang.reflect.Modifier()` and `java.lang.invoke.ConstantBootstraps()` constructors have been removed in Java SE 15 because both classes only contain static methods.
-  This recipe converts the usage of all methods in the two classes to be  static.
+  This recipe converts the usage of all methods in the two classes to be static.
   See https://docs.oracle.com/en/java/javase/15/migrate/index.html#GUID-233853B8-0782-429E-BEF7-7532EE610E63 for more information on these changes.
 preconditions:
   - org.openrewrite.Singleton
@@ -384,8 +384,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
 displayName: Add `lombok-mapstruct-binding` dependency for Maven when both MapStruct and Lombok are used
 description: >-
-  Add the `lombok-mapstruct-binding` when both MapStruct and Lombok are used, and the dependency does not already exist.
-  Only to be called from `org.openrewrite.java.migrate.AddLombokMapstructBinding` to reduce redundant checks.
+  Add the `lombok-mapstruct-binding` Maven dependency when it does not already exist. Expects the caller to have checked
+  that both MapStruct and Lombok are used.
 preconditions:
   - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
       groupId: org.projectlombok

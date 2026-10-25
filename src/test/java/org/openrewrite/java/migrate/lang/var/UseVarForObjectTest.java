@@ -23,7 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.java.Assertions.*;
 
-class UseVarForObjectsTest extends VarBaseTest {
+class UseVarForObjectTest extends VarBaseTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

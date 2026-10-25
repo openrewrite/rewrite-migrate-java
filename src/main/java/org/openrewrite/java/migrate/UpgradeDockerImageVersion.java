@@ -57,6 +57,7 @@ public class UpgradeDockerImageVersion extends Recipe {
     /// `.0.9_9` and `u392-b08` of Temurin, `.0.20.1-17.68` of Zulu or `.0.19-11` of Liberica, then the variant.
     private static final Pattern VERSIONED_TAG = Pattern.compile(
             "(\\d{1,3})(?:u\\d+(?:-b\\d+)?|(?:\\.\\d+)+(?:_\\d+)?(?:-\\d+(?:\\.\\d+)*)?)?(\\D.*)?");
+    private static final Pattern MAVEN_TAG = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)");
 
     private static final String ARG_DEFAULTS = "argDefaults";
     private static final String ARG_UPGRADES = "argUpgrades";
@@ -199,7 +200,7 @@ public class UpgradeDockerImageVersion extends Recipe {
 
     private @Nullable String upgradedTag(String imageName, String tag) {
         if ("maven".equals(path(imageName))) {
-            Matcher mavenTag = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)").matcher(tag);
+            Matcher mavenTag = MAVEN_TAG.matcher(tag);
             if (!mavenTag.matches() || Integer.parseInt(mavenTag.group(2)) >= version) {
                 return null;
             }

@@ -49,6 +49,8 @@ public class UpdateSdkMan extends Recipe {
      */
     private static final String BUILD_METADATA = "(\\+[^-]*)?";
 
+    private static final Pattern JAVA_VERSION = Pattern.compile("java=(.*?)([.a-z]*-.*)");
+
     @Option(displayName = "Java version",
             description = "The Java version to update to. Use `latest.patch` to upgrade to the latest version within the current major version.",
             required = false,
@@ -88,9 +90,7 @@ public class UpdateSdkMan extends Recipe {
                 }
                 PlainText plainText = PlainTextParser.convert(sourceFile);
 
-                // Define a regex pattern to extract the version and distribution
-                Pattern pattern = Pattern.compile("java=(.*?)([.a-z]*-.*)");
-                Matcher matcher = pattern.matcher(plainText.getText());
+                Matcher matcher = JAVA_VERSION.matcher(plainText.getText());
                 if (matcher.find()) {
                     String ver;
                     if ("latest.patch".equalsIgnoreCase(newVersion)) {

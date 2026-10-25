@@ -21,7 +21,7 @@ displayName: Migrate to Java 25
 description: >-
   This recipe will apply changes commonly needed when migrating to Java 25. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 25 as the
-  target/source and plugins will be also be upgraded to versions that are compatible with Java 25.
+  target/source and plugins will also be upgraded to versions that are compatible with Java 25.
 tags:
   - java25
 preconditions:
@@ -70,8 +70,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.AccessController
-displayName: Remove Security AccessController
-description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.AccessController`.
+displayName: Remove `AccessController.checkPermission(..)` calls
+description: The Security Manager API is unsupported in Java 24. This recipe removes calls to `java.security.AccessController#checkPermission(..)`.
 tags:
   - java25
   - security
@@ -91,8 +91,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityPolicy
-displayName: Remove Security Policy
-description: The Security Manager API is unsupported in Java 24. This recipe will remove the use of `java.security.Policy`.
+displayName: Remove `Policy.setPolicy(..)` calls
+description: The Security Manager API is unsupported in Java 24. This recipe removes calls to `java.security.Policy#setPolicy(..)`.
 tags:
   - java25
   - security
@@ -112,8 +112,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityManager
-displayName: Remove Security SecurityManager
-description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.SecurityManager`.
+displayName: Remove `SecurityManager` permission checks
+description: The Security Manager API is unsupported in Java 24. This recipe removes calls to the `java.lang.SecurityManager#check*(..)` methods.
 tags:
   - java25
   - security
@@ -158,7 +158,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.MigrateZipErrorToZipException
 displayName: Use `ZipException` instead of `ZipError`
-description: Use `ZipException` instead of the deprecated `ZipError` in Java 9 or higher.
+description: Use `ZipException` instead of the deprecated `ZipError` in Java 25 or higher.
 preconditions:
   - org.openrewrite.java.search.HasJavaVersion:
       version: "[25,)"
@@ -263,8 +263,8 @@ name: org.openrewrite.java.migrate.AddAspectJToolsToAspectJMavenPlugin
 displayName: Add `aspectjtools` to the AspectJ Maven plugin
 description: >-
   Pins `aspectjtools` 1.9.25.1 on the `dev.aspectj:aspectj-maven-plugin`, as the AspectJ compiler bundled with the
-  plugin is too old to read Java 25 bytecode. An existing `aspectjtools` plugin dependency is left for
-  `UpgradeDependencyVersion` to upgrade, rather than being reset to this version.
+  plugin is too old to read Java 25 bytecode. An existing `aspectjtools` plugin dependency is left as is, rather than being
+  reset to this version.
 tags:
   - java25
 preconditions:
@@ -324,8 +324,8 @@ displayName: Upgrade build to Java 24 for Kotlin 1.x
 description: >-
   Kotlin versions before 2.3 only support up to Java 24, and Kotlin 1.x cannot be safely upgraded automatically because
   crossing the K2 compiler default introduced in Kotlin 2.0 is a source-breaking change. Such modules are therefore
-  capped at Java 24 and annotated with an explanation. Modules already on Kotlin 2.0-2.2 are instead bumped to Kotlin 2.3
-  by `UpgradeKotlinForJava25` so they can reach Java 25. Applies only to modules that actually compile Kotlin
+  capped at Java 24. Modules already on Kotlin 2.0-2.2 are not capped, as they can be upgraded to Kotlin 2.3 and reach
+  Java 25 instead. Applies only to modules that actually compile Kotlin
   (i.e. contain `.kt` source files), so transitive `kotlin-stdlib` dependencies do not trigger the cap.
 preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
