@@ -66,13 +66,12 @@ public class ReferenceCloneMethod extends Recipe {
                         super.visitMethodInvocation(method, ctx);
                         if (REFERENCE_CLONE.matches(method) && method.getSelect() instanceof J.Identifier) {
                             J.Identifier methodRef = (J.Identifier) method.getSelect();
-                            String template = "new " + methodRef.getType().toString() + "(" + methodRef.getSimpleName() + ", new ReferenceQueue<>())";
+                            String template = "new " + methodRef.getType().toString() + "(#{any()}, new ReferenceQueue<>())";
                             getCursor().putMessageOnFirstEnclosing(J.TypeCast.class, REFERENCE_CLONE_REPLACED, true);
                             maybeAddImport("java.lang.ref.ReferenceQueue");
                             J replacement = JavaTemplate.builder(template)
-                                    .contextSensitive()
                                     .imports("java.lang.ref.ReferenceQueue")
-                                    .build().apply(getCursor(), method.getCoordinates().replace());
+                                    .build().apply(getCursor(), method.getCoordinates().replace(), methodRef);
                             doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(replacement));
                             return replacement;
                         }

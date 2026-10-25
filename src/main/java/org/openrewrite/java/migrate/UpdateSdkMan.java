@@ -49,6 +49,8 @@ public class UpdateSdkMan extends Recipe {
      */
     private static final String BUILD_METADATA = "(\\+[^-]*)?";
 
+    private static final Pattern JAVA_VERSION = Pattern.compile("java=(.*?)([.a-z]*-.*)");
+
     @Option(displayName = "Java version",
             description = "The Java version to update to. Use `latest.patch` to upgrade to the latest version within the current major version.",
             required = false,
@@ -63,12 +65,12 @@ public class UpdateSdkMan extends Recipe {
     @Nullable
     String newDistribution;
 
-    String displayName = "Update SDKMan Java version";
+    String displayName = "Update SDKMAN! Java version";
 
-    String description = "Update the SDKMAN JDK version in the `.sdkmanrc` file. Given a major release (e.g., 17), the recipe " +
-                "will update the current distribution to the current default SDKMAN version of the specified major " +
+    String description = "Update the SDKMAN! JDK version in the `.sdkmanrc` file. Given a major release (e.g., 17), the recipe " +
+                "will update the current distribution to the current default SDKMAN! version of the specified major " +
                 "release. The distribution option can be used to specify a specific JVM distribution. " +
-                "Note that these must correspond to valid SDKMAN distributions.";
+                "Note that these must correspond to valid SDKMAN! distributions.";
 
     @Override
     public Validated<Object> validate(ExecutionContext ctx) {
@@ -88,9 +90,7 @@ public class UpdateSdkMan extends Recipe {
                 }
                 PlainText plainText = PlainTextParser.convert(sourceFile);
 
-                // Define a regex pattern to extract the version and distribution
-                Pattern pattern = Pattern.compile("java=(.*?)([.a-z]*-.*)");
-                Matcher matcher = pattern.matcher(plainText.getText());
+                Matcher matcher = JAVA_VERSION.matcher(plainText.getText());
                 if (matcher.find()) {
                     String ver;
                     if ("latest.patch".equalsIgnoreCase(newVersion)) {

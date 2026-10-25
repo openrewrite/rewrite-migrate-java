@@ -77,7 +77,7 @@ public class AddJaxwsRuntime extends Recipe {
         String displayName = "Use the latest JAX-WS API and runtime for Jakarta EE 8";
 
         String description = "Update Gradle build files to use the latest JAX-WS runtime from Jakarta EE 8 to maintain compatibility " +
-                    "with Java version 11 or greater.  The recipe will add a JAX-WS run-time, in " +
+                    "with Java version 11 or greater. The recipe will add a JAX-WS run-time, in " +
                     "`compileOnly`+`testImplementation` configurations, to any project that has a transitive dependency " +
                     "on the JAX-WS API. **The resulting dependencies still use the `javax` namespace, despite the move " +
                     "to the Jakarta artifact**.";
@@ -172,7 +172,7 @@ public class AddJaxwsRuntime extends Recipe {
         String displayName = "Use the latest JAX-WS API and runtime for Jakarta EE 8";
 
         String description = "Update maven build files to use the latest JAX-WS runtime from Jakarta EE 8 to maintain compatibility " +
-                    "with Java version 11 or greater.  The recipe will add a JAX-WS run-time, in `provided` scope, to any project " +
+                    "with Java version 11 or greater. The recipe will add a JAX-WS run-time, in `provided` scope, to any project " +
                     "that has a transitive dependency on the JAX-WS API. **The resulting dependencies still use the `javax` " +
                     "namespace, despite the move to the Jakarta artifact**.";
 

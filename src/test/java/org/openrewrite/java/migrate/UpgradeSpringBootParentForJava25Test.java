@@ -25,10 +25,10 @@ import org.openrewrite.test.RewriteTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
 
-class UpgradeSpringBootForJava25Test implements RewriteTest {
+class UpgradeSpringBootParentForJava25Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25");
     }
 
     @DocumentExample

@@ -23,7 +23,7 @@ import org.openrewrite.test.SourceSpec;
 
 import static org.openrewrite.java.Assertions.java;
 
-class UseThreadsOrExecutorsTest implements RewriteTest {
+class FindVirtualThreadOpportunitiesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

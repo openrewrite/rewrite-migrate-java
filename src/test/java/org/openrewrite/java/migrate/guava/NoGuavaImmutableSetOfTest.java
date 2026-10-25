@@ -20,9 +20,13 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
 
 class NoGuavaImmutableSetOfTest implements RewriteTest {
@@ -303,6 +307,42 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
                     }
                 }
                 """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void setOfMoreElementsThanGuavaFixedArityOverloads() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.Set;
+                import com.google.common.collect.ImmutableSet;
+
+                class Test {
+                    Set<Integer> set() {
+                        return ImmutableSet.of(1, 2, 3, 4, 5, 6, 7);
+                    }
+                }
+                """,
+              """
+                import java.util.Set;
+
+                class Test {
+                    Set<Integer> set() {
+                        return Set.of(1, 2, 3, 4, 5, 6, 7);
+                    }
+                }
+                """,
+              spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.Set of(..)"))
+                .singleElement()
+                .satisfies(setOf -> assertThat(((J.MethodInvocation) setOf).getMethodType().getParameterTypes())
+                  .hasSize(7)
+                  .allSatisfy(type -> assertThat(TypeUtils.isOfClassType(type, "java.lang.Integer")).isTrue())))
             ),
             9
           )

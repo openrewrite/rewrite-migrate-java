@@ -31,6 +31,7 @@ import org.openrewrite.test.RewriteTest;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 import static org.openrewrite.java.Assertions.version;
 
 class JavadocToMarkdownDocCommentTest implements RewriteTest {
@@ -38,7 +39,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new JavadocToMarkdownDocComment());
-        spec.allSources(source -> version(source, 23));
+        spec.allSources(s -> s.markers(javaVersion(23)));
     }
 
     @DocumentExample
@@ -363,6 +364,65 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   /// Checks if a < b && c > d.
                   public void m() {}
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void escapedHtmlTagStaysEscapedInProse() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              public class A {
+                  /**
+                   * Returns a List&lt;String&gt;, as does <code>List&lt;String&gt; m()</code>.
+                   */
+                  public List<String> m() { return null; }
+              }
+              """,
+            """
+              import java.util.List;
+
+              public class A {
+                  /// Returns a List&lt;String&gt;, as does `List<String> m()`.
+                  public List<String> m() { return null; }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void codeOnSameLineMovesToNextLine() {
+        rewriteRun(
+          java(
+            """
+              public enum Color {
+                  /** Red */ RED,
+                  /** Green */ GREEN
+              }
+              """,
+            """
+              public enum Color {
+                  /// Red
+                  RED,
+                  /// Green
+                  GREEN
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocSharingLineWithPrecedingCodeIsKept() {
+        rewriteRun(
+          java(
+            """
+              public enum Color { /** Red */ RED, /** Green */ GREEN }
               """
           )
         );

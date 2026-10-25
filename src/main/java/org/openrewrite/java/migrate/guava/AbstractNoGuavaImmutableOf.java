@@ -19,11 +19,12 @@ import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 
 abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
@@ -40,8 +42,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     private final String methodName;
     private final int minJavaVersion;
 
-    @Option(displayName = "Whether to convert return type (the default value is false).",
-            description = "converting the return type from Guava Type to Java Type " +
+    @Option(displayName = "Convert return type",
+            description = "Also convert declared types from the Guava type to the Java type. " +
                           "The default value is false.",
             example = "true",
             required = false)
@@ -87,9 +89,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(minJavaVersion),
-                new UsesType<>(guavaType, false));
         final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " " + methodName + "(..)");
+        TreeVisitor<?, ExecutionContext> check = Preconditions.and(new UsesJavaVersion<>(minJavaVersion),
+                new UsesMethod<>(IMMUTABLE_MATCHER));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
@@ -103,28 +105,17 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 maybeRemoveImport(guavaType);
                 maybeAddImport(javaType);
 
-                String template;
-                Object[] templateArguments;
-                List<Expression> methodArguments = mi.getArguments();
-                if (methodArguments.isEmpty() || methodArguments.get(0) instanceof J.Empty) {
-                    template = getShortType(javaType) + "." + methodName + "()";
-                    templateArguments = new Object[]{};
-                } else if ("of".equals(methodName) && "com.google.common.collect.ImmutableMap".equals(guavaType)) {
-                    template = getShortType(javaType) + "." + methodName + "(#{any()}, #{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0), methodArguments.get(1)};
-                } else {
-                    template = getShortType(javaType) + "." + methodName + "(#{any()})";
-                    templateArguments = new Object[]{methodArguments.get(0)};
-                }
-
+                Object[] templateArguments = mi.getArguments().stream()
+                        .filter(arg -> !(arg instanceof J.Empty))
+                        .toArray();
+                String template = getShortType(javaType) + "." + methodName +
+                                  "(" + String.join(", ", nCopies(templateArguments.length, "#{any()}")) + ")";
                 J.MethodInvocation m = JavaTemplate.builder(template)
                         .imports(javaType)
+                        .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "guava"))
                         .build()
                         .apply(getCursor(), mi.getCoordinates().replace(), templateArguments);
-                m = m.getPadding().withArguments(mi.getPadding().getArguments());
-                JavaType.Method newType = (JavaType.Method) visitType(mi.getMethodType(), ctx);
-                m = m.withMethodType(newType)
-                        .withName(m.getName().withType(newType))
+                m = m.getPadding().withArguments(mi.getPadding().getArguments())
                         .withPrefix(mi.getPrefix());
 
                 return super.visitMethodInvocation(m, ctx);

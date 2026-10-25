@@ -29,7 +29,7 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaListsNewArrayList())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
@@ -111,6 +111,44 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
 
               class Test {
                   List<Integer> cardinalsWorldSeries = new ArrayList<>(2);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepNewArrayListFromIterable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.List;
+
+              class Test {
+                  List<Integer> copy(Iterable<Integer> iterable) {
+                      return Lists.newArrayList(iterable);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepNewArrayListWithElements() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.List;
+
+              class Test {
+                  List<Integer> cardinalsWorldSeries = Lists.newArrayList(2006, 2011);
               }
               """
           )

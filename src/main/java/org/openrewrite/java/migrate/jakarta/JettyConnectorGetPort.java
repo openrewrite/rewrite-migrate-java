@@ -18,17 +18,21 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class JettyConnectorGetPort extends Recipe {
+    private static final MethodMatcher GET_PORT = new MethodMatcher("org.eclipse.jetty.server.Connector getPort()");
+
     String displayName = "Access Jetty connector ports through `NetworkConnector`";
 
     String description = "Jetty 9 moved `getPort()` from `Connector` to `NetworkConnector`. " +
@@ -36,8 +40,7 @@ public class JettyConnectorGetPort extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            final MethodMatcher getPort = new MethodMatcher("org.eclipse.jetty.server.Connector getPort()");
+        return Preconditions.check(new UsesMethod<>(GET_PORT), new JavaIsoVisitor<ExecutionContext>() {
             final JavaTemplate template = JavaTemplate.builder("((NetworkConnector) #{any()}).getPort()")
                     .imports("org.eclipse.jetty.server.NetworkConnector")
                     .javaParser(JavaParser.fromJavaVersion().dependsOn(
@@ -47,12 +50,12 @@ public class JettyConnectorGetPort extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (m.getSelect() != null && getPort.matches(m)) {
+                if (m.getSelect() != null && GET_PORT.matches(m)) {
                     maybeAddImport("org.eclipse.jetty.server.NetworkConnector");
                     return template.apply(getCursor(), m.getCoordinates().replace(), m.getSelect());
                 }
                 return m;
             }
-        };
+        });
     }
 }

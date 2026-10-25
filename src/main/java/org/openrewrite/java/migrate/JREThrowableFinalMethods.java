@@ -20,21 +20,33 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.DeclaresMethod;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 @EqualsAndHashCode(callSuper = false)
 public class JREThrowableFinalMethods extends Recipe {
+    private static final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
 
+    @Option(displayName = "Method pattern for `addSuppressed`",
+            description = "A method pattern matching the `addSuppressed(Throwable)` declarations and invocations to rename to `myAddSuppressed`.",
+            required = false,
+            example = "*..* addSuppressed(Throwable)")
     private final String methodPatternAddSuppressed;
+
+    @Option(displayName = "Method pattern for `getSuppressed`",
+            description = "A method pattern matching the `getSuppressed()` declarations and invocations to rename to `myGetSuppressed`.",
+            required = false,
+            example = "*..* getSuppressed()")
     private final String methodPatternGetSuppressed;
 
     @JsonCreator
@@ -51,22 +63,24 @@ public class JREThrowableFinalMethods extends Recipe {
     final String displayName = "Rename final method declarations `getSuppressed()` and `addSuppressed(Throwable exception)` in classes that extend `Throwable`";
 
     @Getter
-    final String description = "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes " +
+    final String description = "The recipe renames `getSuppressed()` and `addSuppressed(Throwable exception)` methods in classes " +
             "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`. " +
-            "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
+            "These methods were added to `Throwable` in Java 7 and are marked final which cannot be overridden.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        MethodMatcher addSuppressed = new MethodMatcher(methodPatternAddSuppressed, false);
+        MethodMatcher getSuppressed = new MethodMatcher(methodPatternGetSuppressed, false);
         return Preconditions.check(
                 Preconditions.and(
                         new UsesJavaVersion<>(1, 6),
-                        new UsesType<>("java.lang.Throwable", true)
+                        Preconditions.or(
+                                new DeclaresMethod<>(addSuppressed),
+                                new DeclaresMethod<>(getSuppressed),
+                                new UsesMethod<>(addSuppressed),
+                                new UsesMethod<>(getSuppressed))
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
-                    private final MethodMatcher METHOD_ADDSUPPRESSED = new MethodMatcher(methodPatternAddSuppressed, false);
-                    private final MethodMatcher METHOD_GETSUPPRESSED = new MethodMatcher(methodPatternGetSuppressed, false);
-                    private final String JAVA_THROWABLE_CLASS = "java.lang.Throwable";
-
                     @Override
                     public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration methodDecl, ExecutionContext ctx) {
                         J.MethodDeclaration md = super.visitMethodDeclaration(methodDecl, ctx);
@@ -74,12 +88,12 @@ public class JREThrowableFinalMethods extends Recipe {
                         if (mt != null && TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, mt.getDeclaringType())) {
                             J.ClassDeclaration classDeclaration = getCursor().firstEnclosing(J.ClassDeclaration.class);
                             if (classDeclaration != null) {
-                                if (METHOD_ADDSUPPRESSED.matches(md, classDeclaration)) {
+                                if (addSuppressed.matches(md, classDeclaration)) {
                                     JavaType.Method myAddSuppressed = mt.withName("myAddSuppressed");
                                     return md.withName(md.getName().withSimpleName("myAddSuppressed").withType(myAddSuppressed))
                                             .withMethodType(myAddSuppressed);
                                 }
-                                if (METHOD_GETSUPPRESSED.matches(md, classDeclaration)) {
+                                if (getSuppressed.matches(md, classDeclaration)) {
                                     JavaType.Method myGetSuppressed = mt.withName("myGetSuppressed");
                                     return md.withName(md.getName().withSimpleName("myGetSuppressed").withType(myGetSuppressed))
                                             .withMethodType(myGetSuppressed);
@@ -94,11 +108,11 @@ public class JREThrowableFinalMethods extends Recipe {
                         J.MethodInvocation mi = super.visitMethodInvocation(methodInv, ctx);
                         JavaType.Method mt = mi.getMethodType();
                         if (mt != null && TypeUtils.isAssignableTo(JAVA_THROWABLE_CLASS, mt.getDeclaringType())) {
-                            if (METHOD_ADDSUPPRESSED.matches(mi)) {
+                            if (addSuppressed.matches(mi)) {
                                 JavaType.Method myAddSuppressed = mt.withName("myAddSuppressed");
                                 mi = mi.withName(mi.getName().withSimpleName("myAddSuppressed").withType(myAddSuppressed))
                                         .withMethodType(myAddSuppressed);
-                            } else if (METHOD_GETSUPPRESSED.matches(mi)) {
+                            } else if (getSuppressed.matches(mi)) {
                                 JavaType.Method myGetSuppressed = mt.withName("myGetSuppressed");
                                 mi = mi.withName(mi.getName().withSimpleName("myGetSuppressed").withType(myGetSuppressed))
                                         .withMethodType(myGetSuppressed);

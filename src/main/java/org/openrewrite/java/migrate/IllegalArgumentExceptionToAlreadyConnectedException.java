@@ -32,21 +32,21 @@ public class IllegalArgumentExceptionToAlreadyConnectedException extends Recipe 
 
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = "java.lang.IllegalArgumentException";
     private static final String ALREADY_CONNECTED_EXCEPTION = "java.nio.channels.AlreadyConnectedException";
+    private static final String DATAGRAM_CHANNEL_SEND = "java.nio.channels.DatagramChannel send(java.nio.ByteBuffer, java.net.SocketAddress)";
 
     @Getter
     final String displayName = "Replace `IllegalArgumentException` with `AlreadyConnectedException` in `DatagramChannel.send()` method";
 
     @Getter
-    final String description = "Replace `IllegalArgumentException` with `AlreadyConnectedException` for DatagramChannel.send() to ensure compatibility with Java 11+.";
+    final String description = "Replace `IllegalArgumentException` with `AlreadyConnectedException` for `DatagramChannel.send()` to ensure compatibility with Java 11+.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        String datagramChannelSendMethodPattern = "java.nio.channels.DatagramChannel send(java.nio.ByteBuffer, java.net.SocketAddress)";
-        return Preconditions.check(new UsesMethod<>(datagramChannelSendMethodPattern), new JavaIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesMethod<>(DATAGRAM_CHANNEL_SEND), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.Try visitTry(J.Try tryStatement, ExecutionContext ctx) {
                 J.Try try_ = super.visitTry(tryStatement, ctx);
-                if (FindMethods.find(try_, datagramChannelSendMethodPattern).isEmpty()) {
+                if (FindMethods.find(try_, DATAGRAM_CHANNEL_SEND).isEmpty()) {
                     return try_;
                 }
                 return try_.withCatches(ListUtils.map(try_.getCatches(), catch_ -> {

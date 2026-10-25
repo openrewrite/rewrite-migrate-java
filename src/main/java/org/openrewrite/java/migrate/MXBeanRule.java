@@ -21,9 +21,9 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
@@ -32,7 +32,6 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +44,7 @@ import static org.openrewrite.staticanalysis.ModifierOrder.sortModifiers;
 @Value
 public class MXBeanRule extends Recipe {
 
-    String displayName = "MBean and MXBean interfaces must be public";
+    String displayName = "Make MBean and MXBean interfaces public";
 
     String description = "Sets visibility of MBean and MXBean interfaces to public.";
 
@@ -53,9 +52,9 @@ public class MXBeanRule extends Recipe {
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
-                        new JavaVisitor<ExecutionContext>() {
+                        new JavaIsoVisitor<ExecutionContext>() {
                             @Override
-                            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                 if (!classDecl.hasModifier(Modifier.Type.Public) && classDecl.getKind() == Interface) {
                                     return SearchResult.found(classDecl, "Not yet public interface");
                                 }
@@ -64,9 +63,9 @@ public class MXBeanRule extends Recipe {
                         },
                         Preconditions.or(
                                 new UsesType("javax.management.MXBean", true),
-                                new JavaVisitor<ExecutionContext>() {
+                                new JavaIsoVisitor<ExecutionContext>() {
                                     @Override
-                                    public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                                    public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                                         String className = classDecl.getName().getSimpleName();
                                         if (className.endsWith("MXBean") || className.endsWith("MBean")) {
                                             return SearchResult.found(classDecl, "Matching class name");
@@ -101,11 +100,11 @@ public class MXBeanRule extends Recipe {
                 return cd;
             }
 
-            List<Modifier> modifiers = new ArrayList<>(cd.getModifiers());
-            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private ||
-                    modifier.getType() == Modifier.Type.Protected ||
-                    modifier.getType() == Modifier.Type.Abstract);
-            modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
+            List<Modifier> modifiers = ListUtils.concat(
+                    ListUtils.filter(cd.getModifiers(), modifier -> modifier.getType() != Modifier.Type.Private &&
+                            modifier.getType() != Modifier.Type.Protected &&
+                            modifier.getType() != Modifier.Type.Abstract),
+                    new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
             J.ClassDeclaration updated = cd.withModifiers(sortModifiers(modifiers));
             return maybeAutoFormat(cd, updated, updated.getName(), ctx, getCursor().getParentTreeCursor());
         }

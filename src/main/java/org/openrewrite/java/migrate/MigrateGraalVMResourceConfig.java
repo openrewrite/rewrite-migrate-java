@@ -33,36 +33,13 @@ import org.openrewrite.marker.SearchResult;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Migrates GraalVM native-image resource-config.json files from the legacy regex pattern
- * format (JDK 21 and earlier) to the new glob pattern format (JDK 23+).
- * <p>
- * Old format:
- * <pre>
- * {
- *   "resources": {
- *     "includes": [{"pattern": ".*\\.txt"}],
- *     "excludes": [{"pattern": ".*\\.bak"}]
- *   }
- * }
- * </pre>
- * <p>
- * New format:
- * <pre>
- * {
- *   "resources": [
- *     {"glob": "**&#47;*.txt"}
- *   ]
- * }
- * </pre>
- */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class MigrateGraalVMResourceConfig extends Recipe {
 
-    String displayName = "Migrate GraalVM resource-config.json to glob patterns";
+    String displayName = "Migrate GraalVM `resource-config.json` to glob patterns";
 
-    String description = "Migrates GraalVM native-image resource-config.json files from the legacy regex pattern format " +
+    String description = "Migrates GraalVM `native-image` `resource-config.json` files from the legacy regex pattern format " +
             "(JDK 21 and earlier) to the new glob pattern format (JDK 23+). " +
             "Converts `pattern` entries to `glob` entries and restructures the format. " +
             "Note: `excludes` are no longer supported in the new format and will be removed.";
@@ -114,7 +91,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
 
             // Note: excludes are no longer supported in the new format and will be silently dropped
 
-            // Convert includes to new format
             List<JsonRightPadded<JsonValue>> newResourceEntries = new ArrayList<>();
             boolean hasUnconvertiblePatterns = false;
 
@@ -135,7 +111,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 }
             }
 
-            // Build new resources array
             Json.Array newResourcesArray = new Json.Array(
                     Tree.randomId(),
                     resourcesObj.getPrefix(),
@@ -143,10 +118,8 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                     newResourceEntries
             );
 
-            // Replace resources member value
             Json.Member newResourcesMember = resourcesMember.withValue(newResourcesArray);
 
-            // Update root object
             Json.JsonObject newRoot = root.getPadding().withMembers(
                     ListUtils.map(root.getPadding().getMembers(), paddedMember ->
                             paddedMember.getElement() == resourcesMember ?
@@ -176,13 +149,11 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 return new ConvertedEntry(entryObj, false);
             }
 
-            // Get the pattern value
             String patternValue = getLiteralValue(patternMember.getValue());
             if (patternValue == null) {
                 return new ConvertedEntry(entryObj, false);
             }
 
-            // Convert regex to glob
             ConversionResult result = convertRegexToGlob(patternValue);
 
             if (!result.isSuccessful()) {
@@ -193,14 +164,12 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 );
             }
 
-            // Create new entry with glob key using ListUtils.map
             Json.JsonObject newEntry = entryObj.getPadding().withMembers(
                     ListUtils.map(entryObj.getPadding().getMembers(), paddedMember -> {
                         Json member = paddedMember.getElement();
                         if (member instanceof Json.Member) {
                             Json.Member m = (Json.Member) member;
                             if ("pattern".equals(getKeyName(m))) {
-                                // Replace pattern with glob
                                 return paddedMember.withElement(createGlobMember(m, result.glob));
                             }
                         }
@@ -211,7 +180,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
         }
 
         private Json.Member createGlobMember(Json.Member patternMember, String globValue) {
-            // Change the key from "pattern" to "glob"
             Json.Literal newKey;
             if (patternMember.getKey() instanceof Json.Literal) {
                 Json.Literal oldKey = (Json.Literal) patternMember.getKey();
@@ -227,7 +195,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 );
             }
 
-            // Change the value
             Json.Literal newValue;
             if (patternMember.getValue() instanceof Json.Literal) {
                 Json.Literal oldValue = (Json.Literal) patternMember.getValue();
@@ -305,8 +272,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
             return sb.toString();
         }
 
-        // Regex to glob conversion logic integrated from RegexToGlobConverter
-
         @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
         private static final class ConversionResult {
             final @Nullable String glob;
@@ -322,7 +287,6 @@ public class MigrateGraalVMResourceConfig extends Recipe {
                 return new ConversionResult(null, "Empty pattern cannot be converted");
             }
 
-            // Check for patterns that cannot be converted
             String unconvertibleReason = findUnconvertibleConstruct(regex);
             if (unconvertibleReason != null) {
                 return new ConversionResult(null, unconvertibleReason);

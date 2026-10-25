@@ -18,7 +18,10 @@ package org.openrewrite.java.migrate.lombok.log;
 import lombok.EqualsAndHashCode;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -42,6 +45,10 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         this.factoryMethodMatcher = new MethodMatcher(factoryMethodPattern);
         this.logAnnotation = logAnnotation;
         this.fieldName = fieldName;
+    }
+
+    TreeVisitor<?, ExecutionContext> withPrecondition() {
+        return Preconditions.check(new UsesMethod<>(factoryMethodMatcher), this);
     }
 
     @Override

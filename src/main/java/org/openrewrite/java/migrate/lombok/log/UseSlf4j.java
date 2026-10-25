@@ -28,12 +28,12 @@ public class UseSlf4j extends UseLogRecipeTemplate {
 
     @Override
     public String getDisplayName() {
-        return getDisplayName("@Slf4");
+        return getDisplayName("@Slf4j");
     }
 
     @Override
     public String getDescription() {
-        return getDescription("@Slf4", "org.slf4j.Logger");
+        return getDescription("@Slf4j", "org.slf4j.Logger");
     }
 
     @Option(displayName = "Name of the log field",
@@ -48,7 +48,7 @@ public class UseSlf4j extends UseLogRecipeTemplate {
         return new LogVisitor("org.slf4j.Logger",
                 "org.slf4j.LoggerFactory getLogger(..)",
                 "lombok.extern.slf4j.Slf4j",
-                fieldName);
+                fieldName).withPrecondition();
     }
 
 }

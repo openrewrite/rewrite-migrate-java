@@ -41,7 +41,7 @@ public class ReplaceUnusedVariablesWithUnderscore extends Recipe {
 
     String displayName = "Replace unused variables with underscore";
 
-    String description = "Replace unused variable declarations with underscore (_) for Java 22+. " +
+    String description = "Replace unused variable declarations with underscore (`_`) for Java 22+. " +
                 "This includes unused variables in enhanced for loops, catch blocks, " +
                 "and lambda parameters where the variable is never referenced.";
 

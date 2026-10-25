@@ -39,19 +39,23 @@ import static java.util.stream.Collectors.toSet;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class RemoveTemporalAnnotation extends Recipe {
-    /*
-     * This rule scans for the following annotation-attribute combinations where data does not need to be converted
-     * and the Temporal annotation must be removed to avoid an EclipseLink error:
-     *
-     *     A javax.persistence.Temporal(TemporalType.DATE) annotation on a java.sql.Date attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIME) annotation on a java.sql.Date attribute
-     *     A the javax.persistence.Temporal(TemporalType.DATE) annotation on a java.sql.Time attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIME) annotation on a java.sql.Time attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Time
-     *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Timestamp attribute
-     *
-     * NOTES: @Temporal has a required argument, which can only be TemporalType.DATE/TIME/TIMESTAMP
-     */
+    private static final Pattern TEMPORAL_TYPE = Pattern.compile(".*TemporalType\\.(TIMESTAMP|DATE|TIME)");
+    private static final String JAVA_SQL_TIMESTAMP = "java.sql.Timestamp";
+    private static final String JAVA_SQL_TIME = "java.sql.Time";
+    private static final String JAVA_SQL_DATE = "java.sql.Date";
+    private static final Set<String> JAVA_SQL_DATE_TIME_TYPES = Stream.of(
+            JAVA_SQL_TIMESTAMP,
+            JAVA_SQL_TIME,
+            JAVA_SQL_DATE
+    ).collect(toSet());
+    // Combinations of TemporalType and java.sql classes that do not need removal
+    // TODO: maybe future recipe to handle these by creating a converter class
+    // https://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/OpenJPA/Mappings#.40Temporal_on_java.sql.Date.2FTime.2FTimestamp_fields
+    private static final Map<String, String> DO_NOT_REMOVE = Stream.of(new String[][]{
+            {"DATE", JAVA_SQL_TIMESTAMP},
+            {"TIME", JAVA_SQL_TIMESTAMP},
+            {"TIMESTAMP", JAVA_SQL_DATE}
+    }).collect(toMap(data -> data[0], data -> data[1]));
 
     String displayName = "Remove the `@Temporal` annotation for some `java.sql` attributes";
 
@@ -61,25 +65,6 @@ public class RemoveTemporalAnnotation extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        Pattern temporalPattern = Pattern.compile(".*TemporalType\\.(TIMESTAMP|DATE|TIME)");
-        final String JAVA_SQL_TIMESTAMP = "java.sql.Timestamp";
-        final String JAVA_SQL_TIME = "java.sql.Time";
-        final String JAVA_SQL_DATE = "java.sql.Date";
-
-        Set<String> javaSqlDateTimeTypes = Stream.of(
-                JAVA_SQL_TIMESTAMP,
-                JAVA_SQL_TIME,
-                JAVA_SQL_DATE
-        ).collect(toSet());
-        // Combinations of TemporalType and java.sql classes that do not need removal
-        Map<String, String> doNotRemove = Stream.of(new String[][]{
-                {"DATE", JAVA_SQL_TIMESTAMP},
-                {"TIME", JAVA_SQL_TIMESTAMP},
-                {"TIMESTAMP", JAVA_SQL_DATE}
-        }).collect(toMap(data -> data[0], data -> data[1]));
-        // TODO: maybe future recipe to handle these by creating a converter class
-        // https://wiki.eclipse.org/EclipseLink/Examples/JPA/Migration/OpenJPA/Mappings#.40Temporal_on_java.sql.Date.2FTime.2FTimestamp_fields
-
         return Preconditions.check(
                 Preconditions.and(
                         new UsesType<>("javax.persistence.Temporal", true),
@@ -92,28 +77,25 @@ public class RemoveTemporalAnnotation extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // Exit if no @Temporal annotation, or var is not java.sql.Date/Time/Timestamp
                         String varClass = multiVariable.getType().toString();
                         Set<J.Annotation> temporalAnnos = FindAnnotations.find(multiVariable, "javax.persistence.Temporal");
-                        if (temporalAnnos.isEmpty() || !javaSqlDateTimeTypes.contains(varClass)) {
+                        if (temporalAnnos.isEmpty() || !JAVA_SQL_DATE_TIME_TYPES.contains(varClass)) {
                             return multiVariable;
                         }
 
-                        // Get TemporalType
                         J.Annotation temporal = temporalAnnos.iterator().next();
                         String temporalArg = temporal.getArguments().iterator().next().toString();
-                        Matcher temporalMatch = temporalPattern.matcher(temporalArg);
+                        Matcher temporalMatch = TEMPORAL_TYPE.matcher(temporalArg);
                         if (!temporalMatch.find()) {
                             return multiVariable;
                         }
                         String temporalType = temporalMatch.group(1);
 
-                        // Check combination of attribute and var's class
-                        if (doNotRemove.get(temporalType).equals(varClass)) {
+                        if (DO_NOT_REMOVE.get(temporalType).equals(varClass)) {
                             return multiVariable;
                         }
 
-                        // Remove @Temporal annotation. RemoveAnnotation's visitor runs on this declaration only,
+                        // RemoveAnnotation's visitor runs on this declaration only,
                         // so its own import removal never reaches the compilation unit.
                         maybeRemoveImport("javax.persistence.Temporal");
                         maybeRemoveImport("javax.persistence.TemporalType");

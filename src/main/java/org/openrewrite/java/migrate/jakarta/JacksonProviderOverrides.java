@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.Getter;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
@@ -26,6 +27,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.VariableNameUtils;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -33,6 +35,9 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
 public class JacksonProviderOverrides extends Recipe {
+    private static final MethodMatcher CONFIG_FOR_WRITING = new MethodMatcher(
+            "com.fasterxml.jackson.jaxrs.base.ProviderBase _configForWriting(com.fasterxml.jackson.databind.ObjectMapper, java.lang.annotation.Annotation[])", true);
+
     @Getter
     final String displayName = "Migrate Jackson provider configuration overrides";
 
@@ -41,13 +46,10 @@ public class JacksonProviderOverrides extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            final MethodMatcher oldMethod = new MethodMatcher(
-                    "com.fasterxml.jackson.jaxrs.base.ProviderBase _configForWriting(com.fasterxml.jackson.databind.ObjectMapper, java.lang.annotation.Annotation[])", true);
-
+        return Preconditions.check(new UsesType<>("com.fasterxml.jackson.jaxrs.base.ProviderBase", false), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                if (!oldMethod.matches(method.getMethodType()) || method.getParameters().size() != 2) {
+                if (!CONFIG_FOR_WRITING.matches(method.getMethodType()) || method.getParameters().size() != 2) {
                     return super.visitMethodDeclaration(method, ctx);
                 }
                 String viewName = VariableNameUtils.generateVariableName("defaultView", getCursor(),
@@ -68,7 +70,7 @@ public class JacksonProviderOverrides extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.visitMethodInvocation(invocation, ctx);
-                if (!oldMethod.matches(mi)) {
+                if (!CONFIG_FOR_WRITING.matches(mi)) {
                     return mi;
                 }
                 Cursor methodCursor = getCursor().dropParentUntil(value -> value instanceof J.MethodDeclaration || value instanceof J.CompilationUnit);
@@ -85,6 +87,6 @@ public class JacksonProviderOverrides extends Recipe {
                 return method.withParameterTypes(ListUtils.concat(method.getParameterTypes(), type))
                         .withParameterNames(ListUtils.concat(method.getParameterNames(), name));
             }
-        };
+        });
     }
 }

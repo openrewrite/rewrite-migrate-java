@@ -38,7 +38,8 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
     @Getter
     final String description = "Apply `var` to variables initialized by invocations of generic methods. " +
-            "This recipe ignores generic factory methods without parameters, because open rewrite cannot handle them correctly ATM.";
+            "Invocations with neither type nor method arguments are left alone, as their type arguments are inferred from the declared type, " +
+            "which `var` would lose.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -57,14 +58,12 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 return vd;
             }
 
-            // Recipe specific
             if (DeclarationCheck.isPrimitive(vd) ||
                     DeclarationCheck.initializedByTernary(vd) ||
                     !DeclarationCheck.useGenerics(vd)) {
                 return vd;
             }
 
-            // Now we deal with generics, check for method invocations
             Expression originalInitializer = vd.getVariables().get(0).getInitializer();
             if (originalInitializer == null || !(originalInitializer.unwrap() instanceof J.MethodInvocation)) {
                 return vd;
@@ -103,7 +102,6 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 vd = vd.withVariables(ListUtils.mapFirst(vd.getVariables(), nv -> nv.withInitializer(unwrapped)));
             }
 
-            // Make nested generic types explicit before converting to var
             J.VariableDeclarations finalVd = vd;
             return DeclarationCheck.transformToVar(vd, (J.MethodInvocation mi) -> makeNestedGenericsExplicit(mi, finalVd));
         }
@@ -114,7 +112,6 @@ public class UseVarForGenericMethodInvocations extends Recipe {
          * Also adds explicit type parameters to the method invocation itself when needed.
          */
         private J.MethodInvocation makeNestedGenericsExplicit(J.MethodInvocation mi, J.VariableDeclarations vd) {
-            // Extract type parameters from the variable declaration
             if (!(vd.getTypeExpression() instanceof J.ParameterizedType)) {
                 return mi;
             }
@@ -126,7 +123,6 @@ public class UseVarForGenericMethodInvocations extends Recipe {
 
             // Add explicit type parameters when the method is generic and the return type's type parameter matches a type parameter from the declaring class
             if (mi.getTypeParameters() == null && mi.getMethodType() != null && containsGenericTypeVariable(mi.getMethodType().getReturnType()) && !containsWildcard(leftTypeParams)) {
-                // Create JRightPadded list from leftTypeParams
                 List<JRightPadded<Expression>> typeParamsList = new ArrayList<>();
                 for (Expression typeParam : leftTypeParams) {
                     typeParamsList.add(JRightPadded.build(typeParam));
@@ -134,13 +130,10 @@ public class UseVarForGenericMethodInvocations extends Recipe {
                 mi = mi.withTypeParameters(JContainer.build(Space.EMPTY, typeParamsList, Markers.EMPTY));
             }
 
-            // Visit arguments and replace diamond operators with explicit type parameters
             return mi.withArguments(ListUtils.map(mi.getArguments(), arg -> {
                 if (arg instanceof J.NewClass) {
                     J.NewClass newClass = (J.NewClass) arg;
-                    // Check if using diamond operator (rightTypeParams is empty)
                     if (newClass.getClazz() instanceof J.ParameterizedType && !hasTypeParams(newClass.getClazz())) {
-                        // Copy type parameters from left side to right side
                         J.ParameterizedType rightType = (J.ParameterizedType) newClass.getClazz();
                         return newClass.withClazz(requireNonNull(rightType).withTypeParameters(leftTypeParams));
                     }

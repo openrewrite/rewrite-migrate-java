@@ -56,7 +56,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
     private static final String RUNTIME_VERSION = "2.3.x";
 
     @Option(displayName = "JAXB run-time",
-            description = "Which implementation of the JAXB run-time that will be added to maven projects that have transitive dependencies on the JAXB API",
+            description = "Which implementation of the JAXB run-time to add to projects that have transitive dependencies on the JAXB API.",
             valid = {"glassfish", "sun"},
             example = "glassfish")
     String runtime;
@@ -65,7 +65,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
 
     String description = "Update build files to use the latest JAXB runtime from Jakarta EE 8 to maintain compatibility with " +
                "Java version 11 or greater. The recipe will add a JAXB run-time, in Gradle " +
-               "`compileOnly`+`testImplementation` and Maven `provided` scope, to any project that has a transitive " +
+               "`runtimeOnly` and Maven `runtime` scope, to any project that uses `javax.xml.bind` and has a transitive " +
                "dependency on the JAXB API. **The resulting dependencies still use the `javax` namespace, despite " +
                "the move to the Jakarta artifact**.";
 

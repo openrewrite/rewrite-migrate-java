@@ -31,10 +31,10 @@ public class UpdateGetRealPath extends Recipe {
     private static final MethodMatcher GET_REAL_PATH = new MethodMatcher("jakarta.servlet.ServletRequest* getRealPath(String)", false);
 
     @Getter
-    final String displayName = "Updates `getRealPath()` to call `getContext()` followed by `getRealPath()`";
+    final String displayName = "Replace `ServletRequest.getRealPath(String)` with `getServletContext().getRealPath(String)`";
 
     @Getter
-    final String description = "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` to use `ServletContext.getRealPath(String)`.";
+    final String description = "Replace the removed `getRealPath(String)` on `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` with `getServletContext().getRealPath(String)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

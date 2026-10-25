@@ -16,7 +16,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lombok.LombokBestPractices
-displayName: Lombok Best Practices
+displayName: Lombok best practices
 description: >-
   Applies all recipes that enforce best practices for using Lombok.
 preconditions:
@@ -60,7 +60,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.projectlombok
       artifactId: lombok
-      newVersion: 1.18.*
+      newVersion: 1.18.x
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: lombok.experimental.Builder
       newFullyQualifiedTypeName: lombok.Builder

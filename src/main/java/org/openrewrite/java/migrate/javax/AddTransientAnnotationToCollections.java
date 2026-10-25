@@ -33,8 +33,9 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class AddTransientAnnotationToCollections extends Recipe {
+    private static final Pattern COLLECTION = Pattern.compile("java.util.Collection");
 
-    String displayName = "Unannotated collection attributes require a Transient annotation";
+    String displayName = "Add `@Transient` to unannotated collection attributes";
 
     String description = "In OpenJPA, attributes that inherit from the `java.util.Collection<E>` interface are not a default " +
                "persistent type, so these attributes are not persisted unless they are annotated. EclipseLink has a " +
@@ -44,7 +45,6 @@ public class AddTransientAnnotationToCollections extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        Pattern collection = Pattern.compile("java.util.Collection");
         return Preconditions.check(
                 // Only apply to JPA classes
                 Preconditions.or(
@@ -56,7 +56,7 @@ public class AddTransientAnnotationToCollections extends Recipe {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
                         // Exit if not Collection
-                        if (!multiVariable.getType().isAssignableFrom(collection)) {
+                        if (!multiVariable.getType().isAssignableFrom(COLLECTION)) {
                             return multiVariable;
                         }
                         // Exit if already has JPA annotation

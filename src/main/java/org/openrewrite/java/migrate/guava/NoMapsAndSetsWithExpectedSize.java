@@ -39,7 +39,9 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
     final String displayName = "Prefer JDK methods for Maps and Sets of an expected size";
 
     @Getter
-    final String description = "Prefer Java 19+ methods to create Maps and Sets of an expected size instead of using Guava methods.";
+    final String description = "Replace Guava's `Maps.newHashMapWithExpectedSize(int)`, `Maps.newLinkedHashMapWithExpectedSize(int)`, " +
+            "`Sets.newHashSetWithExpectedSize(int)` and `Sets.newLinkedHashSetWithExpectedSize(int)` with the JDK " +
+            "`HashMap`, `LinkedHashMap`, `HashSet` and `LinkedHashSet` constructors.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

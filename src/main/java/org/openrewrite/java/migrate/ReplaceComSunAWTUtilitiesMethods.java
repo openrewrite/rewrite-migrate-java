@@ -21,56 +21,65 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isTranslucencySupported` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isTranslucencySupported(Translucency)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.sun.awt.AWTUtilities isTranslucencySupported(com.sun.awt.AWTUtilities.Translucency)",
             required = false)
     String getAWTIsWindowsTranslucencyPattern;
 
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isWindowOpaque` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isWindowOpaque(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities isWindowOpaque(java.awt.Window)",
             required = false)
     String isWindowOpaquePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`isTranslucencyCapable` method pattern",
+            description = "A method pattern matching the `AWTUtilities.isTranslucencyCapable(GraphicsConfiguration)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities isTranslucencyCapable(java.awt.GraphicsConfiguration)",
             required = false)
     String isTranslucencyCapablePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`setWindowOpacity` method pattern",
+            description = "A method pattern matching the `AWTUtilities.setWindowOpacity(Window, float)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities setWindowOpacity(java.awt.Window, float)",
             required = false)
     String setWindowOpacityPattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getWindowOpacity` method pattern",
+            description = "A method pattern matching the `AWTUtilities.getWindowOpacity(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities getWindowOpacity(java.awt.Window)",
             required = false)
     String getWindowOpacityPattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getWindowShape` method pattern",
+            description = "A method pattern matching the `AWTUtilities.getWindowShape(Window)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilitiesTest getWindowShape(java.awt.Window)",
             required = false)
     String getWindowShapePattern;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`setComponentMixingCutoutShape` method pattern",
+            description = "A method pattern matching the `AWTUtilities.setComponentMixingCutoutShape(Component, Shape)` method to replace. " +
+                          "Defaults to the method on `com.sun.awt.AWTUtilities`.",
             example = "com.test.AWTUtilities setComponentMixingCutoutShape(java.awt.Component,java.awt.Shape)",
             required = false)
     String setComponentMixingCutoutShapePattern;
@@ -102,7 +111,7 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
 
     String displayName = "Replace `com.sun.awt.AWTUtilities` static method invocations";
 
-    String description = "This recipe replaces several static calls  in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
+    String description = "This recipe replaces several static calls in `com.sun.awt.AWTUtilities` with the JavaSE 11 equivalent. " +
                "The methods replaced are `AWTUtilities.isTranslucencySupported()`, `AWTUtilities.setWindowOpacity()`, `AWTUtilities.getWindowOpacity()`, " +
                "`AWTUtilities.getWindowShape()`, `AWTUtilities.isWindowOpaque()`, `AWTUtilities.isTranslucencyCapable()` and `AWTUtilities.setComponentMixingCutoutShape()`.";
 
@@ -116,14 +125,22 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
         MethodMatcher setComponentMixingCutoutShapePatternMethod = new MethodMatcher(setComponentMixingCutoutShapePattern);
         MethodMatcher setWindowOpacityPatternMethod = new MethodMatcher(setWindowOpacityPattern);
 
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(getAWTIsWindowsTranslucencyMethod),
+                new UsesMethod<>(getWindowOpacityPatternMethod),
+                new UsesMethod<>(getWindowShapePatternMethod),
+                new UsesMethod<>(isWindowOpaquePatternMethod),
+                new UsesMethod<>(isTranslucencyCapablePatternMethod),
+                new UsesMethod<>(setComponentMixingCutoutShapePatternMethod),
+                new UsesMethod<>(setWindowOpacityPatternMethod)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
                 super.visitMethodInvocation(mi, ctx);
                 if (getAWTIsWindowsTranslucencyMethod.matches(mi)) {
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
-                    maybeAddImport("java.awt.GraphicsEnvironment", false);
-                    maybeAddImport("java.awt.GraphicsDevice.WindowTranslucency", false);
+                    maybeAddImport("java.awt.GraphicsEnvironment");
+                    maybeAddImport("java.awt.GraphicsDevice.WindowTranslucency");
                     String templateString = "GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency." +
                                             ((J.FieldAccess) mi.getArguments().get(0)).getSimpleName();
                     return JavaTemplate.builder(templateString).
@@ -165,6 +182,6 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 }
                 return mi;
             }
-        };
+        });
     }
 }

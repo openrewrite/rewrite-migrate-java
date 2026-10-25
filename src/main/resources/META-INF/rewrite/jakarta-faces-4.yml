@@ -39,8 +39,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
-displayName: Update Jakarta EE Java Faces Dependencies to 4.0.x
-description: Update Jakarta EE Java Faces Dependencies to 4.0.x.
+displayName: Update Jakarta Faces dependencies to 4.0.x
+description: Upgrade the Jakarta Faces API and the `org.glassfish:jakarta.faces` implementation to 4.0.x.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -223,7 +223,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.FacesManagedBeansRemoved
-displayName: Substitute removed Faces Managed Beans
+displayName: Substitute removed Faces managed beans
 description: >-
   This recipe substitutes Faces Managed Beans, which were deprecated in JavaServer Faces 2.3 and have been removed from Jakarta Faces 4.0.
 preconditions:
@@ -291,7 +291,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces4OpenSourceLibraries
 displayName: Upgrade Faces open source libraries
-description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE10 versions.
+description: Upgrade PrimeFaces, OmniFaces, and MyFaces libraries to Jakarta EE 10 versions.
 tags:
   - jakarta
   - faces

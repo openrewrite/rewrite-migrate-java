@@ -22,7 +22,6 @@ import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.*;
 
@@ -36,6 +35,7 @@ class LombokValueToRecordTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion()
             .classpath(
               "lombok",
+              "jackson-annotations",
               "jackson-core"
             )
           );
@@ -423,7 +423,6 @@ class LombokValueToRecordTest implements RewriteTest {
         void classWithFieldAnnotations() {
             //language=java
             rewriteRun(
-              s -> s.typeValidationOptions(TypeValidation.all().identifiers(false)),
               java(
                 """
                   import com.fasterxml.jackson.annotation.JsonProperty;
