@@ -27,7 +27,11 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
+import java.util.regex.Pattern;
+
 public class DanglingDocCommentToBlockComment extends Recipe {
+
+    private static final Pattern LEADING_ASTERISKS = Pattern.compile("^\\*+");
 
     @Getter
     final String displayName = "Turn dangling documentation comments into block comments";
@@ -56,13 +60,14 @@ public class DanglingDocCommentToBlockComment extends Recipe {
 
     /**
      * An attached documentation comment parses to {@link org.openrewrite.java.tree.Javadoc.DocComment}, so a
-     * {@link TextComment} whose text opens with the extra asterisk of `/**` is one that documents nothing.
+     * {@link TextComment} whose text opens with the extra asterisk of `/**` is one that documents nothing. Banners
+     * that open with more asterisks are flagged just the same, so the whole run of leading asterisks is stripped.
      */
     private static Comment toBlockComment(Comment comment) {
         if (comment instanceof TextComment) {
             TextComment text = (TextComment) comment;
             if (text.isMultiline() && text.getText().startsWith("*")) {
-                return text.withText(text.getText().substring(1));
+                return text.withText(LEADING_ASTERISKS.matcher(text.getText()).replaceFirst(""));
             }
         }
         return comment;
