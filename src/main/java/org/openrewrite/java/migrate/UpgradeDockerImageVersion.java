@@ -53,7 +53,10 @@ public class UpgradeDockerImageVersion extends Recipe {
     ));
 
     private static final int OLDEST_VERSION = 8;
-    private static final Pattern VERSIONED_TAG = Pattern.compile("(\\d{1,3})(\\D.*)?");
+    /// The feature version, then any patch or update version as published by the various vendors, such as
+    /// `.0.9_9` and `u392-b08` of Temurin, `.0.20.1-17.68` of Zulu or `.0.19-11` of Liberica, then the variant.
+    private static final Pattern VERSIONED_TAG = Pattern.compile(
+            "(\\d{1,3})(?:u\\d+(?:-b\\d+)?|(?:\\.\\d+)+(?:_\\d+)?(?:-\\d+(?:\\.\\d+)*)?)?(\\D.*)?");
 
     private static final String ARG_DEFAULTS = "argDefaults";
     private static final String ARG_UPGRADES = "argUpgrades";
@@ -62,9 +65,11 @@ public class UpgradeDockerImageVersion extends Recipe {
     String description = "Upgrade Docker image tags to use the specified Java version. " +
             "Updates common Java Docker images including `eclipse-temurin`, `amazoncorretto`, `azul/zulu-openjdk`, " +
             "and others. Also migrates deprecated images (`openjdk`, `adoptopenjdk`) to `eclipse-temurin`, " +
-            "preserving any tag suffix such as `-jre-alpine`. When a `FROM` is built from a build argument, the " +
-            "default value of the corresponding global `ARG` is upgraded instead, such that `ARG java_version=17` " +
-            "used as `FROM eclipse-temurin:${java_version}` becomes `ARG java_version=25`. Image references built " +
+            "preserving any tag suffix such as `-jre-alpine`. A pinned patch or update version is dropped, as in " +
+            "`17.0.9_9-jdk` becoming `25-jdk`, as images are not published for that patch of the new version. " +
+            "When a `FROM` is built from a build argument, the default value of the corresponding global `ARG` is " +
+            "upgraded instead, such that `ARG java_version=17` used as `FROM eclipse-temurin:${java_version}` " +
+            "becomes `ARG java_version=25`. Image references built " +
             "from arguments without a default value are left untouched, as their value can not be determined " +
             "statically. A digest pin is dropped when the tag is upgraded, as the stale digest would otherwise " +
             "keep resolving to the old image.";
