@@ -37,17 +37,17 @@ public class ChangeDefaultKeyStore extends Recipe {
     final String displayName = "Replace `KeyStore.getDefaultType()` with `\"jks\"`";
 
     @Getter
-    final String description = "In Java 11 the default keystore was updated from JKS to PKCS12. " +
+    final String description = "In Java 9 the default keystore type changed from JKS to PKCS12. " +
             "As a result, applications relying on `KeyStore.getDefaultType()` may encounter issues after migrating, " +
             "unless their JKS keystore has been converted to PKCS12. " +
-            "This recipe returns default key store of `jks` when `KeyStore.getDefaultType()` method is called to " +
-            "use the pre Java 11 default keystore.";
+            "This recipe replaces `KeyStore.getDefaultType()` with `\"jks\"` in projects still on Java 8 or earlier, " +
+            "so that they keep the pre Java 9 default keystore type once upgraded.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
                 Preconditions.and(
-                        new UsesJavaVersion<>(11, 11),
+                        new UsesJavaVersion<>(1, 8),
                         new UsesMethod<>(KEYSTORE_METHOD_REF)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override

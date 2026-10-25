@@ -63,6 +63,8 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
+  # Runs before the Java version marker is upgraded, to only pin the keystore type for projects coming from Java 8
+  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
@@ -88,7 +90,6 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
   - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
-  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
