@@ -101,8 +101,7 @@ public class AdoptLombokGetterMethodNames extends ScanningRecipe<List<AdoptLombo
 
                 // If the desired method name is already taken by an existing method, the current method cannot be renamed
                 List<String> doNotRename = getCursor().getNearestMessage(DO_NOT_RENAME);
-                assert doNotRename != null;
-                if (doNotRename.contains(expectedMethodName)) {
+                if (doNotRename == null || doNotRename.contains(expectedMethodName)) {
                     return method;
                 }
 

@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -108,34 +107,6 @@ class UseVarForObjectsTest extends VarBaseTest {
                     Object o = new Object();
                     void m() {
                         var innerO = o;
-                    }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Disabled("this should be possible, but it needs very hard type inference")
-        @Test
-        void withTernary() {
-            //language=java
-            rewriteRun(
-              java(
-                """
-                  package com.example.app;
-
-                  class A {
-                    void m() {
-                        String o = true ? "isTrue" : "Test";
-                    }
-                  }
-                  """,
-                    """
-                  package com.example.app;
-
-                  class A {
-                    void m() {
-                        var o = true ? "isTrue" : "Test";
                     }
                   }
                   """
@@ -302,46 +273,6 @@ class UseVarForObjectsTest extends VarBaseTest {
                         }
                         void m() {
                             var phrase = getHello();
-                        }
-                      }
-                      """),
-                    10
-                  )
-                );
-            }
-
-            @Disabled("in favor to https://github.com/openrewrite/rewrite-migrate-java/issues/608 we skip all static methods ATM")
-            @Test
-            void staticMethods() {
-                //language=java
-                rewriteRun(
-                  version(
-                    java("""
-                      package com.example.app;
-
-                      class A {
-                        static class B {
-                            private B() {}
-                            static B newInstance() {
-                                return new B();
-                            }
-                        }
-                        void m() {
-                            B b = B.newInstance();
-                        }
-                      }
-                      """, """
-                      package com.example.app;
-
-                      class A {
-                        static class B {
-                            private B() {}
-                            static B newInstance() {
-                                return new B();
-                            }
-                        }
-                        void m() {
-                            var b = B.newInstance();
                         }
                       }
                       """),
@@ -714,6 +645,49 @@ class UseVarForObjectsTest extends VarBaseTest {
                           String string = Global.cast(o); // static method unchanged
                           return string;
                       }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        @Test
+        void staticMethod() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    static class B {
+                        private B() {}
+                        static B newInstance() {
+                            return new B();
+                        }
+                    }
+                    void m() {
+                        B b = B.newInstance();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void withTernary() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
                   }
                   """
               )

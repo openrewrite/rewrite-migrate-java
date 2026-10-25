@@ -31,15 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Finds usages of locale-based date/time formatting APIs that may be affected by the
- * JDK 20+ CLDR locale data changes. Starting with JDK 20, the Unicode CLDR 42 locale data
- * changed the space character before AM/PM designators from a regular space to a narrow
- * no-break space (NNBSP, \u202F).
- * <p>
- * This can cause parsing issues when user input contains regular spaces but the formatter
- * expects NNBSP. The affected APIs include locale-based DateFormat and DateTimeFormatter
- * factory methods.
- *
  * @see <a href="https://bugs.openjdk.org/browse/JDK-8324308">JDK-8324308</a>
  * @see <a href="https://inside.java/2024/03/29/quality-heads-up/">Unicode CLDR Version 42 Heads-up</a>
  */

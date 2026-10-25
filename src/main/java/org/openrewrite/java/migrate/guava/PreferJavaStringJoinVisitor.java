@@ -39,7 +39,11 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
         J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
 
-        if (!JOIN_METHOD_MATCHER.matches(mi) || !(mi.getSelect() instanceof J.MethodInvocation) || !ON_METHOD_MATCHER.matches(mi.getSelect())) {
+        if (!JOIN_METHOD_MATCHER.matches(mi) || !(mi.getSelect() instanceof J.MethodInvocation)) {
+            return mi;
+        }
+        J.MethodInvocation select = (J.MethodInvocation) mi.getSelect();
+        if (!ON_METHOD_MATCHER.matches(select)) {
             return mi;
         }
 
@@ -55,8 +59,6 @@ class PreferJavaStringJoinVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
 
         if (rewriteToJavaString) {
-            J.MethodInvocation select = (J.MethodInvocation) mi.getSelect();
-            assert select != null;
             List<Expression> newArgs = appendArguments(select.getArguments(), mi.getArguments());
 
             maybeRemoveImport("com.google.common.base.Joiner");

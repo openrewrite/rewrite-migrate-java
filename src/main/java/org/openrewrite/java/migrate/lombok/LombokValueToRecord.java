@@ -85,7 +85,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
             J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-            if (!isRelevantClass(cd)) {
+            JavaType.FullyQualified type = cd.getType();
+            if (type == null || !isRelevantClass(cd)) {
                 return cd;
             }
 
@@ -94,22 +95,18 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null : "Class type must not be null"; // Checked in isRelevantClass
             Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
             if (implementsConflictingInterfaces(cd, memberVariableNames)) {
                 return cd;
             }
 
-            acc.putIfAbsent(
-                    cd.getType().getFullyQualifiedName(),
-                    memberVariableNames);
+            acc.putIfAbsent(type.getFullyQualifiedName(), memberVariableNames);
 
             return cd;
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-            return classDeclaration.getType() != null &&
-                   J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
+            return J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
                    hasMatchingAnnotations(classDeclaration) &&
                    !hasGenericTypeParameter(classDeclaration) &&
                    classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField) &&
@@ -356,19 +353,14 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
             List<J.VariableDeclarations> memberVariables = findAllClassFields(classDeclaration)
                     .collect(toList());
 
-            List<Statement> bodyStatements = new ArrayList<>(classDeclaration.getBody().getStatements());
-            bodyStatements.removeAll(memberVariables);
+            List<Statement> bodyStatements = ListUtils.filter(classDeclaration.getBody().getStatements(),
+                    statement -> !memberVariables.contains(statement));
 
             classDeclaration = (J.ClassDeclaration) new RemoveAnnotationVisitor( LOMBOK_VALUE_MATCHER ).visit( classDeclaration, ctx, getCursor().getParentTreeCursor() );
             maybeRemoveImport("lombok.Value");
 
-            List<J.Modifier> mappedModifiers = ListUtils.map(classDeclaration.getModifiers(), modifier -> {
-                J.Modifier.Type type = modifier.getType();
-                if (type == J.Modifier.Type.Static || type == J.Modifier.Type.Final) {
-                    return null;
-                }
-                return modifier;
-            });
+            List<J.Modifier> mappedModifiers = ListUtils.filter(classDeclaration.getModifiers(), modifier ->
+                    modifier.getType() != J.Modifier.Type.Static && modifier.getType() != J.Modifier.Type.Final);
             J.ClassDeclaration.Kind kind = classDeclaration.withKind(J.ClassDeclaration.Kind.Type.Record).getPadding().getKind();
             if (mappedModifiers.isEmpty()) {
                 kind = kind.withPrefix(kind.getPrefix().withWhitespace(""));

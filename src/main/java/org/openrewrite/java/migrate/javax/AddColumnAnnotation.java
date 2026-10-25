@@ -52,7 +52,6 @@ public class AddColumnAnnotation extends Recipe {
 
                     @Override
                     public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                        // if top-level class has already been checked, continue running recipe
                         if (visitedTopLevelClass) {
                             return super.visitClassDeclaration(classDecl, ctx);
                         }
@@ -60,19 +59,16 @@ public class AddColumnAnnotation extends Recipe {
                         if (!FindAnnotations.find(classDecl, "@javax.persistence.Entity").isEmpty()) {
                             return super.visitClassDeclaration(classDecl, ctx);
                         }
-                        // Exit if class is not @Entity
                         return classDecl;
                     }
 
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // Exit if var does not have @ElementCollection or has @Transient
                         if (FindAnnotations.find(multiVariable, "@javax.persistence.ElementCollection").isEmpty() ||
                             !FindAnnotations.find(multiVariable, "@javax.persistence.Transient").isEmpty()) {
                             return multiVariable;
                         }
 
-                        // Create and add @Column annotation
                         if (FindAnnotations.find(multiVariable, "@javax.persistence.Column").isEmpty()) {
                             maybeAddImport("javax.persistence.Column");
                             return JavaTemplate.builder("@Column(name = \"element\")")
@@ -82,7 +78,6 @@ public class AddColumnAnnotation extends Recipe {
                                     .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                         }
 
-                        // Update existing @Column annotation
                         J.VariableDeclarations updatedVariable = (J.VariableDeclarations) new AddOrUpdateAnnotationAttribute(
                                 "javax.persistence.Column", "name", "element", null, true, null)
                                 .getVisitor().visit(multiVariable, ctx, getCursor().getParentTreeCursor());

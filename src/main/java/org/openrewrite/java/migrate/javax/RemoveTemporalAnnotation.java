@@ -57,20 +57,6 @@ public class RemoveTemporalAnnotation extends Recipe {
             {"TIMESTAMP", JAVA_SQL_DATE}
     }).collect(toMap(data -> data[0], data -> data[1]));
 
-    /*
-     * This rule scans for the following annotation-attribute combinations where data does not need to be converted
-     * and the Temporal annotation must be removed to avoid an EclipseLink error:
-     *
-     *     A javax.persistence.Temporal(TemporalType.DATE) annotation on a java.sql.Date attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIME) annotation on a java.sql.Date attribute
-     *     A the javax.persistence.Temporal(TemporalType.DATE) annotation on a java.sql.Time attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIME) annotation on a java.sql.Time attribute
-     *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Time
-     *     A the javax.persistence.Temporal(TemporalType.TIMESTAMP) annotation on a java.sql.Timestamp attribute
-     *
-     * NOTES: @Temporal has a required argument, which can only be TemporalType.DATE/TIME/TIMESTAMP
-     */
-
     String displayName = "Remove the `@Temporal` annotation for some `java.sql` attributes";
 
     String description = "OpenJPA persists the fields of attributes of type `java.sql.Date`, `java.sql.Time`, or `java.sql.Timestamp` " +
@@ -91,14 +77,12 @@ public class RemoveTemporalAnnotation extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
-                        // Exit if no @Temporal annotation, or var is not java.sql.Date/Time/Timestamp
                         String varClass = multiVariable.getType().toString();
                         Set<J.Annotation> temporalAnnos = FindAnnotations.find(multiVariable, "javax.persistence.Temporal");
                         if (temporalAnnos.isEmpty() || !JAVA_SQL_DATE_TIME_TYPES.contains(varClass)) {
                             return multiVariable;
                         }
 
-                        // Get TemporalType
                         J.Annotation temporal = temporalAnnos.iterator().next();
                         String temporalArg = temporal.getArguments().iterator().next().toString();
                         Matcher temporalMatch = TEMPORAL_TYPE.matcher(temporalArg);
@@ -107,12 +91,11 @@ public class RemoveTemporalAnnotation extends Recipe {
                         }
                         String temporalType = temporalMatch.group(1);
 
-                        // Check combination of attribute and var's class
                         if (DO_NOT_REMOVE.get(temporalType).equals(varClass)) {
                             return multiVariable;
                         }
 
-                        // Remove @Temporal annotation. RemoveAnnotation's visitor runs on this declaration only,
+                        // RemoveAnnotation's visitor runs on this declaration only,
                         // so its own import removal never reaches the compilation unit.
                         maybeRemoveImport("javax.persistence.Temporal");
                         maybeRemoveImport("javax.persistence.TemporalType");
