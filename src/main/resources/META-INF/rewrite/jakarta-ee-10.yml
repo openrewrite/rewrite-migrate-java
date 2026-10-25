@@ -57,7 +57,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
-displayName: Migrate Jakarta EE 9 api dependencies to Jakarta EE 10 versions
+displayName: Migrate Jakarta EE 9 API dependencies to Jakarta EE 10 versions
 description: Jakarta EE 10 updates some apis compared to Jakarta EE 9.
 tags:
   - jakarta
@@ -161,7 +161,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
-displayName: Update Apache Commons FileUpload2 package for EE10
+displayName: Update Apache Commons FileUpload2 package for Jakarta EE 10
 description: Update Apache Commons FileUpload2 package for EE10.
 preconditions:
   - org.openrewrite.Singleton
@@ -271,7 +271,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml
-displayName: Migrate xmlns entries and javax. packages in `ejb-jar.xml` files
+displayName: Migrate xmlns entries and `javax` packages in `ejb-jar.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
 tags:
   - jakarta
@@ -300,7 +300,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
-displayName: Migrate xmlns entries and javax. packages in `validation.xml` files
+displayName: Migrate xmlns entries and `javax` packages in `validation.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
 tags:
   - jakarta
@@ -404,7 +404,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxToJakartaCdiExtensions
-displayName: Rename CDI Extension to Jakarta
+displayName: Rename CDI extension service files to Jakarta
 description: Rename `javax.enterprise.inject.spi.Extension` to `jakarta.enterprise.inject.spi.Extension`.
 preconditions:
   - org.openrewrite.Singleton
@@ -415,7 +415,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
-displayName: Update Jakarta EE Platform Dependencies to 10.0.0
+displayName: Update Jakarta EE platform dependencies to 10.0.0
 description: Update Jakarta EE Platform Dependencies to 10.0.0.
 preconditions:
   - org.openrewrite.Singleton
@@ -427,7 +427,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
-displayName: Update Jakarta EE annotation Dependencies to 2.1.x
+displayName: Update Jakarta EE annotation dependencies to 2.1.x
 description: Update Jakarta EE annotation Dependencies to 2.1.x.
 tags:
   # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
@@ -439,7 +439,7 @@ recipeList: []
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
-displayName: Update Jakarta EE XML Web Services Dependencies for EE 10
+displayName: Update Jakarta XML Web Services dependencies for Jakarta EE 10
 description: Update Jakarta EE XML Web Services Dependencies for EE 10.
 preconditions:
   - org.openrewrite.Singleton
@@ -491,7 +491,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
-displayName: Update GlassFish Jersey Dependencies to 3.1.x
+displayName: Update GlassFish Jersey dependencies to 3.1.x
 description: Update GlassFish Jersey Dependencies to 3.1.x.
 preconditions:
   - org.openrewrite.Singleton
@@ -554,7 +554,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
-displayName: Update Apache Shiro Dependencies to 2.0.x
+displayName: Update Apache Shiro dependencies to 2.0.x
 description: Update Apache Shiro Dependencies to 2.0.x.
 preconditions:
   - org.openrewrite.Singleton
@@ -603,7 +603,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
-displayName: Update EclipseLink Dependencies to 4.x
+displayName: Update EclipseLink dependencies to 4.x
 description: Update EclipseLink Dependencies to 4.x.
 preconditions:
   - org.openrewrite.Singleton
@@ -615,7 +615,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
-displayName: Update Eclipse Yasson Dependencies to 3.0.x
+displayName: Update Eclipse Yasson dependencies to 3.0.x
 description: Update Eclipse Yasson Dependencies to 3.0.x.
 preconditions:
   - org.openrewrite.Singleton
@@ -773,7 +773,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta10
-displayName: Update Plugins for Jakarta EE 10
+displayName: Update plugins for Jakarta EE 10
 description: Update plugin to be compatible with Jakarta EE 10.
 preconditions:
   - org.openrewrite.Singleton

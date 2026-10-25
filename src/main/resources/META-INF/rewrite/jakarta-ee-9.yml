@@ -1566,7 +1566,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
-displayName: Update Jetty9 to Jetty12
+displayName: Update Jetty 9 to Jetty 12
 description: Update Jetty dependencies from version 9 to version 12.
 preconditions:
   - org.openrewrite.Singleton
@@ -1707,7 +1707,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta9
-displayName: Update Plugins for Jakarta EE 9
+displayName: Update plugins for Jakarta EE 9
 description: Update plugins to be compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1807,7 +1807,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
-displayName: Add the Jakarta El API when needed
+displayName: Add the Jakarta EL API when needed
 description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1826,7 +1826,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
-displayName: Add the Jakarta Ejb API when needed
+displayName: Add the Jakarta EJB API when needed
 description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1870,7 +1870,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
-displayName: Add the jakarta.inject API when needed
+displayName: Add the `jakarta.inject` API when needed
 description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1891,7 +1891,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
-displayName: Add the jakarta.ws.rs API when needed
+displayName: Add the `jakarta.ws.rs` API when needed
 description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:

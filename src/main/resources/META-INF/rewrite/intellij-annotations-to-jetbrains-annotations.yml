@@ -17,7 +17,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.ComIntelliJAnnotationsToOrgJetbrainsAnnotations
-displayName: Migrate com.intellij:annotations to org.jetbrains:annotations
+displayName: Migrate `com.intellij:annotations` to `org.jetbrains:annotations`
 description: >-
   This recipe will upgrade old dependency of com.intellij:annotations to the newer org.jetbrains:annotations.
 tags:

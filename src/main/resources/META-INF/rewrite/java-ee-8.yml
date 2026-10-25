@@ -17,7 +17,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8
-displayName: Migrate to JavaEE8
+displayName: Migrate to Java EE 8
 description: These recipes help with the Migration to Java EE 8, flagging and updating deprecated methods.
 tags:
   - javaee8
@@ -33,7 +33,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.MigrateToServlet3x
-displayName: Update Java EE Servlet Dependencies to 3.x
+displayName: Update Java Servlet dependencies to 3.x
 description: Update Java EE Servlet Dependencies to 3.x.
 preconditions:
   - org.openrewrite.Singleton

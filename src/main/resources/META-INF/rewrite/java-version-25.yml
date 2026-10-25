@@ -70,7 +70,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.AccessController
-displayName: Remove Security AccessController
+displayName: Remove `AccessController.checkPermission(..)` calls
 description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.AccessController`.
 tags:
   - java25
@@ -91,7 +91,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityPolicy
-displayName: Remove Security Policy
+displayName: Remove `Policy.setPolicy(..)` calls
 description: The Security Manager API is unsupported in Java 24. This recipe will remove the use of `java.security.Policy`.
 tags:
   - java25
@@ -112,7 +112,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityManager
-displayName: Remove Security SecurityManager
+displayName: Remove `SecurityManager` permission checks
 description: The Security Manager API is unsupported in Java 24. This recipe will remove the usage of `java.security.SecurityManager`.
 tags:
   - java25

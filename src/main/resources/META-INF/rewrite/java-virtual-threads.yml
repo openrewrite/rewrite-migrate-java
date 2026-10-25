@@ -17,7 +17,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
-displayName: Find Virtual Thread opportunities
+displayName: Find virtual thread opportunities
 description: >-
   Find opportunities to convert existing code to use Virtual Threads.
 tags:

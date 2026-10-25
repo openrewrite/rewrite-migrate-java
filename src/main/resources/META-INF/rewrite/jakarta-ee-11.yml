@@ -31,7 +31,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
-displayName: Update Jakarta EE Platform Dependencies to 11.0.x
+displayName: Update Jakarta EE platform dependencies to 11.0.x
 description: Update Jakarta EE Platform Dependencies to 11.0.x.
 preconditions:
   - org.openrewrite.Singleton
@@ -51,7 +51,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta11
-displayName: Update Plugins for Jakarta EE 11
+displayName: Update plugins for Jakarta EE 11
 description: Update plugins to be compatible with Jakarta EE 11.
 preconditions:
   - org.openrewrite.Singleton
