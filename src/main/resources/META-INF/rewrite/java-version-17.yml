@@ -379,20 +379,3 @@ recipeList:
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
   - org.openrewrite.java.migrate.AddMapstructAnnotationProcessorPath
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.AddLombokMapstructBindingMavenDependencyOnly
-displayName: Add `lombok-mapstruct-binding` dependency for Maven when both MapStruct and Lombok are used
-description: >-
-  Add the `lombok-mapstruct-binding` Maven dependency when it does not already exist. Expects the caller to have checked
-  that both MapStruct and Lombok are used.
-preconditions:
-  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
-      groupId: org.projectlombok
-      artifactId: lombok-mapstruct-binding
-  - org.openrewrite.Singleton
-recipeList:
-  - org.openrewrite.maven.AddDependency:
-      groupId: org.projectlombok
-      artifactId: lombok-mapstruct-binding
-      version: 0.2.0
