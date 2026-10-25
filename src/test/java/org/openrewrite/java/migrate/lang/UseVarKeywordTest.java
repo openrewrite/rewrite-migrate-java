@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -208,34 +207,6 @@ class UseVarKeywordTest implements RewriteTest {
                 );
             }
 
-            @Disabled("this should be possible, but it needs very hard type inference")
-            @Test
-            void withTernary() {
-                //language=java
-                rewriteRun(
-                  java(
-                    """
-                      package com.example.app;
-
-                      class A {
-                        void m() {
-                            String o = true ? "isTrue" : "Test";
-                        }
-                      }
-                      """,
-                    """
-                      package com.example.app;
-
-                      class A {
-                        void m() {
-                            var o = true ? "isTrue" : "Test";
-                        }
-                      }
-                      """
-                  )
-                );
-            }
-
             @Test
             void inStaticInitializer() {
                 //language=java
@@ -323,6 +294,24 @@ class UseVarKeywordTest implements RewriteTest {
                         Object o = new Object();
                         Object m() {
                             return o;
+                        }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Test
+            void withTernary() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      class A {
+                        void m() {
+                            String o = true ? "isTrue" : "Test";
                         }
                       }
                       """
