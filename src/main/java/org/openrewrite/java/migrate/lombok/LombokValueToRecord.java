@@ -85,7 +85,8 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
             J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, ctx);
-            if (!isRelevantClass(cd)) {
+            JavaType.FullyQualified type = cd.getType();
+            if (type == null || !isRelevantClass(cd)) {
                 return cd;
             }
 
@@ -94,22 +95,18 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
                 return cd;
             }
 
-            assert cd.getType() != null : "Class type must not be null"; // Checked in isRelevantClass
             Set<String> memberVariableNames = getMemberVariableNames(memberVariables);
             if (implementsConflictingInterfaces(cd, memberVariableNames)) {
                 return cd;
             }
 
-            acc.putIfAbsent(
-                    cd.getType().getFullyQualifiedName(),
-                    memberVariableNames);
+            acc.putIfAbsent(type.getFullyQualifiedName(), memberVariableNames);
 
             return cd;
         }
 
         private boolean isRelevantClass(J.ClassDeclaration classDeclaration) {
-            return classDeclaration.getType() != null &&
-                   J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
+            return J.ClassDeclaration.Kind.Type.Record != classDeclaration.getKind() &&
                    hasMatchingAnnotations(classDeclaration) &&
                    !hasGenericTypeParameter(classDeclaration) &&
                    classDeclaration.getBody().getStatements().stream().allMatch(this::isRecordCompatibleField) &&
