@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -27,10 +28,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.TextComment;
-import org.openrewrite.marker.Markers;
-
-import static java.util.Collections.singletonList;
+import org.openrewrite.trait.Comments;
 
 public class ThreadStopUnsupported extends Recipe {
     private static final MethodMatcher THREAD_STOP_MATCHER = new MethodMatcher("java.lang.Thread stop()");
@@ -78,7 +76,7 @@ public class ThreadStopUnsupported extends Recipe {
                                 prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
                                 prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
                                 prefixWhitespace + " ";
-                return j.withComments(singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
+                return Comments.of(new Cursor(getCursor().getParentOrThrow(), j)).multilineComment(commentText);
             }
         });
     }
