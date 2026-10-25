@@ -71,6 +71,18 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       // Arbitrary suffix preserved via $1 capture (previously lost through wildcard fallback)
       "openjdk, 11-jdk-custom-suffix, eclipse-temurin, 17-jdk-custom-suffix, 17",
       "eclipse-temurin, 11-jdk-custom-suffix, eclipse-temurin, 17-jdk-custom-suffix, 17",
+      // A pinned patch or update version is dropped, as it is not published for the new version
+      "eclipse-temurin, 17.0.9_9-jdk, eclipse-temurin, 25-jdk, 25",
+      "eclipse-temurin, 17.0.20.1_1-jre-alpine, eclipse-temurin, 25-jre-alpine, 25",
+      "eclipse-temurin, 8u504-b01-jre, eclipse-temurin, 25-jre, 25",
+      "openjdk, 8u342-jre, eclipse-temurin, 25-jre, 25",
+      "openjdk, 11.0.16, eclipse-temurin, 25, 25",
+      "amazoncorretto, 17.0.9, amazoncorretto, 25, 25",
+      "amazoncorretto, 17.0.21-al2023, amazoncorretto, 25-al2023, 25",
+      "azul/zulu-openjdk, 17.0.20.1-17.68-jre, azul/zulu-openjdk, 25-jre, 25",
+      "bellsoft/liberica-openjdk-debian, 17.0.20.1-1-cds, bellsoft/liberica-openjdk-debian, 25-cds, 25",
+      "bellsoft/liberica-openjdk-debian, 17.0.19-11, bellsoft/liberica-openjdk-debian, 25, 25",
+      "sapmachine, 17.0.21.0.2-jre, sapmachine, 25-jre, 25",
     })
     @ParameterizedTest
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
@@ -91,6 +103,10 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "JAVA_VERSION=8, amazoncorretto:${JAVA_VERSION}-alpine, JAVA_VERSION=25, amazoncorretto:${JAVA_VERSION}-alpine",
       // The argument holds the version and a suffix
       "IMAGE_TAG=11-jre-alpine, eclipse-temurin:${IMAGE_TAG}, IMAGE_TAG=25-jre-alpine, eclipse-temurin:${IMAGE_TAG}",
+      // The argument holds a pinned patch version
+      "JAVA_VERSION=17.0.9_9, eclipse-temurin:${JAVA_VERSION}-jdk, JAVA_VERSION=25, eclipse-temurin:${JAVA_VERSION}-jdk",
+      "IMAGE_TAG=17.0.9_9-jdk, eclipse-temurin:${IMAGE_TAG}, IMAGE_TAG=25-jdk, eclipse-temurin:${IMAGE_TAG}",
+      "BASE_IMAGE=openjdk:8u342-jre, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
       // The argument holds the whole image reference
       "BASE_IMAGE=eclipse-temurin:11-jre, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
       "BASE_IMAGE=openjdk:11-jre, ${BASE_IMAGE}, BASE_IMAGE=eclipse-temurin:25-jre, ${BASE_IMAGE}",
