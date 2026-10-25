@@ -58,7 +58,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
             "<execution><id>get-mockito-agent-path</id><goals><goal>" + PROPERTIES_GOAL + "</goal></goals></execution>";
 
     @Getter
-    final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
+    final String displayName = "Add Mockito Java agent to Maven Surefire plugin";
 
     @Getter
     final String description = "Mockito attaches its Byte Buddy agent to the running JVM at test time, which the JDK has " +

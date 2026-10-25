@@ -39,7 +39,7 @@ import java.util.Set;
 @Value
 public class AddTransientAnnotationToEntity extends ScanningRecipe<AddTransientAnnotationToEntity.EntityAccumulator> {
 
-    String displayName = "Unannotated entity attributes require a Transient annotation";
+    String displayName = "Add `@Transient` to unannotated entity attributes";
 
     String description = "In OpenJPA, attributes that are themselves entity classes are not persisted by default. EclipseLink has " +
                "a different default behavior and tries to persist these attributes to the database. To keep the OpenJPA " +

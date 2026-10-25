@@ -41,7 +41,7 @@ public class AddSurefireFailsafeArgLine extends Recipe {
             example = "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED")
     String argLine;
 
-    String displayName = "Add `argLine` to surefire and failsafe plugins";
+    String displayName = "Add `argLine` to Maven Surefire and Failsafe plugins";
 
     String description = "Adds the specified arguments to the `argLine` configuration of the Maven Surefire and Failsafe plugins, " +
             "merging with any existing argLine value without duplicating arguments. " +

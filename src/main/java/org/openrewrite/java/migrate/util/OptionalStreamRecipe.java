@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 
 public class OptionalStreamRecipe extends Recipe {
     @Getter
-    final String displayName = "`Stream<Optional>` idiom recipe";
+    final String displayName = "Replace `filter(Optional::isPresent).map(Optional::get)` with `flatMap(Optional::stream)`";
 
     @Getter
     final String description = "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";

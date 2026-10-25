@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 @Value
 public class AddTransientAnnotationToCollections extends Recipe {
 
-    String displayName = "Unannotated collection attributes require a Transient annotation";
+    String displayName = "Add `@Transient` to unannotated collection attributes";
 
     String description = "In OpenJPA, attributes that inherit from the `java.util.Collection<E>` interface are not a default " +
                "persistent type, so these attributes are not persisted unless they are annotated. EclipseLink has a " +

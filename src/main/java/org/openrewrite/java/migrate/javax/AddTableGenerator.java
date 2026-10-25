@@ -36,7 +36,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class AddTableGenerator extends Recipe {
-    String displayName = "Attributes with automatically generated values require configuration";
+    String displayName = "Add a `@TableGenerator` to automatically generated `@GeneratedValue` attributes";
 
     String description = "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
 

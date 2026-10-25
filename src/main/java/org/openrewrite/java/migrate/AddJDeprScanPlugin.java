@@ -38,7 +38,7 @@ public class AddJDeprScanPlugin extends Recipe {
     private final String release;
 
     @Getter
-    final String displayName = "Add `JDeprScan` Maven Plug-in";
+    final String displayName = "Add `JDeprScan` Maven plugin";
 
     @Getter
     final String description = "Add the `JDeprScan` Maven plugin to scan class files for uses of deprecated APIs.";

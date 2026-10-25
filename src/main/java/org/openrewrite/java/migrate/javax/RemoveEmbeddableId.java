@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
     @Getter
-    final String displayName = "`@Embeddable` classes cannot have an `@Id` annotation when referenced by an `@EmbeddedId` annotation";
+    final String displayName = "Remove `@Id` from `@Embeddable` classes referenced by an `@EmbeddedId`";
 
     @Getter
     final String description = "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an " +

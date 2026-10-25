@@ -34,7 +34,7 @@ import java.util.List;
 
 public class UseVarForGenericsConstructors extends Recipe {
     @Getter
-    final String displayName = "Apply `var` to Generic Constructors";
+    final String displayName = "Apply `var` to generic constructors";
 
     @Getter
     final String description = "Apply `var` to generics variables initialized by constructor calls.";

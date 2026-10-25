@@ -35,7 +35,7 @@ import java.util.Comparator;
 @Value
 public class AddColumnAnnotation extends Recipe {
 
-    String displayName = "`@ElementCollection` annotations must be accompanied by a defined `@Column` annotation";
+    String displayName = "Set `@Column(name = \"element\")` on `@ElementCollection` attributes";
 
     String description = "When an attribute is annotated with `@ElementCollection`, a separate table is created for the attribute that includes the attribute " +
                "ID and value. In OpenJPA, the column for the annotated attribute is named `element`, whereas EclipseLink names the column based on " +
