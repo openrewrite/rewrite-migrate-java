@@ -56,7 +56,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJavaxAnnotationApi
 displayName: Migrate from javax annotation API to JSpecify
-description: Migrate from javax annotation API to JSpecify.
+description: >-
+  Replace the `javax.annotation` `@Nullable`, `@CheckForNull`, `@Nonnull` and `@ParametersAreNonnullByDefault`
+  annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -99,7 +101,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJakartaAnnotationApi
 displayName: Migrate from Jakarta annotation API to JSpecify
-description: Migrate from Jakarta annotation API to JSpecify.
+description: Replace the `jakarta.annotation` `@Nullable` and `@Nonnull` annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -129,7 +131,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromJetbrainsAnnotations
 displayName: Migrate from JetBrains annotations to JSpecify
-description: Migrate from JetBrains annotations to JSpecify.
+description: Replace the `org.jetbrains.annotations` `@Nullable` and `@NotNull` annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -159,7 +161,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations
 displayName: Migrate from Micrometer annotations to JSpecify
-description: Migrate from Micrometer annotations to JSpecify.
+description: Replace the `io.micrometer.core.lang` `@Nullable` and `@NonNull` annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -189,7 +191,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromSpringFrameworkAnnotations
 displayName: Migrate from Spring Framework annotations to JSpecify
-description: Migrate from Spring Framework annotations to JSpecify.
+description: Replace the `org.springframework.lang` `@Nullable` and `@NonNull` annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -219,7 +221,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.jspecify.MigrateFromMicronautAnnotations
 displayName: Migrate from Micronaut Framework annotations to JSpecify
-description: Migrate from Micronaut Framework annotations to JSpecify.
+description: Replace the `io.micronaut.core.annotation` `@Nullable` and `@NonNull` annotations with their JSpecify equivalents, adding the JSpecify dependency where needed.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

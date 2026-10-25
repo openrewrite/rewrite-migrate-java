@@ -18,7 +18,10 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaEE10
 displayName: Migrate to Jakarta EE 10
-description: These recipes help with the Migration to Jakarta EE 10, flagging and updating deprecated methods.
+description: >-
+  Migrate to Jakarta EE 10 from Java EE 8 or Jakarta EE 9. Moves `javax` packages to `jakarta`, upgrades the Jakarta EE
+  APIs, implementations and Maven plugins to their Jakarta EE 10 versions, and replaces APIs that were deprecated or removed
+  in Jakarta EE 10.
 tags:
   - jakarta
 preconditions:
@@ -58,7 +61,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigrationToJakarta10Apis
 displayName: Migrate Jakarta EE 9 API dependencies to Jakarta EE 10 versions
-description: Jakarta EE 10 updates some apis compared to Jakarta EE 9.
+description: Upgrade the Jakarta EE 9 API dependencies to their Jakarta EE 10 versions.
 tags:
   - jakarta
 preconditions:
@@ -162,7 +165,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
 displayName: Update Apache Commons FileUpload2 package for Jakarta EE 10
-description: Update Apache Commons FileUpload2 package for EE10.
+description: Replace the `commons-fileupload2-jakarta-servlet5` artifact and package with their `servlet6` counterparts, which target Jakarta Servlet 6.0.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -416,7 +419,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform10
 displayName: Update Jakarta EE platform dependencies to 10.0.0
-description: Update Jakarta EE Platform Dependencies to 10.0.0.
+description: Upgrade the `jakarta.platform` dependencies to 10.0.0.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -428,7 +431,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaAnnotations2
 displayName: Update Jakarta EE annotation dependencies to 2.1.x
-description: Update Jakarta EE annotation Dependencies to 2.1.x.
+description: Deprecated and does nothing, as the `jakarta.annotation-api` upgrade to 2.1.x is now part of the Jakarta EE 10 API migration.
 tags:
   # This recipe has been inlined into `MigrationToJakarta10Apis`; drop the reference to this recipe,
   # This placeholder is kept to avoid breaking existing recipes that reference this recipe still.
@@ -440,7 +443,9 @@ recipeList: []
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaXmlWsEE10
 displayName: Update Jakarta XML Web Services dependencies for Jakarta EE 10
-description: Update Jakarta EE XML Web Services Dependencies for EE 10.
+description: >-
+  Upgrade the Jakarta XML Binding, SOAP and XML Web Services APIs and the `jaxws-rt` implementation to their Jakarta EE 10
+  versions, replacing the retired `jakarta.jws-api` artifact with `jakarta.xml.ws-api`.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -492,7 +497,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJerseyDependencies
 displayName: Update GlassFish Jersey dependencies to 3.1.x
-description: Update GlassFish Jersey Dependencies to 3.1.x.
+description: Upgrade the GlassFish Jersey dependencies to 3.1.x, and Tyrus to 2.1.x.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -528,7 +533,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
 displayName: Update Apache Commons Email to Email2 for Jakarta
-description: Update Apache Commons Email to Email2 for Jakarta.
+description: Replace `commons-email` with `commons-email2-jakarta` 2.0.x, and move the `org.apache.commons.mail` types to their Email2 packages.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -555,7 +560,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheShiroDependencies
 displayName: Update Apache Shiro dependencies to 2.0.x
-description: Update Apache Shiro Dependencies to 2.0.x.
+description: >-
+  Upgrade Apache Shiro to the 2.0.x `jakarta` classifier artifacts and move the relocated codec and utility types,
+  and upgrade `buji-pac4j` and pac4j to their Jakarta EE versions.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -604,7 +611,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
 displayName: Update EclipseLink dependencies to 4.x
-description: Update EclipseLink Dependencies to 4.x.
+description: Upgrade the `org.eclipse.persistence` dependencies to EclipseLink 4.x, which implements Jakarta Persistence 3.1.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -616,7 +623,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
 displayName: Update Eclipse Yasson dependencies to 3.0.x
-description: Update Eclipse Yasson Dependencies to 3.0.x.
+description: Upgrade the `org.eclipse:yasson` dependency to 3.0.x, which implements Jakarta JSON Binding 3.0.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

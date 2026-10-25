@@ -18,7 +18,10 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8
 displayName: Migrate to Java EE 8
-description: These recipes help with the Migration to Java EE 8, flagging and updating deprecated methods.
+description: >-
+  Apply changes needed when migrating to Java EE 8, such as upgrading the Java Servlet dependency, replacing deprecated
+  Servlet methods, and moving Bean Validation configuration from Apache BVal to Hibernate Validator. Includes the Java EE 7
+  migration.
 tags:
   - javaee8
   - deprecated
@@ -34,7 +37,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.MigrateToServlet3x
 displayName: Update Java Servlet dependencies to 3.x
-description: Update Java EE Servlet Dependencies to 3.x.
+description: Replace the legacy `javax.servlet:servlet-api` dependency with `javax.servlet:javax.servlet-api` 3.x.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -59,11 +62,12 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee8.ApacheDefaultProvider
-displayName: Flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references
+displayName: Replace Apache BVal with Hibernate Validator in `validation.xml`
 description: >-
-  This recipe flags any `org.apache.bval.jsr*` (bval 1.1) and `org.apache.bval.jsr303*` (bval 1.0) package references in validation.xml deployment descriptors.
   Bean Validation 2.0 and later use the Hibernate Validator implementation instead of the
-  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1.
+  Apache BVal implementation which was used for Bean Validation 1.0 and 1.1. This recipe points the default provider,
+  message interpolator, traversable resolver and constraint validator factory in `validation.xml` deployment descriptors
+  at their Hibernate Validator implementations, and removes the parameter name provider.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

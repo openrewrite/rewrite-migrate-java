@@ -40,7 +40,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi4
 displayName: Update Jakarta Faces dependencies to 4.0.x
-description: Update Jakarta EE Java Faces Dependencies to 4.0.x.
+description: Upgrade the Jakarta Faces API and the `org.glassfish:jakarta.faces` implementation to 4.0.x.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

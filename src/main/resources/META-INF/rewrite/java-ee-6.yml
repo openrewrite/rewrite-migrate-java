@@ -18,7 +18,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee6
 displayName: Migrate to Java EE 6
-description: These recipes help with the Migration to Java EE 6, flagging and updating deprecated methods.
+description: Apply changes needed when migrating to Java EE 6, such as calling `HttpServletRequest.logout()` before `HttpSession.invalidate()`.
 tags:
   - javaee6
   - deprecated

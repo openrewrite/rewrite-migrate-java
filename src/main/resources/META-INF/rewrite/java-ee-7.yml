@@ -18,7 +18,10 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee7
 displayName: Migrate to Java EE 7
-description: These recipes help with the Migration to Java EE 7, flagging and updating deprecated methods.
+description: >-
+  Apply changes needed when migrating to Java EE 7, such as replacing the OpenJPA persistence provider with EclipseLink,
+  setting an explicit JPA shared cache mode, aligning the `beans.xml` schema location, and making `@Produces` fields in
+  session beans `static`. Includes the Java EE 6 migration.
 tags:
   - javaee7
   - deprecated
@@ -33,10 +36,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
-displayName: Removed OpenJPA providers in the persistence.xml file
+displayName: Replace the OpenJPA persistence provider with EclipseLink in `persistence.xml`
 description: >-
   When migrating to EclipseLink, using OpenJPA providers in EclipseLink results in runtime errors. To resolve these errors,
-  the recipe removes the flagged OpenJPA provider from the persistence.xml.
+  this recipe replaces the OpenJPA `PersistenceProviderImpl` in `persistence.xml` with the EclipseLink `PersistenceProvider`.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

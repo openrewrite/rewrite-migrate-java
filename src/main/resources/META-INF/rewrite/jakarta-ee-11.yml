@@ -18,7 +18,9 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaEE11
 displayName: Migrate to Jakarta EE 11
-description: These recipes help with the Migration to Jakarta EE 11, flagging and updating deprecated methods.
+description: >-
+  Migrate to Jakarta EE 11 by applying the Jakarta EE 10 migration, and then upgrading the Jakarta EE platform,
+  Jakarta Faces and Maven plugins to their Jakarta EE 11 versions.
 tags:
   - jakarta
 preconditions:
@@ -32,7 +34,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
 displayName: Update Jakarta EE platform dependencies to 11.0.x
-description: Update Jakarta EE Platform Dependencies to 11.0.x.
+description: Upgrade the `jakarta.platform` dependencies to 11.0.x, along with the Jakarta Annotations and Jakarta Server Pages APIs.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

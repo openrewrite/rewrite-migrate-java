@@ -1687,8 +1687,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
-displayName: Update RestLet to 2.6.0
-description: Update RestLet to 2.6.0.
+displayName: Update Restlet to 2.6.x
+description: >-
+  Upgrade Restlet dependencies to 2.6.x, moving the `org.restlet.jee` artifacts to the `org.restlet` group and removing
+  the `org.restlet.ext.httpclient` extension.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:

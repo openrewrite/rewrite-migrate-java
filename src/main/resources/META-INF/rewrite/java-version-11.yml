@@ -137,7 +137,7 @@ displayName: Add explicit JAX-WS dependencies
 description: >-
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
-  application can continue to use the `javax.xml.bind` namespace.
+  application can continue to use the `javax.xml.ws` namespace.
 tags:
   - javax
   - java11
