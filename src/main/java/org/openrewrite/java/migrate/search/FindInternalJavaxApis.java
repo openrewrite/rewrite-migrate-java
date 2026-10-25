@@ -49,7 +49,7 @@ public class FindInternalJavaxApis extends Recipe {
     private final String methodPattern;
 
     @Getter
-    final String displayName = "Find uses of internal javax APIs";
+    final String displayName = "Find uses of internal `javax` APIs";
 
     @Getter
     final String description = "The libraries that define these APIs will have to be migrated before any of the repositories that use them.";

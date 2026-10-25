@@ -39,7 +39,7 @@ public class MigrateCollectionsUnmodifiableList extends Recipe {
     final String displayName = "Prefer `List.of(..)`";
 
     @Getter
-    final String description = "Prefer `List.Of(..)` instead of using `unmodifiableList(java.util.Arrays asList(<args>))` in Java 9 or higher.";
+    final String description = "Prefer `List.of(..)` instead of using `Collections.unmodifiableList(Arrays.asList(..))` in Java 9 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -43,8 +43,8 @@ public class UpgradeJavaVersion extends Recipe {
     String displayName = "Upgrade Java version";
 
     String description = "Upgrade build plugin configuration to use the specified Java version. " +
-            "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of gradle projects, " +
-            "or maven-compiler-plugin target version and related settings. " +
+            "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of Gradle projects, " +
+            "or `maven-compiler-plugin` target version and related settings. " +
             "Will not downgrade if the version is newer than the specified version.";
 
     @Override

@@ -39,7 +39,7 @@ public class AddTableGenerator extends Recipe {
     private static final AnnotationMatcher GENERATED_VALUE = new AnnotationMatcher("@javax.persistence.GeneratedValue");
     private static final AnnotationMatcher GENERATED_VALUE_AUTO = new AnnotationMatcher("@javax.persistence.GeneratedValue(strategy=javax.persistence.GenerationType.AUTO)");
 
-    String displayName = "Attributes with automatically generated values require configuration";
+    String displayName = "Add a `@TableGenerator` to automatically generated `@GeneratedValue` attributes";
 
     String description = "Adds missing `@TableGenerator` annotation and updates the `@GeneratedValue` annotation values when it uses automatically generated values.";
 

@@ -52,9 +52,9 @@ public class LombokValueToRecord extends ScanningRecipe<Map<String, Set<String>>
     @Nullable
     Boolean useExactToString;
 
-    String displayName = "Convert `@lombok.Value` class to Record";
+    String displayName = "Convert `@lombok.Value` class to record";
 
-    String description = "Convert Lombok `@Value` annotated classes to standard Java Records.";
+    String description = "Convert Lombok `@Value` annotated classes to standard Java records.";
 
     Set<String> tags = singleton( "lombok" );
 

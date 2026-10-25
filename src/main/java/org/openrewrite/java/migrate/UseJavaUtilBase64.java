@@ -42,7 +42,7 @@ public class UseJavaUtilBase64 extends Recipe {
     private final String sunPackage;
 
     @Getter
-    @Option(displayName = "Use Mime Coder", description = "Use `Base64.getMimeEncoder()/getMimeDecoder()` instead of `Base64.getEncoder()/getDecoder()`.", required = false, example = "false")
+    @Option(displayName = "Use MIME coder", description = "Use `Base64.getMimeEncoder()`/`getMimeDecoder()` instead of `Base64.getEncoder()`/`getDecoder()`.", required = false, example = "false")
     boolean useMimeCoder;
 
     @Getter

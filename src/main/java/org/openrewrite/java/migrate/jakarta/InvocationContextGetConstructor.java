@@ -32,10 +32,10 @@ import org.openrewrite.java.tree.TypeUtils;
 
 public class InvocationContextGetConstructor extends Recipe {
     @Getter
-    final String displayName = "Complete InvocationContext decorators";
+    final String displayName = "Complete `InvocationContext` decorators";
 
     @Getter
-    final String description = "Delegate getConstructor() when a legacy InvocationContext wrapper delegates getMethod().";
+    final String description = "Delegate `getConstructor()` when a legacy `InvocationContext` wrapper delegates `getMethod()`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -38,7 +38,7 @@ public class AddStaticVariableOnProducerSessionBean extends ScanningRecipe<Set<S
     private static final XPathMatcher EJB_PATH = new XPathMatcher("ejb-jar/enterprise-beans/session");
 
     @Getter
-    final String displayName = "Adds `static` modifier to `@Produces` fields that are in session beans";
+    final String displayName = "Add `static` modifier to `@Produces` fields in session beans";
 
     @Getter
     final String description = "Ensures that the fields annotated with `@Produces` which is inside the session bean (`@Stateless`, `@Stateful`, or `@Singleton`) are declared `static`.";

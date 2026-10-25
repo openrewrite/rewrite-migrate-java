@@ -38,8 +38,9 @@ public class AboutJavaVersion extends Recipe {
     transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
     transient Set<ProjectSourceSet> seenSourceSets = new HashSet<>();
 
-    @Option(required = false,
+    @Option(displayName = "When uses type",
             description = "Only mark the Java version when this type is in use.",
+            required = false,
             example = "lombok.val")
     @Nullable
     String whenUsesType;

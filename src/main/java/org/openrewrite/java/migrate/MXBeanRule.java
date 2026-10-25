@@ -44,7 +44,7 @@ import static org.openrewrite.staticanalysis.ModifierOrder.sortModifiers;
 @Value
 public class MXBeanRule extends Recipe {
 
-    String displayName = "MBean and MXBean interfaces must be public";
+    String displayName = "Make MBean and MXBean interfaces public";
 
     String description = "Sets visibility of MBean and MXBean interfaces to public.";
 

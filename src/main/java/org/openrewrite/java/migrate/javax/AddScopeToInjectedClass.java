@@ -37,7 +37,7 @@ public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     final String displayName = "Add scope annotation to injected classes";
 
     @Getter
-    final String description = "Finds member variables annotated with `@Inject' and applies `@Dependent` scope annotation to the variable's type.";
+    final String description = "Finds member variables annotated with `@Inject` and applies `@Dependent` scope annotation to the variable's type.";
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {

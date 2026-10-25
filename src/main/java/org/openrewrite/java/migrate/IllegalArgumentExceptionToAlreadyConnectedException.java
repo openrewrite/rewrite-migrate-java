@@ -38,7 +38,7 @@ public class IllegalArgumentExceptionToAlreadyConnectedException extends Recipe 
     final String displayName = "Replace `IllegalArgumentException` with `AlreadyConnectedException` in `DatagramChannel.send()` method";
 
     @Getter
-    final String description = "Replace `IllegalArgumentException` with `AlreadyConnectedException` for DatagramChannel.send() to ensure compatibility with Java 11+.";
+    final String description = "Replace `IllegalArgumentException` with `AlreadyConnectedException` for `DatagramChannel.send()` to ensure compatibility with Java 11+.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

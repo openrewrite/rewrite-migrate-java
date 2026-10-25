@@ -41,7 +41,7 @@ public class MigrateCollectionsUnmodifiableSet extends Recipe {
     final String displayName = "Prefer `Set.of(..)`";
 
     @Getter
-    final String description = "Prefer `Set.Of(..)` instead of using `unmodifiableSet(java.util.Set(java.util.Arrays asList(<args>)))` in Java 9 or higher.";
+    final String description = "Prefer `Set.of(..)` instead of using `Collections.unmodifiableSet(new HashSet<>(Arrays.asList(..)))` in Java 9 or higher.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

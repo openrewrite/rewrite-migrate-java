@@ -34,7 +34,7 @@ public class UseJoinColumnForMapping extends Recipe {
     private static final String COLUMN = "javax.persistence.Column";
 
     @Getter
-    final String displayName = "`@JoinColumn` annotations must be used with relationship mappings";
+    final String displayName = "Replace `@Column` with `@JoinColumn` on relationship mappings";
 
     @Getter
     final String description = "In OpenJPA, when a relationship attribute has either a `@OneToOne` or a `@ManyToOne` annotation with a " +

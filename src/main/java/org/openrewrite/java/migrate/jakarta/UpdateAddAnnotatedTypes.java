@@ -34,7 +34,7 @@ public class UpdateAddAnnotatedTypes extends Recipe {
     final String displayName = "Replace `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` with `addAnnotatedType(AnnotatedType, String)`";
 
     @Getter
-    final String description = "`BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` is deprecated in CDI 1.1. It is Replaced by `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String)`.";
+    final String description = "`BeforeBeanDiscovery.addAnnotatedType(AnnotatedType)` is deprecated in CDI 1.1. It is replaced by `BeforeBeanDiscovery.addAnnotatedType(AnnotatedType, String)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

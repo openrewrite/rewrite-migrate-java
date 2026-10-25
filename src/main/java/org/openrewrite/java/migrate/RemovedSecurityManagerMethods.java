@@ -33,7 +33,7 @@ public class RemovedSecurityManagerMethods extends Recipe {
     private static final MethodMatcher METHOD_PATTERN_WINDOW = new MethodMatcher("java.lang.SecurityManager checkTopLevelWindow(..)", false);
 
     @Getter
-    final String displayName = "Replace deprecated methods in`SecurityManager`";
+    final String displayName = "Replace deprecated methods in `SecurityManager`";
 
     @Getter
     final String description = "Replace `SecurityManager` methods `checkAwtEventQueueAccess()`, `checkSystemClipboardAccess()`, " +

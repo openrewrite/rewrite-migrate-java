@@ -40,7 +40,7 @@ public class UpdateManagedBeanToNamed extends Recipe {
 
     String displayName = "Update Faces `@ManagedBean` to use CDI `@Named`";
 
-    String description = "Faces ManagedBean was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
+    String description = "Faces `@ManagedBean` was deprecated in JSF 2.3 (EE8) and removed in Jakarta Faces 4.0 (EE10). " +
                 "Replace `@ManagedBean` with `@Named` for CDI-based bean management.";
 
     Set<String> tags = new HashSet<>( Arrays.asList( "jakarta", "faces", "jsf" ) );

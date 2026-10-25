@@ -63,9 +63,9 @@ public class JREThrowableFinalMethods extends Recipe {
     final String displayName = "Rename final method declarations `getSuppressed()` and `addSuppressed(Throwable exception)` in classes that extend `Throwable`";
 
     @Getter
-    final String description = "The recipe renames  `getSuppressed()` and `addSuppressed(Throwable exception)` methods  in classes " +
+    final String description = "The recipe renames `getSuppressed()` and `addSuppressed(Throwable exception)` methods in classes " +
             "that extend `java.lang.Throwable` to `myGetSuppressed` and `myAddSuppressed(Throwable)`. " +
-            "These methods were added to Throwable in Java 7 and are marked final which cannot be overridden.";
+            "These methods were added to `Throwable` in Java 7 and are marked final which cannot be overridden.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

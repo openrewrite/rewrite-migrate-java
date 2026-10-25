@@ -30,11 +30,11 @@ import org.openrewrite.xml.tree.Xml;
 @RequiredArgsConstructor
 public class AddJDeprScanPlugin extends Recipe {
 
-    @Option(displayName = "release", description = "Specifies the Java SE release that provides the set of deprecated APIs for scanning.", required = false, example = "11")
+    @Option(displayName = "Release", description = "Specifies the Java SE release that provides the set of deprecated APIs for scanning.", required = false, example = "11")
     private final String release;
 
     @Getter
-    final String displayName = "Add `JDeprScan` Maven Plug-in";
+    final String displayName = "Add `JDeprScan` Maven plugin";
 
     @Getter
     final String description = "Add the `JDeprScan` Maven plugin to scan class files for uses of deprecated APIs.";

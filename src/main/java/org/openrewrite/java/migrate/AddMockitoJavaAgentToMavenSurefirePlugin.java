@@ -61,7 +61,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static final String CONFIGURATION_TAG_TEMPLATE = "<configuration>\n<!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
 
     @Getter
-    final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
+    final String displayName = "Add Mockito Java agent to Maven Surefire plugin";
 
     @Getter
     final String description = "Mockito attaches its Byte Buddy agent to the running JVM at test time, which the JDK has " +

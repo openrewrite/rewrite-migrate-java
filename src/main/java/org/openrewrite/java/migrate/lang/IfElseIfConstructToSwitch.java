@@ -50,7 +50,7 @@ import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class IfElseIfConstructToSwitch extends Recipe {
-    String displayName = "If-else-if-else to switch";
+    String displayName = "Replace if-else-if-else with switch";
 
     String description = "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
                 "all conditions must be on the same variable and there must be at least three cases.";

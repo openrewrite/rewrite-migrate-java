@@ -39,7 +39,7 @@ public class RetainJaxbApiForArquillianRecorder extends ScanningRecipe<Set<Strin
     private static final VersionComparator JAKARTA_API = Objects.requireNonNull(Semver.validate("[3,)", null).getValue());
     String displayName = "Retain the JAXB 2 API for Arquillian Recorder 1.x";
     String description = "Retain the legacy JAXB API in Maven modules using Arquillian Recorder 1.x binaries, " +
-                         "which still reference javax.xml.bind classes after the application's Jakarta migration.";
+                         "which still reference `javax.xml.bind` classes after the application's Jakarta migration.";
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {
