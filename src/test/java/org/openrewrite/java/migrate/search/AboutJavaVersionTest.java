@@ -66,6 +66,29 @@ class AboutJavaVersionTest implements RewriteTest {
     }
 
     @Test
+    void sourceCompatibilityMajorVersionDiffersFromTarget() {
+        var jv = new JavaVersion(randomId(), "me", "me", "11", "17");
+        rewriteRun(
+          spec -> spec.recipe(new AboutJavaVersion(null))
+            .dataTable(JavaVersionRow.class, rows ->
+              assertThat(rows).containsExactly(new JavaVersionRow("", "", "me", "me", "11", "11", "17"))),
+          java(
+            //language=java
+            """
+              class Test {
+              }
+              """,
+            //language=java
+            """
+              /*~~(Java version: 11)~~>*/class Test {
+              }
+              """,
+            spec -> spec.markers(jv)
+          )
+        );
+    }
+
+    @Test
     void reusedRecipeInstanceReportsEachRun() {
         var recipe = new AboutJavaVersion(null);
         var jv = new JavaVersion(randomId(), "me", "me", "17", "17");

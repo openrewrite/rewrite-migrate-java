@@ -80,7 +80,7 @@ public class AboutJavaVersion extends ScanningRecipe<Set<AboutJavaVersion.Projec
                                         version.getCreatedBy(),
                                         version.getVmVendor(),
                                         version.getSourceCompatibility(),
-                                        Integer.toString(version.getMajorReleaseVersion()),
+                                        Integer.toString(version.getMajorVersion()),
                                         version.getTargetCompatibility()
                                 ));
                             }
