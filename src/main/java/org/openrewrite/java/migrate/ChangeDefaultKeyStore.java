@@ -26,7 +26,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 
 import static org.openrewrite.Tree.randomId;
@@ -54,7 +53,8 @@ public class ChangeDefaultKeyStore extends Recipe {
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (KEYSTORE_METHOD_REF.matches(method)) {
-                            return new J.Literal(randomId(), Space.EMPTY, Markers.EMPTY, "jks", "\"jks\"", null, JavaType.Primitive.String);
+                            maybeRemoveImport("java.security.KeyStore");
+                            return new J.Literal(randomId(), method.getPrefix(), Markers.EMPTY, "jks", "\"jks\"", null, JavaType.Primitive.String);
                         }
                         return super.visitMethodInvocation(method, ctx);
                     }

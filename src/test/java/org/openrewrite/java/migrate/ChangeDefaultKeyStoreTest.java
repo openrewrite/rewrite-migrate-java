@@ -86,6 +86,31 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
     }
 
     @Test
+    void keepPrefixAndRemoveUnusedImport() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.security.KeyStore;
+
+              class Foo {
+                  String type() {
+                      return KeyStore.getDefaultType();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  String type() {
+                      return "jks";
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void keepExplicitType() {
         rewriteRun(
           //language=java
