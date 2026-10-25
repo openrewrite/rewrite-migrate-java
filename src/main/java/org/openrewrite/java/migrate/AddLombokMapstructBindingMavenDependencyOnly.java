@@ -58,10 +58,14 @@ public class AddLombokMapstructBindingMavenDependencyOnly extends Recipe {
             private boolean hasBindingProcessor(ResolvedPom pom, List<Plugin> plugins) {
                 for (Plugin plugin : plugins) {
                     if (!"org.apache.maven.plugins".equals(plugin.getGroupId()) ||
-                            !"maven-compiler-plugin".equals(plugin.getArtifactId()) || plugin.getConfiguration() == null) {
+                            !"maven-compiler-plugin".equals(plugin.getArtifactId())) {
                         continue;
                     }
-                    JsonNode paths = plugin.getConfiguration().path("annotationProcessorPaths").path("path");
+                    JsonNode configuration = plugin.getConfiguration();
+                    if (configuration == null) {
+                        continue;
+                    }
+                    JsonNode paths = configuration.path("annotationProcessorPaths").path("path");
                     if (paths.isArray()) {
                         for (JsonNode path : paths) {
                             if (isBinding(pom, path)) {
