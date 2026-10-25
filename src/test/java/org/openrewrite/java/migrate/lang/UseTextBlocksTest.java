@@ -925,7 +925,6 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void shouldNotUpdateKotlinCode() {
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(0),
           kotlin(
             """
               const val MULTI_LINE_MESSAGE =
