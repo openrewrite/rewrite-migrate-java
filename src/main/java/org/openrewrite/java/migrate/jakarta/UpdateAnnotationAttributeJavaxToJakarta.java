@@ -40,8 +40,7 @@ public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
     @Option(
             displayName = "Annotation signature",
             description = "An annotation signature to match.",
-            example = "@jakarta.jms..*",
-            required = false
+            example = "@jakarta.jms..*"
     )
     String signature;
 
