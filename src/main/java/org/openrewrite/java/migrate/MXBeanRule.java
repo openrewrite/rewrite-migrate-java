@@ -21,6 +21,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
@@ -32,7 +33,6 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,11 +101,11 @@ public class MXBeanRule extends Recipe {
                 return cd;
             }
 
-            List<Modifier> modifiers = new ArrayList<>(cd.getModifiers());
-            modifiers.removeIf(modifier -> modifier.getType() == Modifier.Type.Private ||
-                    modifier.getType() == Modifier.Type.Protected ||
-                    modifier.getType() == Modifier.Type.Abstract);
-            modifiers.add(new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
+            List<Modifier> modifiers = ListUtils.concat(
+                    ListUtils.filter(cd.getModifiers(), modifier -> modifier.getType() != Modifier.Type.Private &&
+                            modifier.getType() != Modifier.Type.Protected &&
+                            modifier.getType() != Modifier.Type.Abstract),
+                    new J.Modifier(randomId(), Space.EMPTY, Markers.EMPTY, null, Modifier.Type.Public, emptyList()));
             J.ClassDeclaration updated = cd.withModifiers(sortModifiers(modifiers));
             return maybeAutoFormat(cd, updated, updated.getName(), ctx, getCursor().getParentTreeCursor());
         }
