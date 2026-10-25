@@ -62,11 +62,7 @@ public class UpgradeJavaVersion extends Recipe {
         );
     }
 
-    /**
-     * This recipe only updates markers, so it does not correspond to human manual effort.
-     *
-     * @return Zero estimated time.
-     */
+    // Only updates markers, which does not correspond to human manual effort
     Duration estimatedEffortPerOccurrence = Duration.ofMinutes(0);
 
     @Override
