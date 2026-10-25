@@ -97,7 +97,7 @@ class AddLombokMapstructBindingTest implements RewriteTest {
               <groupId>com.example</groupId>
               <artifactId>example-service</artifactId>
               <version>1.0.0</version>
-            
+
               <dependencies>
                 <dependency>
                   <groupId>org.projectlombok</groupId>
@@ -111,7 +111,7 @@ class AddLombokMapstructBindingTest implements RewriteTest {
                   <version>1.6.3</version>
                 </dependency>
               </dependencies>
-            
+
               <build>
                 <plugins>
                   <plugin>
