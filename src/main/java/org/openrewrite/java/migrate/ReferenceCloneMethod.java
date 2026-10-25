@@ -66,7 +66,7 @@ public class ReferenceCloneMethod extends Recipe {
                         super.visitMethodInvocation(method, ctx);
                         if (REFERENCE_CLONE.matches(method) && method.getSelect() instanceof J.Identifier) {
                             J.Identifier methodRef = (J.Identifier) method.getSelect();
-                            String template = "new " + methodRef.getType().toString() + "(#{any()}, new ReferenceQueue<>())";
+                            String template = "new " + methodRef.getType().toString() + "(#{any()}.get(), new ReferenceQueue<>())";
                             getCursor().putMessageOnFirstEnclosing(J.TypeCast.class, REFERENCE_CLONE_REPLACED, true);
                             maybeAddImport("java.lang.ref.ReferenceQueue");
                             J replacement = JavaTemplate.builder(template)
