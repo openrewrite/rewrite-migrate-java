@@ -61,6 +61,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -99,6 +101,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -123,6 +127,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       int[] values = {1, 2};
@@ -170,6 +176,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   <T extends CharSequence> T value() { return null; }
 
@@ -257,6 +265,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
             """
               import static java.lang.System.out;
 
+              import java.io.IO;
+
               class Example {
                   <T extends CharSequence> T value() { return null; }
 
@@ -286,6 +296,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               interface TreeNode {}
               interface Parser { <T extends TreeNode> T readValueAsTree(); }
 
@@ -333,7 +345,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
         J.CompilationUnit result = (J.CompilationUnit) new ReplaceSystemOutWithIOPrint()
           .getVisitor().visit(unattributed, ctx);
         assertThat(result).isNotNull();
-        assertThat(result.printAll()).isEqualTo(unattributed.printAll()
+        assertThat(result.printAll()).isEqualTo("import java.io.IO;\n\n" + unattributed.printAll()
           .replace("System.out.println(\"plain\")", "IO.println(\"plain\")"));
     }
 
@@ -353,6 +365,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   static class Box<T> { T value; }
 
@@ -383,6 +397,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   static class Box<T> { T value; String plain; }
 
@@ -424,7 +440,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
         J.CompilationUnit result = (J.CompilationUnit) new ReplaceSystemOutWithIOPrint()
           .getVisitor().visit(unattributed, ctx);
         assertThat(result).isNotNull();
-        assertThat(result.printAll()).isEqualTo(unattributed.printAll()
+        assertThat(result.printAll()).isEqualTo("import java.io.IO;\n\n" + unattributed.printAll()
           .replace("System.out.println(java.lang.String.valueOf(123))", "IO.println(java.lang.String.valueOf(123))")
           .replace("System.out.println(String.class.getSimpleName())", "IO.println(String.class.getSimpleName())"));
     }
@@ -462,7 +478,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
         J.CompilationUnit result = (J.CompilationUnit) new ReplaceSystemOutWithIOPrint()
           .getVisitor().visit(unattributed, ctx);
         assertThat(result).isNotNull();
-        assertThat(result.printAll()).isEqualTo(unattributed.printAll()
+        assertThat(result.printAll()).isEqualTo("import java.io.IO;\n\n" + unattributed.printAll()
           .replace("System.out.println(\"plain\")", "IO.println(\"plain\")"));
     }
 
@@ -480,6 +496,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println("Hello");
@@ -503,6 +521,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       String message = "Hello World";
@@ -526,6 +546,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.println();
@@ -551,6 +573,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       IO.print("Hello");
@@ -579,6 +603,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               }
               """,
             """
+              import java.io.IO;
+
               class Example {
                   void test() {
                       String name = "John";
@@ -628,7 +654,7 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
-    void doesNotAddImportForRegularClassWithPackage() {
+    void addsImportForClassWithPackage() {
         rewriteRun(
           java(
             """
@@ -642,6 +668,8 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
               """,
             """
               package com.helloworld;
+
+              import java.io.IO;
 
               public class Main {
                   public void greet() {

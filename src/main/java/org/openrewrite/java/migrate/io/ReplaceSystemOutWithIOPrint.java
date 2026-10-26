@@ -61,6 +61,7 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         if (!isSystemOutMethod(m) || hasGenericArgument(m.getArguments().get(0))) {
                             return m;
                         }
+                        maybeAddImport("java.io.IO");
                         String methodName = m.getName().getSimpleName();
                         return m.getArguments().get(0) instanceof J.Empty ?
                                 JavaTemplate.apply( "IO.#{}()", getCursor(), m.getCoordinates().replace(), methodName ) :
