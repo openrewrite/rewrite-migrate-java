@@ -412,4 +412,24 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void leaveGuavaWhenJavaPackageNameIsShadowed() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class PrefixCase {
+                  static Object java;
+
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
