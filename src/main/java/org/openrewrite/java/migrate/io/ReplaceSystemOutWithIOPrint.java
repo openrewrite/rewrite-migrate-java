@@ -64,7 +64,7 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         String methodName = m.getName().getSimpleName();
                         return m.getArguments().get(0) instanceof J.Empty ?
                                 JavaTemplate.apply( "IO.#{}()", getCursor(), m.getCoordinates().replace(), methodName ) :
-                                JavaTemplate.apply( "IO.#{}(#{any()})", getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get( 0 ) );
+                                JavaTemplate.apply( "IO.#{}(#{any(java.lang.Object)})", getCursor(), m.getCoordinates().replace(), methodName, m.getArguments().get( 0 ) );
                     }
 
                     private boolean hasGenericArgument(Expression argument) {
