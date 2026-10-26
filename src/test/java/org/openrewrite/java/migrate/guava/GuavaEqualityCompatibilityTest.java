@@ -160,4 +160,34 @@ class GuavaEqualityCompatibilityTest implements RewriteTest {
             """
         ));
     }
+
+    @Test
+    void retainGuavaWhenOrdinaryWildcardImportsJavaType() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          java(
+            """
+              package application;
+
+              public class java {
+              }
+              """
+          ),
+          java(
+            """
+              package example;
+
+              import application.*;
+
+              import static com.google.common.base.Objects.equal;
+
+              class WildcardPrefix {
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
