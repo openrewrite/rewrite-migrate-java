@@ -59,8 +59,6 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
-
               class Value {
                   Object left;
                   Object right;
@@ -71,7 +69,7 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
                           return false;
                       }
                       Value that = (Value) other;
-                      return Objects.equals(left, that.left) && Objects.equals(right, that.right);
+                      return java.util.Objects.equals(left, that.left) && java.util.Objects.equals(right, that.right);
                   }
               }
               """
@@ -104,8 +102,6 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
               }
               """,
             """
-              import java.util.Objects;
-
               class Comparison {
                   final StringBuilder trace = new StringBuilder();
 
@@ -119,7 +115,7 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
                   }
 
                   boolean compare() {
-                      return Objects.equals(argument("L"), argument("R"));
+                      return java.util.Objects.equals(argument("L"), argument("R"));
                   }
               }
               """
@@ -327,6 +323,89 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
 
                   boolean guavaComparison(Object left, Object right) {
                       return Objects.equals(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void qualifyWhenAParameterIsNamedObjectsAndKeepJavaUtilOnlySource() {
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class Comparison {
+                  static class LocalObjects {
+                      static boolean equals(Object left, Object right) {
+                          return false;
+                      }
+                  }
+
+                  boolean compare(Object left, Object right, LocalObjects Objects) {
+                      return equal(left, right);
+                  }
+              }
+              """,
+            """
+              class Comparison {
+                  static class LocalObjects {
+                      static boolean equals(Object left, Object right) {
+                          return false;
+                      }
+                  }
+
+                  boolean compare(Object left, Object right, LocalObjects Objects) {
+                      return java.util.Objects.equals(left, right);
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import java.util.Objects;
+
+              class JavaUtilOnlyComparison {
+                  boolean compare(Object left, Object right) {
+                      return Objects.equals(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void qualifyWhenANestedTypeIsNamedObjects() {
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class Comparison {
+                  static class Objects {
+                      static boolean equals(Object left, Object right) {
+                          return false;
+                      }
+                  }
+
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """,
+            """
+              class Comparison {
+                  static class Objects {
+                      static boolean equals(Object left, Object right) {
+                          return false;
+                      }
+                  }
+
+                  boolean compare(Object left, Object right) {
+                      return java.util.Objects.equals(left, right);
                   }
               }
               """
