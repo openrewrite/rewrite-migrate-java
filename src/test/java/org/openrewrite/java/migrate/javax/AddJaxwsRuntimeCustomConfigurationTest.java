@@ -136,6 +136,26 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
     }
 
     @Test
+    void sharedRuntimeApiBucketDoesNotPolluteCoveredMainRuntime() {
+        rewriteRun(buildGradle("""
+          apply plugin: 'java'
+          repositories { mavenCentral() }
+          sourceSets { integrationTest {} }
+          configurations { sharedApi }
+          configurations.implementation.extendsFrom(configurations.sharedApi)
+          configurations.integrationTestRuntimeOnly.extendsFrom(configurations.sharedApi)
+          dependencies {
+              sharedApi 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
+              implementation 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'
+          }
+          """, spec -> spec.after(after -> {
+            assertThat(after).containsPattern("(?m)^\\s*integrationTest(?:Implementation|RuntimeOnly) ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
+            assertThat(after).doesNotContain("sharedApi \"com.sun.xml.ws", "sharedApi 'com.sun.xml.ws", "implementation \"com.sun.xml.ws", "testImplementation \"com.sun.xml.ws");
+            return after;
+        })));
+    }
+
+    @Test
     void customApiInAppliedScript() {
         rewriteRun(
           buildGradle("""

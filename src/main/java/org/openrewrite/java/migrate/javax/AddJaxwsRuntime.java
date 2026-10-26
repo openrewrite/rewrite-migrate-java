@@ -169,8 +169,8 @@ public class AddJaxwsRuntime extends Recipe {
                                         target.getName().length() - "RuntimeClasspath".length()) + "Implementation";
                                 GradleDependencyConfiguration implementation = current.getConfiguration(implementationName);
                                 if (implementation != null && implementation.isCanBeDeclared() &&
-                                        (implementation.getName().equals(api.getName()) || implementation.allExtendsFrom().stream()
-                                                .anyMatch(parent -> parent.getName().equals(originalApi.getName())))) {
+                                        currentTarget.allExtendsFrom().stream()
+                                                .anyMatch(parent -> parent.getName().equals(implementationName))) {
                                     // Avoid adding Metro to a shared API bucket whose other consumers already have CXF.
                                     configuration = implementationName;
                                 }
