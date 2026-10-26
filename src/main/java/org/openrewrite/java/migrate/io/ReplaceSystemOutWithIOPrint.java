@@ -88,6 +88,17 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                                      ((Expression) tree).getType() instanceof JavaType.Intersection)) {
                                     found[0] = true;
                                 }
+                                if (tree instanceof J.Identifier) {
+                                    JavaType.Variable field = ((J.Identifier) tree).getFieldType();
+                                    // A parameterized field can also have an applied String type
+                                    // while its erased storage still requires a generic checkcast.
+                                    if (field != null &&
+                                        (field.getType() == null || field.getType() instanceof JavaType.Unknown ||
+                                         field.getType() instanceof JavaType.GenericTypeVariable ||
+                                         field.getType() instanceof JavaType.Intersection)) {
+                                        found[0] = true;
+                                    }
+                                }
                                 if (tree instanceof J.MethodInvocation) {
                                     JavaType.Method method = ((J.MethodInvocation) tree).getMethodType();
                                     // Applied method types can erase the original type parameters and

@@ -312,6 +312,66 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void retainGenericFieldLoads() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  static class Box<T> { T value; }
+
+                  void test(Box<String> box) {
+                      System.out.print(box.value);
+                      System.out.println(box.value);
+                      System.out.println("plain");
+                  }
+              }
+              """,
+            """
+              class Example {
+                  static class Box<T> { T value; }
+
+                  void test(Box<String> box) {
+                      System.out.print(box.value);
+                      System.out.println(box.value);
+                      IO.println("plain");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void migrateExplicitGenericFieldCastsAndOrdinaryFields() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  static class Box<T> { T value; String plain; }
+
+                  void test(Box<String> box) {
+                      System.out.print((Object) box.value);
+                      System.out.println((String) box.value);
+                      System.out.println(box.plain);
+                  }
+              }
+              """,
+            """
+              class Example {
+                  static class Box<T> { T value; String plain; }
+
+                  void test(Box<String> box) {
+                      IO.print((Object) box.value);
+                      IO.println((String) box.value);
+                      IO.println(box.plain);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void retainGenericReturnWhenFormalNamesAreUnavailable() {
         ExecutionContext ctx = new InMemoryExecutionContext(t -> { throw new AssertionError(t); });
         J.CompilationUnit parsed = (J.CompilationUnit) JavaParser.fromJavaVersion().build().parse(ctx,
