@@ -119,7 +119,7 @@ class GuavaEqualityCompatibilityTest implements RewriteTest {
             """,
           """
             // Collection API
-            import java.util.List;
+            import java.util.*;
 
             import static java.util.Objects.requireNonNull;
 
