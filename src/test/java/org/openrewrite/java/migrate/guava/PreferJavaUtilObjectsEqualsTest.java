@@ -432,4 +432,96 @@ class PreferJavaUtilObjectsEqualsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void retainCuWhenJavaParameterShadowsExistingJdkUse() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          java(
+            """
+              import java.util.Objects;
+
+              import static com.google.common.base.Objects.equal;
+
+              class ParameterPrefix {
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+
+                  boolean existingJavaComparison(Object java, Object left, Object right) {
+                      return Objects.equals(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void retainCuWhenJavaPrefixIsAType() {
+        rewriteRun(
+          spec -> spec.expectedCyclesThatMakeChanges(0),
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class NestedTypePrefix {
+                  static class java {
+                  }
+
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class LocalTypePrefix {
+                  boolean compare(Object left, Object right) {
+                      class java {
+                      }
+                      return equal(left, right);
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              import static com.google.common.base.Objects.equal;
+
+              class GenericTypePrefix<java> {
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """
+          ),
+          java(
+            """
+              package application;
+
+              public class java {
+              }
+              """
+          ),
+          java(
+            """
+              package example;
+
+              import application.java;
+
+              import static com.google.common.base.Objects.equal;
+
+              class ImportedTypePrefix {
+                  boolean compare(Object left, Object right) {
+                      return equal(left, right);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
