@@ -16,7 +16,9 @@
 package org.openrewrite.java.migrate.util;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -44,6 +46,17 @@ public class UseMapOf extends Recipe {
 
     private static final String PROSE_REWRITES_KEY = "use-map-of.prose-rewrites";
 
+    private static final int DEFAULT_MAX_ENTRIES = 50;
+
+    @Option(displayName = "Maximum entries",
+            description = "The maximum number of entries a map may have to be rewritten to `Map.of(..)` or " +
+                    "`Map.ofEntries(..)`. Maps with more entries are left unchanged, because javac's generic " +
+                    "type inference on the resulting varargs call degrades badly. The default value is 50.",
+            example = "50",
+            required = false)
+    @Nullable
+    Integer maxEntries;
+
     @Getter
     final String displayName = "Prefer `Map.of(..)`";
 
@@ -55,6 +68,18 @@ public class UseMapOf extends Recipe {
             "- A `new HashMap<>()` declaration followed by a chain of `target.put(k, v)` statements, " +
             "which is collapsed to `new HashMap<>(Map.of(..))` (or `new HashMap<>(Map.ofEntries(..))`) — " +
             "preserving the mutable `HashMap`.";
+
+    public UseMapOf() {
+        this(null);
+    }
+
+    public UseMapOf(@Nullable Integer maxEntries) {
+        this.maxEntries = maxEntries;
+    }
+
+    private int effectiveMaxEntries() {
+        return maxEntries == null ? DEFAULT_MAX_ENTRIES : maxEntries;
+    }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -115,6 +140,11 @@ public class UseMapOf extends Recipe {
                                     return n;
                                 }
                                 List<Statement> putStatements = ((J.Block) statement).getStatements();
+                                if (putStatements.size() > effectiveMaxEntries()) {
+                                    // Larger maps are left unchanged: the generated `Map.ofEntries(..)` varargs
+                                    // call makes javac's generic type inference degrade badly (issue #1310).
+                                    return n;
+                                }
                                 List<Expression> args = new ArrayList<>();
                                 boolean useEntries = putStatements.size() > 10;
                                 StringJoiner template = useEntries ?
@@ -275,7 +305,7 @@ public class UseMapOf extends Recipe {
                                 absorbedHere.add(next.getId());
                                 j++;
                             }
-                            if (puts.size() >= 2 && initializer != null) {
+                            if (puts.size() >= 2 && puts.size() <= effectiveMaxEntries() && initializer != null) {
                                 rewrites.put(initializer.getId(), puts);
                                 absorbedPutIds.addAll(absorbedHere);
                                 i = j;
