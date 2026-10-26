@@ -20,6 +20,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.Issue;
+import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
+import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.xml.tree.Xml;
@@ -135,6 +138,21 @@ class AddJaxwsRuntimeMavenTest implements RewriteTest {
         String element = "pom".equals(artifactKind) ? "type" : "classifier";
         provider = provider.replace("<version>3.5.5</version>", "<version>3.5.5</version>\n            <" + element + ">" + artifactKind + "</" + element + ">");
         rewriteRun(pomXml(pom(api("compile") + provider), spec -> spec.after(after -> metro(after, "provided"))));
+    }
+
+    @Test
+    void emptyClassifierIsTheDefaultRuntimeJar() {
+        String provider = cxf("compile", "3.5.5").replace("<scope>compile</scope>",
+          "<scope>compile</scope><classifier></classifier>");
+        rewriteRun(pomXml(pom(api("compile") + provider), spec -> spec.beforeRecipe(document -> {
+            MavenResolutionResult model = document.getMarkers().findFirst(MavenResolutionResult.class).orElseThrow();
+            ResolvedDependency resolved = model.getDependencies().get(Scope.Compile).stream()
+              .filter(d -> "org.apache.cxf".equals(d.getGroupId()) && "cxf-rt-frontend-jaxws".equals(d.getArtifactId()))
+              .findFirst().orElseThrow();
+            assertThat(resolved.getClassifier()).isEmpty();
+            assertThat(resolved.getType()).isEqualTo("jar");
+            assertThat(resolved.getVersion()).isEqualTo("3.5.5");
+        })));
     }
 
     @Test

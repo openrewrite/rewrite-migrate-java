@@ -317,7 +317,7 @@ public class AddJaxwsRuntime extends Recipe {
     }
 
     private static boolean isJavaxProvider(@Nullable ResolvedDependency dependency) {
-        if (dependency == null || dependency.getClassifier() != null ||
+        if (dependency == null || dependency.getClassifier() != null && !dependency.getClassifier().isEmpty() ||
             dependency.getType() != null && !"jar".equals(dependency.getType()) && !"bundle".equals(dependency.getType())) {
             return false;
         }
