@@ -88,6 +88,11 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                                      ((Expression) tree).getType() instanceof JavaType.Intersection)) {
                                     found[0] = true;
                                 }
+                                if (tree instanceof J.FieldAccess &&
+                                    ((J.FieldAccess) tree).getName().getFieldType() == null &&
+                                    isValueReceiver(((J.FieldAccess) tree).getTarget())) {
+                                    found[0] = true;
+                                }
                                 if (tree instanceof J.Identifier) {
                                     JavaType.Variable field = ((J.Identifier) tree).getFieldType();
                                     // A parameterized field can also have an applied String type
@@ -121,6 +126,20 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                             }
                         }.visit(argument, generic);
                         return generic[0];
+                    }
+
+                    private boolean isValueReceiver(Expression expression) {
+                        if (expression instanceof J.Identifier) {
+                            J.Identifier identifier = (J.Identifier) expression;
+                            return identifier.getFieldType() != null ||
+                                   "this".equals(identifier.getSimpleName()) ||
+                                   "super".equals(identifier.getSimpleName());
+                        }
+                        if (expression instanceof J.FieldAccess) {
+                            J.FieldAccess field = (J.FieldAccess) expression;
+                            return field.getName().getFieldType() != null || isValueReceiver(field.getTarget());
+                        }
+                        return true;
                     }
 
                     private boolean isSystemOutMethod(J.MethodInvocation mi) {

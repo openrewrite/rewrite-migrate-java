@@ -372,6 +372,38 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void retainFieldLoadWithMissingDeclarationWhileMigratingQualifiedCalls() {
+        ExecutionContext ctx = new InMemoryExecutionContext(t -> { throw new AssertionError(t); });
+        J.CompilationUnit parsed = (J.CompilationUnit) JavaParser.fromJavaVersion().build().parse(ctx,
+          """
+            class Example {
+                static class Box<T> { T value; }
+                void test(Box<String> box) {
+                    System.out.print(box.value);
+                    System.out.println(box.value);
+                    System.out.println(java.lang.String.valueOf(123));
+                    System.out.println(String.class.getSimpleName());
+                }
+            }
+            """).findFirst().orElseThrow();
+        parsed = parsed.withMarkers(Markers.EMPTY.add(javaVersion(25)));
+        J.CompilationUnit unattributed = (J.CompilationUnit) new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.FieldAccess visitFieldAccess(J.FieldAccess field, ExecutionContext executionContext) {
+                J.FieldAccess f = super.visitFieldAccess(field, executionContext);
+                return "value".equals(f.getSimpleName()) ?
+                  f.withName(f.getName().withFieldType(null)) : f;
+            }
+        }.visit(parsed, ctx);
+        J.CompilationUnit result = (J.CompilationUnit) new ReplaceSystemOutWithIOPrint()
+          .getVisitor().visit(unattributed, ctx);
+        assertThat(result).isNotNull();
+        assertThat(result.printAll()).isEqualTo(unattributed.printAll()
+          .replace("System.out.println(java.lang.String.valueOf(123))", "IO.println(java.lang.String.valueOf(123))")
+          .replace("System.out.println(String.class.getSimpleName())", "IO.println(String.class.getSimpleName())"));
+    }
+
+    @Test
     void retainGenericReturnWhenFormalNamesAreUnavailable() {
         ExecutionContext ctx = new InMemoryExecutionContext(t -> { throw new AssertionError(t); });
         J.CompilationUnit parsed = (J.CompilationUnit) JavaParser.fromJavaVersion().build().parse(ctx,
