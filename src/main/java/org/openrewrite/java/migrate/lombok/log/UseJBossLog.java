@@ -49,7 +49,7 @@ public class UseJBossLog extends UseLogRecipeTemplate {
                 "org.jboss.logging.Logger",
                 "org.jboss.logging.Logger getLogger(..)",
                 "lombok.extern.jbosslog.JBossLog",
-                fieldName);
+                fieldName).withPrecondition();
     }
 
 }

@@ -49,7 +49,7 @@ public class UseLog4j2 extends UseLogRecipeTemplate {
                 "org.apache.logging.log4j.Logger",
                 "org.apache.logging.log4j.LogManager getLogger(..)",
                 "lombok.extern.log4j.Log4j2",
-                fieldName);
+                fieldName).withPrecondition();
     }
 
 }

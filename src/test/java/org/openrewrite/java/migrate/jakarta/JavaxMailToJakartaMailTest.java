@@ -278,6 +278,48 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
+    void addsJakartaMailApiDependencyWhenOnlyUsingMailInternetContentType() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.internet.ContentType;
+                  public class TestApplication {
+                      ContentType contentType;
+                  }
+                  """,
+                """
+                  import jakarta.mail.internet.ContentType;
+                  public class TestApplication {
+                      ContentType contentType;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void upgradesJakartaMailApiDependencyIfAlreadyExistingAtALowerVersion() {
         rewriteRun(
           mavenProject(

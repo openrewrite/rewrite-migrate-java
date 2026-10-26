@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EqualsAndHashCode(callSuper = false)
 public class SimplifySecurityManagerThreadGroup extends Recipe {
     String displayName = "Simplify the removed security manager's thread group fallback";
-    String description = "Remove a null SecurityManager local used only by the immediately following thread group conditional.";
+    String description = "Remove a `null` `SecurityManager` local used only by the immediately following thread group conditional.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -76,8 +76,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
                     if (!"getThreadGroup".equals(method.getSimpleName()) || !sameVariable(method.getSelect(), variable)) {
                         continue;
                     }
-                    AtomicInteger references = new AtomicInteger();
-                    new JavaIsoVisitor<AtomicInteger>() {
+                    AtomicInteger references = new JavaIsoVisitor<AtomicInteger>() {
                         @Override
                         public J.Identifier visitIdentifier(J.Identifier identifier, AtomicInteger count) {
                             if (sameVariable(identifier, variable) && !identifier.getId().equals(variable.getName().getId())) {
@@ -85,7 +84,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
                             }
                             return identifier;
                         }
-                    }.visit(b, references);
+                    }.reduce(b, new AtomicInteger());
                     if (references.get() != 2 || hasComments(declaration) || hasComments(ternary)) {
                         continue;
                     }
@@ -96,8 +95,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
             }
 
             private boolean hasComments(J tree) {
-                AtomicBoolean found = new AtomicBoolean();
-                new JavaIsoVisitor<AtomicBoolean>() {
+                return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public Space visitSpace(Space space, Space.Location location, AtomicBoolean comments) {
                         if (!space.getComments().isEmpty()) {
@@ -105,8 +103,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
                         }
                         return space;
                     }
-                }.visit(tree, found);
-                return found.get();
+                }.reduce(tree, new AtomicBoolean()).get();
             }
 
             private boolean sameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {

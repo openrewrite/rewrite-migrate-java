@@ -26,7 +26,7 @@ import static org.openrewrite.java.Assertions.java;
 class MigrateSecurityManagerMulticastTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new MigrateSecurityManagerMulticast());
+        spec.recipeFromResources("org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast");
     }
 
     @DocumentExample

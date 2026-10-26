@@ -19,9 +19,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.AnnotationMatcher;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.trait.Annotated;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -37,14 +40,13 @@ public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
     @Option(
             displayName = "Annotation signature",
             description = "An annotation signature to match.",
-            example = "@javax.jms..*",
-            required = false
+            example = "@jakarta.jms..*"
     )
     String signature;
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Annotated.Matcher(signature).asVisitor(ann -> ann.getTree()
+        TreeVisitor<?, ExecutionContext> visitor = new Annotated.Matcher(signature).asVisitor(ann -> ann.getTree()
                 .withArguments(ListUtils.map(ann.getTree().getArguments(), arg -> {
                     if (arg instanceof J.Assignment) {
                         J.Assignment as = (J.Assignment) arg;
@@ -56,6 +58,7 @@ public class UpdateAnnotationAttributeJavaxToJakarta extends Recipe {
                     }
                     return arg;
                 })));
+        return Preconditions.check(new UsesType<>(new AnnotationMatcher(signature).getAnnotationName(), false), visitor);
     }
 
     private J.Literal maybeReplaceLiteralValue(J.Literal arg) {

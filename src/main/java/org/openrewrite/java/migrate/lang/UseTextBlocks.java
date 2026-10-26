@@ -55,14 +55,14 @@ import static org.openrewrite.Tree.randomId;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class UseTextBlocks extends Recipe {
-    @Option(displayName = "Whether to convert strings without newlines (the default value is true).",
-            description = "Whether or not strings without newlines should be converted to text block when processing code. " +
+    @Option(displayName = "Convert strings without newlines",
+            description = "Whether strings without newlines should be converted to text blocks. " +
                           "The default value is true.",
             example = "true",
             required = false)
     boolean convertStringsWithoutNewlines;
 
-    @Option(displayName = "Whether to avoid line continuation escape sequences.",
+    @Option(displayName = "Avoid line continuation escape sequences",
             description = "When enabled, the recipe avoids using `\\` line continuation escapes in text blocks " +
                           "where the content contains newlines. Non-newline-joined strings are placed on the same " +
                           "text block line instead. The default value is false.",

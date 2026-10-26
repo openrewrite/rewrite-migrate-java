@@ -152,16 +152,92 @@ class ReplaceComSunAWTUtilitiesMethodsTest implements RewriteTest {
               }
               """,
             """
-              import java.awt.GraphicsDevice;
               import java.awt.GraphicsDevice.WindowTranslucency;
               import java.awt.GraphicsEnvironment;
-              import java.awt.Window;
               
               class Test {
                   void foo() {
                       boolean f = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.TRANSLUCENT);
                       boolean j = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSPARENT);
                       boolean k = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.PERPIXEL_TRANSLUCENT);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void defaultPatterns() {
+        rewriteRun(
+          spec -> spec.recipe(new ReplaceComSunAWTUtilitiesMethods(null, null, null, null, null, null, null))
+            .parser(JavaParser.fromJavaVersion()
+              //language=java
+              .dependsOn(
+                """
+                  package com.sun.awt;
+
+                  import java.awt.Window;
+
+                  public final class AWTUtilities {
+                      public enum Translucency {
+                          PERPIXEL_TRANSPARENT,
+                          TRANSLUCENT,
+                          PERPIXEL_TRANSLUCENT
+                      }
+                      public static boolean isTranslucencySupported(Translucency translucencyKind) {
+                          return true;
+                      }
+                      public static void setWindowOpacity(Window window, float opacity) {
+                      }
+                      public static float getWindowOpacity(Window window) {
+                          return 1;
+                      }
+                  }
+                  """
+              )),
+          //language=java
+          java(
+            """
+              import com.sun.awt.AWTUtilities;
+              import java.awt.Window;
+
+              import static com.sun.awt.AWTUtilities.Translucency.TRANSLUCENT;
+
+              class Test {
+                  void foo(Window win, Window other) {
+                      boolean supported = AWTUtilities.isTranslucencySupported(TRANSLUCENT);
+                      AWTUtilities.setWindowOpacity(win, AWTUtilities.getWindowOpacity(other));
+                  }
+              }
+              """,
+            """
+              import java.awt.GraphicsDevice.WindowTranslucency;
+              import java.awt.GraphicsEnvironment;
+              import java.awt.Window;
+
+              class Test {
+                  void foo(Window win, Window other) {
+                      boolean supported = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency.TRANSLUCENT);
+                      win.setOpacity(other.getOpacity());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepTranslucencyHeldInVariable() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.test.AWTUtilitiesTest;
+
+              class Test {
+                  boolean foo(AWTUtilitiesTest.Translucency kind) {
+                      return AWTUtilitiesTest.isTranslucencySupported1(kind);
                   }
               }
               """

@@ -38,25 +38,15 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
-  - org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
-  - org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
-  - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
-  - org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
-  - org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
-  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewLinkedHashMap
-  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesEqualTo
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
   - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
-  - org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap
   - org.openrewrite.java.migrate.guava.NoGuavaSetsFilter
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
-  - org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
-  - org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
   - org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
   - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
@@ -87,12 +77,121 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaIterablesAll
+displayName: Prefer `Collection.stream().allMatch(Predicate)`
+description: Prefer `Collection.stream().allMatch(Predicate)` over `Iterables.all(Collection, Predicate)`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$IterablesAllRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform
+displayName: Prefer `Collection.stream().map(Function)` over `Collections2.transform`
+description: Prefer `Collection.stream().map(Function)` over `Collections2.transform(Collection, Function)`.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$Collections2TransformRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList
+displayName: Prefer `new ArrayList<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListFromCollectionRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListWithCapacityRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList
+displayName: Prefer `new CopyOnWriteArrayList<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewCopyOnWriteArrayListRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewCopyOnWriteArrayListFromCollectionRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList
+displayName: Prefer `new LinkedList<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewLinkedListRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewLinkedListFromCollectionRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap
+displayName: Prefer `new HashMap<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewHashMapRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewHashMapFromMapRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaMapsNewLinkedHashMap
+displayName: Prefer `new LinkedHashMap<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewLinkedHashMapRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewLinkedHashMapFromMapRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaMapsNewTreeMap
+displayName: Prefer `new TreeMap<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewTreeMapRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewTreeMapWithComparatorRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$MapsNewTreeMapFromSortedMapRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet
+displayName: Prefer `Collections.newSetFromMap(new ConcurrentHashMap<>())`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$SetsNewConcurrentHashSetRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet
+displayName: Prefer `new LinkedHashSet<>()`
+description: Prefer the Java standard library over third-party usage of Guava in simple cases like this.
+tags:
+  - guava
+recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$SetsNewLinkedHashSetRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$SetsNewLinkedHashSetFromCollectionRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$SetsNewLinkedHashSetWithExpectedSizeRecipe
+
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava11
 displayName: Prefer the Java 11 standard library instead of Guava
 description: >-
-  Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
-  area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
-  migrate to standard library for these functions.
+  Replace Guava's `ImmutableList`, `ImmutableMap` and `ImmutableSet` `of` and `copyOf` factories, and
+  `MoreObjects.firstNonNull`, with their Java standard library equivalents on Java 11 or higher.
 tags:
   - guava
   - java11
@@ -113,9 +212,8 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.NoGuavaJava21
 displayName: Prefer the Java 21 standard library instead of Guava
 description: >-
-  Guava filled in important gaps in the Java standard library and still does. But at least some of Guava's API surface
-  area is covered by the Java standard library now, and some projects may be able to remove Guava altogether if they
-  migrate to standard library for these functions.
+  Replace Guava's `Maps` and `Sets` `new*WithExpectedSize` factories and the primitive `constrainToRange` methods with
+  their Java standard library equivalents on Java 21 or higher.
 tags:
   - guava
   - java21
@@ -305,8 +403,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.guava.PreferCharCompare
-displayName: Prefer `java.lang.Char#compare`
-description: Prefer `java.lang.Char#compare` instead of using `com.google.common.primitives.Chars#compare`.
+displayName: Prefer `Character#compare`
+description: Prefer `java.lang.Character#compare` instead of using `com.google.common.primitives.Chars#compare`.
 tags:
   - guava
 preconditions:
@@ -314,7 +412,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.ChangeMethodTargetToStatic:
       methodPattern: com.google.common.primitives.Chars compare(char, char)
-      fullyQualifiedTargetTypeName: java.lang.Char
+      fullyQualifiedTargetTypeName: java.lang.Character
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toList;
 @Value
 public class AddTransientAnnotationToPrivateAccessor extends Recipe {
 
-    String displayName = "Private accessor methods must have a `@Transient` annotation";
+    String displayName = "Add `@Transient` to private accessor methods";
 
     String description = "According to the JPA 2.1 specification, when property access is used, the property accessor methods " +
                "must be public or protected. OpenJPA ignores any private accessor methods, whereas EclipseLink persists " +

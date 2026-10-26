@@ -24,6 +24,7 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 
@@ -31,19 +32,21 @@ import static java.util.Objects.requireNonNull;
 
 public class OptionalStreamRecipe extends Recipe {
     @Getter
-    final String displayName = "`Stream<Optional>` idiom recipe";
+    final String displayName = "Replace `filter(Optional::isPresent).map(Optional::get)` with `flatMap(Optional::stream)`";
 
     @Getter
-    final String description = "Migrate Java 8 `Optional<Stream>.filter(Optional::isPresent).map(Optional::get)` to Java 11 `.flatMap(Optional::stream)`.";
+    final String description = "Replace `Stream<Optional>.filter(Optional::isPresent).map(Optional::get)` with `.flatMap(Optional::stream)` in Java 9 or higher.";
 
-    private static final MethodMatcher mapMatcher = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
-    private static final MethodMatcher filterMatcher = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");
-    private static final MethodMatcher optionalGetMatcher = new MethodMatcher("java.util.Optional get()");
-    private static final MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isPresent()");
+    private static final MethodMatcher STREAM_MAP = new MethodMatcher("java.util.stream.Stream map(java.util.function.Function)");
+    private static final MethodMatcher STREAM_FILTER = new MethodMatcher("java.util.stream.Stream filter(java.util.function.Predicate)");
+    private static final MethodMatcher OPTIONAL_GET = new MethodMatcher("java.util.Optional get()");
+    private static final MethodMatcher OPTIONAL_IS_PRESENT = new MethodMatcher("java.util.Optional isPresent()");
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesMethod<>(optionalIsPresentMatcher), new OptionalStreamVisitor());
+        return Preconditions.check(
+                Preconditions.and(new UsesJavaVersion<>(9), new UsesMethod<>(OPTIONAL_IS_PRESENT)),
+                new OptionalStreamVisitor());
     }
 
     private static class OptionalStreamVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -52,17 +55,17 @@ public class OptionalStreamRecipe extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation invocation, ExecutionContext ctx) {
             J.MethodInvocation mapInvocation = super.visitMethodInvocation(invocation, ctx);
             // .map(Optional::get)
-            if (!mapMatcher.matches(mapInvocation) || !optionalGetMatcher.matches(mapInvocation.getArguments().get(0))) {
+            if (!STREAM_MAP.matches(mapInvocation) || !OPTIONAL_GET.matches(mapInvocation.getArguments().get(0))) {
                 return mapInvocation;
             }
             // .filter
             Expression mapSelectExpr = mapInvocation.getSelect();
-            if (!filterMatcher.matches(mapSelectExpr)) {
+            if (!STREAM_FILTER.matches(mapSelectExpr)) {
                 return mapInvocation;
             }
             // Optional::isPresent
             J.MethodInvocation filterInvocation = (J.MethodInvocation) mapSelectExpr;
-            if (!optionalIsPresentMatcher.matches(filterInvocation.getArguments().get(0))) {
+            if (!OPTIONAL_IS_PRESENT.matches(filterInvocation.getArguments().get(0))) {
                 return mapInvocation;
             }
 

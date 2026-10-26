@@ -1055,6 +1055,7 @@ examples:
        }
     after: |
       import java.lang.ref.WeakReference;
+      import java.lang.ref.ReferenceQueue;
       import java.lang.ref.SoftReference;
       import java.lang.ref.PhantomReference;
 
@@ -1307,6 +1308,28 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.SystemGetSecurityManagerToNull
+examples:
+- description: '`SimplifySecurityManagerThreadGroupTest#removeNullLocalAndDeadBranch`'
+  sources:
+  - before: |
+      class Test {
+          ThreadGroup group;
+          Test() {
+              SecurityManager s = System.getSecurityManager();
+              group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+          }
+      }
+    after: |
+      class Test {
+          ThreadGroup group;
+          Test() {
+              group = Thread.currentThread().getThreadGroup();
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.ThreadStopDestroy
 examples:
 - description: '`ThreadStopDestroyTest#retainThreadStop`'
@@ -1319,6 +1342,17 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.UpgradeDockerImageVersion
+examples:
+- description: '`UpgradeDockerImageVersionTest#upgradeMavenBuilderJavaVersion`'
+  parameters:
+  - '25'
+  sources:
+  - before: FROM maven:3.9.9-eclipse-temurin-23 AS builder
+    after: FROM maven:3.9-eclipse-temurin-25 AS builder
+    language: docker
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeJavaVersion
@@ -1357,6 +1391,26 @@ examples:
       </project>
     path: pom.xml
     language: xml
+- description: '`UpgradeJavaCiContainerImageTest#upgradeGitHubJobContainer`'
+  parameters:
+  - '25'
+  sources:
+  - before: |
+      jobs:
+        test:
+          container: cimg/openjdk:22.0
+          services:
+            database:
+              image: mongo:5
+    after: |
+      jobs:
+        test:
+          container: cimg/openjdk:25.0
+          services:
+            database:
+              image: mongo:5
+    path: .github/workflows/test.yaml
+    language: yaml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.UpgradeKotlinJvmTargetVersion
@@ -5047,6 +5101,84 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
+examples:
+- description: '`FileuploadToFileUpload2Test#changeCommonsFileuploadToJakartaServlet5`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>commons-fileupload</groupId>
+                  <artifactId>commons-fileupload</artifactId>
+                  <version>1.5</version>
+              </dependency>
+          </dependencies>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.apache.commons</groupId>
+                  <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
+                  <version>2.0.0-M5</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.InvocationContextGetConstructor
+examples:
+- description: '`InvocationContextGetConstructorTest#completeAnonymousDecorator`'
+  sources:
+  - before: |
+      import jakarta.interceptor.InvocationContext;
+      import java.lang.reflect.Method;
+
+      class A {
+          InvocationContext wrap(InvocationContext delegate) {
+              return new InvocationContext() {
+                  @Override
+                  public Method getMethod() {
+                      return delegate.getMethod();
+                  }
+              };
+          }
+      }
+    after: |
+      import jakarta.interceptor.InvocationContext;
+
+      import java.lang.reflect.Constructor;
+      import java.lang.reflect.Method;
+
+      class A {
+          InvocationContext wrap(InvocationContext delegate) {
+              return new InvocationContext() {
+                  @Override
+                  public Method getMethod() {
+                      return delegate.getMethod();
+                  }
+
+                  @Override
+                  public Constructor<?> getConstructor() {
+                      return delegate.getConstructor();
+                  }
+              };
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 examples:
 - description: '`JacksonJavaxtoJakartaTest#migrateJacksonDependencies`'
@@ -5149,6 +5281,37 @@ examples:
       </project>
     path: pom.xml
     language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JacksonProviderOverrides
+examples:
+- description: '`JacksonProviderOverridesTest#forwardDefaultViewInOverride`'
+  sources:
+  - before: |
+      import com.fasterxml.jackson.databind.ObjectMapper;
+      import com.fasterxml.jackson.jaxrs.base.ProviderBase;
+      import java.lang.annotation.Annotation;
+
+      class CustomProvider extends ProviderBase {
+          @Override
+          protected Object _configForWriting(ObjectMapper mapper, Annotation[] annotations) {
+              mapper.configure();
+              return super._configForWriting(mapper, annotations);
+          }
+      }
+    after: |
+      import com.fasterxml.jackson.databind.ObjectMapper;
+      import com.fasterxml.jackson.jaxrs.base.ProviderBase;
+      import java.lang.annotation.Annotation;
+
+      class CustomProvider extends ProviderBase {
+          @Override
+          protected Object _configForWriting(ObjectMapper mapper, Annotation[] annotations, Class<?> defaultView) {
+              mapper.configure();
+              return super._configForWriting(mapper, annotations, defaultView);
+          }
+      }
+    language: java
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JakartaEE10
@@ -5572,6 +5735,34 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxEnterpriseToJakartaEnterprise
+examples:
+- description: '`JavaxEnterpriseToJakartaEnterpriseTest#preservesProvidedCdiApi`'
+  sources:
+  - before: class A { javax.enterprise.inject.spi.BeanManager manager; }
+    after: class A { jakarta.enterprise.inject.spi.BeanManager manager; }
+    language: java
+  - before: demo
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.enterprise</groupId>
+                  <artifactId>cdi-api</artifactId>
+                  <version>1.0</version>
+                  <scope>provided</scope>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
 examples:
 - description: '`JavaxFacesConfigXmlToJakartaFacesConfigXmlTest#migrateSun`'
@@ -5776,6 +5967,18 @@ examples:
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxPersistenceXmlToJakartaPersistenceXml
+examples:
+- description: '`JavaxPersistenceXmlToJakartaPersistenceXmlTest#migratesCustomResourceName`'
+  sources:
+  - before: |
+      <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0"/>
+    after: |
+      <persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0"/>
+    path: src/test/resources/test-persistence.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxServletToJakartaServlet
 examples:
 - description: '`JavaxServletToJakartaServletTest#switchesJavaxServletApiDependencyToJakartaServletApiDependency`'
@@ -5966,6 +6169,37 @@ examples:
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind
 examples:
+- description: '`JakartaXmlBindRuntimeTest#addsRuntimeForContextFactory`'
+  sources:
+  - before: |
+      import javax.xml.bind.JAXBContext;
+      class A {
+          JAXBContext context = JAXBContext.newInstance(A.class);
+      }
+    after: |
+      import jakarta.xml.bind.JAXBContext;
+      class A {
+          JAXBContext context = JAXBContext.newInstance(A.class);
+      }
+    language: java
+  - before: app
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>app</artifactId>
+          <version>1.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 - description: '`JavaxXmlBindMigrationToJakartaXmlBindTest#dontRetainJaxbApiWhenJacksonNotPresent`'
   sources:
   - before: |
@@ -6015,6 +6249,123 @@ examples:
                     xmlns:jxb="https://jakarta.ee/xml/ns/jaxb"
                     xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </jxb:bindings>
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JavaxXmlWsMigrationToJakartaXmlWs
+examples:
+- description: '`JavaxXmlWsMigrationToJakartaXmlWsTest#addApiForTypesPreviouslySuppliedByJavaEight`'
+  sources:
+  - before: |
+      import javax.xml.ws.http.HTTPException;
+      class A { HTTPException error; }
+    after: |
+      import jakarta.xml.ws.http.HTTPException;
+      class A { HTTPException error; }
+    language: java
+  - before: app
+    language: mavenProject
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>app</artifactId>
+          <version>1</version>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JerseyLoggingFilterToFeature
+examples:
+- description: '`JerseyLoggingFilterToFeatureTest#preservesLoggerAndEntityLoggingFlag`'
+  sources:
+  - before: |
+      import org.glassfish.jersey.filter.LoggingFilter;
+      import java.util.logging.Logger;
+      import javax.ws.rs.core.Configurable;
+
+      class Test {
+          Object filter(Configurable<?> config, Logger logger, boolean entities) {
+              return config.register(new LoggingFilter(logger, entities));
+          }
+      }
+    after: |
+      import java.util.logging.Level;
+      import java.util.logging.Logger;
+
+      import javax.ws.rs.core.Configurable;
+
+      import org.glassfish.jersey.logging.LoggingFeature;
+
+      class Test {
+          Object filter(Configurable<?> config, Logger logger, boolean entities) {
+              return config.register(new LoggingFeature(logger, Level.INFO, entities ? LoggingFeature.Verbosity.PAYLOAD_ANY : LoggingFeature.Verbosity.HEADERS_ONLY, 8192));
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE10
+examples:
+- description: '`JettyUpgradeEE10Test#securityAndJettyWebSocketMoveToCoreModules`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.eclipse.jetty.ee9</groupId>
+                  <artifactId>jetty-ee9-security</artifactId>
+                  <version>12.0.16</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.eclipse.jetty.ee9.websocket</groupId>
+                  <artifactId>jetty-ee9-websocket-jetty-api</artifactId>
+                  <version>12.0.16</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.eclipse.jetty.ee9.websocket</groupId>
+                  <artifactId>jetty-ee9-websocket-jetty-client</artifactId>
+                  <version>12.0.16</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
+examples:
+- description: '`JettyUpgradeEE9Test#alignsServerServletAndJavaVersion`'
+  sources:
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>com.example</groupId>
+          <artifactId>demo</artifactId>
+          <version>1.0</version>
+          <properties>
+              <maven.compiler.source>11</maven.compiler.source>
+              <maven.compiler.target>11</maven.compiler.target>
+          </properties>
+          <dependencies>
+              <dependency>
+                  <groupId>org.eclipse.jetty</groupId>
+                  <artifactId>jetty-server</artifactId>
+                  <version>9.4.58.v20250814</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.eclipse.jetty</groupId>
+                  <artifactId>jetty-servlet</artifactId>
+                  <version>9.4.58.v20250814</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
     language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
@@ -6353,24 +6704,26 @@ examples:
   sources:
   - before: |
       import jakarta.faces.component.UIComponent;
+      import jakarta.faces.context.FacesContext;
 
       class Bar {
-          void foo() {
-              String str = UIComponent.CURRENT_COMPONENT;
-              String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-              System.out.println(str);
-              System.out.println(str2);
+          void foo(FacesContext context) {
+              UIComponent component = (UIComponent) context.getAttributes().get(UIComponent.CURRENT_COMPONENT);
+              Object composite = FacesContext.getCurrentInstance().getAttributes().get(UIComponent.CURRENT_COMPOSITE_COMPONENT);
+              System.out.println(component);
+              System.out.println(composite);
           }
       }
     after: |
       import jakarta.faces.component.UIComponent;
+      import jakarta.faces.context.FacesContext;
 
       class Bar {
-          void foo() {
-              String str = UIComponent.getCurrentComponent();
-              String str2 = UIComponent.getCurrentCompositeComponent();
-              System.out.println(str);
-              System.out.println(str2);
+          void foo(FacesContext context) {
+              UIComponent component = UIComponent.getCurrentComponent(context);
+              Object composite = UIComponent.getCurrentCompositeComponent(FacesContext.getCurrentInstance());
+              System.out.println(component);
+              System.out.println(composite);
           }
       }
     language: java
@@ -6519,7 +6872,7 @@ examples:
       }
     after: |
       import org.apache.wss4j.common.ext.WSSecurityException;
-      import org.apache.wss4j.common.ext.components.crypto.CryptoBase;
+      import org.apache.wss4j.common.crypto.CryptoBase;
       class Test {
           void foo() {
               WSSecurityException x = new WSSecurityException(1,"");
@@ -6753,6 +7106,19 @@ examples:
     language: java
 ---
 type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.AddApiDependencyForImports
+examples:
+- description: '`AddApiDependencyForImportsTest#mainAndTestUsageRequiresCompileScope`'
+  parameters:
+  - jakarta.xml.bind
+  - jakarta.xml.bind
+  - jakarta.xml.bind-api
+  - 3.0.1
+  sources:
+  - before: app
+    language: mavenProject
+---
+type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddColumnAnnotation
 examples:
 - description: '`AddColumnAnnotationTest#addColumnAnnotationAlongElementCollection`'
@@ -6865,6 +7231,118 @@ examples:
           }
       }
     language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies
+examples:
+- description: '`AddJaxbApiForUnattributedImportsTest#addApiForUnresolvedImport`'
+  sources:
+  - before: |
+      import javax.xml.bind.DatatypeConverter;
+      class Test {
+          String encode(byte[] bytes) {
+              return DatatypeConverter.printBase64Binary(bytes);
+          }
+      }
+    path: src/main/java/Test.java
+    language: java
+  - before: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>example</groupId>
+          <artifactId>app</artifactId>
+          <version>1</version>
+      </project>
+    after: |
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>example</groupId>
+          <artifactId>app</artifactId>
+          <version>1</version>
+          <dependencies>
+              <dependency>
+                  <groupId>jakarta.xml.bind</groupId>
+                  <artifactId>jakarta.xml.bind-api</artifactId>
+                  <version>2.3.3</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.javax.AddJaxbRuntime
+examples:
+- description: '`AddJaxbRuntimeTest#swapRuntimeVersionedByParentProperty`'
+  parameters:
+  - glassfish
+  sources:
+  - before: child
+    language: mavenProject
+  - before: parent
+    language: mavenProject
+  - before: |
+      <project>
+          <groupId>com.example</groupId>
+          <artifactId>parent</artifactId>
+          <version>1.0.0</version>
+          <packaging>pom</packaging>
+          <properties>
+              <jaxb.version>2.2.11</jaxb.version>
+          </properties>
+          <modules>
+              <module>child</module>
+          </modules>
+      </project>
+    after: |
+      <project>
+          <groupId>com.example</groupId>
+          <artifactId>parent</artifactId>
+          <version>1.0.0</version>
+          <packaging>pom</packaging>
+          <properties>
+              <jaxb.version>2.3.9</jaxb.version>
+          </properties>
+          <modules>
+              <module>child</module>
+          </modules>
+      </project>
+    path: pom.xml
+    language: xml
+  - before: |
+      <project>
+          <parent>
+              <groupId>com.example</groupId>
+              <artifactId>parent</artifactId>
+              <version>1.0.0</version>
+          </parent>
+          <artifactId>child</artifactId>
+          <dependencies>
+              <dependency>
+                  <groupId>com.sun.xml.bind</groupId>
+                  <artifactId>jaxb-impl</artifactId>
+                  <version>${jaxb.version}</version>
+              </dependency>
+          </dependencies>
+      </project>
+    after: |
+      <project>
+          <parent>
+              <groupId>com.example</groupId>
+              <artifactId>parent</artifactId>
+              <version>1.0.0</version>
+          </parent>
+          <artifactId>child</artifactId>
+          <dependencies>
+              <dependency>
+                  <groupId>org.glassfish.jaxb</groupId>
+                  <artifactId>jaxb-runtime</artifactId>
+                  <version>${jaxb.version}</version>
+              </dependency>
+          </dependencies>
+      </project>
+    path: pom.xml
+    language: xml
 ---
 type: specs.openrewrite.org/v1beta/example
 recipeName: org.openrewrite.java.migrate.javax.AddScopeToInjectedClass
@@ -7466,6 +7944,28 @@ examples:
       class Foo {
           public byte @Nullable[] bar() {
               return null;
+          }
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.jspecify.RemoveAnnotationFromVoidMethod
+examples:
+- description: '`RemoveAnnotationFromVoidMethodTest#removeNullableFromVoidMethod`'
+  parameters:
+  - org.jetbrains.annotations.*ull*
+  sources:
+  - before: |
+      import org.jetbrains.annotations.Nullable;
+
+      class Foo {
+          @Nullable
+          public void bar() {
+          }
+      }
+    after: |
+      class Foo {
+          public void bar() {
           }
       }
     language: java
@@ -9382,6 +9882,41 @@ examples:
       }
     after: |
       /*~~(Java version: 11)~~>*/class Test2 {
+      }
+    language: java
+---
+type: specs.openrewrite.org/v1beta/example
+recipeName: org.openrewrite.java.migrate.search.FindCompletableFutureDefaultExecutor
+examples:
+- description: '`FindCompletableFutureDefaultExecutorTest#supplyAsyncWithoutExecutor`'
+  sources:
+  - before: |
+      import java.util.List;
+      import java.util.concurrent.CompletableFuture;
+      import java.util.concurrent.CompletionStage;
+
+      class BatchLoader {
+          CompletionStage<List<String>> load(List<String> keys) {
+              return CompletableFuture.supplyAsync(() -> doLoad(keys));
+          }
+
+          List<String> doLoad(List<String> keys) {
+              return keys;
+          }
+      }
+    after: |
+      import java.util.List;
+      import java.util.concurrent.CompletableFuture;
+      import java.util.concurrent.CompletionStage;
+
+      class BatchLoader {
+          CompletionStage<List<String>> load(List<String> keys) {
+              return /*~~(supplyAsync without an Executor runs on ForkJoinPool.commonPool(), which can lead to performance degradation for blocking tasks)~~>*/CompletableFuture.supplyAsync(() -> doLoad(keys));
+          }
+
+          List<String> doLoad(List<String> keys) {
+              return keys;
+          }
       }
     language: java
 ---

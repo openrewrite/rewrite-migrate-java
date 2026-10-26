@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
@@ -30,7 +29,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
@@ -656,47 +654,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Disabled("""
-      This test is to demonstrate that the text block conversion is correct.
-      In this test, s1, s2, and s3 are equivalent, and we translate s1 to s2.
-      """)
-    @Test
-    void textBlockDemo() {
-        var s1 = """
-
-                    =========================================================
-                                                                            \s
-                              Welcome to Spring Integration!                \s
-                                                                            \s
-                        For more information please visit:                  \s
-                        https://www.springsource.org/spring-integration     \s
-                                                                            \s
-                    =========================================================\
-                    """;
-        var s2 = """
-
-          =========================================================
-                                                                  \s
-                    Welcome to Spring Integration!                \s
-                                                                  \s
-              For more information please visit:                  \s
-              https://www.springsource.org/spring-integration     \s
-                                                                  \s
-          =========================================================\
-          """;
-        var s3 = """
-          \n=========================================================\
-          \n                                                         \
-          \n          Welcome to Spring Integration!                 \
-          \n                                                         \
-          \n    For more information please visit:                   \
-          \n    https://www.springsource.org/spring-integration      \
-          \n                                                         \
-          \n=========================================================\
-          """;
-        assertThat(s1).isEqualTo(s2).isEqualTo(s3);
-    }
-
     @Test
     void consecutiveNewLines() {
         rewriteRun(
@@ -968,7 +925,6 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void shouldNotUpdateKotlinCode() {
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(0),
           kotlin(
             """
               const val MULTI_LINE_MESSAGE =

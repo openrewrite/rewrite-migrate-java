@@ -29,6 +29,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
@@ -78,7 +79,9 @@ public class UseMapOf extends Recipe {
                                         new StringJoiner(", ", "Map.ofEntries(", ")") :
                                         new StringJoiner(", ", "Map.of(", ")");
                                 for (J.MethodInvocation put : puts) {
-                                    args.addAll(put.getArguments());
+                                    for (Expression arg : put.getArguments()) {
+                                        args.add(arg.unwrap());
+                                    }
                                     if (useEntries) {
                                         inner.add("Map.entry(#{any()}, #{any()})");
                                     } else {
@@ -317,7 +320,7 @@ public class UseMapOf extends Recipe {
                     /**
                      * If {@code stmt} is {@code targetName.put(k, v)} matching {@link #MAP_PUT},
                      * returns [key, value] as a list; otherwise {@code null}. Returns {@code null}
-                     * if either argument is the {@code null} literal, since {@code Map.of(..)} and
+                     * unless both arguments are proven non-null, since {@code Map.of(..)} and
                      * {@code Map.entry(..)} reject nulls.
                      */
                     private List<Expression> matchPutCallOn(Statement stmt, String targetName) {
@@ -338,11 +341,33 @@ public class UseMapOf extends Recipe {
                             return null;
                         }
                         for (Expression arg : mi.getArguments()) {
-                            if (J.Literal.isLiteralValue( arg, null )) {
+                            if (!isProvablyNonNull(arg)) {
                                 return null;
                             }
                         }
                         return mi.getArguments();
+                    }
+
+                    private boolean isProvablyNonNull(Expression expression) {
+                        expression = expression.unwrap();
+                        if (expression instanceof J.Literal) {
+                            return !J.Literal.isLiteralValue(expression, null);
+                        }
+                        if (expression instanceof J.NewClass ||
+                                expression instanceof J.NewArray ||
+                                expression instanceof J.Lambda ||
+                                expression instanceof J.MemberReference) {
+                            return true;
+                        }
+                        JavaType type = expression.getType();
+                        return type == JavaType.Primitive.Boolean ||
+                               type == JavaType.Primitive.Byte ||
+                               type == JavaType.Primitive.Char ||
+                               type == JavaType.Primitive.Double ||
+                               type == JavaType.Primitive.Float ||
+                               type == JavaType.Primitive.Int ||
+                               type == JavaType.Primitive.Long ||
+                               type == JavaType.Primitive.Short;
                     }
 
                     private boolean expressionReferences(Expression expr, String name) {

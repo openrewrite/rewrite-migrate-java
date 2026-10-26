@@ -17,7 +17,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateJaxBWSPlugin
-displayName: Migrate JAXB-WS Plugin
+displayName: Migrate the JAX-WS Maven plugin
 description: Upgrade the JAXB-WS Maven plugin to be compatible with Java 11.
 tags:
   - java11

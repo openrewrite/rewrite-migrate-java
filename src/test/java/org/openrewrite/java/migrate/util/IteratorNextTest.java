@@ -18,9 +18,13 @@ package org.openrewrite.java.migrate.util;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
 
@@ -55,7 +59,40 @@ class IteratorNextTest implements RewriteTest {
                       return collection.getFirst();
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.List getFirst()"))
+              .singleElement()
+              .satisfies(getFirst -> assertThat(TypeUtils.isString(((J.MethodInvocation) getFirst).getType())).isTrue()))
+          )
+        );
+    }
+
+    @Test
+    void linkedHashSetIteratorNextToGetFirst() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.*;
+
+              class Foo {
+                  String bar(LinkedHashSet<String> collection) {
+                      return collection.iterator().next();
+                  }
+              }
+              """,
+            """
+              import java.util.*;
+
+              class Foo {
+                  String bar(LinkedHashSet<String> collection) {
+                      return collection.getFirst();
+                  }
+              }
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.LinkedHashSet getFirst()"))
+              .singleElement()
+              .satisfies(getFirst -> assertThat(TypeUtils.isString(((J.MethodInvocation) getFirst).getType())).isTrue()))
           )
         );
     }

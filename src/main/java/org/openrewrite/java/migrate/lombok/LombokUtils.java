@@ -25,11 +25,14 @@ import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 class LombokUtils {
+    private static final AnnotationMatcher LOMBOK_NON_NULL = new AnnotationMatcher("@lombok.NonNull");
+    private static final Pattern IS_PREFIX = Pattern.compile("is[A-Z]");
 
     static boolean isGetter(Cursor cursor) {
         if (!(cursor.getValue() instanceof J.MethodDeclaration)) {
@@ -39,17 +42,14 @@ class LombokUtils {
         if (method.getMethodType() == null) {
             return false;
         }
-        // Check signature: no parameters
         if (method.getMarkers().findFirst(CompactConstructor.class).isPresent() || !(method.getParameters().get(0) instanceof J.Empty) || method.getReturnTypeExpression() == null) {
             return false;
         }
-        // Check body: just a return statement
         if (method.getBody() == null ||
                 method.getBody().getStatements().size() != 1 ||
                 !(method.getBody().getStatements().get(0) instanceof J.Return)) {
             return false;
         }
-        // Check field is declared on method type
         JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
         Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
         if (returnExpression instanceof J.Identifier) {
@@ -59,7 +59,6 @@ class LombokUtils {
                 if (identifier.getFieldType().hasFlags(Flag.Static)) {
                     return false;
                 }
-                // Check return: type and matching field name
                 return hasMatchingTypeAndGetterName(method, identifier.getType(), identifier.getSimpleName());
             }
         } else if (returnExpression instanceof J.FieldAccess) {
@@ -67,14 +66,12 @@ class LombokUtils {
             Expression target = fieldAccess.getTarget();
             // Only handle "this.field" pattern, not "someObject.field"
             if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
-                // Check field is declared on method type
                 if (fieldAccess.getName().getFieldType() != null &&
                         declaringType == fieldAccess.getName().getFieldType().getOwner()) {
                     // Don't replace instance methods accessing static fields
                     if (fieldAccess.getName().getFieldType().hasFlags(Flag.Static)) {
                         return false;
                     }
-                    // Check return: type and matching field name
                     return hasMatchingTypeAndGetterName(method, fieldAccess.getType(), fieldAccess.getSimpleName());
                 }
             }
@@ -109,9 +106,7 @@ class LombokUtils {
 
     public static String deriveGetterMethodName(@Nullable JavaType type, String fieldName) {
         if (type == JavaType.Primitive.Boolean) {
-            boolean alreadyStartsWithIs = fieldName.length() >= 3 &&
-                    fieldName.substring(0, 3).matches("is[A-Z]");
-            if (alreadyStartsWithIs) {
+            if (IS_PREFIX.matcher(fieldName).lookingAt()) {
                 return fieldName;
             }
             return "is" + StringUtils.capitalize(fieldName);
@@ -125,15 +120,12 @@ class LombokUtils {
         }
         J.MethodDeclaration method = cursor.getValue();
 
-        // Check return type: void
         if (method.getType() != JavaType.Primitive.Void) {
             return false;
         }
-        // Check signature: single parameter
         if (method.getParameters().size() != 1 || method.getParameters().get(0) instanceof J.Empty) {
             return false;
         }
-        // Check body: just an assignment
         if (method.getBody() == null || //abstract methods can be null
                 method.getBody().getStatements().size() != 1 ||
                 !(method.getBody().getStatements().get(0) instanceof J.Assignment)) {
@@ -142,17 +134,16 @@ class LombokUtils {
 
         // Check there's no up/down cast between parameter and field
         J.VariableDeclarations.NamedVariable param = ((J.VariableDeclarations) method.getParameters().get(0)).getVariables().get(0);
-        Expression variable = ((J.Assignment) method.getBody().getStatements().get(0)).getVariable();
-        if (param.getType() != variable.getType()) {
+        J.Assignment assignment = (J.Assignment) method.getBody().getStatements().get(0);
+        Expression variable = assignment.getVariable();
+        if (param.getType() != variable.getType() || !isReferenceTo(assignment.getAssignment(), param)) {
             return false;
         }
 
-        // Method name has to match
         JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
         if (variable instanceof J.Identifier) {
             J.Identifier assignedVar = (J.Identifier) variable;
             if (hasMatchingSetterMethodName(method, assignedVar.getSimpleName())) {
-                // Check field is declared on method type
                 if (assignedVar.getFieldType() != null && declaringType == assignedVar.getFieldType().getOwner()) {
                     // Don't replace instance methods accessing static fields
                     return !assignedVar.getFieldType().hasFlags(Flag.Static);
@@ -164,7 +155,6 @@ class LombokUtils {
                 Expression target = assignedField.getTarget();
                 // Only handle "this.field" pattern, not "someObject.field"
                 if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
-                    // Check field is declared on method type
                     if (assignedField.getName().getFieldType() != null &&
                             declaringType == assignedField.getName().getFieldType().getOwner()) {
                         // Don't replace instance methods accessing static fields
@@ -205,10 +195,9 @@ class LombokUtils {
         }
 
         JavaType fieldType = assignment.getVariable().getType();
-        // assigned value is exactly the parameter
         return assignment.getAssignment().toString().equals(paramName) &&
                         param.getType() != null &&
-                        param.getType().equals(fieldType);  // type of parameter and field have to match
+                        param.getType().equals(fieldType);
     }
 
     public static String deriveSetterMethodName(JavaType.Variable fieldType) {
@@ -244,7 +233,7 @@ class LombokUtils {
             }
             boolean isFinal = varDecls.hasModifier(Final);
             boolean hasNonNull = varDecls.getLeadingAnnotations().stream()
-                    .anyMatch(new AnnotationMatcher("@lombok.NonNull")::matches);
+                    .anyMatch(LOMBOK_NON_NULL::matches);
             if (!isFinal && !hasNonNull) {
                 continue;
             }
@@ -257,9 +246,6 @@ class LombokUtils {
         return result;
     }
 
-    /**
-     * Returns all non-static fields for a class in declaration order.
-     */
     static List<J.VariableDeclarations.NamedVariable> getAllNonStaticFields(J.ClassDeclaration classDecl) {
         List<J.VariableDeclarations.NamedVariable> result = new ArrayList<>();
         for (Statement stmt : classDecl.getBody().getStatements()) {
@@ -289,7 +275,6 @@ class LombokUtils {
             return false;
         }
 
-        // Get constructor parameters (accounting for J.Empty when no params)
         List<Statement> params = constructor.getParameters();
         if (expectedFields.isEmpty()) {
             return false;
@@ -304,7 +289,6 @@ class LombokUtils {
         for (int i = 0; i < expectedFields.size(); i++) {
             J.VariableDeclarations.NamedVariable expectedField = expectedFields.get(i);
 
-            // Check parameter type matches field type
             if (!(params.get(i) instanceof J.VariableDeclarations)) {
                 return false;
             }
@@ -314,19 +298,16 @@ class LombokUtils {
                 return false;
             }
 
-            // Check statement is a simple field assignment
             if (!(statements.get(i) instanceof J.Assignment)) {
                 return false;
             }
             J.Assignment assignment = (J.Assignment) statements.get(i);
 
-            // Check left side is the expected field
             String assignedFieldName = getAssignedFieldName(assignment.getVariable(), declaringType);
             if (assignedFieldName == null || !assignedFieldName.equals(expectedField.getSimpleName())) {
                 return false;
             }
 
-            // Check right side references the constructor parameter
             if (!isReferenceTo(assignment.getAssignment(), param)) {
                 return false;
             }

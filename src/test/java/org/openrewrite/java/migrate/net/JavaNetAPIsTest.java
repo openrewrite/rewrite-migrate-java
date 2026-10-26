@@ -66,4 +66,31 @@ class JavaNetAPIsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void copyTimeToLiveBetweenSockets() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.MulticastSocket;
+
+              class Test {
+                  void copy(MulticastSocket from, MulticastSocket to) throws Exception {
+                      to.setTTL(from.getTTL());
+                  }
+              }
+              """,
+            """
+              import java.net.MulticastSocket;
+
+              class Test {
+                  void copy(MulticastSocket from, MulticastSocket to) throws Exception {
+                      to.setTimeToLive(Byte.toUnsignedInt((byte) from.getTimeToLive()));
+                  }
+              }
+              """
+          )
+        );
+    }
 }

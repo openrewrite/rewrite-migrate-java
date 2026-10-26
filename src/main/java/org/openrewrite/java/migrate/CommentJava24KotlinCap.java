@@ -18,15 +18,15 @@ package org.openrewrite.java.migrate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
-import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.marker.Markers;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.semver.LatestRelease;
+import org.openrewrite.trait.Comments;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
@@ -73,7 +73,8 @@ public class CommentJava24KotlinCap extends Recipe {
                     String kotlinStdlibVersion = capsJavaAt24(t) ? findKotlinStdlibVersionBefore23() : null;
                     if (kotlinStdlibVersion != null) {
                         if (!hasCapComment(t)) {
-                            return addCommentAsFirstChild(t, comment(kotlinStdlibVersion));
+                            return Comments.of(new Cursor(getCursor().getParentOrThrow(), t))
+                                    .comment(comment(kotlinStdlibVersion), Comments.Placement.FIRST_CHILD);
                         }
                     } else if (hasCapComment(t)) {
                         return removeCapComment(t);
@@ -132,17 +133,10 @@ public class CommentJava24KotlinCap extends Recipe {
                 return false;
             }
 
-            private Xml.Tag addCommentAsFirstChild(Xml.Tag tag, String text) {
-                List<Content> content = (List<Content>) tag.getContent();
-                String prefix = content == null || content.isEmpty() ? "" : content.get(0).getPrefix();
-                Xml.Comment comment = new Xml.Comment(Tree.randomId(), prefix, Markers.EMPTY, text);
-                return tag.withContent(ListUtils.concat(comment, content));
-            }
-
             @SuppressWarnings("unchecked")
             private Xml.Tag removeCapComment(Xml.Tag tag) {
-                return tag.withContent(ListUtils.map((List<Content>) tag.getContent(), c ->
-                        c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX) ? null : c));
+                return tag.withContent(ListUtils.filter((List<Content>) tag.getContent(), c ->
+                        !(c instanceof Xml.Comment && ((Xml.Comment) c).getText().startsWith(COMMENT_PREFIX))));
             }
         };
     }

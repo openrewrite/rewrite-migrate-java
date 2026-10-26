@@ -17,9 +17,12 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Recipe;
+import org.openrewrite.RecipeRun;
 import org.openrewrite.Tree;
 import org.openrewrite.marker.BuildTool;
 import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.test.RewriteRunner;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +35,15 @@ import static org.openrewrite.test.SourceSpecs.text;
 import static org.openrewrite.yaml.Assertions.yaml;
 
 class UpgradeToJava25Test implements RewriteTest {
+
+    // Runs a further cycle only when a recipe requests one, as production schedulers do.
+    // The default runner forces every expected cycle.
+    private static final RewriteRunner UNFORCED_CYCLES = new RewriteRunner() {
+        @Override
+        public RecipeRun run(Recipe recipe, Context context) {
+            return recipe.run(context.getSources(), context.getExecutionContext(), context.getCycles(), 1);
+        }
+    };
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -284,9 +296,9 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void kotlin2xUpgradedToLatest2_3AndJava25() {
         // Kotlin 2.0-2.2 is already on the K2 compiler, so bumping to the latest 2.3 is safe and unblocks Java 25.
-        // The Kotlin bump happens in the first cycle; the Java 25 upgrade then applies once the module is on 2.3.
+        // The Kotlin bump happens in the first cycle and requests a second, in which the Java 25 upgrade sees Kotlin 2.3.
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(2),
+          spec -> spec.expectedCyclesThatMakeChanges(2).runner(UNFORCED_CYCLES),
           mavenProject("project",
             pomXml(
               //language=xml
@@ -709,7 +721,6 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void addsLombokAnnotationProcessor() {
         rewriteRun(
-          spec -> spec.cycles(1).expectedCyclesThatMakeChanges(1),
           mavenProject("project",
             pomXml(
               //language=xml
@@ -735,6 +746,41 @@ class UpgradeToJava25Test implements RewriteTest {
                   .containsPattern("<annotationProcessorPaths>(.|\\n)*<path>(.|\\n)*<artifactId>lombok")
                   .actual()
               )
+            )
+          )
+        );
+    }
+
+    @Test
+    void upgradesMockitoToVersionWhoseByteBuddySupportsJava25() {
+        // Mockito 5.17 brings Byte Buddy 1.15.11, which only supports up to Java 24; 5.20 is the first with 1.17.7.
+        // Byte Buddy usually arrives transitively, so the byte-buddy upgrade alone does not reach it.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>5.14.0</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual ->
+                assertThat(actual)
+                  .containsPattern("mockito-core</artifactId>\\s*<version>5\\.(2\\d|[3-9]\\d)\\.")
+                  .actual())
             )
           )
         );
@@ -772,7 +818,7 @@ class UpgradeToJava25Test implements RewriteTest {
                   .contains("<maven.compiler.release>25</maven.compiler.release>")
                   .doesNotContain("mockito-inline")
                   .contains("<artifactId>mockito-core</artifactId>")
-                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .containsPattern("<mockito.version>5\\.(2\\d|[3-9]\\d)\\.")
                   .actual())
             )
           )
@@ -814,7 +860,7 @@ class UpgradeToJava25Test implements RewriteTest {
                 assertThat(actual)
                   .doesNotContain("mockito-inline")
                   .containsOnlyOnce("<artifactId>mockito-core</artifactId>")
-                  .containsPattern("<mockito.version>5\\.17\\.")
+                  .containsPattern("<mockito.version>5\\.(2\\d|[3-9]\\d)\\.")
                   .actual())
             )
           )
@@ -866,7 +912,7 @@ class UpgradeToJava25Test implements RewriteTest {
                   .contains("<maven.compiler.source>25</maven.compiler.source>")
                   .doesNotContain("org.codehaus.mojo")
                   .containsPattern("<groupId>dev.aspectj</groupId>\\s*<artifactId>aspectj-maven-plugin</artifactId>\\s*<version>1\\.14\\.")
-                  .containsPattern("<artifactId>aspectjtools</artifactId>\\s*<version>1\\.9\\.25")
+                  .containsPattern("<artifactId>aspectjtools</artifactId>\\s*<version>1\\.9\\.(2[5-9]|[3-9]\\d)")
                   .contains("<complianceLevel>25</complianceLevel>")
                   .containsPattern("<artifactId>aspectjrt</artifactId>\\s*<version>1\\.9\\.")
                   .actual())

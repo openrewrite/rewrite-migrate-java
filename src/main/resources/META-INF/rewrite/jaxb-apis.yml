@@ -40,11 +40,9 @@ recipeList:
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: org.glassfish.jaxb
       artifactPattern: "*"
-      onlyIfVersionsMatch: true
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: com.sun.xml.bind
       artifactPattern: "*"
-      onlyIfVersionsMatch: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxbDependenciesWithoutRuntime
@@ -135,11 +133,6 @@ recipeList:
   - org.openrewrite.maven.RemoveRedundantDependencyVersions:
       groupPattern: jakarta.xml.bind
       artifactPattern: "*"
-      onlyIfVersionsMatch: true
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.codehaus.mojo
-      artifactId: jaxb2-maven-plugin
-      newVersion: 2.5.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies

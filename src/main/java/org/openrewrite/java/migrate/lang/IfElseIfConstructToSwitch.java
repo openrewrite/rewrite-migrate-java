@@ -28,10 +28,13 @@ import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.TypedTree;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -47,7 +50,7 @@ import static org.openrewrite.java.tree.J.Block.createEmptyBlock;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class IfElseIfConstructToSwitch extends Recipe {
-    String displayName = "If-else-if-else to switch";
+    String displayName = "Replace if-else-if-else with switch";
 
     String description = "Replace if-else-if-else with switch statements. In order to be replaced with a switch, " +
                 "all conditions must be on the same variable and there must be at least three cases.";
@@ -125,8 +128,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
         }
 
         private J.@Nullable If handleNullCheck(J.If ifPart, Cursor cursor) {
-            Optional<NullCheck> nullCheck = nullCheck().get(ifPart, cursor);
-            if (nullCheck.isPresent()) {
+            // the cursor points to the first if itself, and encloses the ifs after it
+            Optional<NullCheck> nullCheck = nullCheck().get(ifPart, ifPart == if_ ? cursor.getParentOrThrow() : cursor);
+            if (nullCheck.isPresent() && nullCheckedParameter == null) {
                 nullCheckedParameter = nullCheck.get().getNullCheckedParameter();
                 nullCheckedStatement = nullCheck.get().whenNull();
                 Statement elsePart = nullCheck.get().whenNotNull();
@@ -162,6 +166,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     .allMatch(it -> SemanticallyEqual.areEqual(switchOn.get(), it))) {
                 return false;
             }
+            if (nullCheckedParameter != null && !SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get())) {
+                return false;
+            }
             // All InstanceOf checks must have a pattern, otherwise we can't use switch pattern matching
             // (consider calling org.openrewrite.staticanalysis.InstanceOfPatternMatch - or java 17 upgrade - first)
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> instanceOf.getPattern() == null)) {
@@ -172,6 +179,9 @@ public class IfElseIfConstructToSwitch extends Recipe {
             if (returns(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::returns) || returns(else_)) {
                 return false;
             }
+            if (breaksOutOfChain(nullCheckedStatement) || patternMatchers.values().stream().anyMatch(this::breaksOutOfChain) || breaksOutOfChain(else_)) {
+                return false;
+            }
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
@@ -179,7 +189,10 @@ public class IfElseIfConstructToSwitch extends Recipe {
             })) {
                 return false;
             }
-            boolean nullCaseInSwitch = nullCheckedParameter != null && SemanticallyEqual.areEqual(nullCheckedParameter, switchOn.get());
+            if (hasDominatedPattern()) {
+                return false;
+            }
+            boolean nullCaseInSwitch = nullCheckedParameter != null;
             boolean hasLastElseBlock = else_ != null;
 
             // we need at least 3 cases to use a switch
@@ -188,12 +201,70 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     (hasLastElseBlock ? 1 : 0);
         }
 
+        private boolean hasDominatedPattern() {
+            List<@Nullable JavaType> earlierTypes = new ArrayList<>();
+            for (J.InstanceOf instanceOf : patternMatchers.keySet()) {
+                @Nullable JavaType type = erasure(((TypedTree) instanceOf.getClazz()).getType());
+                if (earlierTypes.stream().anyMatch(earlier -> TypeUtils.isAssignableTo(earlier, type))) {
+                    return true;
+                }
+                earlierTypes.add(type);
+            }
+            return false;
+        }
+
+        private static @Nullable JavaType erasure(@Nullable JavaType type) {
+            return type instanceof JavaType.Parameterized ? ((JavaType.Parameterized) type).getType() : type;
+        }
+
         private boolean returns(@Nullable Statement statement) {
             return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
                 @Override
                 public J.Return visitReturn(J.Return return_, AtomicBoolean atomicBoolean) {
                     atomicBoolean.set(true);
                     return return_;
+                }
+            }.reduce(statement, new AtomicBoolean(false)).get();
+        }
+
+        private boolean breaksOutOfChain(@Nullable Statement statement) {
+            return statement != null && new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.Break visitBreak(J.Break break_, AtomicBoolean atomicBoolean) {
+                    if (break_.getLabel() == null) {
+                        atomicBoolean.set(true);
+                    }
+                    return break_;
+                }
+
+                @Override
+                public J.ForLoop visitForLoop(J.ForLoop forLoop, AtomicBoolean atomicBoolean) {
+                    return forLoop;
+                }
+
+                @Override
+                public J.ForEachLoop visitForEachLoop(J.ForEachLoop forLoop, AtomicBoolean atomicBoolean) {
+                    return forLoop;
+                }
+
+                @Override
+                public J.WhileLoop visitWhileLoop(J.WhileLoop whileLoop, AtomicBoolean atomicBoolean) {
+                    return whileLoop;
+                }
+
+                @Override
+                public J.DoWhileLoop visitDoWhileLoop(J.DoWhileLoop doWhileLoop, AtomicBoolean atomicBoolean) {
+                    return doWhileLoop;
+                }
+
+                @Override
+                public J.Switch visitSwitch(J.Switch switch_, AtomicBoolean atomicBoolean) {
+                    return switch_;
+                }
+
+                @Override
+                public J.SwitchExpression visitSwitchExpression(J.SwitchExpression switch_, AtomicBoolean atomicBoolean) {
+                    return switch_;
                 }
             }.reduce(statement, new AtomicBoolean(false)).get();
         }

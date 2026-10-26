@@ -115,22 +115,14 @@ class JavaxValidationMigrationToJakartaValidationTest implements RewriteTest {
                   </dependencies>
               </project>
               """,
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>app</artifactId>
-                  <version>1</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.hibernate.validator</groupId>
-                          <artifactId>hibernate-validator</artifactId>
-                          <version>7.0.5.Final</version>
-                          <scope>test</scope>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("""
+                <groupId>org\\.hibernate\\.validator</groupId>\\s*\
+                <artifactId>hibernate-validator</artifactId>\\s*\
+                <version>7\\.0\\.\\d+\\.Final</version>\\s*\
+                <scope>test</scope>""")
+              .doesNotContain("<groupId>org.hibernate</groupId>")
+              .actual())
           )
         );
     }

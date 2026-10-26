@@ -22,7 +22,7 @@ description: >-
   This recipe will apply changes commonly needed when upgrading to Java 11. Specifically, for those applications that
   are built on Java 8, this recipe will update and add dependencies on J2EE libraries that are no longer directly
   bundled with the JDK. This recipe will also replace deprecated API with equivalents when there is a clear migration
-  strategy. Build files will also be updated to use Java 11 as the target/source and plugins will be also be upgraded
+  strategy. Build files will also be updated to use Java 11 as the target/source and plugins will also be upgraded
   to versions that are compatible with Java 11.
 tags:
   - java11
@@ -63,6 +63,8 @@ recipeList:
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
   - org.openrewrite.java.migrate.javax.JavaxXmlStreamAPIs
   - org.openrewrite.java.migrate.cobertura.RemoveCoberturaMavenPlugin
+  # Runs before the Java version marker is upgraded, to only pin the keystore type for projects coming from Java 8
+  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
   - org.openrewrite.java.migrate.UpgradeBuildToJava11
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
@@ -88,7 +90,6 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
   - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
-  - org.openrewrite.java.migrate.ChangeDefaultKeyStore
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11
@@ -105,7 +106,7 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradePluginsForJava11
 displayName: Upgrade plugins to Java 11 compatible versions
-description: Updates plugins to version compatible with Java 11.
+description: Updates plugins to versions compatible with Java 11.
 tags:
   - java11
 preconditions:
@@ -129,7 +130,7 @@ recipeList:
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.jvnet.jaxb
       artifactId: jaxb-maven-plugin
-      newVersion: 2.0.X
+      newVersion: 2.0.x
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
@@ -137,7 +138,7 @@ displayName: Add explicit JAX-WS dependencies
 description: >-
   This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
-  application can continue to use the `javax.xml.bind` namespace.
+  application can continue to use the `javax.xml.ws` namespace.
 tags:
   - javax
   - java11

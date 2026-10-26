@@ -53,19 +53,48 @@ class ReferenceCloneMethodTest implements RewriteTest {
               """,
             """
               import java.lang.ref.WeakReference;
+              import java.lang.ref.ReferenceQueue;
               import java.lang.ref.SoftReference;
               import java.lang.ref.PhantomReference;
 
               class Foo {
                   void foo() throws Exception{
                       WeakReference<Object> ref = new WeakReference<Object>(null);
-                      WeakReference<Object> ref1 = new WeakReference<Object>(ref, new ReferenceQueue<>());
+                      WeakReference<Object> ref1 = new WeakReference<Object>(ref.get(), new ReferenceQueue<>());
                       SoftReference<Object> ref3 = new SoftReference<Object>(null);
-                      SoftReference<Object> ref4 = new SoftReference<Object>(ref3, new ReferenceQueue<>());
+                      SoftReference<Object> ref4 = new SoftReference<Object>(ref3.get(), new ReferenceQueue<>());
                       PhantomReference<Object> ref5 = new PhantomReference<Object>(null,null);
-                      PhantomReference<Object> ref6 = new PhantomReference<Object>(ref5, new ReferenceQueue<>());
+                      PhantomReference<Object> ref6 = new PhantomReference<Object>(ref5.get(), new ReferenceQueue<>());
                   }
                }
+              """
+          )
+        );
+    }
+
+    @Test
+    void passReferentOfTypedReference() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.lang.ref.WeakReference;
+
+              class Foo {
+                  void foo(WeakReference<String> ref) throws Exception {
+                      WeakReference<String> copy = (WeakReference<String>) ref.clone();
+                  }
+              }
+              """,
+            """
+              import java.lang.ref.ReferenceQueue;
+              import java.lang.ref.WeakReference;
+
+              class Foo {
+                  void foo(WeakReference<String> ref) throws Exception {
+                      WeakReference<String> copy = new WeakReference<String>(ref.get(), new ReferenceQueue<>());
+                  }
+              }
               """
           )
         );

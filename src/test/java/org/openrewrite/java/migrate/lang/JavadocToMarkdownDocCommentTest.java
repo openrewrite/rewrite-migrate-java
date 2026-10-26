@@ -19,10 +19,19 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.java.marker.LineComment;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Javadoc;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.TypedTree;
+import org.openrewrite.test.RecipeQualityValidation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static java.util.Objects.requireNonNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 import static org.openrewrite.java.Assertions.version;
 
 class JavadocToMarkdownDocCommentTest implements RewriteTest {
@@ -30,7 +39,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new JavadocToMarkdownDocComment());
-        spec.allSources(source -> version(source, 23));
+        spec.allSources(s -> s.markers(javaVersion(23)));
     }
 
     @DocumentExample
@@ -145,6 +154,8 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void javadocWithLinkTag() {
         rewriteRun(
+          // The LST gives the Markdown link [List] no type, so the List import it needs looks unused
+          spec -> spec.recipeQualityValidation(RecipeQualityValidation.builder().removeUnusedImports(false).build()),
           java(
             """
               import java.util.List;
@@ -353,6 +364,65 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
                   /// Checks if a < b && c > d.
                   public void m() {}
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void escapedHtmlTagStaysEscapedInProse() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              public class A {
+                  /**
+                   * Returns a List&lt;String&gt;, as does <code>List&lt;String&gt; m()</code>.
+                   */
+                  public List<String> m() { return null; }
+              }
+              """,
+            """
+              import java.util.List;
+
+              public class A {
+                  /// Returns a List&lt;String&gt;, as does `List<String> m()`.
+                  public List<String> m() { return null; }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void codeOnSameLineMovesToNextLine() {
+        rewriteRun(
+          java(
+            """
+              public enum Color {
+                  /** Red */ RED,
+                  /** Green */ GREEN
+              }
+              """,
+            """
+              public enum Color {
+                  /// Red
+                  RED,
+                  /// Green
+                  GREEN
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javadocSharingLineWithPrecedingCodeIsKept() {
+        rewriteRun(
+          java(
+            """
+              public enum Color { /** Red */ RED, /** Green */ GREEN }
               """
           )
         );
@@ -798,6 +868,47 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
         );
     }
 
+    @Test
+    void keepReferencesOfBlockTags() {
+        rewriteRun(
+          java(
+            """
+              public class A {
+                  /**
+                   * Does something.
+                   *
+                   * @param a the number
+                   * @throws IllegalArgumentException if invalid
+                   */
+                  public void m(int a) {}
+              }
+              """,
+            """
+              public class A {
+                  /// Does something.
+                  ///
+                  /// @param a the number
+                  /// @throws IllegalArgumentException if invalid
+                  public void m(int a) {}
+              }
+              """,
+            spec -> spec.afterRecipe(cu -> {
+                var m = (J.MethodDeclaration) cu.getClasses().getFirst().getBody().getStatements().getFirst();
+                assertThat(m.getComments()).singleElement().isInstanceOfSatisfying(Javadoc.DocComment.class, doc -> {
+                    assertThat(doc.getMarkers().findFirst(LineComment.class)).isPresent();
+                    assertThat(doc.getBody()).filteredOn(Javadoc.Parameter.class::isInstance).singleElement()
+                      .satisfies(param -> assertThat(requireNonNull(((Javadoc.Parameter) param).getNameReference()).getTree())
+                        .isInstanceOfSatisfying(J.Identifier.class, name -> assertThat(name.getSimpleName()).isEqualTo("a")));
+                    assertThat(doc.getBody()).filteredOn(Javadoc.Throws.class::isInstance).singleElement()
+                      .satisfies(thr -> assertThat(TypeUtils.isOfClassType(
+                        ((TypedTree) ((Javadoc.Throws) thr).getExceptionName()).getType(),
+                        "java.lang.IllegalArgumentException")).isTrue());
+                });
+            })
+          )
+        );
+    }
+
     @Nested
     class Jep467FlagshipExamples {
 
@@ -1031,7 +1142,7 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
             );
         }
 
-        @ExpectedToFail("@see with qualified names uses # instead of . for package separators")
+        @ExpectedToFail("`{@link}` and `{@code}` split across lines are joined onto one line or fenced")
         @Test
         void javadocHashCodeExample() {
             rewriteRun(

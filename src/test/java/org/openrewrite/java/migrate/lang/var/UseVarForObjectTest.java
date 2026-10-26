@@ -1,0 +1,771 @@
+/*
+ * Copyright 2024 the original author or authors.
+ * <p>
+ * Licensed under the Moderne Source Available License (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * https://docs.moderne.io/licensing/moderne-source-available-license
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.openrewrite.java.migrate.lang.var;
+
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
+import org.openrewrite.test.RecipeSpec;
+
+import static org.openrewrite.java.Assertions.*;
+
+class UseVarForObjectTest extends VarBaseTest {
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipe(new UseVarForObject())
+          .allSources(s -> s.markers(javaVersion(10)));
+    }
+
+    @Nested
+    class Applicable {
+        @DocumentExample
+        @Test
+        void inMethodBody() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        var o = new Object();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void withModifier() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class A {
+                    void m() {
+                        final Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  class A {
+                    void m() {
+                        final var o = new Object();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+
+        @Test
+        void reassignment() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    void m() {
+                        Object innerO = o;
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    void m() {
+                        var innerO = o;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void inStaticInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    static {
+                        Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    static {
+                        var o = new Object();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void inInstanceInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    {
+                        Object o = new Object();
+                    }
+                  }
+                  """,
+                    """
+                  package com.example.app;
+
+                  class A {
+                    {
+                        var o = new Object();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Nested
+        class InitilizedByMethod {
+            @Test
+            void sameType() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+
+                      class A {
+                        String getHello() {
+                            return "Hello";
+                        }
+                        void m() {
+                            String phrase = getHello();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+
+                      class A {
+                        String getHello() {
+                            return "Hello";
+                        }
+                        void m() {
+                            var phrase = getHello();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void typeToken() {
+                // `T` is inferred from the `Class<T>` argument, not from the declared type
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+
+                      class A {
+                        <T> T typeToken(Class<T> clazz) {
+                            return null;
+                        }
+                        void m() {
+                            String s = typeToken(String.class);
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+
+                      class A {
+                        <T> T typeToken(Class<T> clazz) {
+                            return null;
+                        }
+                        void m() {
+                            var s = typeToken(String.class);
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Test
+            void subType() {
+                //language=java
+                rewriteRun(
+                  version(
+                    java("""
+                      package com.example.app;
+
+                      class A {
+                        class CustomTokenizer extends java.util.StringTokenizer {
+                            CustomTokenizer() {
+                                super("");
+                            }
+                        }
+                        CustomTokenizer getHello() {
+                            return new CustomTokenizer();
+                        }
+                        void m() {
+                            CustomTokenizer phrase = getHello();
+                        }
+                      }
+                      """, """
+                      package com.example.app;
+
+                      class A {
+                        class CustomTokenizer extends java.util.StringTokenizer {
+                            CustomTokenizer() {
+                                super("");
+                            }
+                        }
+                        CustomTokenizer getHello() {
+                            return new CustomTokenizer();
+                        }
+                        void m() {
+                            var phrase = getHello();
+                        }
+                      }
+                      """),
+                    10
+                  )
+                );
+            }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/550")
+            @Test
+            void classLevelGenericType() {
+                rewriteRun(
+                  //language=java
+                  java(
+                    """
+                      import java.io.Serializable;
+
+                      abstract class Outer<T extends Serializable> {
+                          abstract T doIt();
+                          void trigger() {
+                              T x = doIt();
+                          }
+                      }
+                      """,
+                    """
+                      import java.io.Serializable;
+
+                      abstract class Outer<T extends Serializable> {
+                          abstract T doIt();
+                          void trigger() {
+                              var x = doIt();
+                          }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void genericMethodWithTypeParameters() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T method() {
+                          return null;
+                        }
+                        void m() {
+                            String strs = new A().<String>method();
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T method() {
+                          return null;
+                        }
+                        void m() {
+                            var strs = new A().<String>method();
+                        }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void genericMethodInferredFromArgument() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T identity(T t) {
+                          return t;
+                        }
+                        void m() {
+                            String s = identity("x");
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      class A {
+                        <T> T identity(T t) {
+                          return t;
+                        }
+                        void m() {
+                            var s = identity("x");
+                        }
+                      }
+                      """
+                  )
+                );
+            }
+
+            @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+            @Test
+            void genericMethodInferredFromWildcardBoundedArgument() {
+                //language=java
+                rewriteRun(
+                  java(
+                    """
+                      package com.example.app;
+
+                      import java.util.function.Supplier;
+
+                      class A {
+                        <T> T orElse(Supplier<? extends T> supplier) {
+                          return supplier.get();
+                        }
+                        void m(Supplier<String> supplier) {
+                            String s = orElse(supplier);
+                        }
+                      }
+                      """,
+                    """
+                      package com.example.app;
+
+                      import java.util.function.Supplier;
+
+                      class A {
+                        <T> T orElse(Supplier<? extends T> supplier) {
+                          return supplier.get();
+                        }
+                        void m(Supplier<String> supplier) {
+                            var s = orElse(supplier);
+                        }
+                      }
+                      """
+                  )
+                );
+            }
+        }
+    }
+
+    @Nested
+    class NotApplicable {
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1288")
+        @Test
+        void lambdaAndMethodReference() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class Demo {
+                      @FunctionalInterface
+                      interface Shouter {
+                          String shout(String s);
+                      }
+
+                      void run() {
+                          Shouter shouter = s -> s.toUpperCase() + "!";
+                          Shouter viaRef = String::trim;
+                          Shouter parenthesized = (s -> s);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethod() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T> T method() {
+                      return null;
+                    }
+                    void m() {
+                        String s = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodDeclaredOnInterface() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  interface Invocation {
+                    <T> T getArgument(int index);
+                  }
+                  class A {
+                    void m(Invocation invocation) {
+                        String s = invocation.getArgument(0);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodDeclaredOnGenericInterface() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  import java.util.List;
+
+                  interface Cache<K> {
+                    <T> T get(K key);
+                    <T> T getAll(List<K> keys);
+                  }
+                  class A {
+                    void m(Cache<String> cache, List<String> keys) {
+                        String s = cache.get("k");
+                        String t = cache.getAll(keys);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodInheritedFromSuperclass() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class Base {
+                    <T> T get(int index) {
+                      return null;
+                    }
+                  }
+                  class Sub extends Base {
+                  }
+                  class A {
+                    void m(Sub sub) {
+                        String s = sub.get(0);
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodReturningArray() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T, S extends T> S[] method() {
+                      return null;
+                    }
+                    void m() {
+                        String[] strs = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodReturningMultiDimensionalArray() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    <T> T[][] method() {
+                      return null;
+                    }
+                    void m() {
+                        String[][] strs = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/1187")
+        @Test
+        void genericMethodShadowingClassTypeParameter() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A<T> {
+                    <T> T method() {
+                      return null;
+                    }
+                    void m() {
+                        String s = method();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        @Test
+        void genericTypeInStaticMethod() {
+            // ATM the recipe skips all static method initialized variables
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  package example;
+
+                  class Global {
+                      static <T> T cast(Object o) {
+                          return (T) o;
+                      }
+                  }
+                  class User {
+                      public String test() {
+                          Object o = "Hello";
+                          String string = Global.cast(o); // static method unchanged
+                          return string;
+                      }
+                  }
+                  """,
+                """
+                  package example;
+
+                  class Global {
+                      static <T> T cast(Object o) {
+                          return (T) o;
+                      }
+                  }
+                  class User {
+                      public String test() {
+                          var o = "Hello";
+                          String string = Global.cast(o); // static method unchanged
+                          return string;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/608")
+        @Test
+        void staticMethod() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    static class B {
+                        private B() {}
+                        static B newInstance() {
+                            return new B();
+                        }
+                    }
+                    void m() {
+                        B b = B.newInstance();
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void withTernary() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String o = true ? "isTrue" : "Test";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/551")
+        @Test
+        void arrayInitializer() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    void m() {
+                        String[] dictionary = {"aa", "b", "aba", "ba"};
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void fieldInAnonymousSubclass() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  class A {
+                      void m() {
+                          new Object() {
+                              private final Object o1 = new Object();
+                          };
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void asParameter() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    Object m(Object o) {
+                        return o;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void asField() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    Object o = new Object();
+                    Object m() {
+                        return o;
+                    }
+                  }
+                  """
+              )
+            );
+        }
+    }
+}

@@ -18,10 +18,12 @@ package org.openrewrite.java.migrate.jakarta;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
@@ -29,14 +31,14 @@ import static java.util.Collections.singletonList;
 
 public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
     @Getter
-    final String displayName = "Remove trailing slash from `jakarta.ws.rs.ApplicationPath` values";
+    final String displayName = "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values";
 
     @Getter
     final String description = "Remove trailing `/*` from `jakarta.ws.rs.ApplicationPath` values.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new ApplicationPathTrailingSlashVisitor();
+        return Preconditions.check(new UsesType<>("jakarta.ws.rs.ApplicationPath", false), new ApplicationPathTrailingSlashVisitor());
     }
 
     @RequiredArgsConstructor
@@ -57,16 +59,16 @@ public class ApplicationPathWildcardNoLongerAccepted extends Recipe {
                     J.Literal literal = (J.Literal) assig.getAssignment();
                     String value = literal.getValue().toString();
                     if (value.endsWith("/*")) {
-                        String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                        return a.withArguments(singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource(newValue))));
+                        String newValue = value.substring(0, value.length() - 2);
+                        return a.withArguments(singletonList(assig.withAssignment(literal.withValue(newValue).withValueSource("\"" + newValue + "\""))));
                     }
                 } // Should we handle constants?
             } else if (it instanceof J.Literal) {
                 J.Literal literal = (J.Literal) it;
                 String value = literal.getValue().toString();
                 if (value.endsWith("/*")) {
-                    String newValue = "\"" + value.substring(0, value.length() - 2) + "\"";
-                    return a.withArguments(singletonList(((J.Literal) it).withValue(newValue).withValueSource(newValue)));
+                    String newValue = value.substring(0, value.length() - 2);
+                    return a.withArguments(singletonList(((J.Literal) it).withValue(newValue).withValueSource("\"" + newValue + "\"")));
                 }
             }
 
