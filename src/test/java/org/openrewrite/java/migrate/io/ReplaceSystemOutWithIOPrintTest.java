@@ -98,6 +98,54 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void retainBoundedGenericArguments() {
+        rewriteRun(
+          java(
+            """
+              interface TreeNode {}
+              interface Parser {
+                  <T extends TreeNode> T readValueAsTree();
+              }
+              class Example {
+                  void test(Parser parser) {
+                      System.out.print(parser.readValueAsTree());
+                      System.out.println(parser.readValueAsTree());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void retainGenericArgumentsWhileMigratingOtherCalls() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  <T extends CharSequence> T value() { return null; }
+
+                  void test() {
+                      System.out.println(value());
+                      System.out.println("plain");
+                  }
+              }
+              """,
+            """
+              class Example {
+                  <T extends CharSequence> T value() { return null; }
+
+                  void test() {
+                      System.out.println(value());
+                      IO.println("plain");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replaceSystemOutPrintlnWithStaticImport() {
         rewriteRun(
           java(
