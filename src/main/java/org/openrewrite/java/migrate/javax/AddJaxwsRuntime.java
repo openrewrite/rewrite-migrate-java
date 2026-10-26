@@ -163,7 +163,7 @@ public class AddJaxwsRuntime extends Recipe {
                             if (!hasApi(currentTarget) || hasProvider(currentTarget)) {
                                 continue;
                             }
-                            String configuration = api.getName();
+                            String configuration = null;
                             if (target.getName().endsWith("RuntimeClasspath")) {
                                 String implementationName = target.getName().substring(0,
                                         target.getName().length() - "RuntimeClasspath".length()) + "Implementation";
@@ -174,6 +174,14 @@ public class AddJaxwsRuntime extends Recipe {
                                     // Avoid adding Metro to a shared API bucket whose other consumers already have CXF.
                                     configuration = implementationName;
                                 }
+                            }
+                            if (configuration == null) {
+                                // A shared bucket is unsafe when any of its consumers already has a provider.
+                                // Leave that graph unchanged if no consumer-local declaration target exists.
+                                if (consumers.stream().filter(GradleDependencyConfiguration::isCanBeResolved).anyMatch(this::hasProvider)) {
+                                    continue;
+                                }
+                                configuration = api.getName();
                             }
                             g = addJaxWsRuntimeDependency(configuration, g, ctx);
                         }

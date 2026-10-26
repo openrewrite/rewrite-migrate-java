@@ -182,6 +182,50 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
         );
     }
 
+    @ParameterizedTest
+    @CsvSource({"true,true", "true,false", "false,true"})
+    void opaqueRuntimeFallbackDoesNotPolluteCoveredProvider(boolean coveredHasApi, boolean coveredHasProvider) {
+        Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();
+        declarations.put("sharedApi", singletonList(api()));
+        if (coveredHasProvider) {
+            declarations.put("cxfProvider", singletonList(dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "3.5.5")));
+        }
+        Map<String, List<String>> parents = new LinkedHashMap<>();
+        parents.put("sharedApi", emptyList());
+        parents.put("cxfProvider", emptyList());
+        List<String> coveredParents = new ArrayList<>();
+        if (coveredHasApi) {
+            coveredParents.add("sharedApi");
+        }
+        if (coveredHasProvider) {
+            coveredParents.add("cxfProvider");
+        }
+        parents.put("coveredRuntimeClasspath", coveredParents);
+        parents.put("uncoveredRuntimeClasspath", singletonList("sharedApi"));
+        GradleProject project = project("app", declarations, parents);
+        String before = script(declarations).replace("dependencies {", """
+          configurations {
+              sharedApi { canBeResolved = false; canBeConsumed = false }
+              cxfProvider { canBeResolved = false; canBeConsumed = false }
+              coveredRuntimeClasspath {
+                  canBeResolved = true; canBeConsumed = false; canBeDeclared = false
+                  extendsFrom(%s)
+              }
+              uncoveredRuntimeClasspath {
+                  canBeResolved = true; canBeConsumed = false; canBeDeclared = false
+                  extendsFrom(sharedApi)
+              }
+          }
+          dependencies {""".formatted(String.join(", ", coveredParents)));
+        if (coveredHasApi && coveredHasProvider) {
+            // The only existing declaration bucket is shared with an already-covered runtime.
+            rewriteRun(buildGradle(before, spec -> spec.markers(project)));
+        } else {
+            // Keep the existing fallback when every consumer needs a provider; unrelated providers do not block it.
+            rewriteRun(buildGradle(before, spec -> spec.markers(project).after(after -> metro(after, "sharedApi"))));
+        }
+    }
+
     private static Map<String, List<ResolvedDependency>> declarations(String apiConfiguration, String providerConfiguration,
                                                                      String group, String artifact, String version) {
         Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();
@@ -209,6 +253,11 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
     }
 
     private static GradleProject project(String name, Map<String, List<ResolvedDependency>> declarations) {
+        return project(name, declarations, emptyMap());
+    }
+
+    private static GradleProject project(String name, Map<String, List<ResolvedDependency>> declarations,
+                                         Map<String, List<String>> additionalParents) {
         Map<String, List<String>> parents = new LinkedHashMap<>();
         parents.put("implementation", emptyList());
         parents.put("compileOnly", emptyList());
@@ -220,6 +269,7 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
         parents.put("runtimeClasspath", Arrays.asList("implementation", "runtimeOnly"));
         parents.put("testCompileClasspath", Arrays.asList("testImplementation", "testCompileOnly"));
         parents.put("testRuntimeClasspath", Arrays.asList("testImplementation", "testRuntimeOnly"));
+        parents.putAll(additionalParents);
         Map<String, GradleDependencyConfiguration> configurations = new LinkedHashMap<>();
         for (String configuration : parents.keySet()) {
             List<ResolvedDependency> dependencies = new ArrayList<>();

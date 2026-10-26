@@ -156,6 +156,24 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
     }
 
     @Test
+    void customCompileOnlyProviderStillNeedsRuntimeCoverage() {
+        rewriteRun(buildGradle("""
+          apply plugin: 'java'
+          repositories { mavenCentral() }
+          sourceSets { integrationTest {} }
+          dependencies {
+              compileOnly 'com.sun.xml.ws:jaxws-rt:2.3.7'
+              integrationTestImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
+              integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'
+          }
+          """, spec -> spec.after(after -> {
+            assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
+            assertThat(after).contains("integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'");
+            return after;
+        })));
+    }
+
+    @Test
     void customApiInAppliedScript() {
         rewriteRun(
           buildGradle("""
