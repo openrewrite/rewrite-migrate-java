@@ -226,6 +226,31 @@ class AddJaxwsRuntimeGradleTest implements RewriteTest {
         }
     }
 
+    @Test
+    void sharedImplementationDoesNotPolluteCoveredChildRuntime() {
+        Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();
+        declarations.put("integrationTestImplementation", singletonList(api()));
+        declarations.put("functionalTestRuntimeOnly", singletonList(dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "3.5.5")));
+        Map<String, List<String>> parents = new LinkedHashMap<>();
+        parents.put("integrationTestImplementation", emptyList());
+        parents.put("integrationTestRuntimeOnly", emptyList());
+        parents.put("integrationTestCompileClasspath", singletonList("integrationTestImplementation"));
+        parents.put("integrationTestRuntimeClasspath", Arrays.asList("integrationTestImplementation", "integrationTestRuntimeOnly"));
+        parents.put("functionalTestImplementation", singletonList("integrationTestImplementation"));
+        parents.put("functionalTestRuntimeOnly", emptyList());
+        parents.put("functionalTestCompileClasspath", singletonList("functionalTestImplementation"));
+        parents.put("functionalTestRuntimeClasspath", Arrays.asList("functionalTestImplementation", "functionalTestRuntimeOnly"));
+        String before = script(declarations).replace("dependencies {", """
+          sourceSets { integrationTest {}; functionalTest {} }
+          configurations.functionalTestImplementation.extendsFrom(configurations.integrationTestImplementation)
+          dependencies {""");
+        rewriteRun(
+          spec -> spec.cycles(3).expectedCyclesThatMakeChanges(1),
+          buildGradle(before, spec -> spec.markers(project("app", declarations, parents))
+            .after(after -> metro(after, "integrationTestRuntimeOnly")))
+        );
+    }
+
     private static Map<String, List<ResolvedDependency>> declarations(String apiConfiguration, String providerConfiguration,
                                                                      String group, String artifact, String version) {
         Map<String, List<ResolvedDependency>> declarations = new LinkedHashMap<>();

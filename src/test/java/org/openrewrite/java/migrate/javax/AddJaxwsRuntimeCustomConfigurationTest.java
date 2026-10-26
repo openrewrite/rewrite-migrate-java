@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.javax;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -171,6 +172,39 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
             assertThat(after).contains("integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'");
             return after;
         })));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void sharedImplementationDoesNotPolluteCoveredChildRuntime(boolean sharedRuntimeOnly) {
+        String before = """
+          apply plugin: 'java'
+          repositories { mavenCentral() }
+          sourceSets { integrationTest {}; functionalTest {} }
+          configurations.functionalTestImplementation.extendsFrom(configurations.integrationTestImplementation)
+          %s
+          dependencies {
+              integrationTestImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
+              functionalTestRuntimeOnly('org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5') {
+                  exclude group: 'jakarta.xml.ws', module: 'jakarta.xml.ws-api'
+              }
+          }
+          """.formatted(sharedRuntimeOnly ?
+          "configurations.functionalTestRuntimeOnly.extendsFrom(configurations.integrationTestRuntimeOnly)" : "");
+        if (sharedRuntimeOnly) {
+            // Neither existing bucket isolates the uncovered runtime from the child that already uses CXF.
+            rewriteRun(buildGradle(before));
+        } else {
+            rewriteRun(
+              spec -> spec.cycles(3).expectedCyclesThatMakeChanges(1),
+              buildGradle(before, spec -> spec.after(after -> {
+                  assertThat(after).containsPattern("(?m)^\\s*integrationTestRuntimeOnly ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
+                  assertThat(after).doesNotContain("integrationTestImplementation \"com.sun.xml.ws", "integrationTestImplementation 'com.sun.xml.ws",
+                    "functionalTestRuntimeOnly \"com.sun.xml.ws", "functionalTestRuntimeOnly 'com.sun.xml.ws");
+                  return after;
+              }))
+            );
+        }
     }
 
     @Test
