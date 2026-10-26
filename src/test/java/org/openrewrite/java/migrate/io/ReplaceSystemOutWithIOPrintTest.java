@@ -110,6 +110,32 @@ class ReplaceSystemOutWithIOPrintTest implements RewriteTest {
     }
 
     @Test
+    void migrateArraySuperclassWithoutRenderingCapturedWildcards() {
+        rewriteRun(
+          java(
+            """
+              class Example {
+                  void test() {
+                      int[] values = {1, 2};
+                      System.out.println(values.getClass().getSuperclass());
+                      System.out.print(values.getClass().getSuperclass());
+                  }
+              }
+              """,
+            """
+              class Example {
+                  void test() {
+                      int[] values = {1, 2};
+                      IO.println(values.getClass().getSuperclass());
+                      IO.print(values.getClass().getSuperclass());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void retainBoundedGenericArguments() {
         rewriteRun(
           java(
