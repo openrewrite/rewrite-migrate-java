@@ -100,7 +100,11 @@ public class GuavaObjectsEqualToJavaUtilObjectsEquals extends Recipe {
                 return new JavaIsoVisitor<AtomicBoolean>() {
                     @Override
                     public J.Import visitImport(J.Import anImport, AtomicBoolean shadowed) {
-                        if ("java".equals(anImport.getQualid().getSimpleName())) {
+                        // Only the covered JDK java.util wildcard is exempt. Other ordinary wildcards
+                        // may expose a java type that is absent from used-type attribution.
+                        if ("java".equals(anImport.getQualid().getSimpleName()) ||
+                            !anImport.isStatic() && "*".equals(anImport.getQualid().getSimpleName()) &&
+                            !"java.util".equals(anImport.getPackageName())) {
                             shadowed.set(true);
                         } else if (anImport.isStatic() && "*".equals(anImport.getQualid().getSimpleName())) {
                             checkMembers(anImport.getQualid().getTarget().getType(), shadowed);
