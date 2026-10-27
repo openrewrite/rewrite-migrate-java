@@ -171,4 +171,67 @@ class AddMissingMethodImplementationTest implements RewriteTest {
         );
     }
 
+    @Test
+    void anonymousClass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class C2 {
+                  I1 i1 = new I1() {
+                  };
+              }
+              """,
+            """
+              interface I1 {}
+              class C2 {
+                  I1 i1 = new I1() {
+                      public void m1() {
+                          System.out.println("m1");
+                      }
+                  };
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void anonymousClassMethodExists() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class C2 {
+                  I1 i1 = new I1() {
+                      public void m1() {
+                      }
+                  };
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void anonymousClassInheritsMethod() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              interface I1 {}
+              class SuperClass implements I1 {
+                  public void m1() {
+                  }
+              }
+              class C2 {
+                  I1 i1 = new SuperClass() {
+                  };
+              }
+              """
+          )
+        );
+    }
 }

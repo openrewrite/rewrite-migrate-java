@@ -133,7 +133,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
 
                     mv = mv.withVariables(ListUtils.map(mv.getVariables(), variable -> {
                         JavaType.FullyQualified varType = TypeUtils.asFullyQualified(variable.getType());
-                        if (varType != null && !varType.equals(newType)) {
+                        if (varType != null && !TypeUtils.isOfType(varType, newType)) {
                             return variable.withType(newType).withName(variable.getName().withType(newType));
                         }
                         return variable;

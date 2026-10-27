@@ -151,6 +151,50 @@ class DanglingDocCommentToBlockCommentTest implements RewriteTest {
     }
 
     @Test
+    void banners() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  /******** section ********/
+                  // private String gone;
+
+                  /***/
+                  // private String empty;
+
+                  /********
+                   * Documents nothing.
+                   ********/
+                  // private String alsoGone;
+
+                  /** Documents the method. */
+                  void a() {
+                  }
+              }
+              """,
+            """
+              class A {
+                  /* section ********/
+                  // private String gone;
+
+                  /**/
+                  // private String empty;
+
+                  /*
+                   * Documents nothing.
+                   ********/
+                  // private String alsoGone;
+
+                  /** Documents the method. */
+                  void a() {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leaveAttachedDocumentationAlone() {
         rewriteRun(
           java(

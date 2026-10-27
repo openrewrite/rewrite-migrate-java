@@ -45,8 +45,6 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaFacesApi3
 displayName: Migrate deprecated `javax.faces` packages to `jakarta.faces`
 description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation and upgrade.
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.faces
@@ -92,8 +90,6 @@ tags:
   - jakarta
   - faces
   - jsf
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.text.FindAndReplace:
       find: javax.
@@ -108,8 +104,6 @@ tags:
   - jakarta
   - faces
   - jsf
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -136,8 +130,6 @@ tags:
   - jakarta
   - faces
   - jsf
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -164,8 +156,6 @@ tags:
   - jakarta
   - faces
   - jsf
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -199,7 +189,6 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/web.xml'
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -236,12 +225,10 @@ tags:
   - jakarta
   - faces
   - jsf
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.text.FindAndReplace:
-      find: javax.
-      replace: jakarta.
+      find: javax.faces.
+      replace: jakarta.faces.
       filePattern: '**/*.js;**/*.ts;**/*.properties'
   - org.openrewrite.text.FindAndReplace:
       find: window.jsf
@@ -259,8 +246,6 @@ description: >-
   The `jsf/ClientSideSecretKey` JNDI name has been renamed to `faces/ClientSideSecretKey`,
   and the `jsf/FlashSecretKey` JNDI name has been renamed to `faces/FlashSecretKey`.
   The JNDI keys that have been renamed are updated to allow use of the keys.
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagValue:
       elementName: //env-entry-name
@@ -277,8 +262,6 @@ displayName: Replace `ResourceResolver` with `ResourceHandler`
 description: >-
   The `ResourceResolver` class was removed in Jakarta Faces 3.0.
   The functionality provided by that class can be replaced by using the `jakarta.faces.application.ResourceHandler` class.
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.view.facelets.ResourceResolver
@@ -294,8 +277,6 @@ name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
 displayName: Use `StateManagementStrategy`
 description: >-
   Faces 3.0 introduced using `StateManagementStrategy` in favor of `StateManager`, which was later removed in Faces 4.0.
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -332,8 +313,6 @@ displayName: Use `jakarta.el` instead of `jakarta.faces.el` and `javax.faces.el`
 description: >-
   Several classes were removed and replaced in Jakarta Faces 3.0.
   The only Object definition not removed in the `jakarta.faces.el` package is the CompositeComponentExpressionHolder interface.
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: javax.faces.el.MethodBinding
@@ -413,8 +392,6 @@ tags:
   - myfaces
   - omnifaces
   - primefaces
-preconditions:
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.maven.ChangeDependencyClassifier:
       groupId: org.primefaces

@@ -88,24 +88,16 @@ class JREThrowableFinalMethodsTest implements RewriteTest {
     }
 
     @Test
-    void shouldRenameOnJava6() {
+    void shouldNotRenameMethodsDeclaredOnThrowable() {
         //language=java
         rewriteRun(
           spec -> spec.recipe(new JREThrowableFinalMethods(null, null)),
           java(
             """
               class ClassUsingThrowable {
-                  void methodUsingRenamedMethodsAlready(Throwable t1) {
+                  void methodUsingThrowableMethods(Throwable t1) {
                       t1.addSuppressed(new Throwable());
                       t1.getSuppressed();
-                  }
-              }
-              """,
-            """
-              class ClassUsingThrowable {
-                  void methodUsingRenamedMethodsAlready(Throwable t1) {
-                      t1.myAddSuppressed(new Throwable());
-                      t1.myGetSuppressed();
                   }
               }
               """,

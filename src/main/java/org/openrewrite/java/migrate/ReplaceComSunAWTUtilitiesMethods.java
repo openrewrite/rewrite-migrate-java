@@ -28,7 +28,9 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -135,14 +137,24 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                 new UsesMethod<>(setWindowOpacityPatternMethod)
         ), new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
-                super.visitMethodInvocation(mi, ctx);
+            public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J j = super.visitMethodInvocation(method, ctx);
+                if (!(j instanceof J.MethodInvocation)) {
+                    return j;
+                }
+                J.MethodInvocation mi = (J.MethodInvocation) j;
                 if (getAWTIsWindowsTranslucencyMethod.matches(mi)) {
+                    Expression translucency = mi.getArguments().get(0);
+                    String constant = enumConstantName(translucency);
+                    if (constant == null) {
+                        return mi;
+                    }
                     maybeRemoveImport(mi.getMethodType().getDeclaringType().getFullyQualifiedName());
+                    maybeRemoveImport(TypeUtils.asFullyQualified(translucency.getType()));
                     maybeAddImport("java.awt.GraphicsEnvironment");
                     maybeAddImport("java.awt.GraphicsDevice.WindowTranslucency");
                     String templateString = "GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().isWindowTranslucencySupported(WindowTranslucency." +
-                                            ((J.FieldAccess) mi.getArguments().get(0)).getSimpleName();
+                                            constant + ")";
                     return JavaTemplate.builder(templateString).
                             imports("java.awt.GraphicsEnvironment",
                                     "java.awt.GraphicsDevice.WindowTranslucency")
@@ -181,6 +193,16 @@ public class ReplaceComSunAWTUtilitiesMethods extends Recipe {
                             .withPrefix(mi.getPrefix());
                 }
                 return mi;
+            }
+
+            private @Nullable String enumConstantName(Expression expression) {
+                J.Identifier name = expression instanceof J.FieldAccess ? ((J.FieldAccess) expression).getName() :
+                        expression instanceof J.Identifier ? (J.Identifier) expression : null;
+                if (name == null || name.getFieldType() == null ||
+                    !TypeUtils.isOfType(name.getFieldType().getOwner(), expression.getType())) {
+                    return null;
+                }
+                return name.getSimpleName();
             }
         });
     }
