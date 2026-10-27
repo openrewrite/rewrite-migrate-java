@@ -197,7 +197,7 @@ class LombokUtils {
         JavaType fieldType = assignment.getVariable().getType();
         return assignment.getAssignment().toString().equals(paramName) &&
                         param.getType() != null &&
-                        param.getType().equals(fieldType);
+                        TypeUtils.isOfType(param.getType(), fieldType);
     }
 
     public static String deriveSetterMethodName(JavaType.Variable fieldType) {

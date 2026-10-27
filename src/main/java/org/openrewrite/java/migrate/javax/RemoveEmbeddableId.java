@@ -27,6 +27,7 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -112,7 +113,7 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
 
         public boolean isEmbeddableClass(@Nullable JavaType type) {
             return definedEmbeddableClasses.stream()
-                    .anyMatch(emb -> type.equals(emb) ||
+                    .anyMatch(emb -> TypeUtils.isOfType(type, emb) ||
                                type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName())));
         }
     }

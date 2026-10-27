@@ -107,7 +107,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
             }
 
             private boolean sameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {
-                return expression instanceof J.Identifier && variable.getVariableType().equals(((J.Identifier) expression).getFieldType());
+                return expression instanceof J.Identifier && TypeUtils.isOfType(variable.getVariableType(), ((J.Identifier) expression).getFieldType());
             }
         });
     }
