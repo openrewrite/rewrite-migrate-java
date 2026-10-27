@@ -649,9 +649,9 @@ class JSpecifyBestPracticesTest implements RewriteTest {
             .recipeFromResource(
               "/META-INF/rewrite/jspecify.yml",
               "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations")
-            .parser(JavaParser.fromJavaVersion()
-              .classpath("jspecify")
-              .classpathFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")),
+            .parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromClasspath("jspecify"),
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")))),
           mavenProject("foo",
             //language=java
             srcMainJava(
