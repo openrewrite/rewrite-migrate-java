@@ -130,7 +130,7 @@ final class DeclarationCheck {
      */
     public static boolean declarationHasType(J.VariableDeclarations vd, JavaType type) {
         TypeTree typeExpression = vd.getTypeExpression();
-        return typeExpression != null && type.equals(typeExpression.getType());
+        return typeExpression != null && TypeUtils.isOfType(type, typeExpression.getType());
     }
 
     /**
@@ -387,7 +387,7 @@ final class DeclarationCheck {
                     return assignment;
                 }
                 if (assignment.getVariable() instanceof J.Identifier &&
-                        variableType.equals(((J.Identifier) assignment.getVariable()).getFieldType())) {
+                        TypeUtils.isOfType(variableType, ((J.Identifier) assignment.getVariable()).getFieldType())) {
                     found.set(true);
                     return assignment;
                 }
