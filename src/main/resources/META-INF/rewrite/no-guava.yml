@@ -330,12 +330,7 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: com.google.common.base.Objects equal(Object, Object)
-      newMethodName: equals
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Objects equals(Object, Object)
-      fullyQualifiedTargetTypeName: java.util.Objects
+  - org.openrewrite.java.migrate.guava.GuavaObjectsEqualToJavaUtilObjectsEquals
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
