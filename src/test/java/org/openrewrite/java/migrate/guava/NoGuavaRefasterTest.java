@@ -28,7 +28,7 @@ class NoGuavaRefasterTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new NoGuavaRefasterRecipes())
-          .parser(JavaParser.fromJavaVersion().classpath("rewrite-java").classpathFromResources(new InMemoryExecutionContext(), "guava"));
+          .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 
     @DocumentExample
