@@ -206,7 +206,7 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
                 """
                   plugins {
                       id 'java'
-                      id 'io.freefair.lombok' version '9.1.0'
+                      id 'io.freefair.lombok' version '6.3.0'
                   }
 
                   lombok {

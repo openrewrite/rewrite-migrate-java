@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
@@ -27,7 +28,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.maven.tree.Version;
+import org.openrewrite.semver.LatestRelease;
 
 import java.util.Set;
 
@@ -64,7 +65,7 @@ public class UpgradeFreefairLombokVersion extends Recipe {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                 if (isLombokVersion(assignment.getVariable()) && assignment.getAssignment() instanceof J.Literal) {
-                    return assignment.withAssignment(upgrade((J.Literal) assignment.getAssignment(), version));
+                    return assignment.withAssignment(upgrade((J.Literal) assignment.getAssignment()));
                 }
                 return assignment;
             }
@@ -79,11 +80,10 @@ public class UpgradeFreefairLombokVersion extends Recipe {
                         insideLombokExtension = false;
                     }
                 }
-                if (PROPERTY_SET.matches(method, true) && method.getSelect() != null &&
-                        isLombokVersion(method.getSelect()) &&
+                if (PROPERTY_SET.matches(method, true) && isLombokVersion(method.getSelect()) &&
                         method.getArguments().size() == 1 && method.getArguments().get(0) instanceof J.Literal) {
                     J.Literal literal = (J.Literal) method.getArguments().get(0);
-                    J.Literal upgraded = upgrade(literal, version);
+                    J.Literal upgraded = upgrade(literal);
                     return upgraded == literal ? method : method.withArguments(singletonList(upgraded));
                 }
                 // Only closures can hold a `lombok { }` block or further `version` settings
@@ -93,7 +93,7 @@ public class UpgradeFreefairLombokVersion extends Recipe {
                 return super.visitMethodInvocation(method, ctx);
             }
 
-            private boolean isLombokVersion(Expression expression) {
+            private boolean isLombokVersion(@Nullable Expression expression) {
                 if (expression instanceof J.Identifier) {
                     return insideLombokExtension && "version".equals(((J.Identifier) expression).getSimpleName());
                 }
@@ -108,18 +108,18 @@ public class UpgradeFreefairLombokVersion extends Recipe {
         });
     }
 
-    private static J.Literal upgrade(J.Literal literal, String minimum) {
+    private J.Literal upgrade(J.Literal literal) {
         if (!(literal.getValue() instanceof String) || literal.getValueSource() == null) {
             return literal;
         }
         String current = (String) literal.getValue();
-        if (new Version(current).compareTo(new Version(minimum)) >= 0) {
+        if (new LatestRelease(null).compare(null, current, version) >= 0) {
             return literal;
         }
         // Preserve the original quote style (Groovy allows both ' and ").
         char quote = literal.getValueSource().charAt(0);
         return literal
-                .withValue(minimum)
-                .withValueSource(quote + minimum + quote);
+                .withValue(version)
+                .withValueSource(quote + version + quote);
     }
 }
