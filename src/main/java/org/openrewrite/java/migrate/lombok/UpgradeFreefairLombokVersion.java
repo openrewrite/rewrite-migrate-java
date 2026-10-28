@@ -45,7 +45,7 @@ public class UpgradeFreefairLombokVersion extends Recipe {
 
     @Option(displayName = "Minimum Lombok version",
             description = "The Lombok version to upgrade to, if the configured version is lower.",
-            example = "1.18.42")
+            example = "1.18.48")
     String version;
 
     String displayName = "Upgrade the Lombok version of the `io.freefair.lombok` Gradle plugin";

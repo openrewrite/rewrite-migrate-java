@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -27,7 +28,7 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UpgradeFreefairLombokVersion("1.18.42"));
+        spec.recipe(new UpgradeFreefairLombokVersion("1.18.48"));
     }
 
     @DocumentExample
@@ -53,7 +54,7 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
               }
 
               lombok {
-                  version = "1.18.42"
+                  version = "1.18.48"
               }
               """
           )
@@ -79,7 +80,7 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
                   id 'io.freefair.lombok' version '6.3.0'
               }
 
-              lombok.version = '1.18.42'
+              lombok.version = '1.18.48'
               """
           )
         );
@@ -107,7 +108,7 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
               }
 
               lombok {
-                  version.set("1.18.42")
+                  version.set("1.18.48")
               }
               """
           )
@@ -136,69 +137,73 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
               }
 
               lombok {
-                  version = "1.18.42"
+                  version = "1.18.48"
               }
               """
           )
         );
     }
 
-    @Test
-    void noChangeWithoutFreefairPlugin() {
-        rewriteRun(
-          //language=groovy
-          buildGradle(
-            """
-              plugins {
-                  id 'java'
-              }
+    @Nested
+    class NoChange {
 
-              lombok {
-                  version = "1.18.22"
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void withoutFreefairPlugin() {
+            rewriteRun(
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                  }
 
-    @Test
-    void noDowngrade() {
-        rewriteRun(
-          //language=groovy
-          buildGradle(
-            """
-              plugins {
-                  id 'java'
-                  id 'io.freefair.lombok' version '9.1.0'
-              }
+                  lombok {
+                      version = "1.18.22"
+                  }
+                  """
+              )
+            );
+        }
 
-              lombok {
-                  version = "1.18.44"
-              }
-              """
-          )
-        );
-    }
+        @Test
+        void alreadyNewerVersion() {
+            rewriteRun(
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                      id 'io.freefair.lombok' version '9.1.0'
+                  }
 
-    @Test
-    void noChangeToProjectVersionOrVariable() {
-        rewriteRun(
-          //language=groovy
-          buildGradle(
-            """
-              plugins {
-                  id 'java'
-                  id 'io.freefair.lombok' version '6.3.0'
-              }
+                  lombok {
+                      version = "1.18.50"
+                  }
+                  """
+              )
+            );
+        }
 
-              version = "1.0.0"
-              def lombokVersion = "1.18.22"
+        @Test
+        void projectVersionOrVariable() {
+            rewriteRun(
+              //language=groovy
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                      id 'io.freefair.lombok' version '6.3.0'
+                  }
 
-              lombok {
-                  version = lombokVersion
-              }
-              """
-          )
-        );
+                  version = "1.0.0"
+                  def lombokVersion = "1.18.22"
+
+                  lombok {
+                      version = lombokVersion
+                  }
+                  """
+              )
+            );
+        }
     }
 }

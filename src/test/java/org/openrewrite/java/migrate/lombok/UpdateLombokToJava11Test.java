@@ -168,7 +168,7 @@ class UpdateLombokToJava11Test implements RewriteTest {
               }
 
               lombok {
-                  version = "1.18.42"
+                  version = "1.18.48"
               }
               """
           )
