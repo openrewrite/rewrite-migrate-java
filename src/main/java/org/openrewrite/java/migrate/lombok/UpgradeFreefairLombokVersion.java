@@ -17,7 +17,6 @@ package org.openrewrite.java.migrate.lombok;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Preconditions;
@@ -60,51 +59,53 @@ public class UpgradeFreefairLombokVersion extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new FindPlugins("io.freefair.lombok", null), new JavaIsoVisitor<ExecutionContext>() {
+            private boolean insideLombokExtension;
+
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
-                J.Assignment a = super.visitAssignment(assignment, ctx);
-                if (isLombokVersion(a.getVariable(), getCursor()) && a.getAssignment() instanceof J.Literal) {
-                    J.Literal upgraded = upgrade((J.Literal) a.getAssignment(), version);
-                    return a.withAssignment(upgraded);
+                if (isLombokVersion(assignment.getVariable()) && assignment.getAssignment() instanceof J.Literal) {
+                    return assignment.withAssignment(upgrade((J.Literal) assignment.getAssignment(), version));
                 }
-                return a;
+                return assignment;
             }
 
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
-                if (PROPERTY_SET.matches(m, true) && m.getSelect() != null &&
-                        isLombokVersion(m.getSelect(), getCursor()) &&
-                        m.getArguments().size() == 1 && m.getArguments().get(0) instanceof J.Literal) {
-                    J.Literal literal = (J.Literal) m.getArguments().get(0);
-                    J.Literal upgraded = upgrade(literal, version);
-                    return upgraded == literal ? m : m.withArguments(singletonList(upgraded));
+                if (!insideLombokExtension && LOMBOK_EXTENSION.matches(method, true)) {
+                    insideLombokExtension = true;
+                    try {
+                        return super.visitMethodInvocation(method, ctx);
+                    } finally {
+                        insideLombokExtension = false;
+                    }
                 }
-                return m;
+                if (PROPERTY_SET.matches(method, true) && method.getSelect() != null &&
+                        isLombokVersion(method.getSelect()) &&
+                        method.getArguments().size() == 1 && method.getArguments().get(0) instanceof J.Literal) {
+                    J.Literal literal = (J.Literal) method.getArguments().get(0);
+                    J.Literal upgraded = upgrade(literal, version);
+                    return upgraded == literal ? method : method.withArguments(singletonList(upgraded));
+                }
+                // Only closures can hold a `lombok { }` block or further `version` settings
+                if (method.getArguments().stream().noneMatch(J.Lambda.class::isInstance)) {
+                    return method;
+                }
+                return super.visitMethodInvocation(method, ctx);
+            }
+
+            private boolean isLombokVersion(Expression expression) {
+                if (expression instanceof J.Identifier) {
+                    return insideLombokExtension && "version".equals(((J.Identifier) expression).getSimpleName());
+                }
+                if (expression instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) expression;
+                    return "version".equals(fieldAccess.getSimpleName()) &&
+                            fieldAccess.getTarget() instanceof J.Identifier &&
+                            "lombok".equals(((J.Identifier) fieldAccess.getTarget()).getSimpleName());
+                }
+                return false;
             }
         });
-    }
-
-    /**
-     * Whether the expression is the `version` property of the freefair `lombok` extension: either `version` inside a
-     * `lombok { }` block, or `lombok.version`.
-     */
-    private static boolean isLombokVersion(Expression expression, Cursor cursor) {
-        if (expression instanceof J.Identifier) {
-            return "version".equals(((J.Identifier) expression).getSimpleName()) && isInsideLombokExtension(cursor);
-        }
-        if (expression instanceof J.FieldAccess) {
-            J.FieldAccess fieldAccess = (J.FieldAccess) expression;
-            return "version".equals(fieldAccess.getSimpleName()) &&
-                    fieldAccess.getTarget() instanceof J.Identifier &&
-                    "lombok".equals(((J.Identifier) fieldAccess.getTarget()).getSimpleName());
-        }
-        return false;
-    }
-
-    private static boolean isInsideLombokExtension(Cursor cursor) {
-        return cursor.getPathAsStream()
-                .anyMatch(o -> o instanceof J.MethodInvocation && LOMBOK_EXTENSION.matches((J.MethodInvocation) o, true));
     }
 
     private static J.Literal upgrade(J.Literal literal, String minimum) {

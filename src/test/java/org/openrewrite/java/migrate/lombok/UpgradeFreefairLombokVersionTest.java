@@ -87,6 +87,39 @@ class UpgradeFreefairLombokVersionTest implements RewriteTest {
     }
 
     @Test
+    void upgradesVersionInNestedLombokBlock() {
+        rewriteRun(
+          //language=groovy
+          buildGradle(
+            """
+              plugins {
+                  id 'java'
+                  id 'io.freefair.lombok' version '6.3.0'
+              }
+
+              allprojects {
+                  lombok {
+                      version = "1.18.22"
+                  }
+              }
+              """,
+            """
+              plugins {
+                  id 'java'
+                  id 'io.freefair.lombok' version '6.3.0'
+              }
+
+              allprojects {
+                  lombok {
+                      version = "1.18.48"
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void upgradesVersionSetInKotlinDsl() {
         rewriteRun(
           //language=kotlin
