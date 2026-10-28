@@ -214,6 +214,40 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void migratesSurefireForkModeForJava25() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.mycompany.app</groupId>
+                  <artifactId>my-app</artifactId>
+                  <version>1</version>
+                  <build>
+                      <plugins>
+                          <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-surefire-plugin</artifactId>
+                              <version>2.22.2</version>
+                              <configuration>
+                                  <forkMode>always</forkMode>
+                              </configuration>
+                          </plugin>
+                      </plugins>
+                  </build>
+              </project>
+              """,
+            spec -> spec.after(actual ->
+              assertThat(actual)
+                .containsPattern("maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.")
+                .containsPattern("<configuration>\\s*<forkCount>1</forkCount>\\s*<reuseForks>false</reuseForks>\\s*</configuration>")
+                .actual())
+          )
+        );
+    }
+
+    @Test
     void upgradesGradleWrapperForJava25() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25")
