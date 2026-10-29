@@ -27,13 +27,15 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.marker.SearchResult;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
-public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
+public class ModuleHasKotlinSource extends ScanningRecipe<ModuleHasKotlinSource.Accumulator> {
+
+    private static final Set<String> BUILD_FILE_NAMES = new HashSet<>(Arrays.asList("pom.xml", "build.gradle", "build.gradle.kts"));
 
     @Option(displayName = "Invert marking",
             description = "If `true`, marks files in modules that do *not* contain Kotlin sources. Defaults to `false`.",
@@ -47,20 +49,36 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
             "Intended as a precondition to scope recipes to projects that actually compile Kotlin, " +
             "as opposed to projects that merely pick up `kotlin-stdlib` transitively.";
 
-    @Override
-    public Set<JavaProject> getInitialValue(ExecutionContext ctx) {
-        return new HashSet<>();
+    public static class Accumulator {
+        final Set<JavaProject> modulesWithKotlin = new HashSet<>();
+        final Map<Path, JavaProject> moduleDirectories = new HashMap<>();
+        final List<Path> kotlinSourcesWithoutModule = new ArrayList<>();
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getScanner(Set<JavaProject> acc) {
+    public Accumulator getInitialValue(ExecutionContext ctx) {
+        return new Accumulator();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof SourceFile) {
                     SourceFile sourceFile = (SourceFile) tree;
-                    if (sourceFile.getSourcePath().toString().endsWith(".kt")) {
-                        sourceFile.getMarkers().findFirst(JavaProject.class).ifPresent(acc::add);
+                    Path sourcePath = sourceFile.getSourcePath();
+                    Optional<JavaProject> maybeJp = sourceFile.getMarkers().findFirst(JavaProject.class);
+                    if (sourcePath.toString().endsWith(".kt")) {
+                        if (maybeJp.isPresent()) {
+                            acc.modulesWithKotlin.add(maybeJp.get());
+                        } else {
+                            acc.kotlinSourcesWithoutModule.add(sourcePath);
+                        }
+                    } else if (maybeJp.isPresent() && sourcePath.getFileName() != null &&
+                               BUILD_FILE_NAMES.contains(sourcePath.getFileName().toString())) {
+                        Path moduleDirectory = sourcePath.getParent() == null ? Paths.get("") : sourcePath.getParent();
+                        acc.moduleDirectories.put(moduleDirectory, maybeJp.get());
                     }
                 }
                 return tree;
@@ -69,7 +87,24 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor(Set<JavaProject> acc) {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
+        // Some build tools, like the Android Gradle plugin, leave Kotlin sources without a `JavaProject` marker.
+        // Attribute those to the module whose build file is in the closest enclosing directory.
+        for (Path kotlinSource : acc.kotlinSourcesWithoutModule) {
+            JavaProject enclosingModule = null;
+            int enclosingDepth = -1;
+            for (Map.Entry<Path, JavaProject> module : acc.moduleDirectories.entrySet()) {
+                Path moduleDirectory = module.getKey();
+                int depth = moduleDirectory.toString().isEmpty() ? 0 : moduleDirectory.getNameCount();
+                if (depth > enclosingDepth && kotlinSource.startsWith(moduleDirectory)) {
+                    enclosingModule = module.getValue();
+                    enclosingDepth = depth;
+                }
+            }
+            if (enclosingModule != null) {
+                acc.modulesWithKotlin.add(enclosingModule);
+            }
+        }
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
@@ -85,10 +120,10 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
                     return tree;
                 }
                 JavaProject jp = maybeJp.get();
-                if (shouldInvert && !acc.contains(jp)) {
+                if (shouldInvert && !acc.modulesWithKotlin.contains(jp)) {
                     return SearchResult.found(tree, "Module does not have Kotlin source");
                 }
-                if (!shouldInvert && acc.contains(jp)) {
+                if (!shouldInvert && acc.modulesWithKotlin.contains(jp)) {
                     return SearchResult.found(tree, "Module has Kotlin source");
                 }
                 return tree;

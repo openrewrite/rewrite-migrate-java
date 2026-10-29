@@ -294,6 +294,55 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void kotlin1xCapsJavaVersionAt24WhenKotlinSourceHasNoModuleMarker() {
+        // Android builds attach no `JavaProject` marker to their Kotlin sources, only to the build file. The Kotlin
+        // source still belongs to the module whose build file encloses it, so the module is capped at Java 24.
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>1.9.24</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <!-- Capped at Java 24: this module compiles Kotlin and depends on kotlin-stdlib 1.9.24, and Kotlin before 2.3 cannot target Java 25 bytecode. Upgrade Kotlin (kotlin-stdlib and the Kotlin compiler) to 2.3 or later, then re-run "Migrate to Java 25" to move this module to Java 25. -->
+                        <maven.compiler.release>24</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-stdlib</artifactId>
+                            <version>1.9.24</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          ),
+          other("fun main() {}", spec -> spec.path("project/src/main/java/App.kt"))
+        );
+    }
+
+    @Test
     void kotlin2xUpgradedToLatest2_3AndJava25() {
         // Kotlin 2.0-2.2 is already on the K2 compiler, so bumping to the latest 2.3 is safe and unblocks Java 25.
         // The Kotlin bump happens in the first cycle and requests a second, in which the Java 25 upgrade sees Kotlin 2.3.
