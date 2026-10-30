@@ -25,9 +25,11 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
@@ -116,6 +118,7 @@ public class UseMapOf extends Recipe {
                                 }
                                 List<Statement> putStatements = ((J.Block) statement).getStatements();
                                 List<Expression> args = new ArrayList<>();
+                                List<Expression> keys = new ArrayList<>();
                                 boolean useEntries = putStatements.size() > 10;
                                 StringJoiner template = useEntries ?
                                         new StringJoiner(", ", "Map.ofEntries(", ")") :
@@ -125,11 +128,23 @@ public class UseMapOf extends Recipe {
                                         return n;
                                     }
                                     J.MethodInvocation put = (J.MethodInvocation) stat;
+                                    if (put.getArguments().size() != 2) {
+                                        return n;
+                                    }
+                                    // `Map.of(..)` and `Map.entry(..)` throw on null keys or values and on
+                                    // duplicate keys, where `HashMap.put(..)` tolerated both. Only rewrite
+                                    // when every key and value is provably non-null and the keys we can
+                                    // statically compare are distinct (issue #1307).
                                     for (Expression arg : put.getArguments()) {
-                                        if (J.Literal.isLiteralValue(arg, null)) {
+                                        if (!isProvablyNonNull(arg)) {
                                             return n;
                                         }
                                     }
+                                    Expression key = put.getArguments().get(0);
+                                    if (isDuplicateKey(key, keys)) {
+                                        return n;
+                                    }
+                                    keys.add(key);
                                     args.addAll(put.getArguments());
                                     if (useEntries) {
                                         template.add("Map.entry(#{any()}, #{any()})");
@@ -260,6 +275,8 @@ public class UseMapOf extends Recipe {
 
                             List<J.MethodInvocation> puts = new ArrayList<>();
                             List<UUID> absorbedHere = new ArrayList<>();
+                            List<Expression> keys = new ArrayList<>();
+                            boolean duplicateKey = false;
                             int j = i + 1;
                             while (j < stmts.size()) {
                                 Statement next = stmts.get(j);
@@ -271,11 +288,19 @@ public class UseMapOf extends Recipe {
                                         expressionReferences(kv.get(1), targetName)) {
                                     break;
                                 }
+                                // `Map.of(..)` / `Map.ofEntries(..)` throw on duplicate keys, where a
+                                // `HashMap.put(..)` chain silently kept the last write. Bail the whole
+                                // sequence when two keys we can statically compare are equal (issue #1307).
+                                if (isDuplicateKey(kv.get(0), keys)) {
+                                    duplicateKey = true;
+                                    break;
+                                }
+                                keys.add(kv.get(0));
                                 puts.add((J.MethodInvocation) next);
                                 absorbedHere.add(next.getId());
                                 j++;
                             }
-                            if (puts.size() >= 2 && initializer != null) {
+                            if (!duplicateKey && puts.size() >= 2 && initializer != null) {
                                 rewrites.put(initializer.getId(), puts);
                                 absorbedPutIds.addAll(absorbedHere);
                                 i = j;
@@ -359,6 +384,19 @@ public class UseMapOf extends Recipe {
                                 expression instanceof J.MemberReference) {
                             return true;
                         }
+                        // A reference to an initialized `static final` constant (for example a String
+                        // constant used as a key) is treated as non-null, matching the behaviour the
+                        // anonymous-class form relied on before the nullability guard (issue #1307).
+                        JavaType.Variable fieldType = null;
+                        if (expression instanceof J.Identifier) {
+                            fieldType = ((J.Identifier) expression).getFieldType();
+                        } else if (expression instanceof J.FieldAccess) {
+                            fieldType = ((J.FieldAccess) expression).getName().getFieldType();
+                        }
+                        if (fieldType != null &&
+                                fieldType.hasFlags(Flag.Static, Flag.Final, Flag.HasInit)) {
+                            return true;
+                        }
                         JavaType type = expression.getType();
                         return type == JavaType.Primitive.Boolean ||
                                type == JavaType.Primitive.Byte ||
@@ -368,6 +406,22 @@ public class UseMapOf extends Recipe {
                                type == JavaType.Primitive.Int ||
                                type == JavaType.Primitive.Long ||
                                type == JavaType.Primitive.Short;
+                    }
+
+                    /**
+                     * Returns {@code true} when {@code key} is semantically equal to a key already seen in
+                     * the same map. {@code Map.of(..)} and {@code Map.ofEntries(..)} reject duplicate keys
+                     * with an {@code IllegalArgumentException}, where the original {@code HashMap.put(..)}
+                     * chain just kept the last write, so the rewrite has to be skipped in that case
+                     * (issue #1307).
+                     */
+                    private boolean isDuplicateKey(Expression key, List<Expression> seenKeys) {
+                        for (Expression seen : seenKeys) {
+                            if (SemanticallyEqual.areEqual(key, seen)) {
+                                return true;
+                            }
+                        }
+                        return false;
                     }
 
                     private boolean expressionReferences(Expression expr, String name) {

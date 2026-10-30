@@ -689,4 +689,134 @@ class UseMapOfTest implements RewriteTest {
           )
         );
     }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1307")
+    @Test
+    void doNotChangeWhenAnonymousClassValueMayBeNull() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, Object> create(String dataOwner) {
+                      return new HashMap<>() {{
+                          put("owner", dataOwner);
+                          put("id", "123");
+                      }};
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1307")
+    @Test
+    void doNotChangeAnonymousClassWithDuplicateKeys() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> m = new HashMap<>() {{
+                      put("key", "first");
+                      put("key", "second");
+                  }};
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1307")
+    @Test
+    void doNotChangeProseChainWithDuplicateKeys() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                      ages.put("Bob", 30);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1307")
+    @Test
+    void changeAnonymousClassWithDistinctKeysAndNonNullValues() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> m = new HashMap<>() {{
+                      put("a", "1");
+                      put("b", "2");
+                  }};
+              }
+              """,
+            """
+              import java.util.Map;
+
+              class Test {
+                  Map<String, String> m = Map.of(
+                      "a", "1",
+                      "b", "2");
+              }
+              """
+          )
+        );
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1307")
+    @Test
+    void changeProseChainWithDistinctKeys() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>();
+                      ages.put("Bob", 42);
+                      ages.put("alice", 30);
+                  }
+              }
+              """,
+            """
+              import java.util.HashMap;
+              import java.util.Map;
+
+              class Test {
+                  void m() {
+                      Map<String, Integer> ages = new HashMap<>(Map.of(
+                              "Bob", 42,
+                              "alice", 30));
+                  }
+              }
+              """
+          )
+        );
+    }
 }
