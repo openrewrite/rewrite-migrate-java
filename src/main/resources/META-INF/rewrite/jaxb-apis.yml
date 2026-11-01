@@ -22,7 +22,8 @@ description: >-
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
   which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
   using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
-  necessitates the package change as well.
+  necessitates the package change as well. Modern Jakarta JAXB APIs are preserved; known legacy JAXB consumers
+  receive a separate javax JAXB API when needed.
 tags:
   - javax
   - java11
@@ -82,7 +83,8 @@ description: >-
   dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 version 2.x
   which allows for the continued use of the `javax.xml.bind` namespace. Running a full javax to Jakarta migration
   using `org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta` will update to versions greater than 3.x which
-  necessitates the package change as well.
+  necessitates the package change as well. Modern Jakarta JAXB APIs are preserved; known legacy JAXB consumers
+  receive a separate javax JAXB API when needed.
 tags:
   - javax
   - java11
@@ -90,6 +92,35 @@ tags:
   - jakarta
 preconditions:
   - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJavaxJaxbApiToModernGraph
+  - org.openrewrite.java.migrate.javax.AddLegacyJaxbAPIDependencies
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJaxbApiToModernGraph
+displayName: Supply javax JAXB alongside modern Jakarta JAXB
+description: Preserve the modern API while supplying the separate legacy API needed by known javax JAXB consumers.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxbNamespace:
+      modern: true
+      runtimeRequired: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      version: 2.3.1
+      scope: runtime
+      configuration: runtimeOnly
+      acceptTransitive: false
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddLegacyJaxbAPIDependencies
+displayName: Add Java EE 8 JAXB API dependencies
+description: Keep the legacy JAXB migration behavior where no modern Jakarta JAXB API is resolved or managed.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxbNamespace:
+      modern: false
+      runtimeRequired: false
 recipeList:
   - org.openrewrite.java.migrate.javax.MigrateOneGfwJaxbDependencies
   # Remove the legacy jaxb-core artifact
