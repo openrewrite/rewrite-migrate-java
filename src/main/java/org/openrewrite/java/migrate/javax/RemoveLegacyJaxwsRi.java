@@ -33,6 +33,8 @@ import org.openrewrite.semver.Semver;
 import org.openrewrite.xml.RemoveContentVisitor;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Value
@@ -51,6 +53,18 @@ public class RemoveLegacyJaxwsRi extends Recipe {
                 }
                 if (tree instanceof Xml.Document && tree.getMarkers().findFirst(MavenResolutionResult.class).isPresent()) {
                     return new MavenIsoVisitor<ExecutionContext>() {
+                        private boolean removed;
+
+                        @Override
+                        public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
+                            Xml.Document d = super.visitDocument(document, ctx);
+                            // Refresh only after all removals, including versionless direct declarations.
+                            if (removed) {
+                                maybeUpdateModel();
+                            }
+                            return d;
+                        }
+
                         @Override
                         public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                             Xml.Tag t = super.visitTag(tag, ctx);
@@ -64,7 +78,7 @@ public class RemoveLegacyJaxwsRi extends Recipe {
                                 }
                                 if (isLegacy(version)) {
                                     doAfterVisit(new RemoveContentVisitor<>(t, true, true));
-                                    maybeUpdateModel();
+                                    removed = true;
                                 }
                             }
                             return t;
@@ -78,19 +92,25 @@ public class RemoveLegacyJaxwsRi extends Recipe {
                         if (requested == null) {
                             continue;
                         }
-                        // Declarable buckets often have no resolved dependencies of their own.
-                        // Consult their consuming classpaths before falling back to a literal version.
-                        String version = requested.getVersion();
-                        for (GradleDependencyConfiguration consumer : project.get().configurationsExtendingFrom(configuration, true)) {
-                            ResolvedDependency resolved = consumer.findResolvedDependency("com.sun.xml.ws", "jaxws-ri");
-                            if (resolved != null) {
-                                version = resolved.getVersion();
-                                if (!isLegacy(version)) {
-                                    break;
-                                }
+                        // Inspect the configuration itself as well as every consuming classpath.
+                        // A modern or unresolved selection anywhere prevents removal.
+                        List<GradleDependencyConfiguration> classpaths = new ArrayList<>();
+                        classpaths.add(configuration);
+                        classpaths.addAll(project.get().configurationsExtendingFrom(configuration, true));
+                        boolean resolved = false;
+                        boolean preserve = false;
+                        for (GradleDependencyConfiguration classpath : classpaths) {
+                            if (ResolvedDependencyGraph.anyMatch(classpath.getDirectResolved(), d ->
+                                    "com.sun.xml.ws".equals(d.getGroupId()) && "jaxws-ri".equals(d.getArtifactId()))) {
+                                resolved = true;
+                            }
+                            if (ResolvedDependencyGraph.anyMatch(classpath.getDirectResolved(), d ->
+                                    "com.sun.xml.ws".equals(d.getGroupId()) && "jaxws-ri".equals(d.getArtifactId()) &&
+                                    !isLegacy(d.getVersion()))) {
+                                preserve = true;
                             }
                         }
-                        if (isLegacy(version)) {
+                        if (!preserve && (resolved || isLegacy(requested.getVersion()))) {
                             tree = new org.openrewrite.gradle.RemoveDependency("com.sun.xml.ws", "jaxws-ri", configuration.getName())
                                     .getVisitor().visit(tree, ctx);
                         }

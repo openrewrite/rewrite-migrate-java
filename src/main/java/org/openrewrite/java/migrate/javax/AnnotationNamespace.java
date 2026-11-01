@@ -27,11 +27,8 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
-import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
-
-import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
 
@@ -56,15 +53,15 @@ public class AnnotationNamespace extends Recipe {
                     return tree;
                 }
                 boolean found = tree.getMarkers().findFirst(MavenResolutionResult.class).map(m ->
-                        m.getDependencies().values().stream().flatMap(Collection::stream).anyMatch(d ->
-                                isModern(d.getGroupId(), d.getArtifactId(), d.getVersion())) ||
+                        m.getDependencies().values().stream().anyMatch(dependencies ->
+                                ResolvedDependencyGraph.anyMatch(dependencies, d ->
+                                        isModern(d.getGroupId(), d.getArtifactId(), d.getVersion()))) ||
                         m.getPom().getDependencyManagement().stream().anyMatch(d ->
                                 isModern(d.getGroupId(), d.getArtifactId(), d.getVersion()))).orElse(false) ||
                         tree.getMarkers().findFirst(GradleProject.class).map(g ->
-                                g.getConfigurations().stream().anyMatch(c -> {
-                                    ResolvedDependency d = c.findResolvedDependency("jakarta.annotation", "jakarta.annotation-api");
-                                    return d != null && isModern(d.getGroupId(), d.getArtifactId(), d.getVersion());
-                                })).orElse(false);
+                                g.getConfigurations().stream().anyMatch(c ->
+                                        ResolvedDependencyGraph.anyMatch(c.getDirectResolved(), d ->
+                                                isModern(d.getGroupId(), d.getArtifactId(), d.getVersion())))).orElse(false);
                 return found == modern ? SearchResult.found(tree) : tree;
             }
         };

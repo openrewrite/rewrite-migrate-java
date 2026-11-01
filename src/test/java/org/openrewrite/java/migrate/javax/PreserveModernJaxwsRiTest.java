@@ -148,4 +148,56 @@ class PreserveModernJaxwsRiTest implements RewriteTest {
           </project>
           """.formatted(version)));
     }
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void managedLegacyDirectPom(boolean standalone) {
+        rewriteRun(
+          spec -> {
+              if (standalone) {
+                  spec.recipe(new RemoveLegacyJaxwsRi());
+              }
+          },
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1</version>
+                  <properties>
+                      <metro.version>2.3.2</metro.version>
+                  </properties>
+                  <dependencyManagement>
+                      <dependencies>
+                          <dependency>
+                              <groupId>com.sun.xml.ws</groupId>
+                              <artifactId>jaxws-ri</artifactId>
+                              <version>${metro.version}</version>
+                              <type>pom</type>
+                          </dependency>
+                      </dependencies>
+                  </dependencyManagement>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.sun.xml.ws</groupId>
+                          <artifactId>jaxws-ri</artifactId>
+                          <type>pom</type>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1</version>
+                  <properties>
+                      <metro.version>2.3.2</metro.version>
+                  </properties>
+              </project>
+              """
+          )
+        );
+    }
 }
