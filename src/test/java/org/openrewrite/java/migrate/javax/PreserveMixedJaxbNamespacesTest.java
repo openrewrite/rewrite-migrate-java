@@ -194,6 +194,30 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
             spec -> spec.path("binary-module/pom.xml")));
     }
 
+    @Test
+    void kotlinImportsNeedCompileApi() {
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+          org.openrewrite.kotlin.Assertions.kotlin(
+            "import javax.xml.bind.JAXBContext\nclass Example { val context: JAXBContext? = null }",
+            source -> source.path("src/main/kotlin/Example.kt")),
+          buildGradle("""
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+                runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:2.3.9'
+            }
+            """, """
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+                implementation "javax.xml.bind:jaxb-api:2.3.1"
+                runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:2.3.9'
+            }
+            """, source -> source.markers(graph(true))));
+    }
+
     private static String pom(String dependencies) {
         return "<project>\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>example</groupId>\n" +
           "  <artifactId>sample</artifactId>\n  <version>1</version>\n  <dependencies>\n" +

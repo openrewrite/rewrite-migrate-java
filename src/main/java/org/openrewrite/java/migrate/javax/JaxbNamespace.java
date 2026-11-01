@@ -26,7 +26,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.semver.Semver;
@@ -65,6 +65,9 @@ public class JaxbNamespace extends ScanningRecipe<JaxbNamespace.Sources> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Sources sources) {
+        if (sourceUsage == null) {
+            return TreeVisitor.noop();
+        }
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree preVisit(Tree tree, ExecutionContext ctx) {
@@ -75,9 +78,10 @@ public class JaxbNamespace extends ScanningRecipe<JaxbNamespace.Sources> {
                         file.getMarkers().findFirst(GradleProject.class).isPresent()) {
                         sources.builds.add(file.getSourcePath());
                     }
-                    if (tree instanceof J.CompilationUnit) {
-                        J.CompilationUnit cu = (J.CompilationUnit) tree;
-                        if (cu.getImports().stream().anyMatch(i -> i.getTypeName().startsWith("javax.xml.bind.")) ||
+                    if (tree instanceof JavaSourceFile) {
+                        JavaSourceFile cu = (JavaSourceFile) tree;
+                        if (cu.getImports().stream().anyMatch(i -> "javax.xml.bind".equals(i.getTypeName()) ||
+                                i.getTypeName().startsWith("javax.xml.bind.")) ||
                             new UsesType<>("javax.xml.bind..*", false).visit(cu, ctx) != cu) {
                             sources.uses.add(cu.getSourcePath());
                         }
