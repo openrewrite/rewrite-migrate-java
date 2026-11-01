@@ -20,6 +20,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.dir;
 
 class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
     @Override
@@ -74,5 +75,58 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             </dependency></dependencies>
           </project>
           """));
+    }
+
+    @Test
+    void upgradeCompilerVersionInheritedFromParent() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.acme</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0</version>
+                <packaging>pom</packaging>
+                <properties><groovy.version>3.0.23</groovy.version></properties>
+                <modules><module>child</module></modules>
+              </project>
+              """,
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.acme</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0</version>
+                <packaging>pom</packaging>
+                <properties><groovy.version>3.0.25</groovy.version></properties>
+                <modules><module>child</module></modules>
+              </project>
+              """
+          ),
+          dir("child", pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <parent>
+                  <groupId>com.acme</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1.0</version>
+                </parent>
+                <artifactId>child</artifactId>
+                <build><plugins><plugin>
+                  <groupId>org.codehaus.gmaven</groupId>
+                  <artifactId>groovy-maven-plugin</artifactId>
+                  <version>2.1.1</version>
+                  <dependencies><dependency>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+                    <version>${groovy.version}</version>
+                  </dependency></dependencies>
+                </plugin></plugins></build>
+              </project>
+              """
+          ))
+        );
     }
 }
