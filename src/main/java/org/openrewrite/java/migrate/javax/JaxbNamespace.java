@@ -20,22 +20,28 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
+
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
 /** Build-file precondition: Jakarta JAXB 3+ cannot supply javax.xml.bind types. */
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class JaxbNamespace extends Recipe {
+public class JaxbNamespace extends ScanningRecipe<JaxbNamespace.Sources> {
     private static final VersionComparator MODERN = requireNonNull(Semver.validate("[3,)", null).getValue());
 
     @Option(displayName = "Modern namespace", description = "Whether to match graphs using Jakarta JAXB API 3 or later.", example = "true")
@@ -44,11 +50,66 @@ public class JaxbNamespace extends Recipe {
     @Option(displayName = "Require legacy runtime", description = "Match only graphs with known javax JAXB consumers and no existing direct javax JAXB API.", example = "true")
     boolean runtimeRequired;
 
+    @Option(displayName = "Source usage", description = "When set, select modules with or without javax JAXB source uses.", required = false)
+    @Nullable Boolean sourceUsage;
+
+    static class Sources {
+        final Set<Path> builds = new HashSet<>();
+        final Set<Path> uses = new HashSet<>();
+    }
+
+    @Override
+    public Sources getInitialValue(ExecutionContext ctx) {
+        return new Sources();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Sources sources) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
+            @Override
+            public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
+                if (tree instanceof SourceFile) {
+                    SourceFile file = (SourceFile) tree;
+                    if (file.getMarkers().findFirst(MavenResolutionResult.class).isPresent() ||
+                        file.getMarkers().findFirst(GradleProject.class).isPresent()) {
+                        sources.builds.add(file.getSourcePath());
+                    }
+                    if (tree instanceof J.CompilationUnit) {
+                        J.CompilationUnit cu = (J.CompilationUnit) tree;
+                        if (cu.getImports().stream().anyMatch(i -> i.getTypeName().startsWith("javax.xml.bind.")) ||
+                            new UsesType<>("javax.xml.bind..*", false).visit(cu, ctx) != cu) {
+                            sources.uses.add(cu.getSourcePath());
+                        }
+                    }
+                }
+                return tree;
+            }
+        };
+    }
+
+    private static boolean usesSources(Path build, Sources sources) {
+        for (Path source : sources.uses) {
+            Path nearest = null;
+            for (Path candidate : sources.builds) {
+                Path root = candidate.getParent();
+                if ((root == null || source.startsWith(root)) &&
+                    (nearest == null || candidate.getNameCount() > nearest.getNameCount())) {
+                    nearest = candidate;
+                }
+            }
+            if (build.equals(nearest)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     String displayName = "Check the JAXB dependency namespace";
     String description = "Select build files by their resolved JAXB namespace, including transitive and managed APIs.";
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor(Sources sources) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
@@ -76,7 +137,8 @@ public class JaxbNamespace extends Recipe {
                                 "javax.xml.bind".equals(d.getGroupId()) && "jaxb-api".equals(d.getArtifactId()))).orElse(false) ||
                         tree.getMarkers().findFirst(GradleProject.class).map(g ->
                                 g.getConfigurations().stream().anyMatch(c -> c.findRequestedDependency("javax.xml.bind", "jaxb-api") != null)).orElse(false);
-                return found == modern && (!runtimeRequired || legacy && !existing) ? SearchResult.found(tree) : tree;
+                return found == modern && (!runtimeRequired || legacy && !existing) &&
+                       (sourceUsage == null || sourceUsage == usesSources(((SourceFile) tree).getSourcePath(), sources)) ? SearchResult.found(tree) : tree;
             }
         };
     }

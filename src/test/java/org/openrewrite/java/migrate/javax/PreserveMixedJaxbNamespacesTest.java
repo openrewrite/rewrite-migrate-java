@@ -26,6 +26,9 @@ import java.util.*;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.java.Assertions.java;
+import org.openrewrite.test.TypeValidation;
+import org.openrewrite.java.JavaParser;
 
 class PreserveMixedJaxbNamespacesTest implements RewriteTest {
     @Override
@@ -66,7 +69,10 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
 
     @Test
     void existingGradleLegacyApiAndScopeArePreserved() {
-        rewriteRun(buildGradle("""
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            spec -> spec.path("src/main/java/Example.java")),
+          buildGradle("""
           plugins { id 'java' }
           repositories { mavenCentral() }
           dependencies {
@@ -91,7 +97,10 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
 
     @Test
     void mavenExistingLegacyScopeAndVersionArePreserved() {
-        rewriteRun(pomXml(pom(dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "3.0.1", "") +
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            spec -> spec.path("src/main/java/Example.java")),
+          pomXml(pom(dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "3.0.1", "") +
           dependency("javax.xml.bind", "jaxb-api", "2.3.0", "provided") +
           dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "3.6.5", "runtime"))));
     }
@@ -125,6 +134,66 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
         rewriteRun(pomXml(input));
     }
 
+    @Test
+    void mainJavaImportsNeedCompileApiAlongsideModernApi() {
+        String modern = dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "4.0.2", "");
+        String legacy = dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "");
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            s -> s.path("src/main/java/Example.java")),
+          pomXml(pom(modern + legacy),
+            pom(modern + legacy + dependency("javax.xml.bind", "jaxb-api", "2.3.1", ""))));
+    }
+
+    @Test
+    void attributedMainJavaRetainsApiBeforeJaxwsCoordinateChange() {
+        String modern = dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "4.0.2", "");
+        String legacy = dependency("javax.xml.ws", "jaxws-api", "2.3.1", "");
+        rewriteRun(spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.xml.bind; public abstract class JAXBContext {}")),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            s -> s.path("src/main/java/Example.java")),
+          pomXml(pom(modern + legacy),
+            pom(modern + dependency("javax.xml.bind", "jaxb-api", "2.3.1", "") + legacy)));
+    }
+
+    @Test
+    void gradleMainJavaNeedsImplementationApi() {
+        rewriteRun(spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.xml.bind; public abstract class JAXBContext {}")),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            s -> s.path("src/main/java/Example.java")),
+          buildGradle("""
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+                runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:2.3.9'
+            }
+            """, """
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies {
+                implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
+                implementation "javax.xml.bind:jaxb-api:2.3.1"
+                runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:2.3.9'
+            }
+            """, s -> s.markers(graph(true))));
+    }
+
+    @Test
+    void sourceUsageIsScopedToNearestModule() {
+        String dependencies = dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "4.0.2", "") +
+          dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "");
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+          java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
+            spec -> spec.path("source-module/src/main/java/Example.java")),
+          pomXml(pom(dependencies), pom(dependencies + dependency("javax.xml.bind", "jaxb-api", "2.3.1", "")),
+            spec -> spec.path("source-module/pom.xml")),
+          pomXml(pom(dependencies), pom(dependencies + dependency("javax.xml.bind", "jaxb-api", "2.3.1", "runtime")),
+            spec -> spec.path("binary-module/pom.xml")));
+    }
+
     private static String pom(String dependencies) {
         return "<project>\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>example</groupId>\n" +
           "  <artifactId>sample</artifactId>\n  <version>1</version>\n  <dependencies>\n" +
@@ -146,6 +215,7 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
             runtime.add(dep("example", "legacy-library", "1").withDependencies(List.of(dep("org.glassfish.jaxb", "jaxb-runtime", "2.3.9"))));
         }
         configs.put("testRuntimeClasspath", configuration("testRuntimeClasspath", runtime));
+        configs.put("implementation", configuration("implementation", List.of()));
         configs.put("runtimeOnly", configuration("runtimeOnly", List.of()));
         return GradleProject.builder().name("sample").path(":sample").mavenRepositories(List.of(MavenRepository.MAVEN_CENTRAL)).nameToConfiguration(configs).build();
     }

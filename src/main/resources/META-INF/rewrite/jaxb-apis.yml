@@ -105,6 +105,37 @@ preconditions:
       modern: true
       runtimeRequired: true
 recipeList:
+  - org.openrewrite.java.migrate.javax.AddJavaxJaxbApiForSources
+  - org.openrewrite.java.migrate.javax.AddJavaxJaxbApiForBinaries
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJaxbApiForSources
+displayName: Supply javax JAXB for source compilation
+description: Add the separate legacy API at compile scope when the module uses javax JAXB in source.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxbNamespace:
+      modern: true
+      runtimeRequired: true
+      sourceUsage: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: javax.xml.bind
+      artifactId: jaxb-api
+      version: 2.3.1
+      scope: compile
+      configuration: implementation
+      acceptTransitive: false
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJaxbApiForBinaries
+displayName: Supply javax JAXB for legacy binaries
+description: Add the separate legacy API at runtime scope when only known binaries need javax JAXB.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxbNamespace:
+      modern: true
+      runtimeRequired: true
+      sourceUsage: false
+recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: javax.xml.bind
       artifactId: jaxb-api
