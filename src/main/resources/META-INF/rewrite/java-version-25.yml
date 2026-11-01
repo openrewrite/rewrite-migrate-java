@@ -239,6 +239,10 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.easymock
+      artifactId: easymock
+      newVersion: 5.6.0
   # Both distributions bundle an AspectJ too old to read Java 25 bytecode, so aspectjtools is pinned on the plugin.
   # dev.aspectj is otherwise interchangeable, but org.codehaus.mojo's `complianceLevel` default of 1.4 is now fatal.
   - org.openrewrite.maven.ChangePluginGroupIdAndArtifactId:
