@@ -90,6 +90,57 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
           pomXml(before, withApis(before.replace("2.4.1", "2.6"))));
     }
 
+    private String codecentric(String version, String extra) {
+        return pom("de.codecentric", version, extra)
+          .replace("jaxws-maven-plugin", "cxf-spring-boot-starter-maven-plugin")
+          .replace("wsimport", "generate");
+    }
+
+    @Test
+    void migrationUpgradesCodecentricAndAddsApis() {
+        String before = codecentric("1.0.7.RELEASE", "");
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.javax.MigrateJaxBWSPlugin"),
+          pomXml(before, withApis(before.replace("1.0.7.RELEASE", "2.3.0.RELEASE"))));
+    }
+
+    @Test
+    void codecentricDefaultAndExplicitGenerateSources() {
+        String before = codecentric("2.3.0.RELEASE", "");
+        String explicit = before.replace("<goals>", "<phase>generate-sources</phase><goals>");
+        rewriteRun(
+          pomXml(before, withApis(before), s -> s.path("default/pom.xml")),
+          pomXml(explicit, withApis(explicit), s -> s.path("explicit/pom.xml"))
+        );
+    }
+
+    @Test
+    void codecentricWithExistingWsApiAddsMissingCompileApis() {
+        String before = codecentric("2.3.0.RELEASE", "");
+        String after = withApis(before);
+        String wsOnly = after.replaceAll("(?s)        <dependency>\\s*<groupId>jakarta\\.jws</groupId>.*?</dependency>\\n", "")
+          .replaceAll("(?s)        <dependency>\\s*<groupId>jakarta\\.xml\\.bind</groupId>.*?</dependency>\\n", "");
+        rewriteRun(pomXml(wsOnly, after));
+    }
+
+    @Test
+    void codecentricModernAndCustomToolsAreExcluded() {
+        String before = codecentric("2.3.0.RELEASE", "");
+        String modern = withApis(before).replace("2.3.3", "4.0.2").replace("2.1.0", "3.0.0");
+        rewriteRun(
+          pomXml(modern, s -> s.path("modern/pom.xml")),
+          pomXml(modern.replace("<dependencies>", "<dependencyManagement><dependencies>")
+            .replace("</dependencies>", "</dependencies></dependencyManagement>"), s -> s.path("managed-api/pom.xml")),
+          pomXml(codecentric("2.3.0.RELEASE", "<dependencies/>"), s -> s.path("custom/pom.xml")),
+          pomXml(codecentric("2.3.0.RELEASE", "<configuration><executable>/custom/tool</executable></configuration>"), s -> s.path("external/pom.xml")),
+          pomXml(before.replace("<build>", "<build><pluginManagement><plugins><plugin><groupId>de.codecentric</groupId>" +
+            "<artifactId>cxf-spring-boot-starter-maven-plugin</artifactId><version>2.3.0.RELEASE</version>" +
+            "<dependencies><dependency><groupId>com.sun.xml.ws</groupId><artifactId>jaxws-tools</artifactId>" +
+            "<version>4.0.3</version></dependency></dependencies></plugin></plugins></pluginManagement>"), s -> s.path("managed-tool/pom.xml")),
+          pomXml(before.replace("<goals>", "<phase>generate-test-sources</phase><goals>"), s -> s.path("test/pom.xml")),
+          pomXml(codecentric("2.3.1-jaxb-jaxws-3.0.0-M4", ""), s -> s.path("milestone/pom.xml"))
+        );
+    }
+
     @Test
     void existingApisAreIdempotent() {
         rewriteRun(pomXml(withApis(pom("org.codehaus.mojo", "2.6", ""))));
@@ -151,6 +202,35 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
               </dependencies>
               <build>""");
         rewriteRun(pomXml(before));
+    }
+
+    @Test
+    void codecentricInheritedExecutionExecutableIsExcluded() {
+        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+          pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
+              <packaging>pom</packaging><modules><module>child</module></modules>
+              <build><plugins><plugin>
+                <groupId>de.codecentric</groupId><artifactId>cxf-spring-boot-starter-maven-plugin</artifactId><version>2.3.0.RELEASE</version>
+                <executions><execution><id>generate</id>
+                  <configuration><executable>/custom/wsimport</executable></configuration>
+                </execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """),
+          dir("child", pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <parent><groupId>example</groupId><artifactId>parent</artifactId><version>1</version></parent>
+              <artifactId>child</artifactId>
+              <build><plugins><plugin>
+                <groupId>de.codecentric</groupId><artifactId>cxf-spring-boot-starter-maven-plugin</artifactId><version>2.3.0.RELEASE</version>
+                <executions><execution><id>generate</id><goals><goal>generate</goal></goals></execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """)));
     }
 
     @Test

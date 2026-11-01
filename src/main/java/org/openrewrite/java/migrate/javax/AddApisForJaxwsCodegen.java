@@ -31,8 +31,8 @@ public class AddApisForJaxwsCodegen extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Add compile APIs for an explicitly configured MojoHaus 2.6 wsimport execution, even when generated sources " +
-               "are absent from the LST. Customized tool dependencies, external executables and test generation are excluded.";
+        return "Add compile APIs for an explicitly configured MojoHaus 2.6 wsimport or Codecentric 2.3.0.RELEASE generate execution, " +
+               "even when generated sources are absent from the LST. Customized tool dependencies, external executables and test generation are excluded.";
     }
 
     @Override
@@ -48,8 +48,8 @@ public class AddApisForJaxwsCodegen extends Recipe {
                     return document;
                 }
                 // Managed or inherited tool overrides can change the generator behind the same plugin version.
-                if (getResolutionResult().getPom().getPluginManagement().stream().anyMatch(this::mojoHaus) ||
-                    getResolutionResult().getPom().getPlugins().stream().filter(this::mojoHaus)
+                if (getResolutionResult().getPom().getPluginManagement().stream().anyMatch(this::supportedPlugin) ||
+                    getResolutionResult().getPom().getPlugins().stream().filter(this::supportedPlugin)
                         .anyMatch(p -> p.getDependencies() != null && !p.getDependencies().isEmpty() ||
                                 p.getConfiguration() != null && (p.getConfiguration().has("executable") ||
                                         p.getConfiguration().has("useJdkToolchainExecutable")) ||
@@ -75,9 +75,11 @@ public class AddApisForJaxwsCodegen extends Recipe {
                 return d;
             }
 
-            private boolean mojoHaus(Plugin plugin) {
+            private boolean supportedPlugin(Plugin plugin) {
                 return "org.codehaus.mojo".equals(plugin.getGroupId()) &&
-                       "jaxws-maven-plugin".equals(plugin.getArtifactId());
+                       "jaxws-maven-plugin".equals(plugin.getArtifactId()) ||
+                       "de.codecentric".equals(plugin.getGroupId()) &&
+                       "cxf-spring-boot-starter-maven-plugin".equals(plugin.getArtifactId());
             }
 
             private boolean modernApi(String group, String version) {
@@ -86,9 +88,14 @@ public class AddApisForJaxwsCodegen extends Recipe {
             }
 
             private boolean generatesJavax(Xml.Tag plugin) {
-                if (!"org.codehaus.mojo".equals(plugin.getChildValue("groupId").orElse("")) ||
-                    !"jaxws-maven-plugin".equals(plugin.getChildValue("artifactId").orElse("")) ||
-                    !"2.6".equals(plugin.getChildValue("version").orElse("")) ||
+                boolean mojoHaus = "org.codehaus.mojo".equals(plugin.getChildValue("groupId").orElse("")) &&
+                        "jaxws-maven-plugin".equals(plugin.getChildValue("artifactId").orElse("")) &&
+                        "2.6".equals(plugin.getChildValue("version").orElse(""));
+                // The published wrapper descriptor binds generate to generate-sources and delegates to javax tools.
+                boolean codecentric = "de.codecentric".equals(plugin.getChildValue("groupId").orElse("")) &&
+                        "cxf-spring-boot-starter-maven-plugin".equals(plugin.getChildValue("artifactId").orElse("")) &&
+                        "2.3.0.RELEASE".equals(plugin.getChildValue("version").orElse(""));
+                if (!(mojoHaus || codecentric) ||
                     plugin.getChild("dependencies").isPresent() || externalExecutable(plugin)) {
                     return false;
                 }
@@ -96,7 +103,7 @@ public class AddApisForJaxwsCodegen extends Recipe {
                         .anyMatch(execution -> !externalExecutable(execution) &&
                                 "generate-sources".equals(execution.getChildValue("phase").orElse("generate-sources")) &&
                                 execution.getChild("goals").map(goals -> goals.getChildren("goal").stream()
-                                        .anyMatch(goal -> "wsimport".equals(goal.getValue().orElse("")))).orElse(false)))
+                                        .anyMatch(goal -> (mojoHaus ? "wsimport" : "generate").equals(goal.getValue().orElse("")))).orElse(false)))
                         .orElse(false);
             }
 
