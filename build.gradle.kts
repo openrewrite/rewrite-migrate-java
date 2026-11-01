@@ -61,6 +61,7 @@ recipeDependencies {
     testParserClasspath("org.glassfish:jakarta.faces:3.0.3")
     testParserClasspath("org.jboss.logging:jboss-logging:3.6.0.Final")
     testParserClasspath("org.springframework:spring-core:6.1.13")
+    testParserClasspath("org.mockito:mockito-all:1.10.19")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()

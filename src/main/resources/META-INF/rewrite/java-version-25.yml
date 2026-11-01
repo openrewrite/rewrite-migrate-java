@@ -254,6 +254,7 @@ recipeList:
       groupId: org.aspectj
       artifactId: aspectj*
       newVersion: 1.9.x
+  - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
   # mockito-inline was last published as 5.2.0 and inline mocking is the default in mockito-core 5.x, so fold it in
   # before the bump below rather than leaving a coordinate that no longer resolves.
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -266,6 +267,21 @@ recipeList:
       artifactId: mockito-*
       newVersion: 5.20.x
   - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeMockito1ForJava25
+displayName: Upgrade Mockito 1 APIs and dependencies for Java 25
+description: >-
+  Replace obsolete Mockito 1 dependencies, including mockito-all, and migrate removed APIs before upgrading to Mockito 5.
+  Scope the legacy API migrations to modules using Mockito 1 so modern matcher semantics remain unchanged.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.mockito
+      artifactIdPattern: mockito-*
+      version: "[1,2)"
+recipeList:
+  - org.openrewrite.java.testing.mockito.Mockito1to5Migration
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
