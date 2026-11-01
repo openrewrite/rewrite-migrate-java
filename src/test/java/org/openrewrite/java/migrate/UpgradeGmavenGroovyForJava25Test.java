@@ -121,4 +121,44 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
     void preserveOtherCompilerLinesAndNewerPatches() {
         rewriteRun(pomXml(pluginPom("2.4.20")), pomXml(pluginPom("3.0.25"), spec -> spec.path("other/pom.xml")));
     }
+    @Test
+    void preserveNewerProfileProperty() {
+        String before = """
+          <project>
+            <modelVersion>4.0.0</modelVersion><groupId>example</groupId><artifactId>compiler</artifactId><version>1</version>
+            <properties><groovy.version>3.0.23</groovy.version></properties>
+            <build><plugins><plugin>
+              <groupId>org.codehaus.gmaven</groupId><artifactId>groovy-maven-plugin</artifactId><version>2.1.1</version>
+              <dependencies><dependency><groupId>org.codehaus.groovy</groupId><artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+              </dependency></dependencies>
+            </plugin></plugins></build>
+            <profiles><profile><id>newer</id>
+              <properties><groovy.version>3.0.26</groovy.version></properties>
+            </profile></profiles>
+          </project>
+          """;
+        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+          pomXml(before, before.replace("3.0.23", "3.0.25")));
+    }
+    @Test
+    void preserveOtherLineProfileProperty() {
+        String before = """
+          <project>
+            <modelVersion>4.0.0</modelVersion><groupId>example</groupId><artifactId>compiler</artifactId><version>1</version>
+            <properties><groovy.version>3.0.23</groovy.version></properties>
+            <build><plugins><plugin>
+              <groupId>org.codehaus.gmaven</groupId><artifactId>groovy-maven-plugin</artifactId><version>2.1.1</version>
+              <dependencies><dependency><groupId>org.codehaus.groovy</groupId><artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+              </dependency></dependencies>
+            </plugin></plugins></build>
+            <profiles><profile><id>newer</id>
+              <properties><groovy.version>4.0.0</groovy.version></properties>
+            </profile></profiles>
+          </project>
+          """;
+        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+          pomXml(before, before.replace("3.0.23", "3.0.25")));
+    }
 }

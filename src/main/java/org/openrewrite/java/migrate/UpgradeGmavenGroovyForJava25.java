@@ -55,13 +55,20 @@ public class UpgradeGmavenGroovyForJava25 extends Recipe {
                     new LatestRelease(null).compare(null, resolved, "3.0.25") >= 0) {
                     return t;
                 }
-                if (requested.matches("\\$\\{[^}]+}") &&
-                    !getResolutionResult().getPom().getRequested().getProperties()
-                        .containsKey(requested.substring(2, requested.length() - 1))) {
-                    // The parent may not declare GMaven and must not be changed for its unrelated consumers.
-                    doAfterVisit(new ChangeTagValueVisitor<>(t.getChild("version").get(), "3.0.25"));
+                if (requested.matches("\\$\\{[^}]+}")) {
+                    String property = requested.substring(2, requested.length() - 1);
+                    Xml.Tag root = getCursor().firstEnclosingOrThrow(Xml.Document.class).getRoot();
+                    Xml.Tag declaration = root.getChild("properties")
+                            .flatMap(properties -> properties.getChild(property)).orElse(null);
+                    if (declaration != null && resolved.equals(declaration.getValue().orElse(null))) {
+                        // Change only this root declaration, never same-named profile properties.
+                        doAfterVisit(new ChangeTagValueVisitor<>(declaration, "3.0.25"));
+                    } else {
+                        // Inherited or profile-supplied values need an explicit compiler override.
+                        doAfterVisit(new ChangeTagValueVisitor<>(t.getChild("version").get(), "3.0.25"));
+                    }
                 } else {
-                    t = changeChildTagValue(t, "version", "3.0.25", ctx);
+                    doAfterVisit(new ChangeTagValueVisitor<>(t.getChild("version").get(), "3.0.25"));
                 }
                 maybeUpdateModel();
                 return t;
