@@ -26,6 +26,7 @@ import org.openrewrite.test.RewriteRunner;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -48,6 +49,59 @@ class UpgradeToJava25Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25");
+    }
+
+    @Test
+    void upgradeNebulaNetflixOssForGradle9() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          buildGradle(
+            """
+              plugins {
+                  id 'nebula.netflixoss' version '11.6.0'
+              }
+              """,
+            """
+              plugins {
+                  id 'nebula.netflixoss' version '12.0.0'
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void upgradeNamespacedNebulaNetflixOssForGradle9() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          buildGradle(
+            """
+              plugins {
+                  id 'com.netflix.nebula.netflixoss' version '11.6.0'
+              }
+              """,
+            """
+              plugins {
+                  id 'com.netflix.nebula.netflixoss' version '12.0.0'
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotDowngradeNebulaNetflixOss() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
+          buildGradle(
+            """
+              plugins {
+                  id 'nebula.netflixoss' version '13.0.0'
+                  id 'com.netflix.nebula.netflixoss' version '13.0.0'
+              }
+              """
+          )
+        );
     }
 
     @DocumentExample
