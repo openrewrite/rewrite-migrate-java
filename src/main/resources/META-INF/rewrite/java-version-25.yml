@@ -215,6 +215,14 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # The legacy id stops at 7.x; 9.x removes the MavenPlugin API reference while preserving optional POM behavior.
+  - org.openrewrite.gradle.plugins.ChangePlugin:
+      pluginId: nebula.optional-base
+      newPluginId: com.netflix.nebula.optional-base
+      newVersion: 9.0.0
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: com.netflix.nebula.optional-base
+      newVersion: 9.0.0
   # Version 11.x brings plugins compiled against Gradle APIs removed in Gradle 9.
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: nebula.netflixoss
