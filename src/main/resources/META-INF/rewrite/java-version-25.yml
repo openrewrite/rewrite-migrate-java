@@ -27,6 +27,8 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  # Detach plugin versions such as ${lombok.version}.0 before the Lombok dependency upgrade changes that property.
+  - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeKotlinForJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
@@ -207,6 +209,7 @@ recipeList:
       newVersion: 7.4.0
   - org.openrewrite.github.SetupJavaAdoptOpenJDKToTemurin
   - org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25
+  - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
   - org.openrewrite.gradle.UpdateGradleWrapper:
@@ -404,3 +407,27 @@ recipeList:
       groupId: org.springframework.boot
       artifactId: spring-boot-starter-parent
       newVersion: 3.5.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
+displayName: Upgrade the Lombok Maven plugin for Java 25
+description: >-
+  Upgrade `lombok-maven-plugin` and override its bundled Lombok with a Java 25 compatible version.
+  The plugin loads Lombok in its own class loader, so upgrading the project's Lombok dependency alone does not fix
+  delombok. Existing Lombok plugin dependencies newer than 1.18.40 are retained.
+tags:
+  - java25
+  - lombok
+recipeList:
+  - org.openrewrite.java.migrate.ResolveLombokMavenPluginVersion
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.projectlombok
+      artifactId: lombok-maven-plugin
+      newVersion: 1.18.20.0
+  - org.openrewrite.maven.AddPluginDependency:
+      pluginGroupId: org.projectlombok
+      pluginArtifactId: lombok-maven-plugin
+      groupId: org.projectlombok
+      artifactId: lombok
+      version: 1.18.40
