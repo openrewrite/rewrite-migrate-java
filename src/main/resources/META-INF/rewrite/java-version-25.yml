@@ -215,6 +215,10 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # Older resolvers reference JvmVendorSpec.IBM_SEMERU, removed in Gradle 9.
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: org.gradle.toolchains.foojay-resolver*
+      newVersion: 1.0.0
   # Version 11.x brings plugins compiled against Gradle APIs removed in Gradle 9.
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: nebula.netflixoss
