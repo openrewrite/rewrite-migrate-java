@@ -43,3 +43,4 @@ recipeList:
       groupId: de.codecentric
       artifactId: cxf-spring-boot-starter-maven-plugin
       newVersion: 2.3.0.RELEASE
+  - org.openrewrite.java.migrate.javax.AddApisForJaxwsCodegen
