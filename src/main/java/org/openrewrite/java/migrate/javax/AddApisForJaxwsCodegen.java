@@ -52,7 +52,11 @@ public class AddApisForJaxwsCodegen extends Recipe {
                     getResolutionResult().getPom().getPlugins().stream().filter(this::mojoHaus)
                         .anyMatch(p -> p.getDependencies() != null && !p.getDependencies().isEmpty() ||
                                 p.getConfiguration() != null && (p.getConfiguration().has("executable") ||
-                                        p.getConfiguration().has("useJdkToolchainExecutable")))) {
+                                        p.getConfiguration().has("useJdkToolchainExecutable")) ||
+                                p.getExecutions() != null && p.getExecutions().stream().anyMatch(execution ->
+                                        execution.getConfiguration() != null &&
+                                        (execution.getConfiguration().has("executable") ||
+                                         execution.getConfiguration().has("useJdkToolchainExecutable"))))) {
                     return document;
                 }
                 Xml.Tag build = document.getRoot().getChild("build").orElse(null);

@@ -20,6 +20,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.dir;
 
 class AddApisForJaxwsCodegenTest implements RewriteTest {
     @Override
@@ -150,6 +151,64 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
               </dependencies>
               <build>""");
         rewriteRun(pomXml(before));
+    }
+
+    @Test
+    void inheritedExecutionExecutableIsExcluded() {
+        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+          pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
+              <packaging>pom</packaging><modules><module>child</module></modules>
+              <build><plugins><plugin>
+                <groupId>org.codehaus.mojo</groupId><artifactId>jaxws-maven-plugin</artifactId><version>2.6</version>
+                <executions><execution><id>generate</id>
+                  <configuration><executable>/custom/wsimport</executable></configuration>
+                </execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """),
+          dir("child", pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <parent><groupId>example</groupId><artifactId>parent</artifactId><version>1</version></parent>
+              <artifactId>child</artifactId>
+              <build><plugins><plugin>
+                <groupId>org.codehaus.mojo</groupId><artifactId>jaxws-maven-plugin</artifactId><version>2.6</version>
+                <executions><execution><id>generate</id><goals><goal>wsimport</goal></goals></execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """)));
+    }
+
+    @Test
+    void inheritedExecutionToolchainIsExcluded() {
+        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+          pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
+              <packaging>pom</packaging><modules><module>child</module></modules>
+              <build><plugins><plugin>
+                <groupId>org.codehaus.mojo</groupId><artifactId>jaxws-maven-plugin</artifactId><version>2.6</version>
+                <executions><execution><id>generate</id>
+                  <configuration><useJdkToolchainExecutable>true</useJdkToolchainExecutable></configuration>
+                </execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """),
+          dir("child", pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <parent><groupId>example</groupId><artifactId>parent</artifactId><version>1</version></parent>
+              <artifactId>child</artifactId>
+              <build><plugins><plugin>
+                <groupId>org.codehaus.mojo</groupId><artifactId>jaxws-maven-plugin</artifactId><version>2.6</version>
+                <executions><execution><id>generate</id><goals><goal>wsimport</goal></goals></execution></executions>
+              </plugin></plugins></build>
+            </project>
+            """)));
     }
 
 }
