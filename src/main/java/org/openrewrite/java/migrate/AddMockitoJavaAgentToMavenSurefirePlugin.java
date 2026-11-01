@@ -111,6 +111,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             private @Nullable String surefireArgLineWithAgent(List<Plugin> plugins) {
                 String agentArgument = getArgLineJavaAgentArgument();
+                if (agentArgument == null) {
+                    return null;
+                }
                 return plugins.stream()
                         .filter(plugin -> isMavenPlugin(plugin, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID))
                         .map(plugin -> plugin.getConfigurationStringValue("argLine"))
@@ -120,7 +123,8 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                if (getArgLineJavaAgentArgument() == null) {
+                String agentArgument = getArgLineJavaAgentArgument();
+                if (agentArgument == null) {
                     return document;
                 }
                 if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
@@ -154,7 +158,7 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 // compatible baseline here so an old external parent's pluginManagement cannot win.
                 return FindPlugin.find(d, MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID).isEmpty() ?
                         (Xml.Document) new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID, "3.5.4",
-                                String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
+                                String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(agentArgument)), null,
                                 null, "**/pom.xml").getVisitor().visitNonNull(d, ctx) :
                         super.visitDocument(d, ctx);
             }
@@ -169,6 +173,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
 
                 String argLineJavaAgentParam = getArgLineJavaAgentArgument();
+                if (argLineJavaAgentParam == null) {
+                    return t;
+                }
                 //noinspection unchecked
                 List<Content> pluginContents = (List<Content>) t.getContent();
                 Optional<Xml.Tag> configuration = t.getChild("configuration");
