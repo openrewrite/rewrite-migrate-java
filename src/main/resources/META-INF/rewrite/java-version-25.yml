@@ -215,6 +215,13 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # Version 11.x brings plugins compiled against Gradle APIs removed in Gradle 9.
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: nebula.netflixoss
+      newVersion: 12.0.0
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: com.netflix.nebula.netflixoss
+      newVersion: 12.0.0
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
