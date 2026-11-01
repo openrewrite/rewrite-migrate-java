@@ -30,8 +30,16 @@ recipeList:
       newGroupId: com.sun.xml.ws
       newVersion: 2.3.7
   - org.openrewrite.xml.AddOrUpdateChildTag:
-      parentXPath: //plugin[artifactId='jaxws-maven-plugin']/executions/execution
+      parentXPath: //plugin[groupId='com.sun.xml.ws' and artifactId='jaxws-maven-plugin']/executions/execution
       newChildTag: <phase>generate-sources</phase>
   - org.openrewrite.xml.ChangeTagName:
-      elementName: //plugin[artifactId='jaxws-maven-plugin']/executions/execution/configuration/nocompile
+      elementName: //plugin[groupId='com.sun.xml.ws' and artifactId='jaxws-maven-plugin']/executions/execution/configuration/nocompile
       newName: xnocompile
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.codehaus.mojo
+      artifactId: jaxws-maven-plugin
+      newVersion: 2.6
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: de.codecentric
+      artifactId: cxf-spring-boot-starter-maven-plugin
+      newVersion: 2.3.0.RELEASE
