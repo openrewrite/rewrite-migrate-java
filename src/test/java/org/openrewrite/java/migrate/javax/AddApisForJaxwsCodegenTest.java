@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,4 +138,18 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
           pomXml(pom("org.codehaus.mojo", "2.6", "").replace("<plugins>", "<pluginManagement><plugins>").replace("</plugins>", "</plugins></pluginManagement>"), s -> s.path("managed/pom.xml"))
         );
     }
+    @Test
+    void preserveTransitiveModernApiWithoutDependencyManagement() {
+        String before = pom("org.codehaus.mojo", "2.6", "").replace("    <build>", """
+              <dependencies>
+                  <dependency>
+                      <groupId>org.glassfish.jaxb</groupId>
+                      <artifactId>jaxb-runtime</artifactId>
+                      <version>4.0.5</version>
+                  </dependency>
+              </dependencies>
+              <build>""");
+        rewriteRun(pomXml(before));
+    }
+
 }
