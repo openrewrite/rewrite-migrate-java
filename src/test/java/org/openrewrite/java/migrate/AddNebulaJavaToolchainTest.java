@@ -109,6 +109,81 @@ class AddNebulaJavaToolchainTest implements RewriteTest {
     }
 
     @Test
+    void releaseExtensionIsNotCompilerConfiguration() {
+        rewriteRun(
+          buildGradle(
+            """
+              plugins { id 'java' }
+              release { failOnCommitNeeded = false }
+              """,
+            """
+              plugins { id 'java' }
+              release { failOnCommitNeeded = false }
+
+              java {
+                  toolchain {
+                      languageVersion = JavaLanguageVersion.of(25)
+                  }
+              }
+              """,
+            spec -> spec.markers(nebula("nebula.netflixoss"))
+          )
+        );
+    }
+
+    @Test
+    void vendorOnlyToolchainStillNeedsLanguageVersion() {
+        rewriteRun(
+          buildGradle(
+            """
+              plugins { id 'java' }
+              java { toolchain { vendor = JvmVendorSpec.ADOPTIUM } }
+              """,
+            """
+              plugins { id 'java' }
+              java { toolchain { vendor = JvmVendorSpec.ADOPTIUM } }
+
+              java {
+                  toolchain {
+                      languageVersion = JavaLanguageVersion.of(25)
+                  }
+              }
+              """,
+            spec -> spec.markers(nebula("nebula.netflixoss"))
+          )
+        );
+    }
+
+    @Test
+    void preserveExplicitSetters() {
+        rewriteRun(
+          buildGradle(
+            """
+              plugins { id 'java' }
+              java.setSourceCompatibility(JavaVersion.VERSION_26)
+              java.setTargetCompatibility(JavaVersion.VERSION_26)
+              """,
+            spec -> spec.markers(nebula("nebula.netflixoss"))
+          )
+        );
+    }
+
+    @Test
+    void preserveCompilerRelease() {
+        rewriteRun(
+          buildGradle(
+            """
+              plugins { id 'java' }
+              tasks.withType(JavaCompile).configureEach {
+                  options.release.set(26)
+              }
+              """,
+            spec -> spec.markers(nebula("nebula.netflixoss"))
+          )
+        );
+    }
+
+    @Test
     void leaveKotlinModulesToTheirVersionGatedMigration() {
         JavaProject module = new JavaProject(Tree.randomId(), "kotlin-module", null);
         rewriteRun(

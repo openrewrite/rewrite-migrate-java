@@ -29,6 +29,7 @@ import org.openrewrite.groovy.GroovyTemplate;
 import org.openrewrite.groovy.tree.G;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
@@ -66,13 +67,62 @@ public class AddNebulaJavaToolchain extends Recipe {
                 boolean[] configured = {false};
                 new JavaIsoVisitor<boolean[]>() {
                     @Override
-                    public J.Identifier visitIdentifier(J.Identifier identifier, boolean[] found) {
-                        String name = identifier.getSimpleName();
+                    public J.Assignment visitAssignment(J.Assignment assignment, boolean[] found) {
+                        Expression variable = assignment.getVariable();
+                        String name = propertyName(variable);
                         if ("sourceCompatibility".equals(name) || "targetCompatibility".equals(name) ||
-                                "toolchain".equals(name) || "jvmToolchain".equals(name) || "release".equals(name)) {
+                                isLanguageVersion(variable) || isCompilerRelease(variable)) {
                             found[0] = true;
                         }
-                        return identifier;
+                        return super.visitAssignment(assignment, found);
+                    }
+
+                    @Override
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, boolean[] found) {
+                        String name = method.getSimpleName();
+                        if ("setSourceCompatibility".equals(name) || "setTargetCompatibility".equals(name) ||
+                                "sourceCompatibility".equals(name) || "targetCompatibility".equals(name) ||
+                                ("jvmToolchain".equals(name) && method.getArguments().size() == 1 &&
+                                        !(method.getArguments().get(0) instanceof J.Lambda)) ||
+                                ("set".equals(name) && (isLanguageVersion(method.getSelect()) || isCompilerRelease(method.getSelect())))) {
+                            found[0] = true;
+                        }
+                        return super.visitMethodInvocation(method, found);
+                    }
+
+                    private boolean isLanguageVersion(@Nullable Expression expression) {
+                        if (!"languageVersion".equals(propertyName(expression))) {
+                            return false;
+                        }
+                        if (expression instanceof J.FieldAccess &&
+                                "toolchain".equals(propertyName(((J.FieldAccess) expression).getTarget()))) {
+                            return true;
+                        }
+                        return getCursor().getPathAsStream().anyMatch(value -> value instanceof J.MethodInvocation &&
+                                ("toolchain".equals(((J.MethodInvocation) value).getSimpleName()) ||
+                                        "jvmToolchain".equals(((J.MethodInvocation) value).getSimpleName())));
+                    }
+
+                    private boolean isCompilerRelease(@Nullable Expression expression) {
+                        if (!"release".equals(propertyName(expression))) {
+                            return false;
+                        }
+                        if (expression instanceof J.FieldAccess &&
+                                "options".equals(propertyName(((J.FieldAccess) expression).getTarget()))) {
+                            return true;
+                        }
+                        return getCursor().getPathAsStream().anyMatch(value -> value instanceof J.MethodInvocation &&
+                                "options".equals(((J.MethodInvocation) value).getSimpleName()));
+                    }
+
+                    private @Nullable String propertyName(@Nullable Expression expression) {
+                        if (expression instanceof J.Identifier) {
+                            return ((J.Identifier) expression).getSimpleName();
+                        }
+                        if (expression instanceof J.FieldAccess) {
+                            return ((J.FieldAccess) expression).getSimpleName();
+                        }
+                        return null;
                     }
                 }.visit(tree, configured);
                 if (configured[0]) {
