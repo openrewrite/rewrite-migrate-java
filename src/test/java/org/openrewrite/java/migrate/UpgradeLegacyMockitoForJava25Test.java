@@ -49,6 +49,85 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "mockito-all-1.10.19"));
     }
 
+    private static final String TRANSITIVE_POM = """
+      <project>
+          <modelVersion>4.0.0</modelVersion>
+          <parent>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-parent</artifactId>
+              <version>1.4.0.RELEASE</version>
+              <relativePath/>
+          </parent>
+          <groupId>org.example</groupId>
+          <artifactId>example</artifactId>
+          <version>1</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-test</artifactId>
+                  <scope>test</scope>
+              </dependency>
+          </dependencies>
+      </project>
+      """;
+
+    @Test
+    void excludeTransitiveOnlyLegacyMockitoFromApiMigration() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeMockito1ForJava25"),
+          mavenProject("example",
+            pomXml(TRANSITIVE_POM),
+            srcTestJava(java("""
+              import static org.mockito.Matchers.eq;
+
+              class ExampleTest {
+                  String match(String value) {
+                      return eq(value);
+                  }
+              }
+              """))
+          )
+        );
+    }
+
+    @Test
+    void compositeLeavesTransitiveLegacyMockitoApisAndAgentAlone() {
+        rewriteRun(
+          mavenProject("example",
+            pomXml(TRANSITIVE_POM),
+            srcTestJava(java("""
+              import static org.mockito.Matchers.eq;
+
+              class ExampleTest {
+                  String match(String value) {
+                      return eq(value);
+                  }
+              }
+              """))
+          )
+        );
+    }
+
+    @Test
+    void newlyAddedSurefireOverridesLegacyParentVersion() {
+        rewriteRun(pomXml(
+          TRANSITIVE_POM.replace("    </dependencies>", """
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-core</artifactId>
+                            <version>5.20.0</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>"""),
+          spec -> spec.after(pom -> {
+              assertThat(pom).containsPattern("(?s)<artifactId>maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.[^<]+</version>")
+                .contains("-javaagent:${org.mockito:mockito-core:jar}")
+                .contains("<version>1.4.0.RELEASE</version>");
+              return pom;
+          })
+        ));
+    }
+
     @Test
     void replaceObsoleteAggregateAndMigrateRemovedMatcherApi() {
         rewriteRun(
