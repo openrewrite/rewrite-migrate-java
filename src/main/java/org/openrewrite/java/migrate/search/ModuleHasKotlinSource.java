@@ -43,13 +43,32 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
 
     String displayName = "Module has Kotlin source files";
 
-    String description = "Marks all files in modules that contain at least one Kotlin source file (`.kt`). " +
+    String description = "Marks all files in modules that contain Kotlin source files (`.kt`) or precompiled Gradle Kotlin scripts in Kotlin source directories. " +
             "Intended as a precondition to scope recipes to projects that actually compile Kotlin, " +
             "as opposed to projects that merely pick up `kotlin-stdlib` transitively.";
 
     @Override
     public Set<JavaProject> getInitialValue(ExecutionContext ctx) {
         return new HashSet<>();
+    }
+
+    private static boolean isCompiledKotlinSource(SourceFile sourceFile) {
+        String path = sourceFile.getSourcePath().toString().replace('\\', '/');
+        if (path.endsWith(".kt")) {
+            return true;
+        }
+        if (!path.endsWith(".gradle.kts")) {
+            return false;
+        }
+        String[] segments = path.split("/");
+        for (int i = 0; i + 3 < segments.length; i++) {
+            if ("src".equals(segments[i])) {
+                // Only a Kotlin source directory compiles these scripts; build/settings scripts and
+                // files nested inside resource fixtures do not become the module's bytecode.
+                return "kotlin".equals(segments[i + 2]);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -59,7 +78,7 @@ public class ModuleHasKotlinSource extends ScanningRecipe<Set<JavaProject>> {
             public Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
                 if (tree instanceof SourceFile) {
                     SourceFile sourceFile = (SourceFile) tree;
-                    if (sourceFile.getSourcePath().toString().endsWith(".kt")) {
+                    if (isCompiledKotlinSource(sourceFile)) {
                         sourceFile.getMarkers().findFirst(JavaProject.class).ifPresent(acc::add);
                     }
                 }
