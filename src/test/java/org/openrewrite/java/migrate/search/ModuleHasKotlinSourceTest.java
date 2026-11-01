@@ -17,7 +17,9 @@ package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Tree;
+import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.marker.JavaProject;
+import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,6 +29,41 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ModuleHasKotlinSource(false));
+    }
+
+    @Test
+    void partialBuildModelsKeepExistingNonKotlinBehavior() {
+        rewriteRun(
+          spec -> spec.recipe(new ModuleHasKotlinSource(true)),
+          text("plugins {}", "~~(No module, so vacuously has no Kotlin source)~~>plugins {}",
+            spec -> spec.path("gradle-model/build.gradle.kts")
+              .markers(GradleProject.builder().id(Tree.randomId()).build())),
+          text("plugins {}", "~~(No module, so vacuously has no Kotlin source)~~>plugins {}",
+            spec -> spec.path("version-model/build.gradle.kts")
+              .markers(new JavaVersion(Tree.randomId(), "", "", "17", "17")))
+        );
+    }
+
+    @Test
+    void modeledKotlinModuleDoesNotEnterNonKotlinUpgrade() {
+        JavaProject module = new JavaProject(Tree.randomId(), "modern-kotlin", null);
+        rewriteRun(
+          spec -> spec.recipe(new ModuleHasKotlinSource(true)),
+          text("plugins {}", spec -> spec.path("build.gradle.kts").markers(module)),
+          text("class Example", spec -> spec.path("src/main/kotlin/Example.kt").markers(module))
+        );
+    }
+
+    @Test
+    void unmodeledKotlinDslIsNotKnownToBeNonKotlin() {
+        rewriteRun(
+          spec -> spec.recipe(new ModuleHasKotlinSource(true)),
+          text("plugins {}", spec -> spec.path("integration-test/buildSrc/build.gradle.kts")),
+          text("plugins {}", spec -> spec.path("integration-test/buildSrc/src/main/kotlin/example.gradle.kts")),
+          text("plugins {}", spec -> spec.path("build.gradle.kts")),
+          text("plugins {}", "~~(No module, so vacuously has no Kotlin source)~~>plugins {}",
+            spec -> spec.path("build.gradle"))
+        );
     }
 
     @Test
