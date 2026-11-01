@@ -441,21 +441,3 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeGmavenGroovyForJava25
-displayName: Upgrade the Groovy patch version used by GMaven for Java 25
-description: >-
-  Upgrade explicit Groovy dependencies in Maven builds using the GMaven script plugin within their existing minor line.
-  Groovy 3.0.25 includes ASM 9.8, which can read Java 25 class files. This does not cross Groovy major versions or add a
-  compiler dependency where none was declared.
-preconditions:
-  - org.openrewrite.maven.search.FindPlugin:
-      groupId: org.codehaus.gmaven
-      artifactId: groovy-maven-plugin
-recipeList:
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.codehaus.groovy
-      artifactId: groovy*
-      newVersion: latest.patch

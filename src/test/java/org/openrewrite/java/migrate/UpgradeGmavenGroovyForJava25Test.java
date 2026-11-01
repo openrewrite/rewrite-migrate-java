@@ -25,7 +25,7 @@ import static org.openrewrite.test.SourceSpecs.dir;
 class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeGmavenGroovyForJava25");
+        spec.recipe(new UpgradeGmavenGroovyForJava25());
     }
 
     private static String pluginPom(String version) {
@@ -79,54 +79,46 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
 
     @Test
     void upgradeCompilerVersionInheritedFromParent() {
+        String parent = """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.acme</groupId>
+            <artifactId>parent</artifactId>
+            <version>1.0</version>
+            <packaging>pom</packaging>
+            <properties><groovy.version>3.0.23</groovy.version></properties>
+            <modules><module>child</module></modules>
+          </project>
+          """;
+        String child = """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <parent>
+              <groupId>com.acme</groupId>
+              <artifactId>parent</artifactId>
+              <version>1.0</version>
+            </parent>
+            <artifactId>child</artifactId>
+            <build><plugins><plugin>
+              <groupId>org.codehaus.gmaven</groupId>
+              <artifactId>groovy-maven-plugin</artifactId>
+              <version>2.1.1</version>
+              <dependencies><dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${groovy.version}</version>
+              </dependency></dependencies>
+            </plugin></plugins></build>
+          </project>
+          """;
         rewriteRun(
-          pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.acme</groupId>
-                <artifactId>parent</artifactId>
-                <version>1.0</version>
-                <packaging>pom</packaging>
-                <properties><groovy.version>3.0.23</groovy.version></properties>
-                <modules><module>child</module></modules>
-              </project>
-              """,
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.acme</groupId>
-                <artifactId>parent</artifactId>
-                <version>1.0</version>
-                <packaging>pom</packaging>
-                <properties><groovy.version>3.0.25</groovy.version></properties>
-                <modules><module>child</module></modules>
-              </project>
-              """
-          ),
-          dir("child", pomXml(
-            """
-              <project>
-                <modelVersion>4.0.0</modelVersion>
-                <parent>
-                  <groupId>com.acme</groupId>
-                  <artifactId>parent</artifactId>
-                  <version>1.0</version>
-                </parent>
-                <artifactId>child</artifactId>
-                <build><plugins><plugin>
-                  <groupId>org.codehaus.gmaven</groupId>
-                  <artifactId>groovy-maven-plugin</artifactId>
-                  <version>2.1.1</version>
-                  <dependencies><dependency>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy</artifactId>
-                    <version>${groovy.version}</version>
-                  </dependency></dependencies>
-                </plugin></plugins></build>
-              </project>
-              """
-          ))
+          pomXml(parent),
+          dir("child", pomXml(child, child.replace("<version>${groovy.version}</version>", "<version>3.0.25</version>")))
         );
+    }
+
+    @Test
+    void preserveOtherCompilerLinesAndNewerPatches() {
+        rewriteRun(pomXml(pluginPom("2.4.20")), pomXml(pluginPom("3.0.25"), spec -> spec.path("other/pom.xml")));
     }
 }
