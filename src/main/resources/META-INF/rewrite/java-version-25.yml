@@ -377,6 +377,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
+  - org.openrewrite.java.migrate.AddNebulaJavaToolchain
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -394,6 +395,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
+  - org.openrewrite.java.migrate.AddNebulaJavaToolchain
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
