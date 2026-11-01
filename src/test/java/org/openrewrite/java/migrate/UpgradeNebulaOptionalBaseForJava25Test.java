@@ -26,6 +26,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.Assertions.buildGradleKts;
 
 class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
     @Override
@@ -39,6 +40,23 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
           buildGradle(
             "plugins { id 'nebula.optional-base' version '7.0.0' }",
             "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }",
+            spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
+              .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
+              .buildscript(GradleBuildscript.builder().build()).build())
+          )
+        );
+    }
+
+    @Test
+    void migrateLegacyOptionalBaseInKotlin() {
+        rewriteRun(
+          buildGradleKts(
+            """
+              plugins { id("nebula.optional-base") version "7.0.0" }
+              """,
+            """
+              plugins { id("com.netflix.nebula.optional-base") version "9.0.0" }
+              """,
             spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
               .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
               .buildscript(GradleBuildscript.builder().build()).build())
