@@ -215,7 +215,6 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
-  - org.openrewrite.java.migrate.AddNebulaJavaToolchain
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
@@ -371,6 +370,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
+  - org.openrewrite.java.migrate.AddNebulaJavaToolchain
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -388,6 +388,7 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 25
+  - org.openrewrite.java.migrate.AddNebulaJavaToolchain
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

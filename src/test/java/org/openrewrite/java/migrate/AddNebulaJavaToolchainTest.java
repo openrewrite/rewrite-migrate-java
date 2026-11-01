@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Tree;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.gradle.marker.GradlePluginDescriptor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.test.RecipeSpec;
@@ -26,11 +27,12 @@ import java.util.Collections;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class AddNebulaJavaToolchainTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeBuildToJava25");
     }
 
     private static GradleProject nebula(String id) {
@@ -103,6 +105,18 @@ class AddNebulaJavaToolchainTest implements RewriteTest {
               """,
             spec -> spec.path("explicit/build.gradle").markers(nebula("nebula.netflixoss"))
           )
+        );
+    }
+
+    @Test
+    void leaveKotlinModulesToTheirVersionGatedMigration() {
+        JavaProject module = new JavaProject(Tree.randomId(), "kotlin-module", null);
+        rewriteRun(
+          buildGradle(
+            "plugins { id 'java' }",
+            spec -> spec.markers(module, nebula("nebula.netflixoss"))
+          ),
+          kotlin("class Example", spec -> spec.markers(module))
         );
     }
 
