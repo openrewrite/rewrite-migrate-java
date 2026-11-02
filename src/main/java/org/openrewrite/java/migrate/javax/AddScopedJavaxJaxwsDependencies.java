@@ -28,6 +28,7 @@ import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
+import org.openrewrite.xml.tree.Xml;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -118,6 +119,9 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
                     return tree;
                 }
                 SourceFile file = (SourceFile) tree;
+                if (!(file instanceof Xml.Document) && !(file instanceof JavaSourceFile)) {
+                    return file;
+                }
                 Set<String> sourceSets = required.get(file.getSourcePath());
                 if (sourceSets == null || new JaxwsNamespace(true).getVisitor().visit(file, ctx) == file) {
                     return tree;
