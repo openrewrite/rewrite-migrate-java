@@ -148,13 +148,8 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  # Remove the legacy jaxws-ri artifact
-  - org.openrewrite.java.dependencies.RemoveDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-ri
-  - org.openrewrite.maven.RemoveManagedDependency:
-      groupId: com.sun.xml.ws
-      artifactId: jaxws-ri
+  # Versions 3+ implement Jakarta namespaces and must remain intact.
+  - org.openrewrite.java.migrate.javax.RemoveLegacyJaxwsRi
   # Change any existing places in the project poms that use the jaxb-api.
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.xml.ws
