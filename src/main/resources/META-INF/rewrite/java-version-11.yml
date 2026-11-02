@@ -153,9 +153,18 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJavaxJaxwsToModernGraph
 displayName: Add separate javax JAX-WS APIs to a modern Jakarta graph
 description: Supply missing javax APIs without replacing modern Jakarta JAX-WS APIs or changing existing javax coordinates and scopes.
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJavaxJwsToModernGraph
+  - org.openrewrite.java.migrate.javax.AddJavaxWsToModernGraph
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJwsToModernGraph
+displayName: Add missing javax JWS API to a modern Jakarta graph
+description: Supply the javax JWS API only when no equivalent legacy API is already resolved.
 preconditions:
   - org.openrewrite.java.migrate.javax.JaxwsNamespace:
       modern: true
+      missingLegacyApi: jws
 recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: javax.jws
@@ -163,6 +172,16 @@ recipeList:
       version: "1.1"
       onlyIfUsing: javax.jws..*
       acceptTransitive: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxWsToModernGraph
+displayName: Add missing javax XML-WS API to a modern Jakarta graph
+description: Supply the javax XML-WS API only when no equivalent legacy API is already resolved.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxwsNamespace:
+      modern: true
+      missingLegacyApi: ws
+recipeList:
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: javax.xml.ws
       artifactId: jaxws-api

@@ -193,6 +193,44 @@ class JaxwsNamespaceTest implements RewriteTest {
             """.formatted(group, artifact, version))));
     }
 
+
+    @ParameterizedTest
+    @CsvSource({
+      "jakarta.xml.ws,jakarta.xml.ws-api,4.0.2,jakarta.jws,jakarta.jws-api,2.1.0,javax.jws.WebService",
+      "jakarta.jws,jakarta.jws-api,3.0.0,jakarta.xml.ws,jakarta.xml.ws-api,2.3.3,javax.xml.ws.http.HTTPException"
+    })
+    void doNotDuplicateAnEquivalentLegacyApi(String modernGroup, String modernArtifact, String modernVersion,
+                                             String legacyGroup, String legacyArtifact, String legacyVersion, String type) {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
+            "package javax.xml.ws.http; public class HTTPException extends RuntimeException {}",
+            "package javax.jws; public @interface WebService {}")),
+          mavenProject("app", srcMainJava(java("""
+            class Example {
+                %s legacy;
+            }
+            """.formatted(type))), pomXml("""
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>example</groupId>
+              <artifactId>app</artifactId>
+              <version>1</version>
+              <dependencies>
+                <dependency>
+                  <groupId>%s</groupId>
+                  <artifactId>%s</artifactId>
+                  <version>%s</version>
+                </dependency>
+                <dependency>
+                  <groupId>%s</groupId>
+                  <artifactId>%s</artifactId>
+                  <version>%s</version>
+                </dependency>
+              </dependencies>
+            </project>
+            """.formatted(modernGroup, modernArtifact, modernVersion, legacyGroup, legacyArtifact, legacyVersion))));
+    }
+
     private static ResolvedDependency dependency(String group, String artifact, String version) {
         return ResolvedDependency.builder().gav(new ResolvedGroupArtifactVersion(null, group, artifact, version, null))
           .requested(Dependency.builder().gav(new GroupArtifactVersion(group, artifact, version)).build()).type("jar").build();
