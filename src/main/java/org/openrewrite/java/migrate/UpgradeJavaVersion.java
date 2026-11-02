@@ -44,7 +44,7 @@ public class UpgradeJavaVersion extends Recipe {
 
     String description = "Upgrade build plugin configuration to use the specified Java version. " +
             "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of Gradle projects, " +
-            "or `maven-compiler-plugin` target version and related settings. " +
+            "Java-authored Gradle compiler release configuration, or `maven-compiler-plugin` target version and related settings. " +
             "Will not downgrade if the version is newer than the specified version.";
 
     @Override
@@ -55,6 +55,7 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpgradeUnmodeledMavenJavaVersion(version),
                 new org.openrewrite.jenkins.UpgradeJavaVersion(version, null),
                 new UpdateJavaCompatibility(version, null, null, false, null),
+                new UpgradeJavaGradleReleaseVersion(version),
                 new UpdateSdkMan(String.valueOf(version), null),
                 new UpgradeJavaCiContainerImage(version),
                 new UpgradeDockerImageVersion(version),
