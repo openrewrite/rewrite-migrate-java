@@ -233,10 +233,6 @@ recipeList:
       addVersionIfMissing: true
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
-      artifactId: maven-surefire-*
-      newVersion: 3.5.x
-  - org.openrewrite.maven.UpgradePluginVersion:
-      groupId: org.apache.maven.plugins
       artifactId: maven-failsafe-plugin
       newVersion: 3.5.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
@@ -262,6 +258,7 @@ recipeList:
       groupId: org.aspectj
       artifactId: aspectj*
       newVersion: 1.9.x
+  - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
   # mockito-inline was last published as 5.2.0 and inline mocking is the default in mockito-core 5.x, so fold it in
   # before the bump below rather than leaving a coordinate that no longer resolves.
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -274,6 +271,30 @@ recipeList:
       artifactId: mockito-*
       newVersion: 5.20.x
   - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
+  # The agent recipe can introduce Surefire; upgrade after it, including versions inherited from old parents.
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-*
+      newVersion: 3.5.x
+      addVersionIfMissing: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeMockito1ForJava25
+displayName: Upgrade Mockito 1 APIs and dependencies for Java 25
+description: >-
+  Replace obsolete Mockito 1 dependencies, including mockito-all, and migrate removed APIs before upgrading to Mockito 5.
+  Scope the legacy API migrations to modules directly declaring Mockito 1 so modern matcher semantics remain unchanged.
+  Transitive-only Mockito 1 (for example from an external framework parent) is excluded: its dependency cannot safely
+  be upgraded here, so migrating APIs would leave incompatible Mockito 1 on the classpath. Upgrade that dependency manually.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.mockito
+      artifactIdPattern: mockito-*
+      version: "[1,2)"
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.testing.mockito.Mockito1to5Migration
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
