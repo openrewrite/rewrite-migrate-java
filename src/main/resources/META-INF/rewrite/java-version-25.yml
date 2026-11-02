@@ -215,6 +215,10 @@ recipeList:
   - org.openrewrite.gradle.UpdateGradleWrapper:
       version: 9.1.0
       addIfMissing: false
+  # Older resolvers reference JvmVendorSpec.IBM_SEMERU, removed in Gradle 9.
+  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
+      pluginIdPattern: org.gradle.toolchains.foojay-resolver*
+      newVersion: 1.0.0
   # The legacy id stops at 7.x; 9.x removes the MavenPlugin API reference while preserving optional POM behavior.
   - org.openrewrite.gradle.plugins.ChangePlugin:
       pluginId: nebula.optional-base
@@ -247,6 +251,10 @@ recipeList:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.easymock
+      artifactId: easymock
+      newVersion: 5.6.0
   # Both distributions bundle an AspectJ too old to read Java 25 bytecode, so aspectjtools is pinned on the plugin.
   # dev.aspectj is otherwise interchangeable, but org.codehaus.mojo's `complianceLevel` default of 1.4 is now fatal.
   - org.openrewrite.maven.ChangePluginGroupIdAndArtifactId:
@@ -379,6 +387,8 @@ displayName: Upgrade build to Java 25 (non-Kotlin)
 description: >-
   Upgrades build files to Java 25 for modules without Kotlin source files. This covers pure Java projects,
   including those that only pick up `kotlin-stdlib` transitively through another dependency.
+  Kotlin DSL scripts without JavaProject, GradleProject, and JavaVersion markers are left unchanged because
+  their Kotlin compiler compatibility cannot be established from the model.
 preconditions:
   - org.openrewrite.java.migrate.search.ModuleHasKotlinSource:
       invertMarking: true
