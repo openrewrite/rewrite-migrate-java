@@ -44,16 +44,18 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
                          "reusing an existing equivalent coordinate when its current scope is insufficient.";
 
     static class Uses {
-        final Map<Path, SourceFile> builds = new LinkedHashMap<>();
+        final Map<Path, UUID> builds = new LinkedHashMap<>();
         final Map<Path, SourceUse> sources = new LinkedHashMap<>();
     }
 
     static class SourceUse {
-        final SourceFile source;
+        final Path sourcePath;
+        final @Nullable UUID projectId;
         final @Nullable String sourceSet;
 
         SourceUse(SourceFile source, @Nullable String sourceSet) {
-            this.source = source;
+            this.sourcePath = source.getSourcePath();
+            this.projectId = source.getMarkers().findFirst(JavaProject.class).map(JavaProject::getId).orElse(null);
             this.sourceSet = sourceSet;
         }
     }
@@ -76,7 +78,8 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
                 String name = file.getSourcePath().getFileName().toString();
                 if ("pom.xml".equals(name) || "build.gradle".equals(name) || "build.gradle.kts".equals(name)) {
                     // An unmodelled child build is still a module boundary; never spill its uses into a parent.
-                    uses.builds.put(file.getSourcePath(), file);
+                    uses.builds.put(file.getSourcePath(),
+                            file.getMarkers().findFirst(JavaProject.class).map(JavaProject::getId).orElse(null));
                 } else if (file instanceof JavaSourceFile) {
                     JavaSourceFile cu = (JavaSourceFile) file;
                     String pkg = "ws".equals(api) ? "javax.xml.ws" : "javax.jws";
@@ -95,12 +98,12 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
     public TreeVisitor<?, ExecutionContext> getVisitor(Uses uses) {
         Map<Path, Set<String>> required = new LinkedHashMap<>();
         for (SourceUse use : uses.sources.values()) {
-            Path build = owner(use.source, uses.builds);
+            Path build = owner(use, uses.builds);
             if (build == null) {
                 continue;
             }
             Path parent = build.getParent();
-            Path relative = parent == null ? use.source.getSourcePath() : parent.relativize(use.source.getSourcePath());
+            Path relative = parent == null ? use.sourcePath : parent.relativize(use.sourcePath);
             // An unmodelled buildSrc/included build is not application source of its enclosing build.
             if (relative.startsWith("buildSrc") || relative.startsWith("build-logic")) {
                 continue;
@@ -137,17 +140,17 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
         };
     }
 
-    private static @Nullable Path owner(SourceFile source, Map<Path, SourceFile> builds) {
+    private static @Nullable Path owner(SourceUse source, Map<Path, UUID> builds) {
         Path nearest = null;
-        JavaProject project = source.getMarkers().findFirst(JavaProject.class).orElse(null);
-        for (Map.Entry<Path, SourceFile> entry : builds.entrySet()) {
+        UUID project = source.projectId;
+        for (Map.Entry<Path, UUID> entry : builds.entrySet()) {
             Path build = entry.getKey();
             Path root = build.getParent();
-            if (root != null && !source.getSourcePath().startsWith(root)) {
+            if (root != null && !source.sourcePath.startsWith(root)) {
                 continue;
             }
-            JavaProject buildProject = entry.getValue().getMarkers().findFirst(JavaProject.class).orElse(null);
-            if (project != null && buildProject != null && !project.getId().equals(buildProject.getId())) {
+            UUID buildProject = entry.getValue();
+            if (project != null && buildProject != null && !project.equals(buildProject)) {
                 continue;
             }
             if (nearest == null || build.getNameCount() > nearest.getNameCount()) {
