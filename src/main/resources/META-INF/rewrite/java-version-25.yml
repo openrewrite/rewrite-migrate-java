@@ -210,6 +210,7 @@ recipeList:
       newVersion: 7.4.0
   - org.openrewrite.github.SetupJavaAdoptOpenJDKToTemurin
   - org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25
+  - org.openrewrite.java.migrate.UpgradeSpringBootBomForJava25
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
@@ -451,6 +452,33 @@ preconditions:
       recursive: false
 recipeList:
   - org.openrewrite.maven.UpgradeParentVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-parent
+      newVersion: 3.5.x
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeSpringBootBomForJava25
+displayName: Upgrade imported Spring Boot 3 BOMs for Java 25
+description: >-
+  Upgrade Spring Boot 3 BOMs imported in `dependencyManagement` (`spring-boot-dependencies` or
+  `spring-boot-starter-parent` with `<scope>import</scope>`) to the latest 3.5 release. Projects that import Boot
+  rather than inheriting from it otherwise keep Boot's older managed versions of Lombok, Byte Buddy and Mockito,
+  which cannot handle Java 25, and a `spring-boot-maven-plugin` sharing the BOM's version property cannot repackage
+  Java 25 classes. Stay within Boot 3, as `UpgradeSpringBootParentForJava25` does.
+tags:
+  - java25
+preconditions:
+  - org.openrewrite.maven.search.FindManagedDependency:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-*
+      version: 3.x
+recipeList:
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-dependencies
+      newVersion: 3.5.x
+  - org.openrewrite.maven.UpgradeDependencyVersion:
       groupId: org.springframework.boot
       artifactId: spring-boot-starter-parent
       newVersion: 3.5.x
