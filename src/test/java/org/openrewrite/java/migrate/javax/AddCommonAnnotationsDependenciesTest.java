@@ -16,6 +16,14 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import java.util.Collections;
+import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
+import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.maven.tree.Dependency;
+import org.openrewrite.maven.tree.GroupArtifactVersion;
+import org.openrewrite.maven.tree.ResolvedDependency;
+import org.openrewrite.maven.tree.ResolvedGroupArtifactVersion;
+
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
@@ -23,6 +31,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class AddCommonAnnotationsDependenciesTest implements RewriteTest {
@@ -33,6 +42,166 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
             "/META-INF/rewrite/add-common-annotations-dependencies.yml",
             "org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies")
           .allSources(src -> src.markers(javaVersion(8)));
+    }
+
+    @Test
+    void preserveJavaxAlongsideModernTransitiveAnnotations() {
+        rewriteRun(pomXml("""
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>sample</artifactId>
+            <version>1</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-core</artifactId>
+                <version>4.0.5</version>
+              </dependency>
+              <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+          </project>
+          """));
+    }
+
+    @Test
+    void preserveJavaxAlongsidePropertyBasedModernAnnotations() {
+        rewriteRun(pomXml("""
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>sample</artifactId>
+            <version>1</version>
+            <properties><annotations.version>2.1.1</annotations.version></properties>
+            <dependencies>
+              <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${annotations.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+              </dependency>
+            </dependencies>
+          </project>
+          """));
+    }
+
+    @Test
+    void addSeparateJavaxDependencyForModernGraph() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("package javax.annotation; public @interface Generated {}")),
+          mavenProject("my-project",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Generated;
+
+                  @Generated("Hello")
+                  class A {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>3.0.0</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>3.0.0</version>
+                    </dependency>
+                    <dependency>
+                      <groupId>javax.annotation</groupId>
+                      <artifactId>javax.annotation-api</artifactId>
+                      <version>1.3.2</version>
+                      <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void preserveManagedModernAnnotations() {
+        rewriteRun(pomXml("""
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>sample</artifactId>
+            <version>1</version>
+            <properties><annotations.version>3.0.0</annotations.version></properties>
+            <dependencyManagement>
+              <dependencies>
+                <dependency>
+                  <groupId>jakarta.annotation</groupId>
+                  <artifactId>jakarta.annotation-api</artifactId>
+                  <version>${annotations.version}</version>
+                </dependency>
+              </dependencies>
+            </dependencyManagement>
+            <dependencies>
+              <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+              </dependency>
+            </dependencies>
+          </project>
+          """));
+    }
+
+    @Test
+    void preserveGradleJavaxAlongsideModernTransitiveAnnotations() {
+        ResolvedDependency modern = ResolvedDependency.builder()
+          .gav(new ResolvedGroupArtifactVersion(null, "jakarta.annotation", "jakarta.annotation-api", "3.0.0", null))
+          .requested(Dependency.builder()
+            .gav(new GroupArtifactVersion("jakarta.annotation", "jakarta.annotation-api", "3.0.0")).build())
+          .depth(1).type("jar").build();
+        GradleDependencyConfiguration configuration =
+          new GradleDependencyConfiguration("compileClasspath", null, true, true, false, false,
+            Collections.emptyList(), Collections.emptyList(), Collections.singletonList(modern), null, null);
+        rewriteRun(buildGradle("""
+          plugins { id 'java' }
+          repositories { mavenCentral() }
+          dependencies {
+              implementation 'javax.annotation:javax.annotation-api:1.3.2'
+          }
+          """, spec -> spec.markers(GradleProject.builder()
+            .name("sample").path(":sample")
+            .nameToConfiguration(Collections.singletonMap("compileClasspath", configuration)).build())));
     }
 
     @DocumentExample
