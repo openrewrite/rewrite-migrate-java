@@ -29,6 +29,8 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.Scope;
+import java.util.Collections;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
 
@@ -44,7 +46,7 @@ public class JaxwsNamespace extends Recipe {
     @Option(displayName = "Modern namespace", description = "Whether to match graphs using Jakarta JAX-WS or JWS API 3 or later.", example = "true")
     boolean modern;
 
-    @Option(displayName = "Missing legacy API", description = "When set, also require the corresponding javax API to be absent from the resolved graph.", example = "ws", required = false, valid = {"ws", "jws"})
+    @Option(displayName = "Missing legacy API", description = "When set, also require the corresponding javax API to be absent from the main compilation classpath.", example = "ws", required = false, valid = {"ws", "jws"})
     @Nullable String missingLegacyApi;
 
     public JaxwsNamespace(boolean modern) {
@@ -70,8 +72,7 @@ public class JaxwsNamespace extends Recipe {
                     return tree;
                 }
                 boolean found = matches(tree, JaxwsNamespace::isModern, true);
-                boolean legacyAvailable = missingLegacyApi != null && matches(tree, (group, artifact, version) ->
-                        isLegacy(missingLegacyApi, group, artifact, version), false);
+                boolean legacyAvailable = missingLegacyApi != null && mainCompileHasLegacy(tree, missingLegacyApi);
                 return found == modern && !legacyAvailable ? SearchResult.found(tree) : tree;
             }
         };
@@ -89,12 +90,38 @@ public class JaxwsNamespace extends Recipe {
                 includeManaged && m.getPom().getDependencyManagement().stream().anyMatch(d ->
                         predicate.test(d.getGroupId(), d.getArtifactId(), d.getVersion()))).orElse(false) ||
                 tree.getMarkers().findFirst(GradleProject.class).map(g ->
-                        g.getConfigurations().stream().anyMatch(c ->
+                        g.getConfigurations().stream().filter(c -> isApplicationConfiguration(c.getName())).anyMatch(c ->
                                 ResolvedDependencyGraph.anyMatch(c.getDirectResolved(), d ->
                                         predicate.test(d.getGroupId(), d.getArtifactId(), d.getVersion())))).orElse(false);
     }
 
-    private static boolean isLegacy(String api, String group, String artifact, @Nullable String version) {
+    static boolean isApplicationConfiguration(String name) {
+        return !"classpath".equals(name) && !name.endsWith("AnnotationProcessor") &&
+               !"annotationProcessor".equals(name);
+    }
+
+    private static boolean mainCompileHasLegacy(Tree tree, String api) {
+        return tree.getMarkers().findFirst(MavenResolutionResult.class).map(m ->
+                ResolvedDependencyGraph.anyMatch(m.getDependencies().getOrDefault(Scope.Compile, Collections.emptyList()),
+                        d -> isLegacy(api, d.getGroupId(), d.getArtifactId(), d.getVersion())) ||
+                m.getDependencies().getOrDefault(Scope.Provided, Collections.emptyList()).stream().anyMatch(d ->
+                        declaredScope(m, d) == Scope.Provided &&
+                        ResolvedDependencyGraph.anyMatch(Collections.singletonList(d), child ->
+                                isLegacy(api, child.getGroupId(), child.getArtifactId(), child.getVersion())))).orElse(false) ||
+               tree.getMarkers().findFirst(GradleProject.class).map(g ->
+                       g.getConfigurations().stream().filter(c -> "compileClasspath".equals(c.getName()) ||
+                               "compileOnly".equals(c.getName()) || "implementation".equals(c.getName()) || "api".equals(c.getName()))
+                               .anyMatch(c -> ResolvedDependencyGraph.anyMatch(c.getDirectResolved(), d ->
+                                       isLegacy(api, d.getGroupId(), d.getArtifactId(), d.getVersion())))).orElse(false);
+    }
+
+    private static Scope declaredScope(MavenResolutionResult model, org.openrewrite.maven.tree.ResolvedDependency dependency) {
+        String scope = dependency.getRequested() == null ? null : model.getPom().getValue(dependency.getRequested().getScope());
+        return scope == null ? model.getPom().getManagedScope(dependency.getGroupId(), dependency.getArtifactId(),
+                dependency.getType(), dependency.getClassifier()) : Scope.fromName(scope);
+    }
+
+    static boolean isLegacy(String api, String group, String artifact, @Nullable String version) {
         if ("ws".equals(api)) {
             return "javax.xml.ws".equals(group) && "jaxws-api".equals(artifact) ||
                    "jakarta.xml.ws".equals(group) && "jakarta.xml.ws-api".equals(artifact) &&
@@ -105,7 +132,7 @@ public class JaxwsNamespace extends Recipe {
                 version != null && LEGACY.isValid(null, version));
     }
 
-    private static boolean isModern(String group, String artifact, @Nullable String version) {
+    static boolean isModern(String group, String artifact, @Nullable String version) {
         return (("jakarta.xml.ws".equals(group) && "jakarta.xml.ws-api".equals(artifact)) ||
                 ("jakarta.jws".equals(group) && "jakarta.jws-api".equals(artifact))) &&
                version != null && MODERN.isValid(null, version);
