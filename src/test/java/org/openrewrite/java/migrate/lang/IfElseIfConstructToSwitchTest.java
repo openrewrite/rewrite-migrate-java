@@ -296,19 +296,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                   }
                   void consume(Object value) {}
               }
-              """,
-            """
-              class Test {
-                  void accept(Object value) {
-                      switch (value) {
-                          case Class<?>[] classes -> consume(classes);
-                          case Enum<?>[] enums -> consume(enums);
-                          case String text -> consume(text);
-                          case null, default -> {}
-                      }
-                  }
-                  void consume(Object value) {}
-              }
               """
           )
         );
@@ -329,23 +316,6 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
                           consume(entries);
                       } else if (value instanceof int[] integers) {
                           consume(integers);
-                      }
-                  }
-                  void consume(Object value) {}
-              }
-              """,
-            """
-              class Test {
-                  void accept(Object value) {
-                      switch (value) {
-                          case Class<?>[][] classes -> {
-                              // Keep both statements and the comment.
-                              consume(classes);
-                              consume(classes.length);
-                          }
-                          case java.util.Map.Entry<?, ?>[] entries -> consume(entries);
-                          case int[] integers -> consume(integers);
-                          case null, default -> {}
                       }
                   }
                   void consume(Object value) {}

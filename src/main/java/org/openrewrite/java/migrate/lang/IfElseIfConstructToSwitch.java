@@ -185,7 +185,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
-                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
+                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType) ||
+                       hasParameterizedArrayPattern(clazz);
             })) {
                 return false;
             }
@@ -199,6 +200,21 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean hasParameterizedArrayPattern(J clazz) {
+            if (!(clazz instanceof J.ArrayType)) {
+                return false;
+            }
+            // JavaTemplate cannot reliably parse these case labels and substitute their
+            // bodies. Keep the if chain intact rather than emitting placeholder nodes.
+            return new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.ParameterizedType visitParameterizedType(J.ParameterizedType type, AtomicBoolean found) {
+                    found.set(true);
+                    return type;
+                }
+            }.reduce(clazz, new AtomicBoolean()).get();
         }
 
         private boolean hasDominatedPattern() {
@@ -403,24 +419,7 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 return ((J.Identifier) statement.getClazz()).getSimpleName();
             }
 
-            if (statement.getClazz() instanceof J.ArrayType) {
-                // The template parser cannot substitute bodies after parameterized array
-                // patterns. Parse their erasure, then restore the original type in
-                // fixTypeAttribution, just as for unresolved pattern types.
-                return arrayTemplateType((J.ArrayType) statement.getClazz()).toString();
-            }
             return statement.getClazz().toString();
-        }
-
-        private J.ArrayType arrayTemplateType(J.ArrayType array) {
-            TypeTree element = array.getElementType();
-            if (element instanceof J.ParameterizedType) {
-                return array.withElementType((TypeTree) ((J.ParameterizedType) element).getClazz());
-            }
-            if (element instanceof J.ArrayType) {
-                return array.withElementType(arrayTemplateType((J.ArrayType) element));
-            }
-            return array;
         }
 
         private String getPattern(J.InstanceOf statement) {
