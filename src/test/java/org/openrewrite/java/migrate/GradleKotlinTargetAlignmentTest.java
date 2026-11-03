@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
+import static org.openrewrite.gradle.Assertions.settingsGradleKts;
 
 class GradleKotlinTargetAlignmentTest implements RewriteTest {
     @Test void groovyEnumAndProvider() {
@@ -190,6 +191,117 @@ class GradleKotlinTargetAlignmentTest implements RewriteTest {
         rewriteRun(spec -> spec.recipe(new UpgradeGradleJavaVersion(25)),
           buildGradle("""
             plugins { id 'org.jetbrains.kotlin.jvm' }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+            """));
+    }
+
+    @Test void unappliedKotlinCompilerDoesNotCapJavaOnlyBuild() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins {
+                id 'java'
+                id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply false
+            }
+            sourceCompatibility = 17
+            targetCompatibility = 17
+            """, """
+            plugins {
+                id 'java'
+                id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply false
+            }
+            sourceCompatibility = 25
+            targetCompatibility = 25
+            """));
+    }
+    @Test void unappliedKotlinDslCompilerDoesNotCapJavaOnlyBuild() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins {
+                java
+                kotlin("jvm") version "1.9.22" apply false
+            }
+            java {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+            """, """
+            plugins {
+                java
+                kotlin("jvm") version "1.9.22" apply false
+            }
+            java {
+                sourceCompatibility = JavaVersion.VERSION_25
+                targetCompatibility = JavaVersion.VERSION_25
+            }
+            """));
+    }
+    @Test void javascriptKotlinPluginDoesNotSupplyJvmCompiler() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins {
+                id 'java'
+                id 'org.jetbrains.kotlin.js' version '1.9.22'
+            }
+            sourceCompatibility = 17
+            targetCompatibility = 17
+            """, """
+            plugins {
+                id 'java'
+                id 'org.jetbrains.kotlin.js' version '1.9.22'
+            }
+            sourceCompatibility = 25
+            targetCompatibility = 25
+            """));
+    }
+    @Test void serializationPluginAloneDoesNotSupplyJvmCompiler() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins {
+                java
+                kotlin("plugin.serialization") version "1.9.22"
+            }
+            java { toolchain.languageVersion.set(JavaLanguageVersion.of(17)) }
+            """, """
+            plugins {
+                java
+                kotlin("plugin.serialization") version "1.9.22"
+            }
+            java { toolchain.languageVersion.set(JavaLanguageVersion.of(25)) }
+            """));
+    }
+
+    @Test void explicitlyAppliedCompilerStillBoundsBothTargets() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply true }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+            """, """
+            plugins { id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply true }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_21 } }
+            """));
+    }
+    @Test void managedUnappliedCompilerDoesNotCapJavaOnlyBuild() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          settingsGradleKts("""
+            pluginManagement {
+                plugins { kotlin("jvm") version "1.9.22" }
+            }
+            """),
+          buildGradleKts("""
+            plugins { java }
+            java { toolchain.languageVersion.set(JavaLanguageVersion.of(17)) }
+            """, """
+            plugins { java }
+            java { toolchain.languageVersion.set(JavaLanguageVersion.of(25)) }
+            """));
+    }
+    @Test void versionlessExplicitApplicationRemainsConservative() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { id 'org.jetbrains.kotlin.jvm' apply true }
             java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
             kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
             """));

@@ -101,9 +101,15 @@ public class UpgradeGradleJavaVersion extends Recipe {
     }
 
     private static void recordCompilerVersion(J.MethodInvocation method, Cursor cursor, int[] target) {
-        if (isMainCompiler(method) && topLevelPlugins(cursor)) {
+        Cursor declaration = pluginDeclaration(cursor);
+        if (declaration == null || !topLevelPlugins(declaration)) {
+            return;
+        }
+        if (isMainCompiler(method)) {
             // A versionless compiler can be supplied by settings or an external convention: its target is unknown.
-            target[0] = Math.min(target[0], 8);
+            if (isAppliedDeclaration(declaration)) {
+                target[0] = Math.min(target[0], 8);
+            }
             return;
         }
         // Check the literal DSL shape before invoking the trait: custom DSLs may have non-string id/version arguments.
@@ -121,13 +127,40 @@ public class UpgradeGradleJavaVersion extends Recipe {
             !(((J.Literal) method.getArguments().get(0)).getValue() instanceof String)) {
             String pluginId = (String) ((J.Literal) id.getArguments().get(0)).getValue();
             if (("org.jetbrains.kotlin.jvm".equals(pluginId) || "kotlin".equals(id.getSimpleName()) && "jvm".equals(pluginId)) &&
-                topLevelPlugins(cursor)) {
+                isAppliedDeclaration(declaration)) {
                 target[0] = Math.min(target[0], 8);
             }
             return;
         }
-        new GradlePlugin.Matcher().pluginIdPattern("org.jetbrains.kotlin.*").get(cursor).ifPresent(plugin ->
-                target[0] = Math.min(target[0], supportedTarget(plugin.getVersion())));
+        new GradlePlugin.Matcher().pluginIdPattern("org.jetbrains.kotlin.*").get(declaration)
+                .filter(plugin -> plugin.isApplied() &&
+                        ("org.jetbrains.kotlin.jvm".equals(plugin.getPluginId()) ||
+                         "org.jetbrains.kotlin.android".equals(plugin.getPluginId())))
+                .ifPresent(plugin -> target[0] = Math.min(target[0], supportedTarget(plugin.getVersion())));
+    }
+
+    private static @Nullable Cursor pluginDeclaration(Cursor cursor) {
+        Cursor parent = cursor.getParentTreeCursor();
+        if (parent.getValue() instanceof J.MethodInvocation) {
+            J.MethodInvocation apply = parent.getValue();
+            J.MethodInvocation method = cursor.getValue();
+            if ("apply".equals(apply.getSimpleName()) && apply.getSelect() != null &&
+                apply.getSelect().getId().equals(method.getId())) {
+                // The trait's applied flag belongs to the outer apply invocation, not its inner version/id.
+                if (apply.getArguments().size() != 1 || !(apply.getArguments().get(0) instanceof J.Literal) ||
+                    !(((J.Literal) apply.getArguments().get(0)).getValue() instanceof Boolean)) {
+                    return null;
+                }
+                return parent;
+            }
+        }
+        return cursor;
+    }
+
+    private static boolean isAppliedDeclaration(Cursor cursor) {
+        J.MethodInvocation method = cursor.getValue();
+        return !"apply".equals(method.getSimpleName()) ||
+               Boolean.TRUE.equals(((J.Literal) method.getArguments().get(0)).getValue());
     }
 
     private static boolean isMainCompiler(J.MethodInvocation method) {
