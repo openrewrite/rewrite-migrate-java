@@ -38,6 +38,7 @@ description: Supply javax annotations where no modern Jakarta annotation API is 
 preconditions:
   - org.openrewrite.java.migrate.javax.AnnotationNamespace:
       modern: false
+  - org.openrewrite.java.migrate.javax.CommonAnnotationsCoordinateCanMigrate
 recipeList:
   # Add or update the jakarta.annotation-api. Use version 1.3.x, as this version still kept the old javax namespace (starting from 2.x it's changed to jakarta).
   - org.openrewrite.java.dependencies.ChangeDependency:
