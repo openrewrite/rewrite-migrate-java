@@ -22,21 +22,20 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.AddAnnotationProcessor;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.ResolvedPom;
-import org.openrewrite.xml.XmlIsoVisitor;
+import org.openrewrite.xml.search.FindTags;
 import org.openrewrite.xml.tree.Xml;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Arrays.asList;
 
@@ -45,9 +44,6 @@ import static java.util.Arrays.asList;
 public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpringBootAnnotationProcessorPaths.Accumulator> {
 
     private static final String SPRING_BOOT_GROUP = "org.springframework.boot";
-    private static final List<String> PROCESSOR_ARTIFACTS = asList(
-            "spring-boot-configuration-processor",
-            "spring-boot-autoconfigure-processor");
 
     String displayName = "Keep Spring Boot annotation processors in newly created `annotationProcessorPaths`";
 
@@ -57,18 +53,11 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
             "so their metadata is still generated. Lists that existed before the run are left alone.";
 
     public static class Accumulator {
-        final List<Processor> processors = new ArrayList<>();
+        final List<Processor> processors = asList(
+                new Processor("spring-boot-configuration-processor"),
+                new Processor("spring-boot-autoconfigure-processor"));
 
-        /**
-         * POMs whose effective `maven-compiler-plugin` already configured `annotationProcessorPaths` before this run.
-         */
         final Set<Path> hadProcessorPaths = new HashSet<>();
-
-        Accumulator() {
-            for (String artifactId : PROCESSOR_ARTIFACTS) {
-                processors.add(new Processor(artifactId));
-            }
-        }
     }
 
     static class Processor {
@@ -95,18 +84,9 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
 
     @Override
     public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
-        List<TreeVisitor<?, ExecutionContext>> processorPathScanners = new ArrayList<>();
-        for (Processor processor : acc.processors) {
-            // The version is only consulted by the visitor; the scan phase ignores it, so any placeholder is fine here.
-            processorPathScanners.add(new AddAnnotationProcessor(SPRING_BOOT_GROUP, processor.artifactId, "0")
-                    .getScanner(processor.processorPaths));
-        }
         return new MavenIsoVisitor<ExecutionContext>() {
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
-                for (TreeVisitor<?, ExecutionContext> scanner : processorPathScanners) {
-                    scanner.visit(document, ctx);
-                }
                 MavenResolutionResult mrr = getResolutionResult();
                 Path sourcePath = mrr.getPom().getRequested().getSourcePath();
                 if (sourcePath == null) {
@@ -116,6 +96,10 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
                     acc.hadProcessorPaths.add(sourcePath);
                 }
                 for (Processor processor : acc.processors) {
+                    // The version is only consulted by the visitor; the scan phase ignores it, so any placeholder is fine here.
+                    new AddAnnotationProcessor(SPRING_BOOT_GROUP, processor.artifactId, "0")
+                            .getScanner(processor.processorPaths)
+                            .visit(document, ctx);
                     List<ResolvedDependency> found = mrr.findDependencies(SPRING_BOOT_GROUP, processor.artifactId, null);
                     if (found.isEmpty()) {
                         continue;
@@ -125,8 +109,9 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
                     }
                     processor.targets.add(sourcePath);
                     MavenResolutionResult parent = mrr.getParent();
-                    if (parent != null && parent.getPom().getRequested().getSourcePath() != null) {
-                        processor.targets.add(parent.getPom().getRequested().getSourcePath());
+                    Path parentPath = parent == null ? null : parent.getPom().getRequested().getSourcePath();
+                    if (parentPath != null) {
+                        processor.targets.add(parentPath);
                     }
                 }
                 return document;
@@ -136,16 +121,7 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
-        List<Processor> processors = new ArrayList<>();
-        List<TreeVisitor<?, ExecutionContext>> processorVisitors = new ArrayList<>();
-        for (Processor processor : acc.processors) {
-            if (processor.version != null) {
-                processors.add(processor);
-                processorVisitors.add(new AddAnnotationProcessor(SPRING_BOOT_GROUP, processor.artifactId, processor.version)
-                        .getVisitor(processor.processorPaths));
-            }
-        }
-        if (processors.isEmpty()) {
+        if (acc.processors.stream().allMatch(processor -> processor.targets.isEmpty())) {
             return TreeVisitor.noop();
         }
         return new TreeVisitor<Tree, ExecutionContext>() {
@@ -154,16 +130,21 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
                 if (!(tree instanceof Xml.Document)) {
                     return tree;
                 }
-                Path sourcePath = ((Xml.Document) tree).getSourcePath();
+                Xml.Document document = (Xml.Document) tree;
+                Path sourcePath = document.getSourcePath();
                 // Only complete a list that an earlier step created in this run: adding a path to a list that
                 // was already there, or creating a new list, would change which processors run.
-                if (acc.hadProcessorPaths.contains(sourcePath) || !declaresProcessorPaths((Xml.Document) tree)) {
+                if (acc.hadProcessorPaths.contains(sourcePath) ||
+                    acc.processors.stream().noneMatch(processor -> processor.targets.contains(sourcePath)) ||
+                    FindTags.find(document, "//annotationProcessorPaths").isEmpty()) {
                     return tree;
                 }
                 Tree t = tree;
-                for (int i = 0; i < processors.size(); i++) {
-                    if (processors.get(i).targets.contains(sourcePath)) {
-                        t = processorVisitors.get(i).visit(t, ctx);
+                for (Processor processor : acc.processors) {
+                    if (processor.version != null && processor.targets.contains(sourcePath)) {
+                        t = new AddAnnotationProcessor(SPRING_BOOT_GROUP, processor.artifactId, processor.version)
+                                .getVisitor(processor.processorPaths)
+                                .visit(t, ctx);
                     }
                 }
                 return t;
@@ -172,11 +153,7 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
     }
 
     private static boolean hasProcessorPaths(ResolvedPom pom) {
-        return hasProcessorPaths(pom.getPlugins()) || hasProcessorPaths(pom.getPluginManagement());
-    }
-
-    private static boolean hasProcessorPaths(List<Plugin> plugins) {
-        for (Plugin plugin : plugins) {
+        for (Plugin plugin : ListUtils.concatAll(pom.getPlugins(), pom.getPluginManagement())) {
             if ("maven-compiler-plugin".equals(plugin.getArtifactId()) &&
                 plugin.getConfiguration() != null &&
                 plugin.getConfiguration().has("annotationProcessorPaths")) {
@@ -184,20 +161,5 @@ public class AddSpringBootAnnotationProcessorPaths extends ScanningRecipe<AddSpr
             }
         }
         return false;
-    }
-
-    private static boolean declaresProcessorPaths(Xml.Document document) {
-        AtomicBoolean found = new AtomicBoolean();
-        new XmlIsoVisitor<AtomicBoolean>() {
-            @Override
-            public Xml.Tag visitTag(Xml.Tag tag, AtomicBoolean f) {
-                if ("annotationProcessorPaths".equals(tag.getName())) {
-                    f.set(true);
-                    return tag;
-                }
-                return super.visitTag(tag, f);
-            }
-        }.visit(document, found);
-        return found.get();
     }
 }
