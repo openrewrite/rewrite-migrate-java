@@ -309,6 +309,10 @@ recipeList:
       artifactId: checkstyle
       newVersion: 10.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.projectlombok
+      artifactId: lombok
+      newVersion: 1.18.40
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
       newVersion: 1.17.x

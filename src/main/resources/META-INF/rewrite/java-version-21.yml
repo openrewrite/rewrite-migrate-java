@@ -91,6 +91,10 @@ recipeList:
       groupId: org.modelmapper
       artifactId: modelmapper
       newVersion: 3.2.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.projectlombok
+      artifactId: lombok
+      newVersion: 1.18.30
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.util.SequencedCollection
