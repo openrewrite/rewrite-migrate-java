@@ -30,6 +30,7 @@ import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
 
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -50,9 +51,9 @@ public class ModuleOrParentHasDependency extends ScanningRecipe<ModuleOrParentHa
             example = "lombok")
     String artifactIdPattern;
 
-    String displayName = "Module or its reactor parent has dependency";
+    String displayName = "Module or its reactor parent has a direct dependency";
 
-    String description = "Marks all files in modules that have a matching dependency, and the in-reactor parent poms " +
+    String description = "Marks all files in modules that have a matching direct dependency, and the in-reactor parent poms " +
             "those modules inherit from. Intended as a precondition for recipes that configure a module through its " +
             "parent's `pluginManagement`, which a per-module precondition would otherwise keep from being visited.";
 
@@ -91,13 +92,15 @@ public class ModuleOrParentHasDependency extends ScanningRecipe<ModuleOrParentHa
     private boolean hasDependency(Markers markers) {
         Optional<MavenResolutionResult> mrr = markers.findFirst(MavenResolutionResult.class);
         if (mrr.isPresent()) {
-            return !mrr.get().findDependencies(groupIdPattern, artifactIdPattern, null).isEmpty();
+            return mrr.get().findDependencies(groupIdPattern, artifactIdPattern, null).stream()
+                    .anyMatch(dependency -> dependency.getDepth() == 0);
         }
         Optional<GradleProject> gp = markers.findFirst(GradleProject.class);
         if (gp.isPresent()) {
             for (GradleDependencyConfiguration configuration : gp.get().getConfigurations()) {
+                ResolvedDependency resolved = configuration.findResolvedDependency(groupIdPattern, artifactIdPattern);
                 if (configuration.findRequestedDependency(groupIdPattern, artifactIdPattern) != null ||
-                    configuration.findResolvedDependency(groupIdPattern, artifactIdPattern) != null) {
+                    resolved != null && resolved.getDepth() == 0) {
                     return true;
                 }
             }

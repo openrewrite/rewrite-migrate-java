@@ -363,7 +363,7 @@ class UpgradeToJava25Test implements RewriteTest {
     @Test
     void movesProjectLevelCompatibilityIntoJavaBlockForGradle9() {
         rewriteRun(
-          spec -> spec.beforeRecipe(withToolingApi()),
+          spec -> spec.allSources(source -> source.markers(new BuildTool(Tree.randomId(), BuildTool.Type.Gradle, "8.14.3"))),
           buildGradle(
             //language=groovy
             """
