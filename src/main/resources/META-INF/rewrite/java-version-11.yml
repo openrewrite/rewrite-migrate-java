@@ -136,9 +136,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.javax.AddJaxwsDependencies
 displayName: Add explicit JAX-WS dependencies
 description: >-
-  This recipe will add explicit dependencies for Jakarta EE 8 when a Java 8 application is using JAX-WS. Any existing
-  dependencies will be upgraded to the latest version of Jakarta EE 8. The artifacts are moved to Jakarta EE 8 but the
-  application can continue to use the `javax.xml.ws` namespace.
+  Add explicit Java EE 8 dependencies for javax JAX-WS use on Java 11 and later. Preserve modern Jakarta JAX-WS APIs and supply distinct javax coordinates where both namespaces are used.
 tags:
   - javax
   - java11
@@ -147,6 +145,41 @@ tags:
   - glassfish
 preconditions:
   - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJavaxJaxwsToModernGraph
+  - org.openrewrite.java.migrate.javax.AddLegacyJaxwsDependencies
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJaxwsToModernGraph
+displayName: Add separate javax JAX-WS APIs to a modern Jakarta graph
+description: Supply missing javax APIs without replacing modern Jakarta JAX-WS APIs, retaining equivalent coordinates and suitable existing scopes.
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddJavaxJwsToModernGraph
+  - org.openrewrite.java.migrate.javax.AddJavaxWsToModernGraph
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxJwsToModernGraph
+displayName: Add missing javax JWS API to a modern Jakarta graph
+description: Supply a javax-compatible JWS API to the source scopes that need it, reusing equivalent existing coordinates.
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddScopedJavaxJaxwsDependencies:
+      api: jws
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddJavaxWsToModernGraph
+displayName: Add missing javax XML-WS API to a modern Jakarta graph
+description: Supply a javax-compatible XML-WS API to the source scopes that need it, reusing equivalent existing coordinates.
+recipeList:
+  - org.openrewrite.java.migrate.javax.AddScopedJavaxJaxwsDependencies:
+      api: ws
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.javax.AddLegacyJaxwsDependencies
+displayName: Add Java EE 8 JAX-WS dependencies
+description: Supply javax JAX-WS APIs where no modern Jakarta JAX-WS or JWS API is resolved or managed.
+preconditions:
+  - org.openrewrite.java.migrate.javax.JaxwsNamespace:
+      modern: false
 recipeList:
   # Versions 3+ implement Jakarta namespaces and must remain intact.
   - org.openrewrite.java.migrate.javax.RemoveLegacyJaxwsRi
