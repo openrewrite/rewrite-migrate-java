@@ -379,3 +379,4 @@ recipeList:
       artifactId: lombok-mapstruct-binding
       version: 0.2.0
   - org.openrewrite.java.migrate.AddMapstructAnnotationProcessorPath
+  - org.openrewrite.java.migrate.AddSpringBootAnnotationProcessorPaths

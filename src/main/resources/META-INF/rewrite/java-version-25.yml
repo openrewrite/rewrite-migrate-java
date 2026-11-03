@@ -220,6 +220,8 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
+  # A new `annotationProcessorPaths` list turns off classpath discovery, so keep the Spring Boot processors running.
+  - org.openrewrite.java.migrate.AddSpringBootAnnotationProcessorPaths
   - org.openrewrite.gradle.AddDependency:
       groupId: org.projectlombok
       artifactId: lombok
