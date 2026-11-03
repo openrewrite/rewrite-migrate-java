@@ -444,4 +444,37 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           buildGradleKts("plugins { kotlin(\"js\") version \"1.9.22\" }", s -> s.path("js/build.gradle.kts")),
           properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
+    @Test void independentBuildsOwnSameNamedCompilerVariablesSeparately() {
+        String before = """
+          plugins {
+              val compilerVersion = "2.2.21"
+              kotlin("jvm") version compilerVersion
+          }
+          java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+          """;
+        String after = before.replace("2.2.21", "2.3.0").replace("of(17)", "of(25)");
+        rewriteRun(
+          settingsGradleKts("rootProject.name = \"outer\""),
+          settingsGradleKts("rootProject.name = \"nested\"", s -> s.path("nested/settings.gradle.kts")),
+          buildGradleKts(before, after),
+          buildGradleKts(before, after, s -> s.path("nested/build.gradle.kts")),
+          kotlin("class OuterProof", s -> s.path("src/main/kotlin/OuterProof.kt")),
+          kotlin("class NestedProof", s -> s.path("nested/src/main/kotlin/NestedProof.kt")));
+    }
+
+    @Test void sharedBuildVariableCollisionsStillRequireAManualDecision() {
+        String build = """
+          plugins {
+              val compilerVersion = "2.2.21"
+              kotlin("jvm") version compilerVersion
+          }
+          java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+          """;
+        rewriteRun(
+          settingsGradleKts("include(\"child\")"),
+          buildGradleKts(build),
+          buildGradleKts(build, s -> s.path("child/build.gradle.kts")),
+          kotlin("class OuterProof", s -> s.path("src/main/kotlin/OuterProof.kt")),
+          kotlin("class ChildProof", s -> s.path("child/src/main/kotlin/ChildProof.kt")));
+    }
 }

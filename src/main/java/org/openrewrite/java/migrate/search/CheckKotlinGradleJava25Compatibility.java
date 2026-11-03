@@ -292,7 +292,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
             for (Compiler compiler : compilers) {
                 if (!compiler.applied) continue;
                 String version = resolve(compiler, root, acc);
-                boolean editable = editable(compiler, acc);
+                boolean editable = editable(compiler, acc, root, roots);
                 boolean opaque = compiler.opaque;
                 Set<Compiler> writers = new HashSet<>();
                 if (editable) writers.add(compiler);
@@ -306,7 +306,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                         version = inherited.iterator().next();
                         opaque = true;
                         for (Compiler definition : compilers) if (definition.id.equals(compiler.id) && version.equals(resolve(definition, root, acc)) && !definition.opaque) opaque = false;
-                        for (Compiler other : compilers) if (other.id.equals(compiler.id) && version.equals(resolve(other, root, acc)) && editable(other, acc)) {
+                        for (Compiler other : compilers) if (other.id.equals(compiler.id) && version.equals(resolve(other, root, acc)) && editable(other, acc, root, roots)) {
                             editable = true;
                             writers.add(other);
                         }
@@ -364,11 +364,13 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
         };
     }
 
-    private static boolean editable(Compiler compiler, Accumulator acc) {
+    private static boolean editable(Compiler compiler, Accumulator acc, Path root, Set<Path> roots) {
         if (!compiler.editable || !"org.jetbrains.kotlin.jvm".equals(compiler.id)) return false;
         if (compiler.property == null) return true;
         int count = 0;
-        for (Map<String, Integer> declarations : acc.declarations.values()) count += declarations.getOrDefault(compiler.property, 0);
+        for (Map.Entry<Path, Map<String, Integer>> declarations : acc.declarations.entrySet()) {
+            if (root.equals(owner(declarations.getKey(), roots))) count += declarations.getValue().getOrDefault(compiler.property, 0);
+        }
         return count == 1;
     }
 
