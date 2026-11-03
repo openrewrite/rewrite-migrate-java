@@ -185,7 +185,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
-                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
+                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType) ||
+                       hasParameterizedArrayPattern(clazz);
             })) {
                 return false;
             }
@@ -199,6 +200,21 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean hasParameterizedArrayPattern(J clazz) {
+            if (!(clazz instanceof J.ArrayType)) {
+                return false;
+            }
+            // JavaTemplate cannot reliably parse these case labels and substitute their
+            // bodies. Keep the if chain intact rather than emitting placeholder nodes.
+            return new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.ParameterizedType visitParameterizedType(J.ParameterizedType type, AtomicBoolean found) {
+                    found.set(true);
+                    return type;
+                }
+            }.reduce(clazz, new AtomicBoolean()).get();
         }
 
         private boolean hasDominatedPattern() {
