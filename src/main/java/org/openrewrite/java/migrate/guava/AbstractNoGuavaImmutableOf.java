@@ -87,6 +87,10 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
     @Getter
     final Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 10 );
 
+    boolean isConvertible(List<Expression> arguments) {
+        return true;
+    }
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         final MethodMatcher IMMUTABLE_MATCHER = new MethodMatcher(guavaType + " " + methodName + "(..)");
@@ -105,6 +109,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 // `List.of(array)` and `Set.of(array)` spread the array, where Guava's `of(array)` holds it as one element
                 if ("of".equals(methodName) && mi.getArguments().size() == 1 &&
                     mi.getArguments().get(0).getType() instanceof JavaType.Array) {
+                    return mi;
+                }
+                if (!isConvertible(mi.getArguments())) {
                     return mi;
                 }
                 maybeRemoveImport(guavaType);

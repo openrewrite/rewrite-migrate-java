@@ -634,4 +634,61 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             11)
         );
     }
+
+    @Test
+    void doNotChangeElementsThatMayBeEqual() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.util.Set;
+
+                class Test {
+                    Set<String> both(String a, String b) {
+                        return ImmutableSet.of(a, b);
+                    }
+
+                    Set<String> repeated() {
+                        return ImmutableSet.of("a", "a");
+                    }
+                }
+                """
+            ),
+            11)
+        );
+    }
+
+    @Test
+    void changeDistinctEnumConstants() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.lang.annotation.RetentionPolicy;
+                import java.util.Set;
+
+                class Test {
+                    Set<RetentionPolicy> compileTime() {
+                        return ImmutableSet.of(RetentionPolicy.SOURCE, RetentionPolicy.CLASS);
+                    }
+                }
+                """,
+              """
+                import java.lang.annotation.RetentionPolicy;
+                import java.util.Set;
+
+                class Test {
+                    Set<RetentionPolicy> compileTime() {
+                        return Set.of(RetentionPolicy.SOURCE, RetentionPolicy.CLASS);
+                    }
+                }
+                """
+            ),
+            11)
+        );
+    }
 }
