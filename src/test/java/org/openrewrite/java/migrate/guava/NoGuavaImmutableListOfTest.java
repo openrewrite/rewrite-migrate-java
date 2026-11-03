@@ -664,4 +664,82 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void varargsArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    String test() {
+                        return String.format("%s %s", "a", ImmutableList.of("b"));
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    String test() {
+                        return String.format("%s %s", "a", List.of("b"));
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeReturnInsideLambda() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+                import java.util.function.Supplier;
+
+                class A {
+                    List<String> test() {
+                        Supplier<ImmutableList<String>> supplier = () -> {
+                            return ImmutableList.of("a");
+                        };
+                        return supplier.get();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeSingleArrayElement() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    List<String[]> test(String[] array) {
+                        return ImmutableList.of(array);
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
 }

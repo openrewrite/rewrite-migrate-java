@@ -102,6 +102,11 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 if ("copyOf".equals(methodName) && !isArgumentCompatibleWithJavaCopyOf(mi)) {
                     return mi;
                 }
+                // `List.of(array)` and `Set.of(array)` spread the array, where Guava's `of(array)` holds it as one element
+                if ("of".equals(methodName) && mi.getArguments().size() == 1 &&
+                    mi.getArguments().get(0).getType() instanceof JavaType.Array) {
+                    return mi;
+                }
                 maybeRemoveImport(guavaType);
                 maybeAddImport(javaType);
 
@@ -182,8 +187,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                         isParentTypeDownCast = isParentTypeMatched(a.getVariable().getType());
                     }
                 } else if (parent instanceof J.Return) {
-                    // Does not currently support returns in lambda expressions.
-                    J j = getCursor().dropParentUntil(is -> is instanceof J.MethodDeclaration || is instanceof J.CompilationUnit).getValue();
+                    // A `return` inside a lambda targets the lambda's functional interface, so it is left alone
+                    J j = getCursor().dropParentUntil(is -> is instanceof J.MethodDeclaration || is instanceof J.Lambda || is instanceof J.CompilationUnit).getValue();
                     if (j instanceof J.MethodDeclaration) {
                         TypeTree returnType = ((J.MethodDeclaration) j).getReturnTypeExpression();
                         if (returnType != null) {
@@ -195,9 +200,10 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     int index = m.getArguments().indexOf(immutableMethod);
                     if (m.getMethodType() != null) {
                         if (index != -1 && !m.getMethodType().getParameterTypes().isEmpty()) {
-                            isParentTypeDownCast = isParentTypeMatched(m.getMethodType().getParameterTypes().get(index));
+                            isParentTypeDownCast = isParentTypeMatched(parameterType(m.getMethodType(), index));
                         } else {
-                            isParentTypeDownCast = !TypeUtils.isOfClassType(m.getMethodType().getReturnType(), guavaType);
+                            // `asList()` exists only on Guava types and `subList(..)` returns an `ImmutableList`, so keep calls returning Guava types
+                            isParentTypeDownCast = !isGuavaType(m.getMethodType().getReturnType());
                         }
                     }
                 } else if (parent instanceof J.NewClass) {
@@ -211,7 +217,7 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                             index++;
                         }
                         if (c.getConstructorType() != null) {
-                            isParentTypeDownCast = isParentTypeMatched(c.getConstructorType().getParameterTypes().get(index));
+                            isParentTypeDownCast = isParentTypeMatched(parameterType(c.getConstructorType(), index));
                         }
                     }
                 } else if (parent instanceof J.NewArray) {
@@ -224,6 +230,21 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     isParentTypeDownCast = isParentTypeMatched(arrayType);
                 }
                 return isParentTypeDownCast;
+            }
+
+            private @Nullable JavaType parameterType(JavaType.Method method, int index) {
+                List<JavaType> parameterTypes = method.getParameterTypes();
+                int last = parameterTypes.size() - 1;
+                if (index >= last && method.hasFlags(Flag.Varargs)) {
+                    JavaType varargs = parameterTypes.get(last);
+                    return varargs instanceof JavaType.Array ? ((JavaType.Array) varargs).getElemType() : varargs;
+                }
+                return index <= last ? parameterTypes.get(index) : null;
+            }
+
+            private boolean isGuavaType(@Nullable JavaType type) {
+                JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
+                return fq != null && fq.getFullyQualifiedName().startsWith("com.google.common.");
             }
 
             private boolean isArgumentCompatibleWithJavaCopyOf(J.MethodInvocation mi) {

@@ -614,4 +614,24 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotChangeWhenCallingGuavaOnlyMethod() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.util.List;
+
+                class Test {
+                    List<String> m() {
+                        return ImmutableSet.of("a").asList();
+                    }
+                }
+                """
+            ),
+            11)
+        );
+    }
 }
