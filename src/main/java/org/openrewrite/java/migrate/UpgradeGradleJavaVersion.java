@@ -30,12 +30,17 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.trait.GradlePlugin;
 import org.openrewrite.groovy.tree.G;
 import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.kotlin.KotlinIsoVisitor;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,12 +84,13 @@ public class UpgradeGradleJavaVersion extends Recipe {
             !source.getMarkers().findFirst(JavaVersion.class).isPresent()) {
             return 8;
         }
+        Map<String, String> ownedVersions = ownedPluginVersions(source, ctx);
         int[] target = {requested};
         if (source instanceof G.CompilationUnit) {
             new GroovyIsoVisitor<ExecutionContext>() {
                 @Override
                 public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                    recordCompilerVersion(method, getCursor(), target);
+                    recordCompilerVersion(method, getCursor(), target, ownedVersions);
                     return super.visitMethodInvocation(method, ctx);
                 }
             }.visit(source, ctx);
@@ -92,7 +98,7 @@ public class UpgradeGradleJavaVersion extends Recipe {
             new KotlinIsoVisitor<ExecutionContext>() {
                 @Override
                 public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                    recordCompilerVersion(method, getCursor(), target);
+                    recordCompilerVersion(method, getCursor(), target, ownedVersions);
                     return super.visitMethodInvocation(method, ctx);
                 }
             }.visit(source, ctx);
@@ -100,7 +106,7 @@ public class UpgradeGradleJavaVersion extends Recipe {
         return target[0];
     }
 
-    private static void recordCompilerVersion(J.MethodInvocation method, Cursor cursor, int[] target) {
+    private static void recordCompilerVersion(J.MethodInvocation method, Cursor cursor, int[] target, Map<String, String> ownedVersions) {
         Cursor declaration = pluginDeclaration(cursor);
         if (declaration == null || !topLevelPlugins(declaration)) {
             return;
@@ -126,9 +132,12 @@ public class UpgradeGradleJavaVersion extends Recipe {
         if (!(method.getArguments().get(0) instanceof J.Literal) ||
             !(((J.Literal) method.getArguments().get(0)).getValue() instanceof String)) {
             String pluginId = (String) ((J.Literal) id.getArguments().get(0)).getValue();
-            if (("org.jetbrains.kotlin.jvm".equals(pluginId) || "kotlin".equals(id.getSimpleName()) && "jvm".equals(pluginId)) &&
+            if (("org.jetbrains.kotlin.jvm".equals(pluginId) || "org.jetbrains.kotlin.android".equals(pluginId) ||
+                 "kotlin".equals(id.getSimpleName()) && ("jvm".equals(pluginId) || "android".equals(pluginId))) &&
                 isAppliedDeclaration(declaration)) {
-                target[0] = Math.min(target[0], 8);
+                String compiler = method.getArguments().get(0) instanceof J.Identifier ?
+                        ownedVersions.get(((J.Identifier) method.getArguments().get(0)).getSimpleName()) : null;
+                target[0] = Math.min(target[0], supportedTarget(compiler));
             }
             return;
         }
@@ -137,6 +146,45 @@ public class UpgradeGradleJavaVersion extends Recipe {
                         ("org.jetbrains.kotlin.jvm".equals(plugin.getPluginId()) ||
                          "org.jetbrains.kotlin.android".equals(plugin.getPluginId())))
                 .ifPresent(plugin -> target[0] = Math.min(target[0], supportedTarget(plugin.getVersion())));
+    }
+
+    private static Map<String, String> ownedPluginVersions(SourceFile source, ExecutionContext ctx) {
+        Map<String, String> literals = new HashMap<>();
+        Map<String, Integer> declarations = new HashMap<>();
+        Set<String> writes = new HashSet<>();
+        if (!(source instanceof K.CompilationUnit)) return literals;
+        new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
+                declarations.merge(variable.getSimpleName(), 1, Integer::sum);
+                if (topLevelPlugins(getCursor()) &&
+                    getCursor().firstEnclosing(J.ClassDeclaration.class) == null &&
+                    variable.getInitializer() instanceof J.Literal &&
+                    ((J.Literal) variable.getInitializer()).getValue() instanceof String) {
+                    literals.put(variable.getSimpleName(), (String) ((J.Literal) variable.getInitializer()).getValue());
+                }
+                return super.visitVariable(variable, ctx);
+            }
+
+            @Override
+            public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
+                if (assignment.getVariable() instanceof J.Identifier) {
+                    writes.add(((J.Identifier) assignment.getVariable()).getSimpleName());
+                }
+                return super.visitAssignment(assignment, ctx);
+            }
+
+            @Override
+            public J.AssignmentOperation visitAssignmentOperation(J.AssignmentOperation assignment, ExecutionContext ctx) {
+                if (assignment.getVariable() instanceof J.Identifier) {
+                    writes.add(((J.Identifier) assignment.getVariable()).getSimpleName());
+                }
+                return super.visitAssignmentOperation(assignment, ctx);
+            }
+        }.visit(source, ctx);
+        // Only a unique, unmodified literal in this script's own plugins block proves compiler support.
+        literals.keySet().removeIf(name -> declarations.get(name) != 1 || writes.contains(name));
+        return literals;
     }
 
     private static @Nullable Cursor pluginDeclaration(Cursor cursor) {

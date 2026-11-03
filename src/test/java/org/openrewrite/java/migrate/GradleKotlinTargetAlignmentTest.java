@@ -306,4 +306,76 @@ class GradleKotlinTargetAlignmentTest implements RewriteTest {
             kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
             """));
     }
+
+    @Test void ownedPluginVersionVariableAlignsTargets() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins {
+                val kotlinVersion = "2.3.0"
+                kotlin("jvm") version kotlinVersion
+                kotlin("plugin.spring") version kotlinVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
+            """, """
+            plugins {
+                val kotlinVersion = "2.3.0"
+                kotlin("jvm") version kotlinVersion
+                kotlin("plugin.spring") version kotlinVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+            kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_25) } }
+            """));
+    }
+    @Test void ownedLegacyPluginVersionVariableKeepsCompilerCap() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins { val compilerVersion = "1.9.22"; kotlin("jvm") version compilerVersion }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """, """
+            plugins { val compilerVersion = "1.9.22"; kotlin("jvm") version compilerVersion }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+            """));
+    }
+    @Test void reassignedPluginVersionVariableRemainsUnknown() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins {
+                var compilerVersion = "2.3.0"
+                compilerVersion = "1.8.20"
+                kotlin("jvm") version compilerVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """));
+    }
+    @Test void collidingPluginVersionVariablesRemainUnknown() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins {
+                val compilerVersion = "2.3.0"
+                class Other { val compilerVersion = "1.8.20" }
+                kotlin("jvm") version compilerVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """));
+    }
+
+    @Test void pluginVersionVariableFromAnotherScopeRemainsUnknown() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            val compilerVersion = "2.3.0"
+            plugins { kotlin("jvm") version compilerVersion }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """));
+    }
+    @Test void unappliedPluginVersionVariableDoesNotCapJava() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradleKts("""
+            plugins { val compilerVersion = "1.8.20"; kotlin("jvm") version compilerVersion apply false }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """, """
+            plugins { val compilerVersion = "1.8.20"; kotlin("jvm") version compilerVersion apply false }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+            """));
+    }
 }
