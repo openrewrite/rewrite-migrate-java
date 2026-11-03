@@ -289,6 +289,59 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotChangeOptionalReturnedByGuava() {
+        //language=java
+        rewriteRun(java(
+            """
+              import com.google.common.base.Optional;
+              import com.google.common.collect.Iterables;
+
+              class A {
+                  String firstEmpty(Iterable<String> strings) {
+                      Optional<String> found = Iterables.tryFind(strings, String::isEmpty);
+                      return found.orNull();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void changeOptionalReturnedByMethodInSameFile() {
+        //language=java
+        rewriteRun(java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> find() {
+                      return Optional.absent();
+                  }
+
+                  String findOrNull() {
+                      return find().orNull();
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> find() {
+                      return Optional.empty();
+                  }
+
+                  String findOrNull() {
+                      return find().orElse(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NotYetImplemented {
 

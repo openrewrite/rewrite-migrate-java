@@ -23,11 +23,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.marker.SearchResult;
 
 public class NoGuavaPredicate extends Recipe {
     @Getter
@@ -39,7 +35,7 @@ public class NoGuavaPredicate extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                Preconditions.not(new UsesPredicateMethod<>()),
+                new DoesNotRequireGuavaType("com.google.common.base.Predicate", "java.util.function.Predicate", null).getVisitor(),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J preVisit(J java, ExecutionContext ctx) {
@@ -60,26 +56,5 @@ public class NoGuavaPredicate extends Recipe {
                     }
                 }
         );
-    }
-
-    private static class UsesPredicateMethod<P> extends JavaIsoVisitor<P> {
-        private static final MethodMatcher PREDICATE_METHOD_MATCHER = new MethodMatcher("*..* *(.., com.google.common.base.Predicate)");
-        private static final MethodMatcher NOT_MATCHER = new MethodMatcher("*..* not(com.google.common.base.Predicate)");
-
-        @Override
-        public J preVisit(J tree, P p) {
-            stopAfterPreVisit();
-            if (tree instanceof JavaSourceFile) {
-                JavaSourceFile cu = (JavaSourceFile) tree;
-                for (JavaType.Method type : cu.getTypesInUse().getUsedMethods()) {
-                    if (PREDICATE_METHOD_MATCHER.matches(type) &&
-                            // Make an exception for `not` methods; those can be safely converted
-                            !NOT_MATCHER.matches(type)) {
-                        return SearchResult.found(cu);
-                    }
-                }
-            }
-            return tree;
-        }
     }
 }
