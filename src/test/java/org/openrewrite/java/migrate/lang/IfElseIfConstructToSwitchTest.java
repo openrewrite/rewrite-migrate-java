@@ -280,6 +280,82 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void parameterizedArrayPatternsPreserveBodies() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  void accept(Object value) {
+                      if (value instanceof Class<?>[] classes) {
+                          consume(classes);
+                      } else if (value instanceof Enum<?>[] enums) {
+                          consume(enums);
+                      } else if (value instanceof String text) {
+                          consume(text);
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """,
+            """
+              class Test {
+                  void accept(Object value) {
+                      switch (value) {
+                          case Class<?>[] classes -> consume(classes);
+                          case Enum<?>[] enums -> consume(enums);
+                          case String text -> consume(text);
+                          case null, default -> {}
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void nestedAndQualifiedParameterizedArrayPatterns() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  void accept(Object value) {
+                      if (value instanceof Class<?>[][] classes) {
+                          // Keep both statements and the comment.
+                          consume(classes);
+                          consume(classes.length);
+                      } else if (value instanceof java.util.Map.Entry<?, ?>[] entries) {
+                          consume(entries);
+                      } else if (value instanceof int[] integers) {
+                          consume(integers);
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """,
+            """
+              class Test {
+                  void accept(Object value) {
+                      switch (value) {
+                          case Class<?>[][] classes -> {
+                              // Keep both statements and the comment.
+                              consume(classes);
+                              consume(classes.length);
+                          }
+                          case java.util.Map.Entry<?, ?>[] entries -> consume(entries);
+                          case int[] integers -> consume(integers);
+                          case null, default -> {}
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void worksWithGenericsAndArrays() {
         rewriteRun(
           //language=java

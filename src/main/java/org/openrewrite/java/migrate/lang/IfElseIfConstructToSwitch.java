@@ -403,7 +403,24 @@ public class IfElseIfConstructToSwitch extends Recipe {
                 return ((J.Identifier) statement.getClazz()).getSimpleName();
             }
 
+            if (statement.getClazz() instanceof J.ArrayType) {
+                // The template parser cannot substitute bodies after parameterized array
+                // patterns. Parse their erasure, then restore the original type in
+                // fixTypeAttribution, just as for unresolved pattern types.
+                return arrayTemplateType((J.ArrayType) statement.getClazz()).toString();
+            }
             return statement.getClazz().toString();
+        }
+
+        private J.ArrayType arrayTemplateType(J.ArrayType array) {
+            TypeTree element = array.getElementType();
+            if (element instanceof J.ParameterizedType) {
+                return array.withElementType((TypeTree) ((J.ParameterizedType) element).getClazz());
+            }
+            if (element instanceof J.ArrayType) {
+                return array.withElementType(arrayTemplateType((J.ArrayType) element));
+            }
+            return array;
         }
 
         private String getPattern(J.InstanceOf statement) {
