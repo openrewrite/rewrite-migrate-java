@@ -234,4 +234,33 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotChangeArgumentsOfAnotherType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.Ints;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> wrap(int[] array) {
+                      return Ints.asList(array);
+                  }
+              }
+              """
+          ),
+
+          java(
+            """
+              import com.google.common.primitives.Longs;
+              import java.util.List;
+
+              class Widened {
+                  List<Long> longs = Longs.asList(1, 2);
+              }
+              """
+          )
+        );
+    }
 }
