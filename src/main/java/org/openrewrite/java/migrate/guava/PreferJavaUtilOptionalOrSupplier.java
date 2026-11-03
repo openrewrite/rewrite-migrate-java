@@ -27,6 +27,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,16 +41,14 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     String displayName = "Prefer `java.util.Optional#or(Supplier<? extends Optional<? extends T>>)`";
 
-    String description = "Prefer `java.util.Optional#or(Supplier<? extends Optional<? extends T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional)`.";
+    String description = "Prefer `java.util.Optional#or(Supplier<? extends Optional<? extends T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional)`, " +
+                         "or `Optional#map(Optional::of).orElse(Optional)` before Java 9.";
 
     Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                Preconditions.and(new UsesJavaVersion<>(9),
-                        new UsesMethod<>(METHOD_MATCHER)),
-                new PreferJavaUtilOptionalOrSupplierVisitor());
+        return Preconditions.check(new UsesMethod<>(METHOD_MATCHER), new PreferJavaUtilOptionalOrSupplierVisitor());
     }
 
     private static class PreferJavaUtilOptionalOrSupplierVisitor extends JavaIsoVisitor<ExecutionContext> {
@@ -58,7 +57,11 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
             if (METHOD_MATCHER.matches(method)) {
-                mi = JavaTemplate.builder("#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                JavaSourceFile sourceFile = getCursor().firstEnclosingOrThrow(JavaSourceFile.class);
+                boolean beforeJava9 = new UsesJavaVersion<>(1, 8).visit(sourceFile, ctx) != sourceFile;
+                mi = JavaTemplate.builder(beforeJava9 ?
+                                "#{any(java.util.Optional)}.map(Optional::of).orElse(#{any(java.util.Optional)})" :
+                                "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
                         .contextSensitive()
                         .imports("java.util.Optional")
                         .build()

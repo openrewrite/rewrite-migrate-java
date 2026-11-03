@@ -342,6 +342,65 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         );
     }
 
+    @Test
+    void asSetBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+              import java.util.Set;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.asSet();
+                  }
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.Optional;
+              import java.util.Set;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.map(Collections::singleton).orElse(Collections.emptySet());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void orOptionalBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return firstChoice.or(secondChoice);
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return firstChoice.map(Optional::of).orElse(secondChoice);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NotYetImplemented {
 

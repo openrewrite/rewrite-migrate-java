@@ -23,8 +23,10 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Set;
@@ -66,6 +68,14 @@ public class NoGuavaIterablesAnyFilter extends Recipe {
                     maybeAddImport("java.util.function.Predicate");
 
                     if (TypeUtils.isAssignableTo("java.util.Collection", method.getArguments().get(0).getType())) {
+                        JavaSourceFile sourceFile = getCursor().firstEnclosingOrThrow(JavaSourceFile.class);
+                        if (new UsesJavaVersion<>(1, 15).visit(sourceFile, ctx) != sourceFile) {
+                            maybeAddImport("java.util.stream.Collectors");
+                            return JavaTemplate.builder("#{any(java.util.Collection)}.stream().filter(#{any(java.util.function.Predicate)}).collect(Collectors.toList())")
+                                    .imports("java.util.stream.Collectors")
+                                    .build()
+                                    .apply(getCursor(), method.getCoordinates().replace(), method.getArguments().get(0), method.getArguments().get(1));
+                        }
                         return JavaTemplate.apply( "#{any(java.util.Collection)}.stream().filter(#{any(java.util.function.Predicate)}).toList()", getCursor(), method.getCoordinates().replace(), method.getArguments().get( 0 ), method.getArguments().get( 1 ) );
                     }
                     return method;
