@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
+  - org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
@@ -179,7 +180,8 @@ description: >-
   With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
   The change is valid for older versions as well.
 preconditions:
-  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+  # Marks the reactor parent too: `AddAnnotationProcessor` configures a module through its parent's `pluginManagement`.
+  - org.openrewrite.java.migrate.search.ModuleOrParentHasDependency:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
 recipeList:
@@ -243,6 +245,35 @@ recipeList:
       artifactId: maven-failsafe-plugin
       newVersion: 3.5.x
   - org.openrewrite.java.migrate.UpgradePlexusComponentMetadataForJava25
+  # Plugins whose older lines fail to load on JDK 25 (plexus-utils reflection, ASM without class file version 69).
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-enforcer-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-assembly-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-plugin-plugin
+      newVersion: 3.15.x
+      addVersionIfMissing: true
+      trustParent: false
+  # Shade 3.6.1 includes ASM 9.8, which can process Java 25 class files.
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-shade-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-checkstyle-plugin
+      newVersion: 3.6.x
+  # A checkstyle pinned on the plugin must be able to parse the pattern-matching `switch` the Java 21 migration writes.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.puppycrawl.tools
+      artifactId: checkstyle
+      newVersion: 10.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
@@ -479,3 +510,17 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
+displayName: Align Gradle Java and Kotlin targets after upgrading Kotlin
+description: >-
+  Aligns Gradle Java and Kotlin bytecode targets using the actual Kotlin compiler plugin declaration after its upgrade,
+  rather than the original dependency model. Preserves Kotlin 1.x and bounds the target by the compiler's support.
+  Unmodeled nested builds are left unchanged.
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeGradleJavaVersion:
+      version: 25

@@ -31,6 +31,7 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.kotlin.KotlinIsoVisitor;
+import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
@@ -78,10 +79,12 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                         return maven.visit(tree, ctx);
                     }
                     if (groovy.isAcceptable(sourceFile, ctx)) {
-                        return groovy.visit(tree, ctx);
+                        int effective = UpgradeGradleJavaVersion.targetFor(sourceFile, version, ctx);
+                        return gradleGroovyVisitor(Integer.toString(effective), effective).visit(tree, ctx);
                     }
                     if (kotlin.isAcceptable(sourceFile, ctx)) {
-                        return kotlin.visit(tree, ctx);
+                        int effective = UpgradeGradleJavaVersion.targetFor(sourceFile, version, ctx);
+                        return gradleKotlinDslVisitor(Integer.toString(effective), effective).visit(tree, ctx);
                     }
                 }
                 return tree;
@@ -117,9 +120,7 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                 J.Assignment a = super.visitAssignment(assignment, ctx);
-                // A string `jvmTarget` is only valid in the legacy `kotlinOptions` block; bumping one inside
-                // `compilerOptions` would leave a non-compiling String assignment to a `Property<JvmTarget>`.
-                if (!"kotlinOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
+                if (!isInsideKotlinCompilerBlock(getCursor())) {
                     return a;
                 }
                 Expression variable = a.getVariable();
@@ -128,6 +129,12 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                     return a;
                 }
                 Expression rhs = a.getAssignment();
+                if (rhs instanceof J.FieldAccess && "compilerOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
+                    return a.withAssignment(bumpedJvmTargetFieldAccess((J.FieldAccess) rhs, newVersion, target));
+                }
+                if (!"kotlinOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
+                    return a;
+                }
                 if (!(rhs instanceof J.Literal)) {
                     return a;
                 }
@@ -147,6 +154,19 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                         .withValue(newVersion)
                         .withValueSource(quote + newVersion + quote));
             }
+            @Override
+            public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
+                if (!JVM_TARGET_SET.matches(mi, true) || !(mi.getSelect() instanceof J.Identifier) ||
+                    !"jvmTarget".equals(((J.Identifier) mi.getSelect()).getSimpleName()) ||
+                    !"compilerOptions".equals(enclosingKotlinCompilerBlock(getCursor())) || mi.getArguments().size() != 1) {
+                    return mi;
+                }
+                Expression arg = mi.getArguments().get(0);
+                return arg instanceof J.FieldAccess ? mi.withArguments(singletonList(
+                    bumpedJvmTargetFieldAccess((J.FieldAccess) arg, newVersion, target))) : mi;
+            }
+
         };
     }
 
@@ -164,6 +184,19 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                     return a;
                 }
                 Expression rhs = a.getAssignment();
+                if (rhs instanceof K.StringTemplate && "kotlinOptions".equals(enclosingKotlinCompilerBlock(getCursor()))) {
+                    K.StringTemplate template = (K.StringTemplate) rhs;
+                    if (target > 8 && template.getStrings().size() == 2 &&
+                        template.getStrings().get(0) instanceof J.Literal &&
+                        "1.".equals(((J.Literal) template.getStrings().get(0)).getValue()) &&
+                        template.getStrings().get(1) instanceof K.StringTemplate.Expression) {
+                        J expression = ((K.StringTemplate.Expression) template.getStrings().get(1)).getTree();
+                        if (expression instanceof J.Identifier && modernLanguageVersionVariable(
+                            getCursor().firstEnclosing(K.CompilationUnit.class), ((J.Identifier) expression).getSimpleName())) {
+                            return a.withAssignment(template.withStrings(singletonList(template.getStrings().get(1))));
+                        }
+                    }
+                }
                 if (rhs instanceof J.Literal) {
                     // A string-literal `jvmTarget` is only valid in the legacy `kotlinOptions` block. Inside
                     // `compilerOptions` it is `Property<JvmTarget>` and a String assignment does not compile, so
@@ -208,6 +241,34 @@ public class UpgradeKotlinJvmTargetVersion extends Recipe {
                 return mi;
             }
         };
+    }
+
+    private static boolean modernLanguageVersionVariable(K.@Nullable CompilationUnit cu, String name) {
+        if (cu == null) {
+            return false;
+        }
+        int[] declarations = {0};
+        boolean[] modern = {false};
+        new KotlinIsoVisitor<Integer>() {
+            @Override
+            public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, Integer p) {
+                if (name.equals(variable.getSimpleName())) {
+                    declarations[0]++;
+                    Expression init = variable.getInitializer();
+                    if (init instanceof J.MethodInvocation) {
+                        J.MethodInvocation mi = (J.MethodInvocation) init;
+                        if ("of".equals(mi.getSimpleName()) && mi.getSelect() instanceof J.Identifier &&
+                            "JavaLanguageVersion".equals(((J.Identifier) mi.getSelect()).getSimpleName()) &&
+                            mi.getArguments().size() == 1 && mi.getArguments().get(0) instanceof J.Literal) {
+                            Object value = ((J.Literal) mi.getArguments().get(0)).getValue();
+                            modern[0] = value instanceof Integer && (Integer) value > 8;
+                        }
+                    }
+                }
+                return super.visitVariable(variable, p);
+            }
+        }.visit(cu, 0);
+        return declarations[0] == 1 && modern[0];
     }
 
     private static boolean isInsideKotlinCompilerBlock(Cursor cursor) {
