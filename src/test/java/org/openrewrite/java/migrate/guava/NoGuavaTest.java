@@ -228,6 +228,62 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void predicatesEqualToBoxesPrimitiveTypeArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<Integer> isFive() {
+                      return Predicates.equalTo(5);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<Integer> isFive() {
+                      return Predicate.<Integer>isEqual(5);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void predicatesEqualToNullHasNoTypeArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> isNull() {
+                      return Predicates.equalTo(null);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> isNull() {
+                      return Predicate.isEqual(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/903")
     @Test
     void inlinedPredicatesEqualToWithParameterizedType() {

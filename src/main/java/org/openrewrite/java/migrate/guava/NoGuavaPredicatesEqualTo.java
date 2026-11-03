@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -28,7 +29,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Collections.singleton;
@@ -56,9 +56,8 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                             maybeRemoveImport("com.google.common.base.Predicates");
                             maybeAddImport("java.util.function.Predicate");
 
-                            JavaType argumentType = method.getArguments().get(0).getType();
-                            if (argumentType == null) {
-                                // Fallback if no type is found.
+                            String typeArgument = typeArgument(method.getArguments().get(0).getType());
+                            if (typeArgument == null) {
                                 return JavaTemplate.builder("Predicate.isEqual(#{any(java.lang.Object)})")
                                         .imports("java.util.function.Predicate")
                                         .build()
@@ -67,8 +66,7 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                                                 method.getArguments().get(0));
                             }
 
-                            String typeString = Objects.requireNonNull(argumentType).toString();
-                            J.MethodInvocation genericMethod = JavaTemplate.builder("Predicate.<" + typeString + ">isEqual(#{any(java.lang.Object)})")
+                            J.MethodInvocation genericMethod = JavaTemplate.builder("Predicate.<" + typeArgument + ">isEqual(#{any(java.lang.Object)})")
                                     .imports("java.util.function.Predicate")
                                     .build()
                                     .apply(getCursor(),
@@ -81,5 +79,19 @@ public class NoGuavaPredicatesEqualTo extends Recipe {
                     }
                 }
         );
+    }
+
+    /**
+     * A type argument must be a reference type, so a primitive argument contributes its box.
+     * A {@code null} argument leaves the type to inference.
+     */
+    private static @Nullable String typeArgument(@Nullable JavaType argumentType) {
+        if (argumentType == JavaType.Primitive.Null || argumentType == null) {
+            return null;
+        }
+        if (argumentType instanceof JavaType.Primitive) {
+            return ((JavaType.Primitive) argumentType).getClassName();
+        }
+        return argumentType.toString();
     }
 }
