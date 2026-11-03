@@ -138,7 +138,7 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
     }
 
     @Test
-    void keepNewArrayListWithElements() {
+    void replaceWithNewArrayListWithElements() {
         //language=java
         rewriteRun(
           java(
@@ -149,6 +149,33 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
 
               class Test {
                   List<Integer> cardinalsWorldSeries = Lists.newArrayList(2006, 2011);
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.Arrays;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> cardinalsWorldSeries = new ArrayList<>(Arrays.asList(2006, 2011));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepNewArrayListWithElementsAndTypeArguments() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.Iterator;
+
+              class Test {
+                  Iterator<Object> values = Lists.<Object>newArrayList("a", 1).iterator();
               }
               """
           )
