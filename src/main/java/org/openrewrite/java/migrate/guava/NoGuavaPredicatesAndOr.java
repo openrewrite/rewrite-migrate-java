@@ -20,6 +20,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -63,15 +64,15 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 }
                 J.MethodInvocation m = (J.MethodInvocation) j;
                 if (PREDICATES_AND.matches(m)) {
-                    return handlePredicatesMethod(m, "and");
+                    return handlePredicatesMethod(m, "and", ctx);
                 }
                 if (PREDICATES_OR.matches(m)) {
-                    return handlePredicatesMethod(m, "or");
+                    return handlePredicatesMethod(m, "or", ctx);
                 }
                 return m;
             }
 
-            private J handlePredicatesMethod(J.MethodInvocation method, String operation) {
+            private J handlePredicatesMethod(J.MethodInvocation method, String operation, ExecutionContext ctx) {
                 List<Expression> arguments = method.getArguments();
                 if (arguments.size() < 2) {
                     return method;
@@ -87,10 +88,15 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
-               // If the first argument is a method reference or a lambda, wrap it with a cast
-                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && result.getType() != null) {
-                    String typeString = result.getType().toString().replace("com.google.common.base.", "");
-                    result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
+                // A lambda or method reference needs a cast to its functional type before `and` or `or` can be called on it
+                JavaType.FullyQualified functionalType = TypeUtils.asFullyQualified(result.getType());
+                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && functionalType != null) {
+                    String typeString = result.getType().toString().replace(functionalType.getPackageName() + ".", "");
+                    result = JavaTemplate.builder("((" + typeString + ") #{any()})")
+                            .imports(functionalType.getFullyQualifiedName())
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "guava"))
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), result);
                 }
                 for (int i = 1; i < arguments.size(); i++) {
                     result = JavaTemplate.apply("#{any(java.util.function.Predicate)}." + operation + "(#{any(java.util.function.Predicate)})",

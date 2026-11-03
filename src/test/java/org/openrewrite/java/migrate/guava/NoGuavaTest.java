@@ -228,6 +228,34 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void predicatesAndWithLambdas() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> nonEmpty() {
+                      return Predicates.and(s -> s != null, s -> !s.isEmpty());
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> nonEmpty() {
+                      return ((Predicate<String>) s -> s != null).and(s -> !s.isEmpty());
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/903")
     @Test
     void inlinedPredicatesEqualToWithParameterizedType() {
