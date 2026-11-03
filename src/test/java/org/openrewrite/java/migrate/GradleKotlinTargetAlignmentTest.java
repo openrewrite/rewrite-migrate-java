@@ -116,4 +116,74 @@ class GradleKotlinTargetAlignmentTest implements RewriteTest {
             }
             """));
     }
+
+    @Test void explicitReceiverDoesNotSupplyKotlinCompilerVersion() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { custom.id('org.jetbrains.kotlin.jvm').version('1.9.22') }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """, """
+            plugins { custom.id('org.jetbrains.kotlin.jvm').version('1.9.22') }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+            """));
+    }
+
+    @Test void customNonStringPluginDslIsNotACompiler() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { custom.id(123).version(456) }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """, """
+            plugins { custom.id(123).version(456) }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+            """));
+    }
+
+    @Test void unresolvedCompilerVersionDoesNotAssumeNewBytecodeSupport() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { id 'org.jetbrains.kotlin.jvm' version kotlinVersion }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """));
+    }
+    @Test void peerLegacyReleaseHonorsCap() {
+        rewriteRun(spec -> spec.recipe(new UpgradeJavaVersion(25)),
+          buildGradle("""
+            plugins { id 'org.jetbrains.kotlin.jvm' version '1.9.22' }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            tasks.withType(JavaCompile) { options.release = 17 }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+            """, """
+            plugins { id 'org.jetbrains.kotlin.jvm' version '1.9.22' }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+            tasks.withType(JavaCompile) { options.release = 21 }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_21 } }
+            """));
+    }
+    @Test void peerExplicitCustomPluginDoesNotCapJava() {
+        rewriteRun(spec -> spec.recipe(new UpgradeGradleJavaVersion(25)),
+          buildGradle("""
+            plugins { custom.id('org.jetbrains.kotlin.jvm').version('1.8.20') }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """, """
+            plugins { custom.id('org.jetbrains.kotlin.jvm').version('1.8.20') }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+            """));
+    }
+    @Test void peerVersionlessSiblingUsesKnownCompiler() {
+        rewriteRun(spec -> spec.recipe(new UpgradeGradleJavaVersion(25)),
+          buildGradle("""
+            plugins {
+                id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+                id 'org.jetbrains.kotlin.plugin.spring'
+            }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """, """
+            plugins {
+                id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+                id 'org.jetbrains.kotlin.plugin.spring'
+            }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+            """));
+    }
 }

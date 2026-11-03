@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Cursor;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
@@ -28,9 +29,12 @@ import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.trait.GradlePlugin;
 import org.openrewrite.groovy.tree.G;
+import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.kotlin.tree.K;
+import org.openrewrite.kotlin.KotlinIsoVisitor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,11 +80,65 @@ public class UpgradeGradleJavaVersion extends Recipe {
             return 8;
         }
         int[] target = {requested};
-        new GradlePlugin.Matcher().pluginIdPattern("org.jetbrains.kotlin.*").asVisitor((plugin, p) -> {
-            target[0] = Math.min(target[0], supportedTarget(plugin.getVersion()));
-            return plugin.getTree();
-        }).visit(source, ctx);
+        if (source instanceof G.CompilationUnit) {
+            new GroovyIsoVisitor<ExecutionContext>() {
+                @Override
+                public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                    recordCompilerVersion(method, getCursor(), target);
+                    return super.visitMethodInvocation(method, ctx);
+                }
+            }.visit(source, ctx);
+        } else if (source instanceof K.CompilationUnit) {
+            new KotlinIsoVisitor<ExecutionContext>() {
+                @Override
+                public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                    recordCompilerVersion(method, getCursor(), target);
+                    return super.visitMethodInvocation(method, ctx);
+                }
+            }.visit(source, ctx);
+        }
         return target[0];
+    }
+
+    private static void recordCompilerVersion(J.MethodInvocation method, Cursor cursor, int[] target) {
+        // Check the literal DSL shape before invoking the trait: custom DSLs may have non-string id/version arguments.
+        if (!"version".equals(method.getSimpleName()) || method.getArguments().size() != 1 ||
+            !(method.getSelect() instanceof J.MethodInvocation)) {
+            return;
+        }
+        J.MethodInvocation id = (J.MethodInvocation) method.getSelect();
+        if (id.getSelect() != null || !("id".equals(id.getSimpleName()) || "kotlin".equals(id.getSimpleName())) ||
+            id.getArguments().size() != 1 || !(id.getArguments().get(0) instanceof J.Literal) ||
+            !(((J.Literal) id.getArguments().get(0)).getValue() instanceof String)) {
+            return;
+        }
+        if (!(method.getArguments().get(0) instanceof J.Literal) ||
+            !(((J.Literal) method.getArguments().get(0)).getValue() instanceof String)) {
+            String pluginId = (String) ((J.Literal) id.getArguments().get(0)).getValue();
+            if (("org.jetbrains.kotlin.jvm".equals(pluginId) || "kotlin".equals(id.getSimpleName()) && "jvm".equals(pluginId)) &&
+                topLevelPlugins(cursor)) {
+                target[0] = Math.min(target[0], 8);
+            }
+            return;
+        }
+        new GradlePlugin.Matcher().pluginIdPattern("org.jetbrains.kotlin.*").get(cursor).ifPresent(plugin ->
+                target[0] = Math.min(target[0], supportedTarget(plugin.getVersion())));
+    }
+
+    private static boolean topLevelPlugins(Cursor cursor) {
+        java.util.Iterator<Object> path = cursor.getParentOrThrow().getPath();
+        boolean found = false;
+        while (path.hasNext()) {
+            Object value = path.next();
+            if (value instanceof J.MethodInvocation) {
+                J.MethodInvocation method = (J.MethodInvocation) value;
+                if (found || !"plugins".equals(method.getSimpleName()) || method.getSelect() != null) {
+                    return false;
+                }
+                found = true;
+            }
+        }
+        return found;
     }
 
     private static final Pattern COMPILER_VERSION = Pattern.compile("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?(?:[-+].*)?");
