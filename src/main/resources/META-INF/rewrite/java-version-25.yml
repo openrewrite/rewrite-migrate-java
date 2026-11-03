@@ -518,7 +518,7 @@ displayName: Align Gradle Java and Kotlin targets after upgrading Kotlin
 description: >-
   Aligns Gradle Java and Kotlin bytecode targets using the actual Kotlin compiler plugin declaration after its upgrade,
   rather than the original dependency model. Preserves Kotlin 1.x and bounds the target by the compiler's support.
-  Markerless root builds are eligible only with actual Kotlin sources and an owned compatible JVM compiler.
+  Markerless root builds are eligible only with conventional root Kotlin sources and an owned compatible JVM compiler.
   Unmodeled nested builds are left unchanged.
 preconditions:
   - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:

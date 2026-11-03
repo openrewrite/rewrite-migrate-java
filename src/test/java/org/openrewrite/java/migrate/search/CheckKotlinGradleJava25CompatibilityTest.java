@@ -525,4 +525,12 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           buildGradleKts(before, before.replace("of(17)", "of(19)")),
           kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
     }
+    @Test void peerAlignmentDoesNotTreatUnmodeledBuildSrcAsRootKotlinSources() {
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          buildGradleKts("""
+            plugins { kotlin("jvm") version "2.3.0" }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """),
+          kotlin("class BuildLogic", source -> source.path("buildSrc/src/main/kotlin/BuildLogic.kt")));
+    }
 }
