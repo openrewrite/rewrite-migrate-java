@@ -488,7 +488,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
           """;
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
-            .cycles(3).expectedCyclesThatMakeChanges(2),
+            .cycles(1).expectedCyclesThatMakeChanges(1),
           buildGradleKts(before, before.replace("2.2.0", "2.3.0").replace("of(17)", "of(25)")),
           kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
     }
@@ -550,5 +550,15 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           buildGradleKts("plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }",
             file -> file.markers(build)),
           kotlin("class Proof", file -> file.path("src/main/kotlin/Proof.kt").markers(source)));
+    }
+
+    @Test void standaloneRootAlignmentRemainsBoundedByTheActualK2Compiler() {
+        String before = """
+          plugins { kotlin("jvm") version "2.2.0" }
+          java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+          """;
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          buildGradleKts(before, before.replace("of(17)", "of(24)")),
+          kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
     }
 }

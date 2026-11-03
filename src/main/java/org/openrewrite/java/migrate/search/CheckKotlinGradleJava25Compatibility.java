@@ -49,7 +49,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
     @Option(displayName = "Upgrade editable compiler declarations", description = "Upgrade only owned Kotlin JVM 2.x compiler literals inside compatible shared builds.", required = false)
     @Nullable Boolean upgradeEditableCompiler;
 
-    @Option(displayName = "Mark alignment candidates", description = "Select modeled Kotlin modules and markerless root builds with conventional root Kotlin sources and an owned Java 25 compatible JVM compiler.", required = false)
+    @Option(displayName = "Mark alignment candidates", description = "Select modeled Kotlin modules and markerless root builds with conventional root Kotlin sources and a known compatible or safely upgradable owned JVM compiler.", required = false)
     @Nullable Boolean markAlignmentCandidates;
 
     @EqualsAndHashCode.Exclude
@@ -333,6 +333,8 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 else literalVariables.computeIfAbsent(compiler.file, k -> new HashSet<>()).add(compiler.property);
             }
         }
+        // Preconditions scan before the owned compiler upgrade edits the tree. Admit that approved
+        // K2 minor-upgrade path in the same pass; the aligner still caps by the compiler it actually visits.
         Set<Path> ownedCompilerRoots = new HashSet<>();
         boolean rootKotlinSources = acc.kotlinSources.stream().anyMatch(path ->
                 path.toString().replace('\\', '/').matches("src/[^/]+/kotlin/.*"));
@@ -343,7 +345,8 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 String known = resolve(compiler, root, acc);
                 if (compiler.applied && compiler.explicitVersion && !compiler.opaque &&
                     "org.jetbrains.kotlin.jvm".equals(compiler.id) && editable(compiler, acc, root, roots) &&
-                    known != null && versions.compare(null, known, minimumCompilerVersion) >= 0) {
+                    known != null && (versions.compare(null, known, minimumCompilerVersion) >= 0 ||
+                    known.startsWith("2.") && minimumCompilerVersion.startsWith("2."))) {
                     ownedCompilerRoots.add(root);
                 }
             }
