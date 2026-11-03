@@ -34,7 +34,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
-displayName: Adds missing JDBC interface methods
+displayName: Add missing JDBC interface methods
 description: Add method implementations stubs to classes that implement JDBC interfaces.
 preconditions:
   - org.openrewrite.Singleton

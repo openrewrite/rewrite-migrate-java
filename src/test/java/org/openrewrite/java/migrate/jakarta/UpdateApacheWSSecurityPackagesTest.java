@@ -58,7 +58,7 @@ class UpdateApacheWSSecurityPackagesTest implements RewriteTest {
               """,
             """
               import org.apache.wss4j.common.ext.WSSecurityException;
-              import org.apache.wss4j.common.ext.components.crypto.CryptoBase;
+              import org.apache.wss4j.common.crypto.CryptoBase;
               class Test {
                   void foo() {
                       WSSecurityException x = new WSSecurityException(1,"");

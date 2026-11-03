@@ -28,6 +28,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import static java.util.Collections.emptyList;
+
 public class StreamFindFirst extends Recipe {
     private static final MethodMatcher COLLECTION_STREAM_MATCHER = new MethodMatcher("java.util.Collection stream()", true);
     private static final MethodMatcher STREAM_FIND_FIRST_MATCHER = new MethodMatcher("java.util.stream.Stream findFirst()", true);
@@ -58,7 +60,12 @@ public class StreamFindFirst extends Recipe {
                     !TypeUtils.isOfClassType(stream.getSelect().getType(), "java.util.SequencedCollection")) {
                     return mi;
                 }
-                JavaType.Method methodType = stream.getMethodType().withName("getFirst");
+                JavaType.Method methodType = TypeUtils.findDeclaredMethod(TypeUtils.asFullyQualified(stream.getSelect().getType()), "getFirst", emptyList())
+                        .map(m -> m.withReturnType(mi.getType()))
+                        .orElse(null);
+                if (methodType == null) {
+                    return mi;
+                }
                 return stream
                         .withName(stream.getName().withSimpleName("getFirst").withType(methodType))
                         .withMethodType(methodType)

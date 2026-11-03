@@ -49,7 +49,7 @@ public class UseCommonsLog extends UseLogRecipeTemplate {
                 "org.apache.commons.logging.Log",
                 "org.apache.commons.logging.LogFactory getLog(..)",
                 "lombok.extern.apachecommons.CommonsLog",
-                fieldName);
+                fieldName).withPrecondition();
     }
 
 }

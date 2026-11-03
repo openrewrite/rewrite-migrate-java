@@ -24,7 +24,6 @@ import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class ProvidedJakartaPlatformApiTest implements RewriteTest {
-    @ParameterizedTest
     @CsvSource({
       "JavaxEnterpriseToJakartaEnterprise, javax.enterprise.event.Event, javax, javaee-api, 7.0",
       "JavaxEnterpriseToJakartaEnterprise, javax.enterprise.event.Event, jakarta.platform, jakarta.jakartaee-api, 9.1.0",
@@ -35,8 +34,9 @@ class ProvidedJakartaPlatformApiTest implements RewriteTest {
       "JavaxWsToJakartaWs, javax.ws.rs.core.Response, javax, javaee-api, 7.0",
       "JavaxWsToJakartaWs, javax.ws.rs.core.Response, jakarta.platform, jakarta.jakartaee-api, 9.1.0"
     })
+    @ParameterizedTest
     void platformAlreadySuppliesApi(String recipe, String type, String group, String artifact, String version) {
-        int dot = type.lastIndexOf('.');
+        var dot = type.lastIndexOf('.');
         rewriteRun(
           spec -> spec.recipeFromResource("/META-INF/rewrite/jakarta-ee-9.yml", "org.openrewrite.java.migrate.jakarta." + recipe)
             .parser(JavaParser.fromJavaVersion().dependsOn("package " + type.substring(0, dot) + "; public interface " + type.substring(dot + 1) + " {}")),

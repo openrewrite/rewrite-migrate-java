@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import org.openrewrite.test.TypeValidation;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
@@ -36,8 +35,6 @@ class UseLocaleOfTest implements RewriteTest {
     void localeOf() {
         //language=java
         rewriteRun(
-          // FIXME type validation is disabled because the current JDK is not a Java 19 JDK
-          spec -> spec.typeValidationOptions(TypeValidation.none()),
           version(
             java(
               """

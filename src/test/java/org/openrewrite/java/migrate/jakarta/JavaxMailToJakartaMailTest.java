@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,10 +30,60 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("mail-1.4.7", "javax.mail-api-1.6.2"))
+            .classpathFromResources(new InMemoryExecutionContext(), "mail-1.4.7", "javax.mail-api-1.6.2"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
+    }
+
+    @DocumentExample
+    @Test
+    void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.mail</groupId>
+                            <artifactId>javax.mail-api</artifactId>
+                            <version>1.4.7</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<groupId>javax.mail</groupId>")
+                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
+                .actual())
+            )
+          ),
+          srcMainJava(
+            //language=java
+            java(
+              """
+                import javax.mail.Session;
+                public class TestApplication {
+                }
+                """,
+              """
+                import jakarta.mail.Session;
+                public class TestApplication {
+                }
+                """
+            )
+          )
+        );
     }
 
     @Test
@@ -131,56 +182,6 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
-    @Test
-    void switchesJavaxMailApiDependencyToJakartaMailApiDependency() {
-        rewriteRun(
-          mavenProject(
-            "Sample",
-            //language=xml
-            pomXml(
-              """
-                <project>
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>com.example</groupId>
-                    <artifactId>demo</artifactId>
-                    <version>0.0.1-SNAPSHOT</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.mail</groupId>
-                            <artifactId>javax.mail-api</artifactId>
-                            <version>1.4.7</version>
-                        </dependency>
-                    </dependencies>
-                </project>
-                """,
-              spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
-                .containsPattern("<version>2.0.\\d+</version>")
-                .doesNotContain("<groupId>javax.mail</groupId>")
-                .doesNotContain("<artifactId>javax.mail-api</artifactId>")
-                .actual())
-            )
-          ),
-          srcMainJava(
-            //language=java
-            java(
-              """
-                import javax.mail.Session;
-                public class TestApplication {
-                }
-                """,
-              """
-                import jakarta.mail.Session;
-                public class TestApplication {
-                }
-                """
-            )
-          )
-        );
-    }
-
     @Test
     void switchesJavaxMailDependencyToJakartaMailApiDependency() {
         rewriteRun(
@@ -265,6 +266,48 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                             <version>2.1.0.RELEASE</version>
                         </dependency>
                     </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaMailApiDependencyWhenOnlyUsingMailInternetContentType() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.internet.ContentType;
+                  public class TestApplication {
+                      ContentType contentType;
+                  }
+                  """,
+                """
+                  import jakarta.mail.internet.ContentType;
+                  public class TestApplication {
+                      ContentType contentType;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
                 </project>
                 """,
               spec -> spec.after(pom -> assertThat(pom)

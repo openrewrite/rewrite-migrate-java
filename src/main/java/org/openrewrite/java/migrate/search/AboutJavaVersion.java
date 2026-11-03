@@ -34,12 +34,12 @@ import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
-public class AboutJavaVersion extends Recipe {
+public class AboutJavaVersion extends ScanningRecipe<Set<AboutJavaVersion.ProjectSourceSet>> {
     transient JavaVersionPerSourceSet javaVersionPerSourceSet = new JavaVersionPerSourceSet(this);
-    transient Set<ProjectSourceSet> seenSourceSets = new HashSet<>();
 
-    @Option(required = false,
+    @Option(displayName = "When uses type",
             description = "Only mark the Java version when this type is in use.",
+            required = false,
             example = "lombok.val")
     @Nullable
     String whenUsesType;
@@ -50,9 +50,17 @@ public class AboutJavaVersion extends Recipe {
                "(both source and target compatibility across files and source sets).";
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public Set<ProjectSourceSet> getInitialValue(ExecutionContext ctx) {
+        return new HashSet<>();
+    }
 
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<ProjectSourceSet> seenSourceSets) {
+        return TreeVisitor.noop();
+    }
 
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(Set<ProjectSourceSet> seenSourceSets) {
         TreeVisitor<?, ExecutionContext> visitor = new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree visit(@Nullable Tree cu, ExecutionContext ctx) {
@@ -72,7 +80,7 @@ public class AboutJavaVersion extends Recipe {
                                         version.getCreatedBy(),
                                         version.getVmVendor(),
                                         version.getSourceCompatibility(),
-                                        Integer.toString(version.getMajorReleaseVersion()),
+                                        Integer.toString(version.getMajorVersion()),
                                         version.getTargetCompatibility()
                                 ));
                             }

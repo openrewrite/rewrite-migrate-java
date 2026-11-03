@@ -55,7 +55,7 @@ public class JavaVersionMigrationPlan extends DataTable<JavaVersionMigrationPlan
         String gradleVersion;
 
         @Column(displayName = "Has Gradle build",
-                description = "Whether a build.gradle file exists in the repository.")
+                description = "Whether a `build.gradle` file exists in the repository.")
         Boolean hasGradleBuild;
 
         @Column(displayName = "Maven version",
@@ -63,7 +63,7 @@ public class JavaVersionMigrationPlan extends DataTable<JavaVersionMigrationPlan
         String mavenVersion;
 
         @Column(displayName = "Has Maven pom",
-                description = "Whether a pom.xml file exists in the repository.")
+                description = "Whether a `pom.xml` file exists in the repository.")
         Boolean hasMavenPom;
     }
 }

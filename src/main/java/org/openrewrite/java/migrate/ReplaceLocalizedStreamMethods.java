@@ -21,24 +21,28 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class ReplaceLocalizedStreamMethods extends Recipe {
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getLocalizedInputStream` method pattern",
+            description = "A method pattern matching the `getLocalizedInputStream(InputStream)` method to replace. " +
+                          "Defaults to the method on `java.lang.Runtime`.",
             example = "java.lang.Runtime getLocalizedInputStream(java.io.InputStream)",
             required = false)
     String localizedInputStreamMethodMatcher;
 
-    @Option(displayName = "Method pattern to replace",
-            description = "The method pattern to match and replace.",
+    @Option(displayName = "`getLocalizedOutputStream` method pattern",
+            description = "A method pattern matching the `getLocalizedOutputStream(OutputStream)` method to replace. " +
+                          "Defaults to the method on `java.lang.Runtime`.",
             example = "java.lang.Runtime getLocalizedOutputStream(java.io.OutputStream)",
             required = false)
     String localizedOutputStreamMethodMatcher;
@@ -60,17 +64,19 @@ public class ReplaceLocalizedStreamMethods extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher LocalizedInputStreamMethod = new MethodMatcher(localizedInputStreamMethodMatcher, false);
-            private final MethodMatcher localizedOutputStreamMethod = new MethodMatcher(localizedOutputStreamMethodMatcher, false);
-
+        MethodMatcher localizedInputStreamMethod = new MethodMatcher(localizedInputStreamMethodMatcher, false);
+        MethodMatcher localizedOutputStreamMethod = new MethodMatcher(localizedOutputStreamMethodMatcher, false);
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(localizedInputStreamMethod),
+                new UsesMethod<>(localizedOutputStreamMethod)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation mi, ExecutionContext ctx) {
-                if (LocalizedInputStreamMethod.matches(mi) || localizedOutputStreamMethod.matches(mi)) {
+                if (localizedInputStreamMethod.matches(mi) || localizedOutputStreamMethod.matches(mi)) {
                     return mi.getArguments().get(0).withPrefix(mi.getPrefix());
                 }
                 return super.visitMethodInvocation(mi, ctx);
             }
-        };
+        });
     }
 }

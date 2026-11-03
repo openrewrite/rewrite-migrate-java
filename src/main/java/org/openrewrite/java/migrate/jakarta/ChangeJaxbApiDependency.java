@@ -22,6 +22,7 @@ import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.dependencies.ChangeDependency;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 
@@ -35,9 +36,10 @@ public class ChangeJaxbApiDependency extends ScanningRecipe<ChangeJaxbApiDepende
     private static final ChangeDependency CHANGE = new ChangeDependency(
             "javax.xml.bind", "jaxb-api", "jakarta.xml.bind", "jakarta.xml.bind-api", "3.0.x", null, null, null);
 
-    String displayName = "Migrate the JAXB API dependency unless Recorder still needs it";
+    String displayName = "Migrate the JAXB API dependency unless Recorder or Jackson still needs it";
     String description = "Migrate JAXB API coordinates while preserving the legacy API needed alongside Jakarta JAXB " +
-                         "by external Arquillian Recorder 1.x binaries. Recorder modules migrated in the same reactor are excluded.";
+                         "by external Arquillian Recorder 1.x binaries or by Jackson's JAXB annotations module. " +
+                         "Recorder modules migrated in the same reactor are excluded.";
 
     static class Accumulator {
         final Set<String> projects = new HashSet<>();
@@ -83,11 +85,32 @@ public class ChangeJaxbApiDependency extends ScanningRecipe<ChangeJaxbApiDepende
                             .anyMatch(d -> RetainJaxbApiForArquillianRecorder.externalRecorder(d, acc.projects))) {
                     return tree;
                 }
+                if (retainedForJackson(tree)) {
+                    return tree;
+                }
                 if (tree instanceof SourceFile && delegate.isAcceptable((SourceFile) tree, ctx)) {
                     return delegate.visitNonNull(tree, ctx);
                 }
                 return tree;
             }
         };
+    }
+
+    /**
+     * Once the Jakarta API is present, a JAXB 2 API next to Jackson's JAXB module is the one
+     * {@code RetainJaxbApiForJackson} keeps, so migrating it again would only have it re-added.
+     */
+    private static boolean retainedForJackson(Tree tree) {
+        MavenResolutionResult maven = tree.getMarkers().findFirst(MavenResolutionResult.class).orElse(null);
+        if (maven != null) {
+            return RetainJaxbApiForArquillianRecorder.hasJakartaApi(maven) &&
+                   !maven.findDependencies("com.fasterxml.jackson.module", "jackson-module-jaxb-annotations", null).isEmpty();
+        }
+        GradleProject gradle = tree.getMarkers().findFirst(GradleProject.class).orElse(null);
+        if (gradle != null) {
+            return gradle.getConfigurations().stream().anyMatch(c -> c.findRequestedDependency("jakarta.xml.bind", "jakarta.xml.bind-api") != null) &&
+                   gradle.getConfigurations().stream().anyMatch(c -> c.findResolvedDependency("com.fasterxml.jackson.module", "jackson-module-jaxb-annotations") != null);
+        }
+        return false;
     }
 }

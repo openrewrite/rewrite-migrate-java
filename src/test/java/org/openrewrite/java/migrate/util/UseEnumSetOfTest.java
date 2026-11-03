@@ -182,6 +182,69 @@ class UseEnumSetOfTest implements RewriteTest {
         );
     }
 
+    @Test
+    void noArgsOfNestedEnumImportsItsOwner() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Locale.Category;
+              import java.util.Set;
+
+              class Test {
+                  public void method() {
+                      Set<Category> categories = Set.of();
+                  }
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Locale;
+              import java.util.Locale.Category;
+              import java.util.Set;
+
+              class Test {
+                  public void method() {
+                      Set<Category> categories = EnumSet.noneOf(Locale.Category.class);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noArgsOfNestedEnumInUnnamedPackage() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+
+              class Test {
+                  enum Color { RED, GREEN }
+
+                  public void method() {
+                      Set<Color> warm = Set.of();
+                  }
+              }
+              """,
+            """
+              import java.util.EnumSet;
+              import java.util.Set;
+
+              class Test {
+                  enum Color { RED, GREEN }
+
+                  public void method() {
+                      Set<Color> warm = EnumSet.noneOf(Test.Color.class);
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1157")
     @Test
     void dontConvertEmptySetOfInStaticField() {

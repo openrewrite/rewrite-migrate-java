@@ -28,29 +28,13 @@ import org.openrewrite.text.PlainTextParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparingInt;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.LOMBOK_CONFIG;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.STOP_BUBBLING_KEY;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.append;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.expandImports;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.isConfig;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.isLombokConfig;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.parse;
-import static org.openrewrite.java.migrate.lombok.LombokConfig.resolveImport;
+import static org.openrewrite.java.migrate.lombok.LombokConfig.*;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

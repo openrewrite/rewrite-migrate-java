@@ -89,9 +89,7 @@ public class UseRequiredArgsConstructor extends Recipe {
                         if (TypeUtils.isOfType(classDecl.getType(), enclosing.getType())) {
                             String template = buildAnnotationTemplate("RequiredArgsConstructor", accessLevel, constructorAnnotations);
                             maybeAddImport("lombok.RequiredArgsConstructor");
-                            if (accessLevel != AccessLevel.PUBLIC) {
-                                maybeAddImport("lombok.AccessLevel");
-                            }
+                            maybeAddImport("lombok.AccessLevel");
                             for (J.Annotation ann : constructorAnnotations) {
                                 String annType = ann.getAnnotationType().toString();
                                 maybeAddImport(annType.contains(".") ? annType : guessImport(ann));

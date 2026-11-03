@@ -29,6 +29,8 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
+import static java.util.Collections.emptyList;
+
 public class IteratorNext extends Recipe {
     private static final MethodMatcher ITERATOR_MATCHER = new MethodMatcher("java.util.Collection iterator()", true);
     private static final MethodMatcher NEXT_MATCHER = new MethodMatcher("java.util.Iterator next()", true);
@@ -57,7 +59,12 @@ public class IteratorNext extends Recipe {
                             J.MethodInvocation iteratorInvocation = (J.MethodInvocation) nextInvocation.getSelect();
                             Expression iteratorSelect = iteratorInvocation.getSelect();
                             if (iteratorSelect != null && TypeUtils.isAssignableTo("java.util.SequencedCollection", iteratorSelect.getType())) {
-                                JavaType.Method getFirst = iteratorInvocation.getMethodType().withName("getFirst");
+                                JavaType.Method getFirst = TypeUtils.findDeclaredMethod(TypeUtils.asFullyQualified(iteratorSelect.getType()), "getFirst", emptyList())
+                                        .map(m -> m.withReturnType(nextInvocation.getType()))
+                                        .orElse(null);
+                                if (getFirst == null) {
+                                    return nextInvocation;
+                                }
                                 return iteratorInvocation
                                         .withName(iteratorInvocation.getName().withSimpleName("getFirst").withType(getFirst))
                                         .withMethodType(getFirst)

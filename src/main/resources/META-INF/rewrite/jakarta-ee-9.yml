@@ -155,7 +155,6 @@ recipeList:
       oldPackageName: javax.annotation
       newPackageName: jakarta.annotation
       # Avoid changing javax.annotation.concurrent and javax.annotation.processing
-      recursive: false
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.security
       newPackageName: jakarta.annotation.security
@@ -435,8 +434,8 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
-displayName: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`
-description: Migrate deprecated `org.apache.commons.fileload` packages to `org.apache.commons.fileload.core`.
+displayName: Migrate `commons-fileupload` to `commons-fileupload2-jakarta-servlet5`
+description: Migrate Apache Commons FileUpload 1.x and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -445,22 +444,35 @@ recipeList:
       oldArtifactId: commons-fileupload
       newGroupId: org.apache.commons
       newArtifactId: commons-fileupload2-jakarta-servlet5
-      newVersion: 2.0.0-M4
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
       newArtifactId: commons-fileupload2-jakarta-servlet5
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.disk
-      newPackageName: org.apache.commons.fileload2.core
+      oldPackageName: org.apache.commons.fileupload2.jakarta
+      newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletFileUpload
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletRequestContext
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletRequestContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.FileCleanerCleanup
+      newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaFileCleaner
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.commons.fileupload.disk
+      newPackageName: org.apache.commons.fileupload2.core
       recursive: true
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload.servlet
+      oldPackageName: org.apache.commons.fileupload.servlet
       newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
       recursive: true
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.commons.fileload
-      newPackageName: org.apache.commons.fileload2.core
+      oldPackageName: org.apache.commons.fileupload
+      newPackageName: org.apache.commons.fileupload2.core
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -846,7 +858,7 @@ recipeList:
       groupId: jakarta.servlet
       artifactId: jakarta.servlet-api
       version: 5.0.x
-      onlyIfUsing: javax.servlet.*
+      onlyIfUsing: javax.servlet..*
       acceptTransitive: true
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.servlet
@@ -889,7 +901,6 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.transaction
       newPackageName: jakarta.transaction
-      recursive: false
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebsocketToJakartaWebsocket
@@ -1080,7 +1091,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxXmlToJakartaXmlXJCBinding
-displayName: Migrate XJC Bindings to Jakata XML
+displayName: Migrate XJC bindings to Jakarta XML
 description: Java EE has been rebranded to Jakarta EE, migrates the namespace and version in XJC bindings.
 tags:
   - jaxb
@@ -1245,7 +1256,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta
 displayName: Migrate Jackson from javax to jakarta namespace
 description: >-
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Jackson dependencies with their counterparts
+  Java EE has been rebranded to Jakarta EE. This recipe replaces existing Jackson dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1376,7 +1387,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.EhcacheJavaxToJakarta
 displayName: Migrate Ehcache from javax to jakarta namespace
 description: >-
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Ehcache dependencies with their counterparts
+  Java EE has been rebranded to Jakarta EE. This recipe replaces existing Ehcache dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1407,7 +1418,7 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta
 displayName: Migrate Johnzon from javax to jakarta namespace
 description: >-
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing Johnzon dependencies with their counterparts
+  Java EE has been rebranded to Jakarta EE. This recipe replaces existing Johnzon dependencies with their counterparts
   that are compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1427,9 +1438,9 @@ recipeList:
 # breaking changes to the Rest Assured API that need to be addressed.
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RestAssuredJavaxToJakarta
-displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to a version compatible with J2EE9
+displayName: Migrate RestAssured from javax to jakarta namespace by upgrading to a version compatible with Jakarta EE 9
 description: >-
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces existing RestAssured dependencies with their
+  Java EE has been rebranded to Jakarta EE. This recipe replaces existing RestAssured dependencies with their
   counterparts that are compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1441,9 +1452,9 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheWSSecurityPackages
-displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to  `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
+displayName: Migrate `org.apache.ws.security` and `org.apache.ws.security.components.crypto` packages to `org.apache.wss4j.common.ext` and `org.apache.wss4j.common.crypto` packages
 description: >-
-  Java EE has been rebranded to Jakarta EE.  This recipe replaces Apache security packages to migrate to Apache `wss4j`.
+  Java EE has been rebranded to Jakarta EE. This recipe replaces Apache security packages to migrate to Apache `wss4j`.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -1502,12 +1513,12 @@ recipeList:
       oldFullyQualifiedTypeName: org.apache.ws.security.message.token.KerberosServiceExceptionAction
       newFullyQualifiedTypeName: org.apache.wss4j.common.kerberos.KerberosServiceExceptionAction
   - org.openrewrite.java.ChangePackage:
-      oldPackageName: org.apache.ws.security
-      newPackageName: org.apache.wss4j.common.ext
-      recursive: true
-  - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.ws.security.components.crypto
       newPackageName: org.apache.wss4j.common.crypto
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.ws.security
+      newPackageName: org.apache.wss4j.common.ext
       recursive: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -1553,7 +1564,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE9
-displayName: Update Jetty9 to Jetty12
+displayName: Update Jetty 9 to Jetty 12
 description: Update Jetty dependencies from version 9 to version 12.
 preconditions:
   - org.openrewrite.Singleton
@@ -1674,8 +1685,10 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateRestLet2_6
-displayName: Update RestLet to 2.6.0
-description: Update RestLet to 2.6.0.
+displayName: Update Restlet to 2.6.x
+description: >-
+  Upgrade Restlet dependencies to 2.6.x, moving the `org.restlet.jee` artifacts to the `org.restlet` group and removing
+  the `org.restlet.ext.httpclient` extension.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -1694,7 +1707,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta9
-displayName: Update Plugins for Jakarta EE 9
+displayName: Update plugins for Jakarta EE 9
 description: Update plugins to be compatible with Jakarta EE 9.
 preconditions:
   - org.openrewrite.Singleton
@@ -1794,7 +1807,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaElDependency
-displayName: Add the Jakarta El API when needed
+displayName: Add the Jakarta EL API when needed
 description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1813,7 +1826,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaEjbDependency
-displayName: Add the Jakarta Ejb API when needed
+displayName: Add the Jakarta EJB API when needed
 description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1851,13 +1864,13 @@ recipeList:
       groupId: jakarta.mail
       artifactId: jakarta.mail-api
       version: 2.0.x
-      onlyIfUsing: javax.mail.*
+      onlyIfUsing: javax.mail..*
       acceptTransitive: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaInjectDependency
-displayName: Add the jakarta.inject API when needed
+displayName: Add the `jakarta.inject` API when needed
 description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1878,7 +1891,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaRestDependency
-displayName: Add the jakarta.ws.rs API when needed
+displayName: Add the `jakarta.ws.rs` API when needed
 description: Add a standalone API only when no explicitly provided API or full platform already supplies it.
 preconditions:
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
@@ -1892,5 +1905,5 @@ recipeList:
       groupId: jakarta.ws.rs
       artifactId: jakarta.ws.rs-api
       version: 3.0.x
-      onlyIfUsing: javax.ws.rs.core.*
+      onlyIfUsing: javax.ws.rs..*
       acceptTransitive: true

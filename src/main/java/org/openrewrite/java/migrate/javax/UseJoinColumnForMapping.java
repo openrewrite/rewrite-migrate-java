@@ -30,11 +30,11 @@ import org.openrewrite.java.tree.J;
 
 @EqualsAndHashCode(callSuper = false)
 public class UseJoinColumnForMapping extends Recipe {
-    private final String JOIN_COLUMN = "javax.persistence.JoinColumn";
-    private final String COLUMN = "javax.persistence.Column";
+    private static final String JOIN_COLUMN = "javax.persistence.JoinColumn";
+    private static final String COLUMN = "javax.persistence.Column";
 
     @Getter
-    final String displayName = "`@JoinColumn` annotations must be used with relationship mappings";
+    final String displayName = "Replace `@Column` with `@JoinColumn` on relationship mappings";
 
     @Getter
     final String description = "In OpenJPA, when a relationship attribute has either a `@OneToOne` or a `@ManyToOne` annotation with a " +

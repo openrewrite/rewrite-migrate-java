@@ -32,7 +32,7 @@ class NoGuavaMapsNewHashMapTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaMapsNewHashMap())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaMapsNewHashMap")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"))
           .parser(GroovyParser.builder().classpathFromResource(new InMemoryExecutionContext(), "guava"));
     }

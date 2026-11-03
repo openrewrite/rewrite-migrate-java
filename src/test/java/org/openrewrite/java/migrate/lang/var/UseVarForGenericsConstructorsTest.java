@@ -54,6 +54,25 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
         }
 
         @Test
+        void unboundedGenerics() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.List;
+                  import java.util.ArrayList;
+
+                  class A {
+                      void generic() {
+                          List<?> lst = new ArrayList<>();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
         void twoParamsWithBounds() {
             //language=java
             rewriteRun(
@@ -197,6 +216,62 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
             );
         }
 
+        @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1295")
+        @Test
+        void unrelatedTypeParameters() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.function.Predicate;
+
+                  class A {
+                      interface Validator<T> {
+                          boolean validate(T token);
+                      }
+
+                      static class Token {}
+
+                      static class ClaimValidator<C> implements Validator<Token> {
+                          ClaimValidator(Predicate<C> test) {
+                          }
+
+                          @Override
+                          public boolean validate(Token token) {
+                              return true;
+                          }
+                      }
+
+                      void m() {
+                          Validator<Token> issuer = new ClaimValidator<>(value -> value != null);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void differentNumberOfTypeParameters() {
+            //language=java
+            rewriteRun(
+              java(
+                """
+                  import java.util.HashMap;
+                  import java.util.Map;
+
+                  class A {
+                      static class StringKeyMap<V> extends HashMap<String, V> {}
+
+                      void m() {
+                          Map<String, Integer> map = new StringKeyMap<>();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
         @Test
         void javaLowerThan10() {
             //language=java
@@ -246,34 +321,6 @@ class UseVarForGenericsConstructorsTest implements RewriteTest {
                       class A {
                           static <T> void generic() {
                               var lst = new ArrayList<T>();
-                          }
-                      }
-                      """
-                  )
-                );
-            }
-
-            @Test
-            void unboundedGenerics() {
-                //language=java
-                rewriteRun(
-                  java(
-                    """
-                      import java.util.List;
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              List<?> lst = new ArrayList<>();
-                          }
-                      }
-                      """,
-                    """
-                      import java.util.ArrayList;
-
-                      class A {
-                          void generic() {
-                              var lst = new ArrayList<?>();
                           }
                       }
                       """

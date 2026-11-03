@@ -29,11 +29,9 @@ import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.Collections.emptyList;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -41,7 +39,7 @@ public class RetainJaxbApiForArquillianRecorder extends ScanningRecipe<Set<Strin
     private static final VersionComparator JAKARTA_API = Objects.requireNonNull(Semver.validate("[3,)", null).getValue());
     String displayName = "Retain the JAXB 2 API for Arquillian Recorder 1.x";
     String description = "Retain the legacy JAXB API in Maven modules using Arquillian Recorder 1.x binaries, " +
-                         "which still reference javax.xml.bind classes after the application's Jakarta migration.";
+                         "which still reference `javax.xml.bind` classes after the application's Jakarta migration.";
 
     @Override
     public Set<String> getInitialValue(ExecutionContext ctx) {
@@ -86,7 +84,7 @@ public class RetainJaxbApiForArquillianRecorder extends ScanningRecipe<Set<Strin
                 }
                 for (Scope scope : new Scope[]{Scope.Compile, Scope.Runtime, Scope.Provided, Scope.Test}) {
                     for (ResolvedDependency dependency : getResolutionResult().getDependencies()
-                            .getOrDefault(scope, Collections.emptyList())) {
+                            .getOrDefault(scope, emptyList())) {
                         if (externalRecorder(dependency, projects)) {
                             return (Xml.Document) new AddDependencyVisitor("javax.xml.bind", "jaxb-api", "2.3.x", null,
                                     scope == Scope.Test ? "test" : "runtime", null, null, null, null, null)

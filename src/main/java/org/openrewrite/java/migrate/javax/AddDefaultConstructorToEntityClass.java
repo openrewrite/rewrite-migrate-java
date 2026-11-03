@@ -27,7 +27,7 @@ import org.openrewrite.java.tree.J;
 @EqualsAndHashCode(callSuper = false)
 public class AddDefaultConstructorToEntityClass extends Recipe {
     @Getter
-    final String displayName = "`@Entity` objects with constructors must also have a default constructor";
+    final String displayName = "Add a default constructor to `@Entity` and `@MappedSuperclass` classes";
 
     @Getter
     final String description = "When a Java Persistence API (JPA) entity class has a constructor with arguments, the class must also " +

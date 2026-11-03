@@ -18,9 +18,13 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 @SuppressWarnings("StatementWithEmptyBody")
@@ -134,7 +138,10 @@ class ReplaceAWTGetPeerMethodTest implements RewriteTest {
                       }
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "com.test.Component1 is*()"))
+              .hasSize(2)
+              .allSatisfy(mi -> assertThat(((J.MethodInvocation) mi).getType()).isEqualTo(JavaType.Primitive.Boolean)))
           )
         );
     }

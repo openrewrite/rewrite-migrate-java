@@ -37,7 +37,6 @@ class LombokBestPracticesTest implements RewriteTest {
     @Test
     void providedScope() {
         rewriteRun(
-          spec -> spec.expectedCyclesThatMakeChanges(2),
           mavenProject("project",
             pomXml(
               //language=xml

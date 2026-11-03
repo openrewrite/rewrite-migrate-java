@@ -17,11 +17,13 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 import java.util.Set;
@@ -42,17 +44,13 @@ public class MigrateClassLoaderDefineClass extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            final JavaTemplate template = JavaTemplate.builder("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}")
-                    .contextSensitive()
-                    .build();
-
+        return Preconditions.check(new UsesMethod<>(DEFINE_CLASS_MATCHER), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (DEFINE_CLASS_MATCHER.matches(m) && m.getArguments().size() == 3) {
-                    m = template.apply(
+                    m = JavaTemplate.apply("null, #{anyArray(byte)}, #{any(int)}, #{any(int)}",
                             updateCursor(m),
                             m.getCoordinates().replaceArguments(),
                             m.getArguments().get(0),
@@ -61,6 +59,6 @@ public class MigrateClassLoaderDefineClass extends Recipe {
                 }
                 return m;
             }
-        };
+        });
     }
 }

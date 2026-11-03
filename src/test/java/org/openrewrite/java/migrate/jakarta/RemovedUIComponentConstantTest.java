@@ -44,23 +44,46 @@ class RemovedUIComponentConstantTest implements RewriteTest {
           java(
             """
               import jakarta.faces.component.UIComponent;
+              import jakarta.faces.context.FacesContext;
 
               class Bar {
-                  void foo() {
-                      String str = UIComponent.CURRENT_COMPONENT;
-                      String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
-                      System.out.println(str);
-                      System.out.println(str2);
+                  void foo(FacesContext context) {
+                      UIComponent component = (UIComponent) context.getAttributes().get(UIComponent.CURRENT_COMPONENT);
+                      Object composite = FacesContext.getCurrentInstance().getAttributes().get(UIComponent.CURRENT_COMPOSITE_COMPONENT);
+                      System.out.println(component);
+                      System.out.println(composite);
                   }
               }
               """,
             """
               import jakarta.faces.component.UIComponent;
+              import jakarta.faces.context.FacesContext;
+
+              class Bar {
+                  void foo(FacesContext context) {
+                      UIComponent component = UIComponent.getCurrentComponent(context);
+                      Object composite = UIComponent.getCurrentCompositeComponent(FacesContext.getCurrentInstance());
+                      System.out.println(component);
+                      System.out.println(composite);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepOtherUsesOfTheKeys() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import jakarta.faces.component.UIComponent;
 
               class Bar {
                   void foo() {
-                      String str = UIComponent.getCurrentComponent();
-                      String str2 = UIComponent.getCurrentCompositeComponent();
+                      String str = UIComponent.CURRENT_COMPONENT;
+                      String str2 = UIComponent.CURRENT_COMPOSITE_COMPONENT;
                       System.out.println(str);
                       System.out.println(str2);
                   }

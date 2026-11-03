@@ -29,7 +29,7 @@ class NoGuavaListsNewLinkedListTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaListsNewLinkedList())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 

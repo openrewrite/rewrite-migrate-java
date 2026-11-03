@@ -24,16 +24,16 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class URLConstructorsToNewURI extends Recipe {
 
     private static final String URI_FQN = "java.net.URI";
     private static final String URL_FQN = "java.net.URL";
-    private static final MethodMatcher methodMatcherThreeArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
-    private static final MethodMatcher methodMatcherFourArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
-    private static final MethodMatcher methodMatcherFiveArg = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String, java.net.URLStreamHandler)");
+    private static final MethodMatcher THREE_ARG_CONSTRUCTOR = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, java.lang.String)");
+    private static final MethodMatcher FOUR_ARG_CONSTRUCTOR = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String)");
+    private static final MethodMatcher FIVE_ARG_CONSTRUCTOR = new MethodMatcher(URL_FQN + " <constructor>(java.lang.String, java.lang.String, int, java.lang.String, java.net.URLStreamHandler)");
 
     @Getter
     final String displayName = "Convert `new URL(String, ..)` to `new URI(String, ..).toURL()`";
@@ -43,11 +43,14 @@ public class URLConstructorsToNewURI extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>(URL_FQN, false),
+        return Preconditions.check(Preconditions.or(
+                        new UsesMethod<>(THREE_ARG_CONSTRUCTOR),
+                        new UsesMethod<>(FOUR_ARG_CONSTRUCTOR),
+                        new UsesMethod<>(FIVE_ARG_CONSTRUCTOR)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
                     public J visitNewClass(J.NewClass nc, ExecutionContext ctx) {
-                        if (methodMatcherThreeArg.matches(nc)) {
+                        if (THREE_ARG_CONSTRUCTOR.matches(nc)) {
                             JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, -1, #{any(String)}, null, null).toURL()")
                                     .imports(URI_FQN, URL_FQN)
                                     .contextSensitive()
@@ -60,7 +63,7 @@ public class URLConstructorsToNewURI extends Recipe {
                                     nc.getArguments().get(1),
                                     nc.getArguments().get(2));
                         }
-                        if (methodMatcherFourArg.matches(nc)) {
+                        if (FOUR_ARG_CONSTRUCTOR.matches(nc)) {
                             JavaTemplate template = JavaTemplate.builder("new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null).toURL()")
                                     .imports(URI_FQN, URL_FQN)
                                     .contextSensitive()
@@ -74,7 +77,7 @@ public class URLConstructorsToNewURI extends Recipe {
                                     nc.getArguments().get(2),
                                     nc.getArguments().get(3));
                         }
-                        if (methodMatcherFiveArg.matches(nc)) {
+                        if (FIVE_ARG_CONSTRUCTOR.matches(nc)) {
                             JavaTemplate template = JavaTemplate.builder("URL.of(new URI(#{any(String)}, null, #{any(String)}, #{any(int)}, #{any(String)}, null, null), #{any(java.net.URLStreamHandler)})")
                                     .imports(URI_FQN, URL_FQN)
                                     .contextSensitive()

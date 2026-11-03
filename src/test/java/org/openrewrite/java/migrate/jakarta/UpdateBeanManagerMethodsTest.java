@@ -30,7 +30,7 @@ class UpdateBeanManagerMethodsTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(),
-            "jakarta.enterprise.cdi-api-3.0.0-M4"))
+            "jakarta.enterprise.cdi-api-3.0.1"))
           .recipe(new UpdateBeanManagerMethods());
     }
 

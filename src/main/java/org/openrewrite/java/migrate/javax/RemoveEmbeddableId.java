@@ -27,6 +27,7 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,7 @@ import java.util.regex.Pattern;
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
     @Getter
-    final String displayName = "`@Embeddable` classes cannot have an `@Id` annotation when referenced by an `@EmbeddedId` annotation";
+    final String displayName = "Remove `@Id` from `@Embeddable` classes referenced by an `@EmbeddedId`";
 
     @Getter
     final String description = "According to the Java Persistence API (JPA) specification, if an entity defines an attribute with an " +
@@ -112,7 +113,7 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
 
         public boolean isEmbeddableClass(@Nullable JavaType type) {
             return definedEmbeddableClasses.stream()
-                    .anyMatch(emb -> type.equals(emb) ||
+                    .anyMatch(emb -> TypeUtils.isOfType(type, emb) ||
                                type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName())));
         }
     }

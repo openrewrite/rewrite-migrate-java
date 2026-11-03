@@ -23,7 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class NullCheckAsSwitchCaseTest implements RewriteTest {
 
@@ -31,7 +31,7 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipe(new NullCheckAsSwitchCase())
-          .allSources(source -> version(source, 21));
+          .allSources(s -> s.markers(javaVersion(21)));
     }
 
     @DocumentExample
@@ -729,6 +729,58 @@ class NullCheckAsSwitchCaseTest implements RewriteTest {
                               case "A", "B" -> formatted = "Very good";
                               case "C" -> formatted = "Good";
                               case "D" -> formatted = "Hmmm...";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenNullCheckHasElse() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              formatted = "You did not enter the test yet";
+                          } else {
+                              System.out.println("Entered");
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
+                              default -> formatted = "unknown";
+                          }
+                          return formatted;
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void doNotMergeWhenNullCheckHasElseIf() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  class Test {
+                      static String score(String obj) {
+                          String formatted = "Score not translated yet";
+                          if (obj == null) {
+                              formatted = "You did not enter the test yet";
+                          } else if (obj.isEmpty()) {
+                              System.out.println("Empty");
+                          }
+                          switch (obj) {
+                              case "A", "B" -> formatted = "Very good";
                               default -> formatted = "unknown";
                           }
                           return formatted;

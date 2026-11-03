@@ -92,7 +92,6 @@ public class MigrateMainMethodToInstanceMain extends ScanningRecipe<Set<JavaType
                 J.ClassDeclaration enclosingClass = getCursor().firstEnclosing(J.ClassDeclaration.class);
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
 
-                // Check if this is a main method: public static void main(String[] args)
                 if (enclosingClass == null ||
                         !MAIN_METHOD_MATCHER.matches(md, enclosingClass) ||
                         md.getReturnTypeExpression() == null ||
@@ -103,21 +102,18 @@ public class MigrateMainMethodToInstanceMain extends ScanningRecipe<Set<JavaType
                     return md;
                 }
 
-                // Check if parameter is String[] type
                 J.VariableDeclarations param = (J.VariableDeclarations) md.getParameters().get(0);
                 JavaType paramType = param.getType();
                 if (!TypeUtils.isOfClassType(paramType, "java.lang.String") || !(paramType instanceof JavaType.Array)) {
                     return md;
                 }
 
-                // Do not migrate in any of these cases
                 if (hasSpringBootApplicationAnnotation(enclosingClass) ||
                         !hasNoArgConstructor(enclosingClass) ||
                         isMainMethodReferenced(enclosingClass)) {
                     return md;
                 }
 
-                // Remove the parameter if unused
                 J.Identifier variableName = param.getVariables().get(0).getName();
                 if (VariableReferences.findRhsReferences(md.getBody(), variableName).isEmpty()) {
                     md = md.withParameters(emptyList());

@@ -38,9 +38,9 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
 
     static final MethodMatcher METHOD_MATCHER = new MethodMatcher("com.google.common.base.Optional or(com.google.common.base.Optional)");
 
-    String displayName = "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)`";
+    String displayName = "Prefer `java.util.Optional#or(Supplier<? extends Optional<? extends T>>)`";
 
-    String description = "Prefer `java.util.Optional#or(Supplier<T extends java.util.Optional<T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional).";
+    String description = "Prefer `java.util.Optional#or(Supplier<? extends Optional<? extends T>>)` over `com.google.common.base.Optional#or(com.google.common.base.Optional)`.";
 
     Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
 

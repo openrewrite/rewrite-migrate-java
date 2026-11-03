@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,59 +30,10 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("javax.ws.rs-api"))
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.ws.rs-api"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs");
-    }
-
-    @Test
-    void upgradesJerseyMultipartAlongsideJakartaApis() {
-        rewriteRun(
-          pomXml(
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.glassfish.jersey.media</groupId>
-                          <artifactId>jersey-media-multipart</artifactId>
-                          <version>2.18</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """,
-            spec -> spec.after(pom -> assertThat(pom)
-              .containsPattern("<version>3\\.0\\.\\d+</version>")
-              .actual())
-          )
-        );
-    }
-
-    @Test
-    void doesNotDowngradeJerseyThreeOne() {
-        rewriteRun(
-          pomXml(
-            """
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>com.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.glassfish.jersey.media</groupId>
-                          <artifactId>jersey-media-multipart</artifactId>
-                          <version>3.1.10</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
-          )
-        );
     }
 
     @DocumentExample
@@ -153,6 +105,55 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
     }
 
     @Test
+    void upgradesJerseyMultipartAlongsideJakartaApis() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.glassfish.jersey.media</groupId>
+                          <artifactId>jersey-media-multipart</artifactId>
+                          <version>2.18</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("<version>3\\.0\\.\\d+</version>")
+              .actual())
+          )
+        );
+    }
+
+    @Test
+    void doesNotDowngradeJerseyThreeOne() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.glassfish.jersey.media</groupId>
+                          <artifactId>jersey-media-multipart</artifactId>
+                          <version>3.1.10</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
     void addsJakartaWsApiDependencyIfExistingInTransitive() {
         rewriteRun(
           mavenProject(
@@ -207,6 +208,60 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
                     </dependencies>
                 </project>
                 """
+            )
+          )
+        );
+    }
+
+    @Test
+    void addsJakartaWsApiDependencyWhenOnlyUsingResourceAnnotations() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.ws.rs.GET;
+                  import javax.ws.rs.Path;
+
+                  @Path("/hello")
+                  public class HelloResource {
+                      @GET
+                      public String hello() {
+                          return "hello";
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.ws.rs.GET;
+                  import jakarta.ws.rs.Path;
+
+                  @Path("/hello")
+                  public class HelloResource {
+                      @GET
+                      public String hello() {
+                          return "hello";
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.ws.rs</groupId>")
+                .contains("<artifactId>jakarta.ws.rs-api</artifactId>")
+                .containsPattern("<version>3.0.\\d+</version>")
+                .actual())
             )
           )
         );

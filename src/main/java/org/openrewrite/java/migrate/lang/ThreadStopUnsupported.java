@@ -16,19 +16,19 @@
 package org.openrewrite.java.migrate.lang;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.TextComment;
-import org.openrewrite.marker.Markers;
-
-import static java.util.Collections.singletonList;
+import org.openrewrite.trait.Comments;
 
 public class ThreadStopUnsupported extends Recipe {
     private static final MethodMatcher THREAD_STOP_MATCHER = new MethodMatcher("java.lang.Thread stop()");
@@ -39,13 +39,18 @@ public class ThreadStopUnsupported extends Recipe {
     final String displayName = "Replace `Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` with `throw new UnsupportedOperationException()`";
 
     @Getter
-    final String description = "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throws a `new UnsupportedOperationException` in Java 21+. " +
-            "This recipe makes that explicit, as the migration is more complicated. " +
-            "See https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html .";
+    final String description = "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throw an `UnsupportedOperationException` in Java 21+. " +
+            "This recipe makes that explicit, and adds a comment pointing to the " +
+            "[migration guide](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html), " +
+            "as the migration is more complicated. On earlier Java versions only the comment is added.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(Preconditions.or(
+                new UsesMethod<>(THREAD_STOP_MATCHER),
+                new UsesMethod<>(THREAD_RESUME_MATCHER),
+                new UsesMethod<>(THREAD_SUSPEND_MATCHER)
+        ), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J j = super.visitMethodInvocation(method, ctx);
@@ -72,8 +77,8 @@ public class ThreadStopUnsupported extends Recipe {
                                 prefixWhitespace + " * For detailed migration instructions see the migration guide available at" +
                                 prefixWhitespace + " * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html" +
                                 prefixWhitespace + " ";
-                return j.withComments(singletonList(new TextComment(true, commentText, prefixWhitespace, Markers.EMPTY)));
+                return Comments.of(new Cursor(getCursor().getParentOrThrow(), j)).multilineComment(commentText);
             }
-        };
+        });
     }
 }

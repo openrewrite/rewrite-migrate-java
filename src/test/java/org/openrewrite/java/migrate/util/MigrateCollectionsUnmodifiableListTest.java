@@ -17,9 +17,12 @@ package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.Issue;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.version;
 
@@ -50,7 +53,10 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
                 class Test {
                     List<Integer> l = List.of(1, 2, 3);
                 }
-                """
+                """,
+              spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu, "java.util.List of(..)"))
+                .singleElement()
+                .satisfies(listOf -> assertThat(((J.MethodInvocation) listOf).getMethodType().getParameterTypes()).hasSize(3)))
             ),
             9
           )
@@ -111,6 +117,32 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
                         "1", // this is one
                         "2" // this is two
                     );
+                }
+                """
+            ),
+            9
+          )
+        );
+    }
+
+    @Test
+    void unmodifiableEmptyList() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    List<Integer> l = Collections.unmodifiableList(Arrays.asList());
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    List<Integer> l = List.of();
                 }
                 """
             ),

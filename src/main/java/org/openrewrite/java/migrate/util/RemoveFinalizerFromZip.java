@@ -25,7 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
-import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -43,18 +43,15 @@ public class RemoveFinalizerFromZip extends Recipe {
 
     private static final MethodMatcher METHOD_MATCHER = new MethodMatcher("java.lang.Object finalize()");
 
-    String displayName = "Remove invocations of deprecated invocations from Deflater, Inflater, ZipFile ";
+    String displayName = "Remove `finalize()` invocations on `Deflater`, `Inflater` and `ZipFile`";
 
-    String description = "Remove invocations of finalize() deprecated invocations from Deflater, Inflater, ZipFile.";
+    String description = "Remove invocations of the deprecated `finalize()` method on `Deflater`, `Inflater` and `ZipFile`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(Preconditions.and(
                         new UsesJavaVersion<>(12),
-                        Preconditions.or(
-                                new UsesType<>(JAVA_UTIL_ZIP_DEFLATER, false),
-                                new UsesType<>(JAVA_UTIL_ZIP_INFLATER, false),
-                                new UsesType<>(JAVA_UTIL_ZIP_ZIP_FILE, false))),
+                        new UsesMethod<>(METHOD_MATCHER)),
                 new JavaVisitor<ExecutionContext>() {
 
                     @Override

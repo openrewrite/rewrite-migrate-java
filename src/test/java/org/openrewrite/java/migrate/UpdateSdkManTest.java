@@ -262,7 +262,7 @@ class UpdateSdkManTest implements RewriteTest {
           spec -> spec.recipe(new UpdateSdkMan("latest.patch", "amzn")),
           text(
             """
-              java=21.0.6-zulu
+              java=21.0.1-zulu
               """,
             spec -> spec.path(".sdkmanrc")
               .after(str -> assertThat(str)

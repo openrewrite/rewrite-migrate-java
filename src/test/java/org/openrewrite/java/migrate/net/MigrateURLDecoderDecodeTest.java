@@ -63,4 +63,28 @@ class MigrateURLDecoderDecodeTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void fieldInitializer() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.URLDecoder;
+
+              class Test {
+                  private final String message = URLDecoder.decode("a b");
+              }
+              """,
+            """
+              import java.net.URLDecoder;
+              import java.nio.charset.StandardCharsets;
+
+              class Test {
+                  private final String message = URLDecoder.decode("a b", StandardCharsets.UTF_8);
+              }
+              """
+          )
+        );
+    }
 }

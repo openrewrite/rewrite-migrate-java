@@ -134,6 +134,52 @@ class JavaxServletToJakartaServletTest implements RewriteTest {
     }
 
     @Test
+    void addsJakartaServletApiDependencyWhenOnlyUsingServletHttpCookie() {
+        rewriteRun(
+          mavenProject(
+            "Sample",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.servlet.http.Cookie;
+                  public class TestApplication {
+                      Cookie sessionCookie(String value) {
+                          return new Cookie("SESSION", value);
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.servlet.http.Cookie;
+                  public class TestApplication {
+                      Cookie sessionCookie(String value) {
+                          return new Cookie("SESSION", value);
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>jakarta.servlet</groupId>")
+                .contains("<artifactId>jakarta.servlet-api</artifactId>")
+                .containsPattern("<version>5.0.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void upgradesJakartaServletApiDependencyIfAlreadyExistingAtLowerVersion() {
         rewriteRun(
           mavenProject(

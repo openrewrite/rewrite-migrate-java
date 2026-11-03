@@ -185,7 +185,7 @@ class LombokOnXToOnX_Test implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("Parser bug with @__ syntax causes test failure")
+    @ExpectedToFail("Java parser does not round-trip `@With(onParam=@__({...}))`: the printed source drops the closing `}))` and repeats the field type")
     @Test
     void handleWithAnnotation() {
         //language=java

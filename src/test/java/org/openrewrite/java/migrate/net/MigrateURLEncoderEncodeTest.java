@@ -62,4 +62,28 @@ class MigrateURLEncoderEncodeTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void fieldInitializer() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.URLEncoder;
+
+              class Test {
+                  private final String message = URLEncoder.encode("a b");
+              }
+              """,
+            """
+              import java.net.URLEncoder;
+              import java.nio.charset.StandardCharsets;
+
+              class Test {
+                  private final String message = URLEncoder.encode("a b", StandardCharsets.UTF_8);
+              }
+              """
+          )
+        );
+    }
 }

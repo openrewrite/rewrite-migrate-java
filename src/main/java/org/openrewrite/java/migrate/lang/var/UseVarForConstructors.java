@@ -28,15 +28,6 @@ import org.openrewrite.java.tree.*;
 
 import java.util.List;
 
-/**
- * Replaces explicit type declarations with {@code var} keyword when the initializer
- * is a constructor call with an exactly matching type.
- *
- * <p>This recipe is more conservative than {@link UseVarForObject} and
- * {@link UseVarForGenericsConstructors}. It only transforms when the declared type
- * exactly matches the constructor type, avoiding cases where the declared type is an
- * interface or supertype.
- */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UseVarForConstructors extends Recipe {

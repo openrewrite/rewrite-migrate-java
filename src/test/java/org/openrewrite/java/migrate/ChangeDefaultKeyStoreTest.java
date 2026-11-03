@@ -51,7 +51,7 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ChangeDefaultKeyStore())
-          .allSources(src -> src.markers(javaVersion(11)));
+          .allSources(src -> src.markers(javaVersion(8)));
     }
 
     @DocumentExample
@@ -79,6 +79,31 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
                			e.printStackTrace();
                		}
                	}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepPrefixAndRemoveUnusedImport() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.security.KeyStore;
+
+              class Foo {
+                  String type() {
+                      return KeyStore.getDefaultType();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  String type() {
+                      return "jks";
+                  }
               }
               """
           )
@@ -115,12 +140,12 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
     }
 
     @Test
-    void keepStringForJava8() {
+    void keepStringForJava11() {
         rewriteRun(
           //language=java
           java(
             BEFORE,
-            spec -> spec.markers(javaVersion(8)))
+            spec -> spec.markers(javaVersion(11)))
         );
     }
 
@@ -131,6 +156,52 @@ class ChangeDefaultKeyStoreTest implements RewriteTest {
           java(
             BEFORE,
             spec -> spec.markers(javaVersion(17)))
+        );
+    }
+
+    @Test
+    void pinKeyStoreTypeWhenMigratingFromJava8() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.Java8toJava11"),
+          //language=java
+          java(
+            """
+              import java.security.KeyStore;
+
+              class Foo {
+                  String type() {
+                      return KeyStore.getDefaultType();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  String type() {
+                      return "jks";
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepDefaultTypeWhenAlreadyOnJava11() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.Java8toJava11"),
+          //language=java
+          java(
+            """
+              import java.security.KeyStore;
+
+              class Foo {
+                  String type() {
+                      return KeyStore.getDefaultType();
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
         );
     }
 }

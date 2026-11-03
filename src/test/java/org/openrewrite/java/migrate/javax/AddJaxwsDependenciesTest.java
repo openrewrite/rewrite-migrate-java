@@ -158,6 +158,47 @@ class AddJaxwsDependenciesTest implements RewriteTest {
         );
     }
 
+    @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1292")
+    @Test
+    void dontAddJavaxRuntimeToJakartaNamespaceApi() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          buildGradle(
+            //language=gradle
+            """
+              plugins {
+                  id "java-library"
+              }
+
+              repositories {
+                  mavenCentral()
+              }
+
+              dependencies {
+                  implementation "jakarta.xml.ws:jakarta.xml.ws-api:4.0.1"
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <groupId>com.example.jaxws</groupId>
+                  <artifactId>jaxws-example</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>jakarta.xml.ws</groupId>
+                          <artifactId>jakarta.xml.ws-api</artifactId>
+                          <version>4.0.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
+    }
+
     @Test
     void removeReferenceImplementationRuntime() {
         rewriteRun(

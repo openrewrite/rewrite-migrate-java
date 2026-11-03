@@ -340,7 +340,6 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                   """
                     import java.util.ArrayList;
                     import java.util.Collections;
-                    import java.util.List;
 
                     class A {
                       void dostuff() {
@@ -407,7 +406,6 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                     """,
                   """
                     import java.util.Collections;
-                    import java.util.List;
 
                     class A {
                       void m() {
@@ -439,7 +437,6 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                     """,
                   """
                     import java.util.Collections;
-                    import java.util.List;
 
                     class A {
                       void m() {
@@ -532,7 +529,6 @@ class UseVarForGenericMethodInvocationsTest implements RewriteTest {
                   """
                     import java.time.LocalDate;
                     import java.util.ArrayList;
-                    import java.util.Set;
                     import java.util.stream.Collectors;
 
                     public class A {

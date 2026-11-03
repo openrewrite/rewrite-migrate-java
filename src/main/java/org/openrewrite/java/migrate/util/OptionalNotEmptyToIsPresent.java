@@ -32,6 +32,8 @@ import org.openrewrite.java.tree.Statement;
 import java.time.Duration;
 
 public class OptionalNotEmptyToIsPresent extends Recipe {
+    private static final MethodMatcher OPTIONAL_IS_EMPTY = new MethodMatcher("java.util.Optional isEmpty()");
+
     @Getter
     final String displayName = "Prefer `Optional.isPresent()`";
 
@@ -43,16 +45,15 @@ public class OptionalNotEmptyToIsPresent extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        MethodMatcher optionalIsPresentMatcher = new MethodMatcher("java.util.Optional isEmpty()");
         TreeVisitor<?, ExecutionContext> check = Preconditions.and(
                 new UsesJavaVersion<>(11),
-                new UsesMethod<>(optionalIsPresentMatcher));
+                new UsesMethod<>(OPTIONAL_IS_EMPTY));
         return Preconditions.check(check, new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitStatement(Statement s, ExecutionContext ctx) {
                 if (s instanceof J.Unary) {
                     J.Unary unary = (J.Unary) s;
-                    if (unary.getOperator() == Type.Not && optionalIsPresentMatcher.matches(unary.getExpression())) {
+                    if (unary.getOperator() == Type.Not && OPTIONAL_IS_EMPTY.matches(unary.getExpression())) {
                         return JavaTemplate.apply("#{any(java.util.Optional)}.isPresent()",
                                 getCursor(),
                                 unary.getCoordinates().replace(),

@@ -17,10 +17,12 @@ package org.openrewrite.java.migrate.jakarta;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
@@ -35,13 +37,15 @@ public class RemoveBeanIsNullable extends Recipe {
     final String displayName = "Remove `Bean.isNullable()`";
 
     @Getter
-    final String description = "`Bean.isNullable()` has been removed in CDI 4.0.0, and now always returns `false`.";
+    final String description = "`Bean.isNullable()` was deprecated in CDI 1.1, after which implementations should always return `false`, " +
+            "and was removed in CDI 4.0. " +
+            "Replace calls with `false` and simplify the resulting conditionals.";
 
     private static final MethodMatcher BEAN_ISNULLABLE = new MethodMatcher("jakarta.enterprise.inject.spi.Bean isNullable()", false);
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
+        return Preconditions.check(new UsesMethod<>(BEAN_ISNULLABLE), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 if (BEAN_ISNULLABLE.matches(method)) {
@@ -52,6 +56,6 @@ public class RemoveBeanIsNullable extends Recipe {
                 }
                 return super.visitMethodInvocation(method, ctx);
             }
-        };
+        });
     }
 }

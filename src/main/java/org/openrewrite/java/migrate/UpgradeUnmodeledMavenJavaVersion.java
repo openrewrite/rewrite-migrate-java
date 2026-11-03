@@ -33,7 +33,7 @@ public class UpgradeUnmodeledMavenJavaVersion extends Recipe {
     Integer version;
 
     String displayName = "Upgrade Java version in alternate Maven builds";
-    String description = "Update explicit Java version properties and compiler settings in pom.xml files parsed as XML " +
+    String description = "Update explicit Java version properties and compiler settings in `pom.xml` files parsed as XML " +
             "without a Maven model, for example in a repository built with Gradle. Property references are left intact.";
 
     @Override

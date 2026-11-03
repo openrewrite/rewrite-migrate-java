@@ -695,7 +695,7 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
     @Nested
     class MarkForReview {
         // These tests verify that complex cases with identifiable delegates
-        // get a search marker so developers can manually review them
+        // get a TODO comment so developers can manually review them
 
         @Test
         void marksComplexBodyWithSideEffectsForReview() {
@@ -729,7 +729,8 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                   import java.io.IOException;
                   import java.io.InputStream;
 
-                  /*~~(Missing bulk read method may cause significant performance degradation)~~>*/class CountingInputStream extends InputStream {
+                  /* TODO: Missing bulk read method may cause significant performance degradation */
+                  class CountingInputStream extends InputStream {
                       private final InputStream delegate;
                       private long bytesRead = 0;
 
@@ -786,7 +787,7 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                       private long count = 0;
 
                       InputStream getWrappedStream() {
-                          return /*~~(Missing bulk read method may cause significant performance degradation)~~>*/new InputStream() {
+                          return /* TODO: Missing bulk read method may cause significant performance degradation */ new InputStream() {
                               @Override
                               public int read() throws IOException {
                                   int b = delegate.read();
@@ -827,7 +828,8 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                   import java.io.IOException;
                   import java.io.InputStream;
 
-                  /*~~(Missing bulk read method may cause significant performance degradation)~~>*/class LoggingInputStream extends InputStream {
+                  /* TODO: Missing bulk read method may cause significant performance degradation */
+                  class LoggingInputStream extends InputStream {
                       private final InputStream delegate;
 
                       LoggingInputStream(InputStream delegate) {
@@ -873,7 +875,8 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                   import java.io.IOException;
                   import java.io.InputStream;
 
-                  /*~~(Missing bulk read method may cause significant performance degradation)~~>*/class XorInputStream extends InputStream {
+                  /* TODO: Missing bulk read method may cause significant performance degradation */
+                  class XorInputStream extends InputStream {
                       private final InputStream delegate;
                       private final int xorKey;
 
@@ -922,7 +925,8 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                   import java.io.IOException;
                   import java.io.InputStream;
 
-                  /*~~(Missing bulk read method may cause significant performance degradation)~~>*/class SafeInputStream extends InputStream {
+                  /* TODO: Missing bulk read method may cause significant performance degradation */
+                  class SafeInputStream extends InputStream {
                       private final InputStream delegate;
 
                       SafeInputStream(InputStream delegate) {
@@ -972,7 +976,7 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
 
                   class Example {
                       InputStream getStream() {
-                          return /*~~(Missing bulk read method may cause significant performance degradation)~~>*/new InputStream() {
+                          return /* TODO: Missing bulk read method may cause significant performance degradation */ new InputStream() {
                               private int position = 0;
                               private byte[] data = new byte[100];
 
@@ -1017,7 +1021,8 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                   import java.io.IOException;
                   import java.io.InputStream;
 
-                  /*~~(Missing bulk read method may cause significant performance degradation)~~>*/class ConditionalInputStream extends InputStream {
+                  /* TODO: Missing bulk read method may cause significant performance degradation */
+                  class ConditionalInputStream extends InputStream {
                       private final InputStream primary;
                       private final InputStream fallback;
                       private boolean usePrimary = true;
@@ -1030,6 +1035,82 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                       @Override
                       public int read() throws IOException {
                           return usePrimary ? primary.read() : fallback.read();
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void marksNestedClassAtItsIndentation() {
+            rewriteRun(
+              java(
+                """
+                  import java.io.IOException;
+                  import java.io.InputStream;
+
+                  class Outer {
+                      static class LoggingInputStream extends InputStream {
+                          private final InputStream delegate;
+
+                          LoggingInputStream(InputStream delegate) {
+                              this.delegate = delegate;
+                          }
+
+                          @Override
+                          public int read() throws IOException {
+                              System.out.println("Reading byte");
+                              return delegate.read();
+                          }
+                      }
+                  }
+                  """,
+                """
+                  import java.io.IOException;
+                  import java.io.InputStream;
+
+                  class Outer {
+                      /* TODO: Missing bulk read method may cause significant performance degradation */
+                      static class LoggingInputStream extends InputStream {
+                          private final InputStream delegate;
+
+                          LoggingInputStream(InputStream delegate) {
+                              this.delegate = delegate;
+                          }
+
+                          @Override
+                          public int read() throws IOException {
+                              System.out.println("Reading byte");
+                              return delegate.read();
+                          }
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void keepsExistingTodoComment() {
+            rewriteRun(
+              java(
+                """
+                  import java.io.IOException;
+                  import java.io.InputStream;
+
+                  // TODO: Missing bulk read method may cause significant performance degradation
+                  class LoggingInputStream extends InputStream {
+                      private final InputStream delegate;
+
+                      LoggingInputStream(InputStream delegate) {
+                          this.delegate = delegate;
+                      }
+
+                      @Override
+                      public int read() throws IOException {
+                          System.out.println("Reading byte");
+                          return delegate.read();
                       }
                   }
                   """
@@ -1066,7 +1147,7 @@ class AddInputStreamBulkReadMethodTest implements RewriteTest {
                       private InputStream body;
 
                       InputStream getBody() {
-                          return /*~~(Missing bulk read method may cause significant performance degradation)~~>*/new InputStream() {
+                          return /* TODO: Missing bulk read method may cause significant performance degradation */ new InputStream() {
                               @Override
                               public int read() throws IOException {
                                   return Example.this.body == null ? -1 : Example.this.body.read();

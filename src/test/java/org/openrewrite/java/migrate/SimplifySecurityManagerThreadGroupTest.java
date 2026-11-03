@@ -16,17 +16,19 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
-import static org.openrewrite.java.Assertions.version;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class SimplifySecurityManagerThreadGroupTest implements RewriteTest {
+    @DocumentExample
     @Test
     void removeNullLocalAndDeadBranch() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.SystemGetSecurityManagerToNull")
-            .allSources(source -> version(source, 25)),
+            .allSources(s -> s.markers(javaVersion(25))),
           java(
             """
               class Test {
@@ -52,7 +54,7 @@ class SimplifySecurityManagerThreadGroupTest implements RewriteTest {
     void retainLocalWithAnotherUse() {
         rewriteRun(
           spec -> spec.recipe(new SimplifySecurityManagerThreadGroup())
-            .allSources(source -> version(source, 25)),
+            .allSources(s -> s.markers(javaVersion(25))),
           java(
             """
               class Test {
@@ -71,7 +73,7 @@ class SimplifySecurityManagerThreadGroupTest implements RewriteTest {
     void retainNestedComments() {
         rewriteRun(
           spec -> spec.recipe(new SimplifySecurityManagerThreadGroup())
-            .allSources(source -> version(source, 25)),
+            .allSources(s -> s.markers(javaVersion(25))),
           java(
             """
               class InitializerComment {

@@ -22,8 +22,8 @@ import org.openrewrite.java.template.RecipeDescriptor;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RecipeDescriptor(
-        name = "Replace `java.lang.Math random()` with `ThreadLocalRandom nextDouble()`",
-        description = "Replace `java.lang.Math random()` with `ThreadLocalRandom nextDouble()` to reduce contention."
+        name = "Replace `Math.random()` with `ThreadLocalRandom.current().nextDouble()`",
+        description = "Replace `Math.random()` with `ThreadLocalRandom.current().nextDouble()` to reduce contention."
 )
 public class ReplaceMathRandomWithThreadLocalRandom {
     @BeforeTemplate

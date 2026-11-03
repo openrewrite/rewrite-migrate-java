@@ -28,36 +28,6 @@ class URLConstructorsToNewURITest implements RewriteTest {
         spec.recipe(new URLConstructorsToNewURI());
     }
 
-    @Test
-    void urlConstructorWithStreamHandler() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.net.URL;
-              import java.net.URLStreamHandler;
-
-              class Test {
-                  URL url(String protocol, String host, int port, String file, URLStreamHandler handler) throws Exception {
-                      return new URL(protocol, host, port, file, handler);
-                  }
-              }
-              """,
-            """
-              import java.net.URI;
-              import java.net.URL;
-              import java.net.URLStreamHandler;
-
-              class Test {
-                  URL url(String protocol, String host, int port, String file, URLStreamHandler handler) throws Exception {
-                      return URL.of(new URI(protocol, null, host, port, file, null, null), handler);
-                  }
-              }
-              """
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void urlConstructor() {
@@ -84,6 +54,36 @@ class URLConstructorsToNewURITest implements RewriteTest {
                       URL url1 = new URL(spec);
                       URL url2 = new URI(spec, null, "localhost", -1, "file", null, null).toURL();
                       URL url3 = new URI(spec, null, "localhost", 8080, "file", null, null).toURL();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void urlConstructorWithStreamHandler() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.net.URL;
+              import java.net.URLStreamHandler;
+
+              class Test {
+                  URL url(String protocol, String host, int port, String file, URLStreamHandler handler) throws Exception {
+                      return new URL(protocol, host, port, file, handler);
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+              import java.net.URL;
+              import java.net.URLStreamHandler;
+
+              class Test {
+                  URL url(String protocol, String host, int port, String file, URLStreamHandler handler) throws Exception {
+                      return URL.of(new URI(protocol, null, host, port, file, null, null), handler);
                   }
               }
               """

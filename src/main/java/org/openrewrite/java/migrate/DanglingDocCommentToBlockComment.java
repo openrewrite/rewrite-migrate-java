@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
@@ -24,8 +25,13 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
+import org.openrewrite.staticanalysis.java.JavaFileChecker;
+
+import java.util.regex.Pattern;
 
 public class DanglingDocCommentToBlockComment extends Recipe {
+
+    private static final Pattern LEADING_ASTERISKS = Pattern.compile("^\\*+");
 
     @Getter
     final String displayName = "Turn dangling documentation comments into block comments";
@@ -38,7 +44,9 @@ public class DanglingDocCommentToBlockComment extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+        // Kotlin, Groovy and JavaScript parse every comment, KDoc and JSDoc included, to a TextComment,
+        // so they would all look dangling. The javac lint only concerns Java sources anyway.
+        return Preconditions.check(new JavaFileChecker<>(), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public Space visitSpace(Space space, Space.Location loc, ExecutionContext ctx) {
                 // A leading comment is conventionally the license header, and javac does not flag it.
@@ -47,18 +55,19 @@ public class DanglingDocCommentToBlockComment extends Recipe {
                 }
                 return space.withComments(ListUtils.map(space.getComments(), DanglingDocCommentToBlockComment::toBlockComment));
             }
-        };
+        });
     }
 
     /**
      * An attached documentation comment parses to {@link org.openrewrite.java.tree.Javadoc.DocComment}, so a
-     * {@link TextComment} whose text opens with the extra asterisk of `/**` is one that documents nothing.
+     * {@link TextComment} whose text opens with the extra asterisk of `/**` is one that documents nothing. Banners
+     * that open with more asterisks are flagged just the same, so the whole run of leading asterisks is stripped.
      */
     private static Comment toBlockComment(Comment comment) {
         if (comment instanceof TextComment) {
             TextComment text = (TextComment) comment;
             if (text.isMultiline() && text.getText().startsWith("*")) {
-                return text.withText(text.getText().substring(1));
+                return text.withText(LEADING_ASTERISKS.matcher(text.getText()).replaceFirst(""));
             }
         }
         return comment;

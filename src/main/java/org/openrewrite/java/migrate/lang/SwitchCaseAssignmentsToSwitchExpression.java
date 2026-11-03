@@ -40,7 +40,7 @@ import static org.openrewrite.Tree.randomId;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
-    String displayName = "Convert assigning Switch statements to Switch expressions";
+    String displayName = "Convert assigning switch statements to switch expressions";
 
     String description = "Switch statements for which each case is assigning a value to the same variable can be converted to a switch expression that returns the value of the variable. " +
                 "This recipe is only applicable for Java 21 and later.";

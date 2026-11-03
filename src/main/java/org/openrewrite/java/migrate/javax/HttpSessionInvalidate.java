@@ -18,77 +18,127 @@ package org.openrewrite.java.migrate.javax;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesMethod;
-import org.openrewrite.java.search.UsesType;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.*;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class HttpSessionInvalidate extends Recipe {
-    String displayName = "Use HttpServletRequest `logout` method for programmatic security logout in Servlet 3.0";
+    private static final MethodMatcher INVALIDATE = new MethodMatcher("javax.servlet.http.HttpSession invalidate()", false);
+    private static final MethodMatcher LOGOUT = new MethodMatcher("javax.servlet.http.HttpServletRequest logout()", false);
+    private static final TypeMatcher HTTP_SERVLET_REQUEST = new TypeMatcher("javax.servlet.http.HttpServletRequest");
+    private static final List<String> SERVLET_EXCEPTION_AND_SUPERTYPES = Arrays.asList("javax.servlet.ServletException", "java.lang.Exception", "java.lang.Throwable");
 
-    String description = "Do not rely on HttpSession `invalidate` method for programmatic security logout. Add the HttpServletRequest `logout` method which was introduced in Java EE 6 as part of the Servlet 3.0 specification.";
+    String displayName = "Call `HttpServletRequest.logout()` before `HttpSession.invalidate()`";
+
+    String description = "Add a call to `HttpServletRequest#logout()`, introduced in Servlet 3.0, before `HttpSession#invalidate()`, " +
+            "so that a programmatic logout also clears the authenticated user, not only the session. " +
+            "Only applies to standalone `invalidate()` statements in methods with an `HttpServletRequest` parameter " +
+            "where the `ServletException` thrown by `logout()` is already declared or caught.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        MethodMatcher invalidateMethodMatcher = new MethodMatcher("javax.servlet.http.HttpSession invalidate()", false);
-        TypeMatcher httpServletRequestTypeMatcher = new TypeMatcher("javax.servlet.http.HttpServletRequest");
-        return Preconditions.check(
-                Preconditions.or(
-                        new UsesMethod<>(invalidateMethodMatcher),
-                        new UsesType<>("javax.servlet.http.HttpServletRequest", true)),
-                new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                        if (invalidateMethodMatcher.matches(method)) {
-                            // Get index of param for HttpServletRequest, from the encapsulating method declaration TODO: would like to make this cleaner...
-                            J.MethodDeclaration parentMethod = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                            Integer servletReqParamIndex = getServletRequestIndex(parentMethod);
-
-                            // Failed to find HttpServletRequest from parent MethodDeclaration
-                            if (servletReqParamIndex == null) {
-                                return method;
-                            }
-
-                            // Get the HttpServletRequest param
-                            J.VariableDeclarations httpServletRequestDeclaration = (J.VariableDeclarations) parentMethod.getParameters().get(servletReqParamIndex);
-
-                            // Replace HttpSession.invalidate() with HttpServletRequest.logout()
-                            final JavaTemplate logoutTemplate =
-                                    JavaTemplate.builder("#{any(javax.servlet.http.HttpServletRequest)}.logout()")
-                                            .imports("javax.servlet.http.HttpServletRequest")
-                                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.servlet-3.0"))
-                                            .build();
-                            method = logoutTemplate.apply(
-                                    getCursor(),
-                                    method.getCoordinates().replace(),
-                                    httpServletRequestDeclaration.getVariables().get(0).getName()
-                            );
-                        }
-                        return super.visitMethodInvocation(method, ctx);
+        return Preconditions.check(new UsesMethod<>(INVALIDATE), new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J.Block visitBlock(J.Block block, ExecutionContext ctx) {
+                J.Block b = super.visitBlock(block, ctx);
+                Cursor blockCursor = getCursor();
+                List<Statement> statements = b.getStatements();
+                for (int i = 0; i < statements.size(); i++) {
+                    Statement statement = statements.get(i);
+                    if (!isCallTo(INVALIDATE, statement) || (i > 0 && isCallTo(LOGOUT, statements.get(i - 1)))) {
+                        continue;
                     }
+                    J.Identifier request = requestHandlingServletException(blockCursor);
+                    if (request == null) {
+                        return b;
+                    }
+                    b = JavaTemplate.builder("#{any(javax.servlet.http.HttpServletRequest)}.logout();")
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.servlet-3.0"))
+                            .build()
+                            .apply(updateCursor(b), statement.getCoordinates().before(), request);
+                }
+                return b;
+            }
+        });
+    }
 
-                    /**
-                     * @return the param index position of the HttpServletRequest parameter object
-                     */
-                    private @Nullable Integer getServletRequestIndex(J.MethodDeclaration parentMethod) {
-                        List<JavaType> params = parentMethod.getMethodType().getParameterTypes();
-                        for (int i = 0; i < params.size(); ++i) {
-                            if (httpServletRequestTypeMatcher.matches(params.get(i))) {
-                                return i;
-                            }
-                        }
-                        return null;
+    private static boolean isCallTo(MethodMatcher matcher, Statement statement) {
+        return statement instanceof J.MethodInvocation && matcher.matches((J.MethodInvocation) statement);
+    }
+
+    private static J.@Nullable Identifier requestHandlingServletException(Cursor blockCursor) {
+        boolean servletExceptionCaught = false;
+        Object child = null;
+        for (Iterator<Object> path = blockCursor.getPath(); path.hasNext(); ) {
+            Object parent = path.next();
+            if (parent instanceof J.Try && ((J.Try) parent).getBody() == child) {
+                servletExceptionCaught |= catchesServletException((J.Try) parent);
+            } else if (parent instanceof J.MethodDeclaration) {
+                J.MethodDeclaration method = (J.MethodDeclaration) parent;
+                return servletExceptionCaught || declaresServletException(method) ? requestParameter(method) : null;
+            } else if (parent instanceof J.Lambda || parent instanceof J.ClassDeclaration || parent instanceof J.NewClass) {
+                return null;
+            }
+            if (parent instanceof J) {
+                child = parent;
+            }
+        }
+        return null;
+    }
+
+    private static boolean catchesServletException(J.Try tryable) {
+        for (J.Try.Catch catchClause : tryable.getCatches()) {
+            TypeTree caught = catchClause.getParameter().getTree().getTypeExpression();
+            if (caught instanceof J.MultiCatch) {
+                for (NameTree alternative : ((J.MultiCatch) caught).getAlternatives()) {
+                    if (isServletExceptionOrSupertype(alternative.getType())) {
+                        return true;
                     }
                 }
-        );
+            } else if (caught != null && isServletExceptionOrSupertype(caught.getType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean declaresServletException(J.MethodDeclaration method) {
+        if (method.getThrows() != null) {
+            for (NameTree thrown : method.getThrows()) {
+                if (isServletExceptionOrSupertype(thrown.getType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isServletExceptionOrSupertype(@Nullable JavaType type) {
+        for (String fqn : SERVLET_EXCEPTION_AND_SUPERTYPES) {
+            if (TypeUtils.isOfClassType(type, fqn)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static J.@Nullable Identifier requestParameter(J.MethodDeclaration method) {
+        for (Statement parameter : method.getParameters()) {
+            if (parameter instanceof J.VariableDeclarations && HTTP_SERVLET_REQUEST.matches(((J.VariableDeclarations) parameter).getType())) {
+                return ((J.VariableDeclarations) parameter).getVariables().get(0).getName();
+            }
+        }
+        return null;
     }
 }

@@ -17,39 +17,49 @@ package org.openrewrite.java.migrate.jakarta;
 
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 
 public class UpdateGetRealPath extends Recipe {
-    @Getter
-    final String displayName = "Updates `getRealPath()` to call `getContext()` followed by `getRealPath()`";
+    private static final MethodMatcher GET_REAL_PATH = new MethodMatcher("jakarta.servlet.ServletRequest* getRealPath(String)", false);
 
     @Getter
-    final String description = "Updates `getRealPath()` for `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` to use `ServletContext.getRealPath(String)`.";
+    final String displayName = "Replace `ServletRequest.getRealPath(String)` with `getServletContext().getRealPath(String)`";
+
+    @Getter
+    final String description = "Replace the removed `getRealPath(String)` on `jakarta.servlet.ServletRequest` and `jakarta.servlet.ServletRequestWrapper` with `getServletContext().getRealPath(String)`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaVisitor<ExecutionContext>() {
-            private final MethodMatcher METHOD_PATTERN = new MethodMatcher("jakarta.servlet.ServletRequest* getRealPath(String)", false);
-
+        return Preconditions.check(new UsesMethod<>(GET_REAL_PATH), new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                if (METHOD_PATTERN.matches(method)) {
-                    return JavaTemplate.builder("#{any()}.getServletContext().getRealPath(#{any(String)})")
+                J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+                if (GET_REAL_PATH.matches(m)) {
+                    if (m.getSelect() == null) {
+                        return JavaTemplate.builder("getServletContext().getRealPath(#{any(String)})")
+                                .contextSensitive()
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.servlet-api-6.0.0"))
+                                .build()
+                                .apply(updateCursor(m), m.getCoordinates().replace(), m.getArguments().get(0));
+                    }
+                    return JavaTemplate.builder("#{any(jakarta.servlet.ServletRequest)}.getServletContext().getRealPath(#{any(String)})")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "jakarta.servlet-api-6.0.0"))
                             .build()
-                            .apply(updateCursor(method),
-                                    method.getCoordinates().replace(),
-                                    method.getSelect(),
-                                    method.getArguments().get(0));
+                            .apply(updateCursor(m),
+                                    m.getCoordinates().replace(),
+                                    m.getSelect(),
+                                    m.getArguments().get(0));
                 }
-                return method;
+                return m;
             }
-        };
+        });
     }
 }

@@ -26,10 +26,9 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  # Migrate directly to the final coordinates before Java 7 can introduce jdk15to18.
+  - org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
   - org.openrewrite.java.migrate.UpgradeToJava7
   - org.openrewrite.java.migrate.UpgradeJavaVersion:
       version: 8
   - org.openrewrite.java.migrate.MXBeanRule
-  - org.openrewrite.java.migrate.BounceCastleFromJdk15OntoJdk18On
-  - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: java.lang.Thread destroy()

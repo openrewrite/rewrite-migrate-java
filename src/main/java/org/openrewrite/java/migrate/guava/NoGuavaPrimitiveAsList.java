@@ -41,7 +41,7 @@ public class NoGuavaPrimitiveAsList extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(
-                new UsesMethod<>("com.google.common.primitives.* asList(..)"),
+                new UsesMethod<>(METHOD_MATCHER),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation elem, ExecutionContext ctx) {

@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -36,23 +37,23 @@ import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 public class AddMissingMethodImplementation extends Recipe {
 
     @Option(displayName = "Fully qualified class name",
-            description = "A fully qualified class being implemented with missing method.",
+            description = "The fully qualified name of the interface whose method may be missing from its implementations.",
             example = "com.yourorg.FooBar")
     String fullyQualifiedClassName;
 
     @Option(displayName = "Method pattern",
-            description = "A method pattern for matching required method definition.",
+            description = "A method pattern matching the required method declaration.",
             example = "*..* hello(..)")
     String methodPattern;
 
     @Option(displayName = "Method template",
-            description = "Template of method to add",
+            description = "Template of the method to add.",
             example = "public String hello() { return \\\"Hello from #{}!\\\"; }")
     String methodTemplateString;
 
-    String displayName = "Adds missing method implementations";
+    String displayName = "Add missing method implementations";
 
-    String description = "Check for missing methods required by interfaces and adds them.";
+    String description = "Add a method to classes that implement the given interface but are missing the method.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -83,18 +84,45 @@ public class AddMissingMethodImplementation extends Recipe {
                     .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration, classDecl))) {
                 return classDecl;
             }
-            // If a concrete implementation is already available through inheritance, don't add it.
-            if (classDecl.getType() != null) {
-                Iterator<JavaType.Method> visibleMethods = classDecl.getType().getVisibleMethods();
-                while (visibleMethods.hasNext()) {
-                    JavaType.Method method = visibleMethods.next();
-                    if (!method.hasFlags(Flag.Abstract) && methodMatcher.matches(method)) {
-                        return classDecl;
-                    }
-                }
+            if (inheritsConcreteMethod(classDecl.getType())) {
+                return classDecl;
             }
 
             return classDecl.withBody(JavaTemplate.apply( methodTemplateString, new Cursor( getCursor(), classDecl.getBody() ), classDecl.getBody().getCoordinates().lastStatement() ));
+        }
+
+        @Override
+        public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
+            J.NewClass nc = super.visitNewClass(newClass, ctx);
+            J.Block body = nc.getBody();
+            if (body == null || nc.getClazz() == null ||
+                !TypeUtils.isAssignableTo(fullyQualifiedClassName, nc.getClazz().getType())) {
+                return nc;
+            }
+            if (body.getStatements().stream()
+                    .filter(J.MethodDeclaration.class::isInstance)
+                    .map(J.MethodDeclaration.class::cast)
+                    .anyMatch(methodDeclaration -> methodMatcher.matches(methodDeclaration.getMethodType()))) {
+                return nc;
+            }
+            if (inheritsConcreteMethod(TypeUtils.asFullyQualified(nc.getClazz().getType()))) {
+                return nc;
+            }
+
+            return nc.withBody(JavaTemplate.apply(methodTemplateString, new Cursor(getCursor(), body), body.getCoordinates().lastStatement()));
+        }
+
+        private boolean inheritsConcreteMethod(JavaType.@Nullable FullyQualified type) {
+            if (type != null) {
+                Iterator<JavaType.Method> visibleMethods = type.getVisibleMethods();
+                while (visibleMethods.hasNext()) {
+                    JavaType.Method method = visibleMethods.next();
+                    if (!method.hasFlags(Flag.Abstract) && methodMatcher.matches(method)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

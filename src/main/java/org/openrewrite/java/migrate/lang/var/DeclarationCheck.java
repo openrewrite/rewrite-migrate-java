@@ -49,7 +49,7 @@ final class DeclarationCheck {
      */
     public static boolean isVarApplicable(Cursor cursor, J.VariableDeclarations vd) {
         if (isField(vd, cursor) || isMethodParameter(vd, cursor) || !isSingleVariableDefinition(vd) ||
-                initializedByTernary(vd) || hasDimensionsAfterName(vd)) {
+                initializedByTernary(vd) || initializedByFunctionalExpression(vd) || hasDimensionsAfterName(vd)) {
             return false;
         }
 
@@ -130,7 +130,7 @@ final class DeclarationCheck {
      */
     public static boolean declarationHasType(J.VariableDeclarations vd, JavaType type) {
         TypeTree typeExpression = vd.getTypeExpression();
-        return typeExpression != null && type.equals(typeExpression.getType());
+        return typeExpression != null && TypeUtils.isOfType(type, typeExpression.getType());
     }
 
     /**
@@ -165,6 +165,18 @@ final class DeclarationCheck {
     public static boolean initializedByTernary(J.VariableDeclarations vd) {
         Expression initializer = vd.getVariables().get(0).getInitializer();
         return initializer != null && initializer.unwrap() instanceof J.Ternary;
+    }
+
+    /**
+     * Lambdas and method references have no standalone type, so JLS 14.4.1 rejects them as {@code var} initializers.
+     */
+    private static boolean initializedByFunctionalExpression(J.VariableDeclarations vd) {
+        Expression initializer = vd.getVariables().get(0).getInitializer();
+        if (initializer == null) {
+            return false;
+        }
+        initializer = initializer.unwrap();
+        return initializer instanceof J.Lambda || initializer instanceof J.MemberReference;
     }
 
     /**
@@ -375,7 +387,7 @@ final class DeclarationCheck {
                     return assignment;
                 }
                 if (assignment.getVariable() instanceof J.Identifier &&
-                        variableType.equals(((J.Identifier) assignment.getVariable()).getFieldType())) {
+                        TypeUtils.isOfType(variableType, ((J.Identifier) assignment.getVariable()).getFieldType())) {
                     found.set(true);
                     return assignment;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2026 the original author or authors.
  * <p>
  * Licensed under the Moderne Source Available License (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ package org.openrewrite.java.migrate.jspecify;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -32,14 +34,16 @@ class JSpecifyBestPracticesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
-          .parser(JavaParser.fromJavaVersion().classpath(
-            "jsr305",
-            "jspecify",
-            "jakarta.annotation-api",
-            "annotations",
-            "spring-core",
-            "micronaut-core",
-            "spotbugs-annotations"));
+          .parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath(
+              "jsr305",
+              "jspecify",
+              "annotations"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(),
+              "jakarta.annotation-api",
+              "spring-core",
+              "micronaut-core",
+              "spotbugs-annotations"))));
     }
 
     @DocumentExample
@@ -254,6 +258,108 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                   private String field;
 
                   public void bar(@Nullable String baz) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void jetbrainsAnnotationMethodWithVoidReturnType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  @org.jetbrains.annotations.Nullable
+                  public void bar(int i) {
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  public void bar(int i) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void jakartaAnnotationMethodWithVoidReturnType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  @jakarta.annotation.Nullable
+                  public void bar(int i) {
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  public void bar(int i) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void javaxParametersAreNonnullByDefaultOnVoidMethodMigratedToNullMarked() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.Nullable;
+              import javax.annotation.ParametersAreNonnullByDefault;
+
+              class Foo {
+                  @Nullable
+                  @ParametersAreNonnullByDefault
+                  public void bar(String s) {
+                  }
+              }
+              """,
+            """
+              import org.jspecify.annotations.NullMarked;
+
+              class Foo {
+                  @NullMarked
+                  public void bar(String s) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void spotBugsReturnValuesAreNonnullByDefaultOnVoidMethodRetained() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import edu.umd.cs.findbugs.annotations.Nullable;
+              import edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault;
+
+              class Foo {
+                  @Nullable
+                  @ReturnValuesAreNonnullByDefault
+                  public void bar(String s) {
+                  }
+              }
+              """,
+            """
+              import edu.umd.cs.findbugs.annotations.ReturnValuesAreNonnullByDefault;
+
+              class Foo {
+                  @ReturnValuesAreNonnullByDefault
+                  public void bar(String s) {
                   }
               }
               """
@@ -527,6 +633,86 @@ class JSpecifyBestPracticesTest implements RewriteTest {
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-core</artifactId>
                             <version>6.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
+    @Test
+    void migrateFromMicrometerAnnotationsToJspecify() {
+        rewriteRun(
+          spec -> spec
+            .recipeFromResource(
+              "/META-INF/rewrite/jspecify.yml",
+              "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations")
+            .parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromClasspath("jspecify"),
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")))),
+          mavenProject("foo",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import io.micrometer.core.lang.NonNull;
+                  import io.micrometer.core.lang.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                  }
+                  """,
+                """
+                  import org.jspecify.annotations.NonNull;
+                  import org.jspecify.annotations.Nullable;
+
+                  public class Test {
+                      @NonNull
+                      public String field1;
+                      @Nullable
+                      public String field2;
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.4</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example.foobar</groupId>
+                    <artifactId>foobar-core</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.micrometer</groupId>
+                            <artifactId>micrometer-core</artifactId>
+                            <version>1.15.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.jspecify</groupId>
+                            <artifactId>jspecify</artifactId>
+                            <version>1.0.0</version>
                         </dependency>
                     </dependencies>
                 </project>

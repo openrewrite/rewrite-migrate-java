@@ -51,13 +51,12 @@ public class MigrateURLDecoderDecode extends Recipe {
                 J.MethodInvocation m = method;
                 if (MATCHER.matches(m)) {
                     m = JavaTemplate.builder("#{any(String)}, StandardCharsets.UTF_8")
-                            .contextSensitive()
                             .imports("java.nio.charset.StandardCharsets")
                             .build().apply(
                                     getCursor(),
                                     m.getCoordinates().replaceArguments(),
                                     m.getArguments().toArray());
-                    maybeAddImport("java.nio.charset.StandardCharsets", null, false);
+                    maybeAddImport("java.nio.charset.StandardCharsets");
                 }
                 return super.visitMethodInvocation(m, ctx);
             }

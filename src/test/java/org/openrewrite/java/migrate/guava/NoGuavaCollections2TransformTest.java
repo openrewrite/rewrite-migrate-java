@@ -29,7 +29,7 @@ class NoGuavaCollections2TransformTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaCollections2Transform())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaCollections2Transform")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 

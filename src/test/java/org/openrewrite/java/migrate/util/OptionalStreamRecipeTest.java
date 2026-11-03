@@ -22,12 +22,36 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class OptionalStreamRecipeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new OptionalStreamRecipe())
-          .parser(JavaParser.fromJavaVersion());
+          .parser(JavaParser.fromJavaVersion())
+          .allSources(s -> s.markers(javaVersion(11)));
+    }
+
+    @Test
+    void noChangeBeforeJava9() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Optional;
+              import java.util.stream.Stream;
+
+              class Scratch {
+                public void foo() {
+                  Stream<Object> x = Stream.of(Optional.empty())
+                       .filter(Optional::isPresent)
+                       .map(Optional::get);
+                }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
     }
 
     @DocumentExample

@@ -17,8 +17,10 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -34,6 +36,114 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
           .scanRuntimeClasspath("org.openrewrite.java.migrate")
           .build()
           .activateRecipes("org.openrewrite.java.migrate.jakarta.JacksonJavaxToJakarta"));
+    }
+
+    @DocumentExample
+    @Test
+    void migrateJacksonDependencies() {
+        rewriteRun(
+          //language=xml
+          pomXml(
+            """
+              <project>
+                  <groupId>com.example.jackson</groupId>
+                  <artifactId>jackson-legacy</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.module</groupId>
+                          <artifactId>jackson-module-jaxb-annotations</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                          <artifactId>jackson-jaxrs-cbor-provider</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                          <artifactId>jackson-jaxrs-json-provider</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                          <artifactId>jackson-jaxrs-smile-provider</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                          <artifactId>jackson-jaxrs-xml-provider</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                          <artifactId>jackson-jaxrs-yaml-provider</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.datatype</groupId>
+                          <artifactId>jackson-datatype-jsr353</artifactId>
+                          <version>2.12.1</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.glassfish</groupId>
+                          <artifactId>javax.json</artifactId>
+                          <version>1.1.4</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            """
+              <project>
+                  <groupId>com.example.jackson</groupId>
+                  <artifactId>jackson-legacy</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.module</groupId>
+                          <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                          <artifactId>jackson-jakarta-rs-cbor-provider</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                          <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                          <artifactId>jackson-jakarta-rs-smile-provider</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                          <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                          <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>com.fasterxml.jackson.datatype</groupId>
+                          <artifactId>jackson-datatype-jakarta-jsonp</artifactId>
+                          <version>2.13.5</version>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.glassfish</groupId>
+                          <artifactId>jakarta.json</artifactId>
+                          <version>2.0.1</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """
+          )
+        );
     }
 
     @Test
@@ -160,114 +270,6 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
         );
     }
 
-    @DocumentExample
-    @Test
-    void migrateJacksonDependencies() {
-        rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <project>
-                  <groupId>com.example.jackson</groupId>
-                  <artifactId>jackson-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.module</groupId>
-                          <artifactId>jackson-module-jaxb-annotations</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                          <artifactId>jackson-jaxrs-cbor-provider</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                          <artifactId>jackson-jaxrs-json-provider</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                          <artifactId>jackson-jaxrs-smile-provider</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                          <artifactId>jackson-jaxrs-xml-provider</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                          <artifactId>jackson-jaxrs-yaml-provider</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.datatype</groupId>
-                          <artifactId>jackson-datatype-jsr353</artifactId>
-                          <version>2.12.1</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.glassfish</groupId>
-                          <artifactId>javax.json</artifactId>
-                          <version>1.1.4</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """,
-            """
-              <project>
-                  <groupId>com.example.jackson</groupId>
-                  <artifactId>jackson-legacy</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.module</groupId>
-                          <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                          <artifactId>jackson-jakarta-rs-cbor-provider</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                          <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                          <artifactId>jackson-jakarta-rs-smile-provider</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                          <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                          <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>com.fasterxml.jackson.datatype</groupId>
-                          <artifactId>jackson-datatype-jakarta-jsonp</artifactId>
-                          <version>2.13.5</version>
-                      </dependency>
-                      <dependency>
-                          <groupId>org.glassfish</groupId>
-                          <artifactId>jakarta.json</artifactId>
-                          <version>2.0.1</version>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """
-          )
-        );
-    }
-
     @Test
     void migrateJacksonManagedDependencies() {
         rewriteRun(
@@ -382,10 +384,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void changeJsonpModuleType() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-datatype-jsr353",
-            "jackson-core",
-            "jackson-databind")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-core", "jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-datatype-jsr353")))),
           //language=java
           java(
             """
@@ -424,10 +425,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void thatJaxbAnnotationModuleIsRewritten() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-core",
-            "jackson-databind",
-            "jackson-module-jaxb-annotations")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-core", "jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-module-jaxb-annotations")))),
           //language=java
           java(
             """
@@ -460,9 +460,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void thatJaxbJsonProviderIsRewritten() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-              "jackson-databind",
-              "jackson-jaxrs-json-provider")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-jaxrs-json-provider")))),
           //language=java
           java(
             """
@@ -482,7 +482,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void rewriteJaxbAnnotationIntrospectorToJakartaXmlBindAnnotationIntrospector() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jackson-module-jaxb-annotations")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jackson-module-jaxb-annotations")),
           //language=java
           java(
             """
@@ -502,9 +502,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void rewriteJacksonJsonProviderToJacksonJsonProvider() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-databind",
-            "jackson-jaxrs-json-provider")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-jaxrs-json-provider")))),
           //language=java
           java(
             """

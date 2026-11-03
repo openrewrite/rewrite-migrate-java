@@ -17,9 +17,9 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.lang.FindVirtualThreadOpportunities
-displayName: Find Virtual Thread opportunities
+displayName: Find virtual thread opportunities
 description: >-
-  Find opportunities to convert existing code to use Virtual Threads.
+  Find opportunities to convert existing code to use virtual threads.
 tags:
   - java21
   - virtual_threads
@@ -39,7 +39,7 @@ displayName: Find non-virtual `ExecutorService` creation
 description: >-
   Find all places where static `java.util.concurrent.Executors` method creates
   a non-virtual `java.util.concurrent.ExecutorService`. This recipe can be used
-  to search fro `ExecutorService` that can be replaced by Virtual Thread executor.
+  to search for `ExecutorService` that can be replaced by a virtual thread executor.
 tags:
   - java21
   - virtual_threads

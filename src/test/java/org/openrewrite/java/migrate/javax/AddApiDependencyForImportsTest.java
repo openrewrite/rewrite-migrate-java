@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -45,18 +46,7 @@ class AddApiDependencyForImportsTest implements RewriteTest {
       class A { JAXBContext context; }
       """;
 
-    @Test
-    void testOnlyUsage() {
-        rewriteRun(
-          mavenProject("app",
-            srcTestJava(java(USAGE)),
-            pomXml(POM, spec -> spec.after(pom -> assertThat(pom)
-              .contains("<artifactId>jakarta.xml.bind-api</artifactId>")
-              .contains("<scope>test</scope>").actual()))
-          )
-        );
-    }
-
+    @DocumentExample
     @Test
     void mainAndTestUsageRequiresCompileScope() {
         rewriteRun(
@@ -66,6 +56,18 @@ class AddApiDependencyForImportsTest implements RewriteTest {
             pomXml(POM, spec -> spec.after(pom -> assertThat(pom)
               .contains("<artifactId>jakarta.xml.bind-api</artifactId>")
               .doesNotContain("<scope>test</scope>").actual()))
+          )
+        );
+    }
+
+    @Test
+    void onlyUsage() {
+        rewriteRun(
+          mavenProject("app",
+            srcTestJava(java(USAGE)),
+            pomXml(POM, spec -> spec.after(pom -> assertThat(pom)
+              .contains("<artifactId>jakarta.xml.bind-api</artifactId>")
+              .contains("<scope>test</scope>").actual()))
           )
         );
     }

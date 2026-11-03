@@ -29,7 +29,7 @@ class NoGuavaSetsNewConcurrentHashSetTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec
-          .recipe(new NoGuavaSetsNewConcurrentHashSet())
+          .recipeFromResources("org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet")
           .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "guava"));
     }
 

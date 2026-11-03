@@ -18,7 +18,9 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaEE11
 displayName: Migrate to Jakarta EE 11
-description: These recipes help with the Migration to Jakarta EE 11, flagging and updating deprecated methods.
+description: >-
+  Migrate to Jakarta EE 11 by applying the Jakarta EE 10 migration, and then upgrading the Jakarta EE platform,
+  Jakarta Faces and Maven plugins to their Jakarta EE 11 versions.
 tags:
   - jakarta
 preconditions:
@@ -28,11 +30,12 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.Faces4xMigrationToFaces41x
   - org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
   - org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta11
+  - org.openrewrite.java.migrate.jakarta.JettyUpgradeEE11
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateJakartaPlatform11
-displayName: Update Jakarta EE Platform Dependencies to 11.0.x
-description: Update Jakarta EE Platform Dependencies to 11.0.x.
+displayName: Update Jakarta EE platform dependencies to 11.0.x
+description: Upgrade the `jakarta.platform` dependencies to 11.0.x, along with the Jakarta Annotations and Jakarta Server Pages APIs.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -51,7 +54,7 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.MigratePluginsForJakarta11
-displayName: Update Plugins for Jakarta EE 11
+displayName: Update plugins for Jakarta EE 11
 description: Update plugins to be compatible with Jakarta EE 11.
 preconditions:
   - org.openrewrite.Singleton
@@ -60,3 +63,137 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-ear-plugin
       newVersion: 3.4.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.JettyUpgradeEE11
+displayName: Update Jetty EE10 to Jetty EE11
+description: >-
+  Update Jetty EE10 packages and dependencies to their Jetty 12.1 EE11 counterparts, changing the groupId and artifactIds
+  as needed. Only artifacts with a one-to-one EE11 counterpart are changed.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.eclipse.jetty.ee10
+      newPackageName: org.eclipse.jetty.ee11
+      recursive: true
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-annotations
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-annotations
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-apache-jsp
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-apache-jsp
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-cdi
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-cdi
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-fcgi-proxy
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-fcgi-proxy
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-glassfish-jstl
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-glassfish-jstl
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-jaspi
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-jaspi
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-jndi
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-jndi
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-plus
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-plus
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-proxy
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-proxy
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-quickstart
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-quickstart
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-servlet
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-servlet
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-servlets
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-servlets
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10
+      oldArtifactId: jetty-ee10-webapp
+      newGroupId: org.eclipse.jetty.ee11
+      newArtifactId: jetty-ee11-webapp
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jakarta-client
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jakarta-client
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jakarta-client-webapp
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jakarta-client-webapp
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jakarta-common
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jakarta-common
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jakarta-server
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jakarta-server
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jetty-client-webapp
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jetty-client-webapp
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-jetty-server
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-jetty-server
+      newVersion: 12.1.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.eclipse.jetty.ee10.websocket
+      oldArtifactId: jetty-ee10-websocket-servlet
+      newGroupId: org.eclipse.jetty.ee11.websocket
+      newArtifactId: jetty-ee11-websocket-servlet
+      newVersion: 12.1.x

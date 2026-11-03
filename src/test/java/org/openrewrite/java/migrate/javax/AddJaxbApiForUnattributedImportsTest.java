@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
@@ -23,6 +24,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class AddJaxbApiForUnattributedImportsTest implements RewriteTest {
+    @DocumentExample
     @Test
     void addApiForUnresolvedImport() {
         rewriteRun(

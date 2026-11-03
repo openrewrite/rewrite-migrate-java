@@ -315,4 +315,3 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.bouncycastle.pqc.crypto.sphincsplus
       newPackageName: org.bouncycastle.pqc.legacy.sphincsplus
-      recursive: false

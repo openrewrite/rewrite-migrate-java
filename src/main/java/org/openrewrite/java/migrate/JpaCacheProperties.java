@@ -236,7 +236,7 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
         for (Xml.Attribute attribute : node.getAttributes()) {
             if (attribute.getKeyAsString().equals(attrName)) {
                 attribute = attribute.withValue(
-                        new Xml.Attribute.Value(attribute.getId(),
+                        new Xml.Attribute.Value(Tree.randomId(),
                                 "",
                                 attribute.getMarkers(),
                                 attribute.getValue().getQuote(),

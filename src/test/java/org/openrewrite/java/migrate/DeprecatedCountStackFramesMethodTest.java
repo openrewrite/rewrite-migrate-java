@@ -16,12 +16,16 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.junit.jupiter.api.condition.JRE.JAVA_21;
 import static org.openrewrite.java.Assertions.java;
 
+// Thread.countStackFrames() was removed from newer JDKs, which leaves the method invocation without a type to match
+@EnabledForJreRange(max = JAVA_21)
 class DeprecatedCountStackFramesMethodTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {

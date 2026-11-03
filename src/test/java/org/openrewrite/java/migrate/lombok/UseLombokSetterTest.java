@@ -418,6 +418,82 @@ class UseLombokSetterTest implements RewriteTest {
     }
 
     @Test
+    void noChangeWhenParameterIsTransformed() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  String name;
+
+                  public void setName(String name) {
+                      this.name = name.trim();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWhenParameterIsCopied() {
+        rewriteRun(// language=java
+          java(
+            """
+              import java.util.ArrayList;
+              import java.util.List;
+
+              class A {
+
+                  List<String> items;
+
+                  public void setItems(List<String> items) {
+                      this.items = new ArrayList<>(items);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWhenConstantIsAssigned() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  public void setFoo(int foo) {
+                      this.foo = 5;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void noChangeWhenOtherFieldIsAssigned() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+                  int ba = 10;
+
+                  public void setFoo(int foo) {
+                      this.foo = ba;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replacePrimitiveBoolean() {
         rewriteRun(// language=java
           java(

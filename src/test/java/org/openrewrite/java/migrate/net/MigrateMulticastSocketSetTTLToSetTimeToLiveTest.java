@@ -56,7 +56,34 @@ class MigrateMulticastSocketSetTTLToSetTimeToLiveTest implements RewriteTest {
               public class Test {
                   public static void method() {
                       MulticastSocket s = new MulticastSocket(0);
-                      s.setTimeToLive(Byte.valueOf((byte) 1).intValue());
+                      s.setTimeToLive(Byte.toUnsignedInt((byte) 1));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void ttlAbove127IsReadAsUnsigned() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.MulticastSocket;
+
+              class Test {
+                  void method(MulticastSocket s) throws Exception {
+                      s.setTTL((byte) 200);
+                  }
+              }
+              """,
+            """
+              import java.net.MulticastSocket;
+
+              class Test {
+                  void method(MulticastSocket s) throws Exception {
+                      s.setTimeToLive(Byte.toUnsignedInt((byte) 200));
                   }
               }
               """
@@ -97,7 +124,7 @@ class MigrateMulticastSocketSetTTLToSetTimeToLiveTest implements RewriteTest {
 
                   public static void method() {
                       MulticastSocket s = new MulticastSocket(0);
-                      s.setTimeToLive(Byte.valueOf(takeByte()).intValue());
+                      s.setTimeToLive(Byte.toUnsignedInt(takeByte()));
                   }
               }
               """

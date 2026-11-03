@@ -57,8 +57,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG =
             "<execution><id>get-mockito-agent-path</id><goals><goal>" + PROPERTIES_GOAL + "</goal></goals></execution>";
 
+    // The newline before the comment keeps auto-format from attaching it to a preceding sibling as a trailing comment
+    private static final String CONFIGURATION_TAG_TEMPLATE = "<configuration>\n<!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
+
     @Getter
-    final String displayName = "Add Mockito Java Agent to Maven Surefire Plugin";
+    final String displayName = "Add Mockito Java agent to Maven Surefire plugin";
 
     @Getter
     final String description = "Mockito attaches its Byte Buddy agent to the running JVM at test time, which the JDK has " +
@@ -69,16 +72,23 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
         return Preconditions.check(new DependencyInsight("org.mockito", "mockito-core", "test", null, false), new MavenIsoVisitor<ExecutionContext>() {
-            // The newline before the comment keeps auto-format from attaching it to a preceding sibling as a trailing comment
-            private final String CONFIGURATION_TAG_TEMPLATE = "<configuration>\n<!--suppress MavenModelInspection --><argLine>%s</argLine></configuration>";
-
-            private String getArgLineJavaAgentArgument() {
-                String mockitoCoreVersion = getResolutionResult().getDependencies().getOrDefault(Scope.Test, emptyList()).stream()
-                        .filter(dependency -> "org.mockito".equals(dependency.getGroupId()) && "mockito-core"
-                                .equals(dependency.getArtifactId())).findFirst().map(ResolvedDependency::getVersion).get();
-
-                return new LatestRelease(null).compare(null, mockitoCoreVersion, "5.14.0") >= 0 ?
-                        "-javaagent:${org.mockito:mockito-core:jar}" : "-javaagent:${net.bytebuddy:byte-buddy-agent:jar}";
+            private @Nullable String getArgLineJavaAgentArgument() {
+                List<ResolvedDependency> testDependencies = getResolutionResult().getDependencies().getOrDefault(Scope.Test, emptyList());
+                Optional<ResolvedDependency> mockito = testDependencies.stream()
+                        .filter(dependency -> "org.mockito".equals(dependency.getGroupId()) &&
+                                "mockito-core".equals(dependency.getArtifactId())).findFirst();
+                if (!mockito.isPresent()) {
+                    return null;
+                }
+                if (new LatestRelease(null).compare(null, mockito.get().getVersion(), "5.14.0") >= 0) {
+                    return "-javaagent:${org.mockito:mockito-core:jar}";
+                }
+                // Mockito 1 uses CGLIB. Older Mockito only supports this path when the agent jar
+                // actually resolves on the test classpath; dependency:properties cannot invent it.
+                return testDependencies.stream().anyMatch(dependency ->
+                        "net.bytebuddy".equals(dependency.getGroupId()) &&
+                                "byte-buddy-agent".equals(dependency.getArtifactId())) ?
+                        "-javaagent:${net.bytebuddy:byte-buddy-agent:jar}" : null;
             }
 
             private Xml.Tag buildConfigurationTag(String argLineJavaAgentParam, boolean hasExistingArgLine) {
@@ -101,6 +111,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             private @Nullable String surefireArgLineWithAgent(List<Plugin> plugins) {
                 String agentArgument = getArgLineJavaAgentArgument();
+                if (agentArgument == null) {
+                    return null;
+                }
                 return plugins.stream()
                         .filter(plugin -> isMavenPlugin(plugin, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID))
                         .map(plugin -> plugin.getConfigurationStringValue("argLine"))
@@ -110,6 +123,10 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
+                String agentArgument = getArgLineJavaAgentArgument();
+                if (agentArgument == null) {
+                    return document;
+                }
                 if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
                     return document;
                 }
@@ -137,9 +154,11 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 if (usesRuntimeArgLineProperty()) {
                     d = (Xml.Document) new AddPropertyVisitor("argLine", "", true).visitNonNull(d, ctx);
                 }
+                // A later scanning upgrade cannot see a plugin introduced during this visit. Pin a
+                // compatible baseline here so an old external parent's pluginManagement cannot win.
                 return FindPlugin.find(d, MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID).isEmpty() ?
-                        (Xml.Document) new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID, null,
-                                String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(getArgLineJavaAgentArgument())), null,
+                        (Xml.Document) new AddPlugin(MAVEN_PLUGINS_GROUP_ID, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID, "3.5.4",
+                                String.format(CONFIGURATION_TAG_TEMPLATE, newArgLineValue(agentArgument)), null,
                                 null, "**/pom.xml").getVisitor().visitNonNull(d, ctx) :
                         super.visitDocument(d, ctx);
             }
@@ -154,6 +173,9 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
 
                 String argLineJavaAgentParam = getArgLineJavaAgentArgument();
+                if (argLineJavaAgentParam == null) {
+                    return t;
+                }
                 //noinspection unchecked
                 List<Content> pluginContents = (List<Content>) t.getContent();
                 Optional<Xml.Tag> configuration = t.getChild("configuration");

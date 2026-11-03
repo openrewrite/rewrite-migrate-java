@@ -20,7 +20,7 @@ name: org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
 displayName: Use modernized `java.util.concurrent` APIs
 description: >-
   The Java concurrent APIs were updated in Java 9 and those changes resulted in certain APIs being deprecated.
-  This recipe update an application to replace the deprecated APIs with their modern alternatives.
+  This recipe updates an application to replace the deprecated APIs with their modern alternatives.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
@@ -38,6 +38,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicBooleanWeakCompareAnd
 displayName: Use `AtomicBoolean#weakCompareAndSetPlain(boolean, boolean)`
 description: 'Use `AtomicBoolean#weakCompareAndSetPlain(boolean, boolean)` instead of the deprecated `AtomicBoolean#weakCompareAndSet(boolean, boolean)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -50,6 +52,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerWeakCompareAnd
 displayName: Use `AtomicInteger#weakCompareAndSetPlain(int, int)`
 description: Use `AtomicInteger#weakCompareAndSetPlain(int, int)` instead of the deprecated `AtomicInteger#weakCompareAndSet(int, int)` in Java 9 or higher.
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -62,6 +66,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicIntegerArrayWeakCompa
 displayName: Use `AtomicIntegerArray#weakCompareAndSetPlain(int, int, int)`
 description: 'Use `AtomicIntegerArray#weakCompareAndSetPlain(int, int, int)` instead of the deprecated `AtomicIntegerArray#weakCompareAndSet(int, int, int)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -74,6 +80,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicLongWeakCompareAndSet
 displayName: Use `AtomicLong#weakCompareAndSetPlain(long, long)`
 description: 'Use `AtomicLong#weakCompareAndSetPlain(long, long)` instead of the deprecated `AtomicLong#weakCompareAndSet(long, long)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -86,6 +94,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicLongArrayWeakCompareA
 displayName: Use `AtomicLongArray#weakCompareAndSetPlain(int, long, long)`
 description: 'Use `AtomicLongArray#weakCompareAndSetPlain(int, long, long)` instead of the deprecated `AtomicLongArray#weakCompareAndSet(int, long, long)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -98,6 +108,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceWeakCompareA
 displayName: Use `AtomicReference#weakCompareAndSetPlain(T, T)`
 description: 'Use `AtomicReference#weakCompareAndSetPlain(T, T)` instead of the deprecated `AtomicReference#weakCompareAndSet(T, T)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
@@ -110,6 +122,8 @@ name: org.openrewrite.java.migrate.concurrent.MigrateAtomicReferenceArrayWeakCom
 displayName: Use `AtomicReferenceArray#weakCompareAndSetPlain(int, T, T)`
 description: 'Use `AtomicReferenceArray#weakCompareAndSetPlain(int, T, T)` instead of the deprecated `AtomicReferenceArray#weakCompareAndSet(int, T, T)` in Java 9 or higher.'
 preconditions:
+  - org.openrewrite.java.search.HasJavaVersion:
+      version: "[9,)"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.ChangeMethodName:

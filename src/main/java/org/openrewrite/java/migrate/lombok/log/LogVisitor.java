@@ -18,8 +18,13 @@ package org.openrewrite.java.migrate.lombok.log;
 import lombok.EqualsAndHashCode;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
+import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Comparator.comparing;
@@ -40,6 +45,10 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         this.factoryMethodMatcher = new MethodMatcher(factoryMethodPattern);
         this.logAnnotation = logAnnotation;
         this.fieldName = fieldName;
+    }
+
+    TreeVisitor<?, ExecutionContext> withPrecondition() {
+        return Preconditions.check(new UsesMethod<>(factoryMethodMatcher), this);
     }
 
     @Override
@@ -88,8 +97,7 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
 
         J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
         if (methodCall.getArguments().size() != 1 ||
-                !getFactoryParameter(classDeclaration.getSimpleName())
-                        .equals(methodCall.getArguments().get(0).toString())) {
+                !isFactoryParameter(methodCall.getArguments().get(0), classDeclaration.getType())) {
             return multiVariable;
         }
 
@@ -100,7 +108,16 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         return null;
     }
 
-    protected String getFactoryParameter(String className) {
-        return className + ".class";
+    protected boolean isFactoryParameter(Expression argument, JavaType.FullyQualified classType) {
+        return isClassLiteral(argument, classType);
+    }
+
+    static boolean isClassLiteral(@Nullable Expression expression, JavaType.FullyQualified classType) {
+        if (!(expression instanceof J.FieldAccess)) {
+            return false;
+        }
+        J.FieldAccess fieldAccess = (J.FieldAccess) expression;
+        return "class".equals(fieldAccess.getSimpleName()) &&
+                TypeUtils.isOfClassType(fieldAccess.getTarget().getType(), classType.getFullyQualifiedName());
     }
 }

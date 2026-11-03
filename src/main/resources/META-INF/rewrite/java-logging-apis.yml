@@ -32,6 +32,20 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.logging.MigrateLoggerGlobalToGetGlobal
+displayName: Use `Logger#getGlobal()`
+description: The preferred way to get the global logger object is via the call `Logger#getGlobal()` over direct field access to `java.util.logging.Logger.global`.
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.ChangeStaticFieldToMethod:
+      oldClassName: java.util.logging.Logger
+      oldFieldName: global
+      newClassName: java.util.logging.Logger
+      newMethodName: getGlobal
+
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.logging.MigrateInterfaceLoggingMXBeanToPlatformLoggingMXBean
 displayName: Use `java.lang.management.PlatformLoggingMXBean`
 description: Use `java.lang.management.PlatformLoggingMXBean` instead of the deprecated `java.util.logging.LoggingMXBean` in Java 9 or higher.
