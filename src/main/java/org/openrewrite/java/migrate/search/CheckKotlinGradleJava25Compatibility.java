@@ -64,7 +64,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
         final Set<Path> explicitRoots = new HashSet<>();
         final Set<Path> mavenRoots = new HashSet<>();
         final Set<Path> kotlinSources = new HashSet<>();
-        final Set<UUID> kotlinModules = new HashSet<>();
+        final Set<List<String>> kotlinModules = new HashSet<>();
         final List<Compiler> compilers = new ArrayList<>();
         final Set<Path> embeddedCompilerFiles = new HashSet<>();
         final Map<Path, Map<String, String>> properties = new HashMap<>();
@@ -122,9 +122,9 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                     acc.properties.put(parent, values);
                 }
                 if (compiledKotlin(source)) acc.kotlinSources.add(path);
-                // Preserve the existing modeled-module predicate; retain only the marker identity.
+                // Preserve JavaProject value equality, which intentionally ignores its marker UUID.
                 if (path.toString().endsWith(".kt") || compiledKotlin(source)) {
-                    source.getMarkers().findFirst(JavaProject.class).ifPresent(project -> acc.kotlinModules.add(project.getId()));
+                    source.getMarkers().findFirst(JavaProject.class).ifPresent(project -> acc.kotlinModules.add(moduleKey(project)));
                 }
                 if ("build.gradle".equals(name) || "build.gradle.kts".equals(name)) {
                     acc.buildRoots.add(parent);
@@ -357,7 +357,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 Blocked refusal = blocked.get(root);
                 if (Boolean.TRUE.equals(markAlignmentCandidates)) {
                     boolean modeledKotlin = source.getMarkers().findFirst(JavaProject.class)
-                            .map(project -> acc.kotlinModules.contains(project.getId())).orElse(false);
+                            .map(project -> acc.kotlinModules.contains(moduleKey(project))).orElse(false);
                     Path path = source.getSourcePath().normalize();
                     boolean ownedRoot = ownedCompilerRoots.contains(root) && path.getParent() == null &&
                             ("build.gradle".equals(path.toString()) || "build.gradle.kts".equals(path.toString()));
@@ -394,6 +394,14 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 return source;
             }
         };
+    }
+
+    private static List<String> moduleKey(JavaProject project) {
+        JavaProject.Publication publication = project.getPublication();
+        return Arrays.asList(project.getProjectName(), publication == null ? null : "publication",
+                publication == null ? null : publication.getGroupId(),
+                publication == null ? null : publication.getArtifactId(),
+                publication == null ? null : publication.getVersion());
     }
 
     private static boolean editable(Compiler compiler, Accumulator acc, Path root, Set<Path> roots) {

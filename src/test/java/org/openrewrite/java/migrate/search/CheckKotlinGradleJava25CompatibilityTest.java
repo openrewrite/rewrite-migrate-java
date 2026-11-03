@@ -533,4 +533,22 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
             """),
           kotlin("class BuildLogic", source -> source.path("buildSrc/src/main/kotlin/BuildLogic.kt")));
     }
+
+    @Test void alignmentMatchesModeledProjectValuesAcrossDifferentMarkerIds() {
+        JavaProject build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        JavaProject source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        String before = "plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }";
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          buildGradleKts(before, before.replace("of(17)", "of(19)"), file -> file.markers(build)),
+          kotlin("class Proof", file -> file.path("src/main/kotlin/Proof.kt").markers(source)));
+    }
+
+    @Test void alignmentDistinguishesModeledProjectPublications() {
+        JavaProject build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        JavaProject source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "other", "1"));
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          buildGradleKts("plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }",
+            file -> file.markers(build)),
+          kotlin("class Proof", file -> file.path("src/main/kotlin/Proof.kt").markers(source)));
+    }
 }
