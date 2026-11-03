@@ -186,4 +186,12 @@ class GradleKotlinTargetAlignmentTest implements RewriteTest {
             java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
             """));
     }
+    @Test void peerVersionlessJvmDoesNotAssumeCompilerSupport() {
+        rewriteRun(spec -> spec.recipe(new UpgradeGradleJavaVersion(25)),
+          buildGradle("""
+            plugins { id 'org.jetbrains.kotlin.jvm' }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+            """));
+    }
 }

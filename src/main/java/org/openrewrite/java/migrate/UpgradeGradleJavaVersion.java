@@ -101,6 +101,11 @@ public class UpgradeGradleJavaVersion extends Recipe {
     }
 
     private static void recordCompilerVersion(J.MethodInvocation method, Cursor cursor, int[] target) {
+        if (isMainCompiler(method) && topLevelPlugins(cursor)) {
+            // A versionless compiler can be supplied by settings or an external convention: its target is unknown.
+            target[0] = Math.min(target[0], 8);
+            return;
+        }
         // Check the literal DSL shape before invoking the trait: custom DSLs may have non-string id/version arguments.
         if (!"version".equals(method.getSimpleName()) || method.getArguments().size() != 1 ||
             !(method.getSelect() instanceof J.MethodInvocation)) {
@@ -123,6 +128,16 @@ public class UpgradeGradleJavaVersion extends Recipe {
         }
         new GradlePlugin.Matcher().pluginIdPattern("org.jetbrains.kotlin.*").get(cursor).ifPresent(plugin ->
                 target[0] = Math.min(target[0], supportedTarget(plugin.getVersion())));
+    }
+
+    private static boolean isMainCompiler(J.MethodInvocation method) {
+        if (method.getSelect() != null || method.getArguments().size() != 1 ||
+            !(method.getArguments().get(0) instanceof J.Literal)) {
+            return false;
+        }
+        Object id = ((J.Literal) method.getArguments().get(0)).getValue();
+        return "id".equals(method.getSimpleName()) && "org.jetbrains.kotlin.jvm".equals(id) ||
+               "kotlin".equals(method.getSimpleName()) && "jvm".equals(id);
     }
 
     private static boolean topLevelPlugins(Cursor cursor) {
