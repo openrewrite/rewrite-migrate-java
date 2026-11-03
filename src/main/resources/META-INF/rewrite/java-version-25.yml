@@ -245,6 +245,7 @@ recipeList:
       artifactId: maven-failsafe-plugin
       newVersion: 3.5.x
   - org.openrewrite.java.migrate.UpgradePlexusComponentMetadataForJava25
+  - org.openrewrite.java.migrate.UpgradeImpsortForJava25
   # Plugins whose older lines fail to load on JDK 25 (plexus-utils reflection, ASM without class file version 69).
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
