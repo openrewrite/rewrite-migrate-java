@@ -23,11 +23,14 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.maven.AddPluginDependency;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.search.FindPlugin;
+import org.openrewrite.maven.tree.Dependency;
+import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,9 +84,36 @@ public class UpgradeImpsortForJava25 extends Recipe {
                                         .visitNonNull(plugin, ctx, getCursor().getParentOrThrow());
                             }
                         }
+                        if (hasOpaqueInheritedParser(getResolutionResult().getPom().getPlugins()) ||
+                            hasOpaqueInheritedParser(getResolutionResult().getPom().getPluginManagement())) {
+                            return plugin;
+                        }
                         return (Xml.Tag) new AddPluginDependency("net.revelc.code", "impsort-maven-plugin",
                                 "com.github.javaparser", "javaparser-core", "3.28.2")
                                 .getVisitor().visitNonNull(plugin, ctx, getCursor().getParentOrThrow());
+                    }
+
+                    private boolean hasOpaqueInheritedParser(List<Plugin> plugins) {
+                        for (Plugin plugin : plugins) {
+                            if (!"net.revelc.code".equals(resolvedValue(plugin.getGroupId())) ||
+                                !"impsort-maven-plugin".equals(resolvedValue(plugin.getArtifactId()))) {
+                                continue;
+                            }
+                            for (Dependency dependency : plugin.getDependencies()) {
+                                String group = resolvedValue(dependency.getGroupId());
+                                String artifact = resolvedValue(dependency.getArtifactId());
+                                if (group == null || artifact == null || group.contains("${") || artifact.contains("${")) {
+                                    return true;
+                                }
+                                if ("com.github.javaparser".equals(group) && "javaparser-core".equals(artifact)) {
+                                    String version = resolvedValue(dependency.getVersion());
+                                    if (version == null || !Semver.isVersion(version)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        return false;
                     }
 
                     private @Nullable String resolvedValue(@Nullable String value) {

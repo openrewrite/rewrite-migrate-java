@@ -139,6 +139,14 @@ class UpgradeImpsortForJava25Test implements RewriteTest {
         rewriteRun(mavenProject("parent", pomXml(parent), mavenProject("child", pomXml(child))));
     }
 
+    @Test
+    void preservesUnresolvedInheritedParserDependency() {
+        String parent = pom("1.13.0", "${external.parser.version}").replace("<artifactId>impsort</artifactId>", "<artifactId>parent</artifactId><packaging>pom</packaging>")
+          .replace("<build>", "<build><pluginManagement>").replace("</build>", "</pluginManagement></build>");
+        String child = pom("1.13.0", "").replace("<groupId>peer</groupId>", "<parent><groupId>peer</groupId><artifactId>parent</artifactId><version>1</version></parent>");
+        rewriteRun(mavenProject("parent", pomXml(parent), mavenProject("child", pomXml(child))));
+    }
+
     private static String pom(String pluginVersion, String parserVersion) {
         String dependency = parserVersion.isEmpty() ? "" : "<dependencies><dependency><groupId>com.github.javaparser</groupId>" +
           "<artifactId>javaparser-core</artifactId><version>" + parserVersion + "</version></dependency></dependencies>";
