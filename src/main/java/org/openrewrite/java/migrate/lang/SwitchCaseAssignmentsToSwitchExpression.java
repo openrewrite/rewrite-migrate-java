@@ -92,6 +92,10 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
                         J.Identifier originalVariableId = originalVariable.getName();
+                        // `T x = switch (x)` reads `x` before it is initialized
+                        if (containsIdentifier(originalVariableId, originalSwitch.getSelector())) {
+                            return null;
+                        }
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);

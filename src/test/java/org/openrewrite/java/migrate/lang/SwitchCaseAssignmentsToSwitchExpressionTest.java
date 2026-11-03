@@ -945,4 +945,24 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void notConvertWhenSelectorReadsTheVariable() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat() {
+                      String formatted = "a";
+                      switch (formatted) {
+                          case "a": formatted = "b"; break;
+                          default: formatted = "c"; break;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
