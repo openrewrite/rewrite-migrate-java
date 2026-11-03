@@ -22,11 +22,30 @@ description: >-
   This recipe will apply changes commonly needed when migrating to Java 25. This recipe will also replace deprecated API
   with equivalents when there is a clear migration strategy. Build files will also be updated to use Java 25 as the
   target/source and plugins will also be upgraded to versions that are compatible with Java 25.
+  Gradle builds with unsupported or opaque Kotlin compilers are preserved and reported with a manual prerequisite;
+  editable Kotlin 2.x declarations can take the supported minor-upgrade path before the build migration.
 tags:
   - java25
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
+      minimumCompilerVersion: 2.3.0
+  - org.openrewrite.java.migrate.UpgradeToJava25WithCompatibleGradleCompiler
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeToJava25WithCompatibleGradleCompiler
+displayName: Migrate eligible builds to Java 25
+description: >-
+  Apply the Java 25 migration only after shared Gradle build compiler prerequisites are established.
+  Unsupported Kotlin 1.x and opaque older compiler builds are preserved without partial compiler or wrapper changes.
+preconditions:
+  - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
+      minimumCompilerVersion: 2.3.0
+      markCompatible: true
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeOwnedGradleKotlinCompilerForJava25
   # Detach plugin versions such as ${lombok.version}.0 before the Lombok dependency upgrade changes that property.
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.java.migrate.UpgradeGmavenGroovyForJava25
@@ -35,6 +54,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
+  - org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
@@ -51,6 +71,18 @@ recipeList:
   # Run last, once every module has reached its final Java version: comment the Kotlin modules that truly stayed at
   # Java 24 (a Kotlin 1.x cap, or a 2.0-2.2 module whose Kotlin upgrade could not be applied).
   - org.openrewrite.java.migrate.CommentKotlinModulesCappedAtJava24
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeOwnedGradleKotlinCompilerForJava25
+displayName: Upgrade an editable Gradle Kotlin 2 compiler before Java 25
+description: >-
+  Upgrade owned literal Kotlin JVM 2.x declarations, including settings plugin management, to the verified 2.3 compiler baseline.
+  Runs only in eligible Gradle builds with actual compiled Kotlin; never crosses Kotlin 1.x to K2 or downgrades newer compilers.
+recipeList:
+  - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
+      minimumCompilerVersion: 2.3.0
+      upgradeEditableCompiler: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -179,7 +211,8 @@ description: >-
   With Java 23 the encapsulation of JDK internals made it necessary to configure annotation processors like Lombok explicitly.
   The change is valid for older versions as well.
 preconditions:
-  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+  # Marks the reactor parent too: `AddAnnotationProcessor` configures a module through its parent's `pluginManagement`.
+  - org.openrewrite.java.migrate.search.ModuleOrParentHasDependency:
       groupIdPattern: org.projectlombok
       artifactIdPattern: lombok
 recipeList:
@@ -187,6 +220,8 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
+  # A new `annotationProcessorPaths` list turns off classpath discovery, so keep the Spring Boot processors running.
+  - org.openrewrite.java.migrate.AddSpringBootAnnotationProcessorPaths
   - org.openrewrite.gradle.AddDependency:
       groupId: org.projectlombok
       artifactId: lombok
@@ -242,6 +277,37 @@ recipeList:
       groupId: org.apache.maven.plugins
       artifactId: maven-failsafe-plugin
       newVersion: 3.5.x
+  - org.openrewrite.java.migrate.UpgradePlexusComponentMetadataForJava25
+  - org.openrewrite.java.migrate.UpgradeImpsortForJava25
+  # Plugins whose older lines fail to load on JDK 25 (plexus-utils reflection, ASM without class file version 69).
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-enforcer-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-assembly-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-plugin-plugin
+      newVersion: 3.15.x
+      addVersionIfMissing: true
+      trustParent: false
+  # Shade 3.6.1 includes ASM 9.8, which can process Java 25 class files.
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-shade-plugin
+      newVersion: 3.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-checkstyle-plugin
+      newVersion: 3.6.x
+  # A checkstyle pinned on the plugin must be able to parse the pattern-matching `switch` the Java 21 migration writes.
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.puppycrawl.tools
+      artifactId: checkstyle
+      newVersion: 10.x
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: net.bytebuddy
       artifactId: byte-buddy*
@@ -478,3 +544,20 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
+displayName: Align Gradle Java and Kotlin targets after upgrading Kotlin
+description: >-
+  Aligns Gradle Java and Kotlin bytecode targets using the actual Kotlin compiler plugin declaration after its upgrade,
+  rather than the original dependency model. Preserves Kotlin 1.x and bounds the target by the compiler's support.
+  Markerless root builds require conventional root Kotlin sources and an owned compatible JVM compiler or supported upgrade path.
+  Unmodeled nested builds are left unchanged.
+preconditions:
+  - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
+      minimumCompilerVersion: 2.3.0
+      markAlignmentCandidates: true
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeGradleJavaVersion:
+      version: 25
