@@ -257,6 +257,7 @@ recipeList:
       artifactId: maven-plugin-plugin
       newVersion: 3.15.x
       addVersionIfMissing: true
+      trustParent: false
   # Shade 3.6.1 includes ASM 9.8, which can process Java 25 class files.
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
