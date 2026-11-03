@@ -69,14 +69,22 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
         rewriteRun(
           buildGradle(
             "plugins { id 'com.netflix.nebula.optional-base' version '8.0.0' }",
-            "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }"
+            "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }",
+            spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
+              .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "com.netflix.nebula.optional-base")))
+              .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
     }
 
     @Test
     void preserveNewerOptionalBase() {
-        rewriteRun(buildGradle("plugins { id 'com.netflix.nebula.optional-base' version '10.0.1' }"));
+        rewriteRun(
+          buildGradle("plugins { id 'com.netflix.nebula.optional-base' version '10.0.1' }",
+            spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
+              .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "com.netflix.nebula.optional-base")))
+              .buildscript(GradleBuildscript.builder().build()).build()))
+        );
     }
 
 

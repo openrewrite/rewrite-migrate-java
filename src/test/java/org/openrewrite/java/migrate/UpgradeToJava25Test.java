@@ -20,6 +20,8 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
 import org.openrewrite.Tree;
+import org.openrewrite.gradle.marker.GradleBuildscript;
+import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.BuildTool;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteRunner;
@@ -65,7 +67,9 @@ class UpgradeToJava25Test implements RewriteTest {
               plugins {
                   id 'nebula.netflixoss' version '12.0.0'
               }
-              """
+              """,
+            s -> s.markers(GradleProject.builder().id(Tree.randomId())
+              .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
     }
@@ -84,7 +88,9 @@ class UpgradeToJava25Test implements RewriteTest {
               plugins {
                   id 'com.netflix.nebula.netflixoss' version '12.0.0'
               }
-              """
+              """,
+            s -> s.markers(GradleProject.builder().id(Tree.randomId())
+              .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
     }
@@ -99,7 +105,9 @@ class UpgradeToJava25Test implements RewriteTest {
                   id 'nebula.netflixoss' version '13.0.0'
                   id 'com.netflix.nebula.netflixoss' version '13.0.0'
               }
-              """
+              """,
+            s -> s.markers(GradleProject.builder().id(Tree.randomId())
+              .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
     }
@@ -379,7 +387,9 @@ class UpgradeToJava25Test implements RewriteTest {
                   sourceCompatibility = JavaVersion.VERSION_25
                   targetCompatibility = JavaVersion.VERSION_25
               }
-              """
+              """,
+            s -> s.markers(GradleProject.builder().id(Tree.randomId())
+              .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
     }

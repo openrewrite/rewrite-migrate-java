@@ -16,6 +16,8 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.Tree;
 import org.openrewrite.java.marker.JavaProject;
@@ -24,6 +26,7 @@ import org.openrewrite.java.migrate.table.KotlinGradleJava25Prerequisites;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.openrewrite.test.RewriteTest;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.gradle.Assertions.settingsGradleKts;
 import static org.openrewrite.kotlin.Assertions.kotlin;
 import static org.openrewrite.properties.Assertions.properties;
@@ -253,10 +256,12 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
             """, s -> s.path("maven-child/pom.xml")));
     }
 
+    @DisabledForJreRange(min = JRE.JAVA_25, disabledReason = "Gradle 8 tooling API cannot run on Java 25; older Kotlin plugins cannot resolve on Gradle 9")
     @Test void productionJava25CompositePreservesLegacyBuild() {
         JavaProject module = new JavaProject(Tree.randomId(), "legacy", null);
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
+            .beforeRecipe(withToolingApi("8.14.3"))
             .allSources(source -> source.markers(module, new JavaVersion(Tree.randomId(), "", "", "17", "17")))
             .dataTable(KotlinGradleJava25Prerequisites.Row.class, rows -> assertThat(rows).hasSize(1)),
           buildGradleKts("""
@@ -267,18 +272,23 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
 
+    @DisabledForJreRange(min = JRE.JAVA_25, disabledReason = "Gradle 8 tooling API cannot run on Java 25; older Kotlin plugins cannot resolve on Gradle 9")
     @Test void productionJava25CompositeRetainsEditableK2MinorUpgrade() {
         JavaProject module = new JavaProject(Tree.randomId(), "modern", null);
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
+            .beforeRecipe(withToolingApi("8.14.3"))
             .allSources(source -> source.markers(module, new JavaVersion(Tree.randomId(), "", "", "17", "17"))),
           buildGradleKts("""
             plugins { kotlin("jvm") version "2.2.21" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
-            plugins { kotlin("jvm") version "2.3.0" }
-            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """,
+            s -> s.after(actual -> {
+                assertThat(actual)
+                  .containsPattern("kotlin\\(\"jvm\"\\) version \"2\\.3\\.")
+                  .contains("JavaLanguageVersion.of(25)");
+                return actual;
+            })),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
@@ -478,6 +488,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           kotlin("class ChildProof", s -> s.path("child/src/main/kotlin/ChildProof.kt")));
     }
 
+    @DisabledForJreRange(min = JRE.JAVA_25, disabledReason = "Gradle 8 tooling API cannot run on Java 25; older Kotlin plugins cannot resolve on Gradle 9")
     @Test void productionJava25AlignsMarkerlessOwnedRootCompiler() {
         String before = """
           plugins {
@@ -488,6 +499,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
           """;
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
+            .beforeRecipe(withToolingApi("8.14.3"))
             .cycles(1).expectedCyclesThatMakeChanges(1),
           buildGradleKts(before, before.replace("2.2.0", "2.3.0").replace("of(17)", "of(25)")),
           kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));

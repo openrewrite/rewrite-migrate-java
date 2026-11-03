@@ -20,6 +20,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 
 class UpgradeGradleForJava25Test implements RewriteTest {
     @Override
@@ -30,6 +31,7 @@ class UpgradeGradleForJava25Test implements RewriteTest {
     @Test
     void migrateConfigurationSpreadWhenRaisingGradle() {
         rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
           buildGradle(
             """
               plugins { id 'java' }
