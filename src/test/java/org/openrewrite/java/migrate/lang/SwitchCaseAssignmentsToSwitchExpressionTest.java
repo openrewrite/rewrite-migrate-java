@@ -965,4 +965,55 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void notConvertWhenSelectorSideEffectsReachTheDefault() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int i) {
+                      int formatted = i;
+                      switch (i++) {
+                          case 1: formatted = 10; break;
+                          case 2: formatted = 20; break;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertWhenSelectorSideEffectsCannotReachLiteralDefault() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int i) {
+                      String formatted = "other";
+                      switch (i++) {
+                          case 1: formatted = "one"; break;
+                          case 2: formatted = "two"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(int i) {
+                      String formatted = switch (i++) {
+                          case 1 -> "one";
+                          case 2 -> "two";
+                          default -> "other";
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }

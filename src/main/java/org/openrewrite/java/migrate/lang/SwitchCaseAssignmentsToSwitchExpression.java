@@ -159,6 +159,11 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                                 (isLastCaseEmpty.get() && !shouldAddDefaultCase)) {
                             return null;
                         }
+                        // The added `default` evaluates the initializer after the selector, which may have changed what it reads
+                        if (shouldAddDefaultCase && !(originalInitializer instanceof J.Literal) &&
+                                canHaveSideEffects(originalSwitch.getSelector())) {
+                            return null;
+                        }
 
                         if (shouldAddDefaultCase) {
                             updatedCases.add(createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get()));
