@@ -49,6 +49,9 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
     @Option(displayName = "Upgrade editable compiler declarations", description = "Upgrade only owned Kotlin JVM 2.x compiler literals inside compatible shared builds.", required = false)
     @Nullable Boolean upgradeEditableCompiler;
 
+    @Option(displayName = "Mark alignment candidates", description = "Select modeled Kotlin modules and markerless root builds with actual Kotlin sources and an owned Java 25 compatible JVM compiler.", required = false)
+    @Nullable Boolean markAlignmentCandidates;
+
     @EqualsAndHashCode.Exclude
     transient KotlinGradleJava25Prerequisites prerequisites = new KotlinGradleJava25Prerequisites(this);
 
@@ -61,6 +64,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
         final Set<Path> explicitRoots = new HashSet<>();
         final Set<Path> mavenRoots = new HashSet<>();
         final Set<Path> kotlinSources = new HashSet<>();
+        final Set<UUID> kotlinModules = new HashSet<>();
         final List<Compiler> compilers = new ArrayList<>();
         final Set<Path> embeddedCompilerFiles = new HashSet<>();
         final Map<Path, Map<String, String>> properties = new HashMap<>();
@@ -118,6 +122,10 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                     acc.properties.put(parent, values);
                 }
                 if (compiledKotlin(source)) acc.kotlinSources.add(path);
+                // Preserve the existing modeled-module predicate; retain only the marker identity.
+                if (path.toString().endsWith(".kt") || compiledKotlin(source)) {
+                    source.getMarkers().findFirst(JavaProject.class).ifPresent(project -> acc.kotlinModules.add(project.getId()));
+                }
                 if ("build.gradle".equals(name) || "build.gradle.kts".equals(name)) {
                     acc.buildRoots.add(parent);
                     acc.buildFiles.put(parent, path);
@@ -266,6 +274,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
             Path root = owner(source, roots);
             if (root != null) kotlinBuilds.add(root);
         }
+        Set<Path> kotlinSourceBuilds = new HashSet<>(kotlinBuilds);
         // An applied compiler can fail during configuration even before it has source files.
         for (Compiler compiler : acc.compilers) if (compiler.applied) {
             Path root = owner(compiler.file, roots);
@@ -324,6 +333,18 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 else literalVariables.computeIfAbsent(compiler.file, k -> new HashSet<>()).add(compiler.property);
             }
         }
+        Set<Path> ownedCompilerRoots = new HashSet<>();
+        for (Path root : kotlinSourceBuilds) {
+            if (!root.toString().isEmpty() || blocked.containsKey(root)) continue;
+            for (Compiler compiler : byBuild.getOrDefault(root, Collections.emptyList())) {
+                String known = resolve(compiler, root, acc);
+                if (compiler.applied && compiler.explicitVersion && !compiler.opaque &&
+                    "org.jetbrains.kotlin.jvm".equals(compiler.id) && editable(compiler, acc, root, roots) &&
+                    known != null && versions.compare(null, known, minimumCompilerVersion) >= 0) {
+                    ownedCompilerRoots.add(root);
+                }
+            }
+        }
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
@@ -331,6 +352,14 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 SourceFile source = (SourceFile) tree;
                 Path root = owner(source.getSourcePath().normalize(), roots);
                 Blocked refusal = blocked.get(root);
+                if (Boolean.TRUE.equals(markAlignmentCandidates)) {
+                    boolean modeledKotlin = source.getMarkers().findFirst(JavaProject.class)
+                            .map(project -> acc.kotlinModules.contains(project.getId())).orElse(false);
+                    Path path = source.getSourcePath().normalize();
+                    boolean ownedRoot = ownedCompilerRoots.contains(root) && path.getParent() == null &&
+                            ("build.gradle".equals(path.toString()) || "build.gradle.kts".equals(path.toString()));
+                    return modeledKotlin || ownedRoot ? SearchResult.found(source) : source;
+                }
                 if (Boolean.TRUE.equals(upgradeEditableCompiler)) {
                     if (refusal != null) return source;
                     Set<UUID> declarations = literalDeclarations.getOrDefault(source.getSourcePath().normalize(), Collections.emptySet());

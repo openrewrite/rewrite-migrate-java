@@ -477,4 +477,52 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           kotlin("class OuterProof", s -> s.path("src/main/kotlin/OuterProof.kt")),
           kotlin("class ChildProof", s -> s.path("child/src/main/kotlin/ChildProof.kt")));
     }
+
+    @Test void productionJava25AlignsMarkerlessOwnedRootCompiler() {
+        String before = """
+          plugins {
+              val kotlinVersion = "2.2.0"
+              kotlin("jvm") version kotlinVersion
+              kotlin("plugin.spring") version kotlinVersion
+          }
+          java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+          """;
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
+            .cycles(3).expectedCyclesThatMakeChanges(2),
+          buildGradleKts(before, before.replace("2.2.0", "2.3.0").replace("of(17)", "of(25)")),
+          kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void alignmentKeepsMarkerlessJavaOnlyRootAndIndependentNestedBuild() {
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          settingsGradleKts("includeBuild(\"nested\")"),
+          buildGradleKts("plugins { java }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }"),
+          settingsGradleKts("rootProject.name = \"nested\"", source -> source.path("nested/settings.gradle.kts")),
+          buildGradleKts("plugins { kotlin(\"jvm\") version \"2.3.0\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }",
+            source -> source.path("nested/build.gradle.kts")),
+          kotlin("class Proof", source -> source.path("nested/src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void alignmentDoesNotAssumeOpaqueMarkerlessCompiler() {
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
+          buildGradleKts("""
+            val compilerVersion: String by project
+            plugins { kotlin("jvm") version compilerVersion }
+            java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+            """),
+          properties("compilerVersion=2.3.0", source -> source.path("gradle.properties")),
+          kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void alignmentRetainsModeledLegacyCompilerCap() {
+        JavaProject module = new JavaProject(Tree.randomId(), "legacy", null);
+        String before = """
+          plugins { kotlin("jvm") version "1.8.20" }
+          java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+          """;
+        rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25")
+            .allSources(source -> source.markers(module)),
+          buildGradleKts(before, before.replace("of(17)", "of(19)")),
+          kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
+    }
 }
