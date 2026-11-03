@@ -20,6 +20,7 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.groovy.tree.G;
+import org.openrewrite.gradle.internal.ChangeStringLiteral;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
@@ -45,8 +46,8 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
     @Option(displayName = "Mark compatible files", description = "Mark eligible files when used as a precondition. Otherwise only report manual prerequisites without changing sources.", required = false)
     @Nullable Boolean markCompatible;
 
-    @Option(displayName = "Mark editable compiler declarations", description = "Mark owned literal Kotlin 2.x compiler declarations for the existing minor-upgrade recipe, only inside compatible Kotlin builds.", required = false)
-    @Nullable Boolean markEditableCompiler;
+    @Option(displayName = "Upgrade editable compiler declarations", description = "Upgrade only owned Kotlin JVM 2.x compiler literals inside compatible shared builds.", required = false)
+    @Nullable Boolean upgradeEditableCompiler;
 
     @EqualsAndHashCode.Exclude
     transient KotlinGradleJava25Prerequisites prerequisites = new KotlinGradleJava25Prerequisites(this);
@@ -75,9 +76,10 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
         final boolean editable;
         final boolean applied;
         final boolean opaque;
-        Compiler(Path file, String id, @Nullable String version, @Nullable String property, boolean explicitVersion, boolean editable, boolean applied, boolean opaque) {
+        final UUID declarationId;
+        Compiler(Path file, String id, @Nullable String version, @Nullable String property, boolean explicitVersion, boolean editable, boolean applied, boolean opaque, UUID declarationId) {
             this.file = file; this.id = id; this.version = version; this.property = property;
-            this.explicitVersion = explicitVersion; this.editable = editable; this.applied = applied; this.opaque = opaque;
+            this.explicitVersion = explicitVersion; this.editable = editable; this.applied = applied; this.opaque = opaque; this.declarationId = declarationId;
         }
     }
 
@@ -167,7 +169,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 if (!(value instanceof String)) return m;
                 String plugin = "kotlin".equals(id.getSimpleName()) ? "org.jetbrains.kotlin." + value : (String) value;
                 if ("org.gradle.kotlin.kotlin-dsl".equals(plugin) && id == m) acc.embeddedCompilerFiles.add(source.getSourcePath().normalize());
-                if (!("org.jetbrains.kotlin.jvm".equals(plugin) || "org.jetbrains.kotlin.android".equals(plugin) || "org.jetbrains.kotlin.multiplatform".equals(plugin))) return m;
+                if (!("org.jetbrains.kotlin.jvm".equals(plugin) || "org.jetbrains.kotlin.android".equals(plugin) || "org.jetbrains.kotlin.multiplatform".equals(plugin) || "org.jetbrains.kotlin.js".equals(plugin))) return m;
                 String version = null;
                 String property = null;
                 if (id != m && m.getArguments().size() == 1) {
@@ -181,7 +183,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 }
                 acc.compilers.add(new Compiler(source.getSourcePath().normalize(), plugin, version, property, id != m,
                         id != m && (m.getArguments().size() == 1 && m.getArguments().get(0) instanceof J.Literal || property != null && version != null),
-                        applied(getCursor()), id != m && version == null));
+                        applied(getCursor()), id != m && version == null, m.getId()));
                 return m;
             }
             @Override
@@ -194,11 +196,21 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
 
     private static boolean topLevelVariable(Cursor cursor) {
         Iterator<Object> path = cursor.getParentOrThrow().getPath();
+        boolean lambdaNeedsOwner = false;
         while (path.hasNext()) {
             Object value = path.next();
-            if (value instanceof J.ClassDeclaration || value instanceof J.MethodDeclaration || value instanceof J.Lambda) return false;
+            if (value instanceof J.ClassDeclaration || value instanceof J.MethodDeclaration) return false;
+            if (value instanceof J.Lambda) {
+                if (lambdaNeedsOwner) return false;
+                lambdaNeedsOwner = true;
+            }
+            if (value instanceof J.MethodInvocation) {
+                J.MethodInvocation method = (J.MethodInvocation) value;
+                if (method.getSelect() != null || !("plugins".equals(method.getSimpleName()) || "pluginManagement".equals(method.getSimpleName()))) return false;
+                lambdaNeedsOwner = false;
+            }
         }
-        return true;
+        return !lambdaNeedsOwner;
     }
 
     private static boolean plugins(Cursor cursor) {
@@ -254,14 +266,20 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
             Path root = owner(source, roots);
             if (root != null) kotlinBuilds.add(root);
         }
+        // An applied compiler can fail during configuration even before it has source files.
+        for (Compiler compiler : acc.compilers) if (compiler.applied) {
+            Path root = owner(compiler.file, roots);
+            if (root != null) kotlinBuilds.add(root);
+        }
         VersionComparator versions = Objects.requireNonNull(Semver.validate("latest.release", null).getValue());
         Map<Path, Blocked> blocked = new HashMap<>();
-        Set<Path> editableFiles = new HashSet<>();
+        Map<Path, Set<UUID>> literalDeclarations = new HashMap<>();
+        Map<Path, Set<String>> literalVariables = new HashMap<>();
         for (Path root : kotlinBuilds) {
             List<Compiler> compilers = byBuild.getOrDefault(root, Collections.emptyList());
             boolean active = false;
             for (Compiler compiler : compilers) if (compiler.applied) active = true;
-            Set<Path> neededCompilerFiles = new HashSet<>();
+            Set<Compiler> neededCompilers = new HashSet<>();
             if (!active) {
                 boolean embedded = false;
                 for (Path file : acc.embeddedCompilerFiles) if (root.equals(owner(file, roots))) embedded = true;
@@ -276,8 +294,8 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 String version = resolve(compiler, root, acc);
                 boolean editable = editable(compiler, acc);
                 boolean opaque = compiler.opaque;
-                Set<Path> writers = new HashSet<>();
-                if (editable) writers.add(compiler.file);
+                Set<Compiler> writers = new HashSet<>();
+                if (editable) writers.add(compiler);
                 if (version == null && !compiler.explicitVersion) {
                     Set<String> inherited = new HashSet<>();
                     for (Compiler other : compilers) if (other.id.equals(compiler.id)) {
@@ -290,18 +308,21 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                         for (Compiler definition : compilers) if (definition.id.equals(compiler.id) && version.equals(resolve(definition, root, acc)) && !definition.opaque) opaque = false;
                         for (Compiler other : compilers) if (other.id.equals(compiler.id) && version.equals(resolve(other, root, acc)) && editable(other, acc)) {
                             editable = true;
-                            writers.add(other.file);
+                            writers.add(other);
                         }
                     }
                 }
                 if (opaque || version == null || !version.matches("\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?") ||
-                    versions.compare(null, version, minimumCompilerVersion) < 0 && !(version.startsWith("2.") && editable)) {
+                    versions.compare(null, version, minimumCompilerVersion) < 0 && !(version.startsWith("2.") && minimumCompilerVersion.startsWith("2.") && editable)) {
                     blocked.put(root, new Blocked(compiler.file, version == null ? "unknown" : version));
                     break;
                 }
-                if (editable && version != null && versions.compare(null, version, minimumCompilerVersion) < 0) neededCompilerFiles.addAll(writers);
+                if (editable && version != null && versions.compare(null, version, minimumCompilerVersion) < 0) neededCompilers.addAll(writers);
             }
-            if (!blocked.containsKey(root)) editableFiles.addAll(neededCompilerFiles);
+            if (!blocked.containsKey(root)) for (Compiler compiler : neededCompilers) {
+                if (compiler.property == null) literalDeclarations.computeIfAbsent(compiler.file, k -> new HashSet<>()).add(compiler.declarationId);
+                else literalVariables.computeIfAbsent(compiler.file, k -> new HashSet<>()).add(compiler.property);
+            }
         }
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
@@ -310,7 +331,28 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
                 SourceFile source = (SourceFile) tree;
                 Path root = owner(source.getSourcePath().normalize(), roots);
                 Blocked refusal = blocked.get(root);
-                if (Boolean.TRUE.equals(markEditableCompiler)) return refusal == null && editableFiles.contains(source.getSourcePath().normalize()) ? SearchResult.found(source) : source;
+                if (Boolean.TRUE.equals(upgradeEditableCompiler)) {
+                    if (refusal != null) return source;
+                    Set<UUID> declarations = literalDeclarations.getOrDefault(source.getSourcePath().normalize(), Collections.emptySet());
+                    Set<String> variables = literalVariables.getOrDefault(source.getSourcePath().normalize(), Collections.emptySet());
+                    if (declarations.isEmpty() && variables.isEmpty()) return source;
+                    return new JavaIsoVisitor<ExecutionContext>() {
+                        @Override public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                            J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
+                            if (declarations.contains(m.getId()) && m.getArguments().size() == 1 && m.getArguments().get(0) instanceof J.Literal) {
+                                return m.withArguments(Collections.singletonList(ChangeStringLiteral.withStringValue((J.Literal) m.getArguments().get(0), minimumCompilerVersion)));
+                            }
+                            return m;
+                        }
+                        @Override public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
+                            J.VariableDeclarations.NamedVariable v = super.visitVariable(variable, ctx);
+                            if (variables.contains(v.getSimpleName()) && v.getInitializer() instanceof J.Literal) {
+                                return v.withInitializer(ChangeStringLiteral.withStringValue((J.Literal) v.getInitializer(), minimumCompilerVersion));
+                            }
+                            return v;
+                        }
+                    }.visit(source, ctx);
+                }
                 if (Boolean.TRUE.equals(markCompatible)) return refusal == null ? SearchResult.found(source) : source;
                 if (refusal != null && source.getSourcePath().normalize().equals(refusal.file)) {
                     prerequisites.insertRow(ctx, new KotlinGradleJava25Prerequisites.Row(refusal.file.toString(), refusal.version,
@@ -323,7 +365,7 @@ public class CheckKotlinGradleJava25Compatibility extends ScanningRecipe<CheckKo
     }
 
     private static boolean editable(Compiler compiler, Accumulator acc) {
-        if (!compiler.editable) return false;
+        if (!compiler.editable || !"org.jetbrains.kotlin.jvm".equals(compiler.id)) return false;
         if (compiler.property == null) return true;
         int count = 0;
         for (Map<String, Integer> declarations : acc.declarations.values()) count += declarations.getOrDefault(compiler.property, 0);

@@ -65,14 +65,10 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
       name: test.OwnedCompiler
       displayName: Upgrade an owned Kotlin compiler
       description: Existing exact-version plugin recipe behind the editable declaration guard.
-      preconditions:
+      recipeList:
         - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
             minimumCompilerVersion: 2.3.0
-            markEditableCompiler: true
-      recipeList:
-        - org.openrewrite.gradle.plugins.UpgradePluginVersion:
-            pluginIdPattern: org.jetbrains.kotlin.*
-            newVersion: 2.3.0
+            upgradeEditableCompiler: true
       """;
 
     @Override public void defaults(RecipeSpec spec) { spec.recipeFromYaml(PIPELINE, "test.Java25Compatibility"); }
@@ -355,5 +351,97 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
             """),
           properties("compilerVersion=2.4.0", s -> s.path("gradle.properties")),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void pluginBlockOwnedCompilerLiteralIsEditable() {
+        rewriteRun(
+          buildGradleKts("""
+            plugins {
+                val compilerVersion = "2.2.21"
+                kotlin("jvm") version compilerVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """, """
+            plugins {
+                val compilerVersion = "2.3.0"
+                kotlin("jvm") version compilerVersion
+            }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+            """),
+          kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void reassignedCompilerVariableIsOpaque() {
+        rewriteRun(
+          buildGradleKts("""
+            var compilerVersion = "2.2.21"
+            compilerVersion = "1.8.20"
+            plugins { kotlin("jvm") version compilerVersion }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """),
+          kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void unusedLegacyJsDeclarationIsNotCrossedToK2() {
+        rewriteRun(
+          settingsGradleKts("""
+            pluginManagement {
+                plugins {
+                    kotlin("jvm") version "2.2.21"
+                    kotlin("js") version "1.9.22"
+                }
+            }
+            """, """
+            pluginManagement {
+                plugins {
+                    kotlin("jvm") version "2.3.0"
+                    kotlin("js") version "1.9.22"
+                }
+            }
+            """),
+          buildGradleKts("""
+            plugins { kotlin("jvm") }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """, """
+            plugins { kotlin("jvm") }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+            """),
+          kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void customReceiverWithTheSamePluginIdIsNotACompilerDeclaration() {
+        rewriteRun(
+          settingsGradleKts("""
+            pluginManagement {
+                plugins {
+                    kotlin("jvm") version "2.2.21"
+                    custom.id("org.jetbrains.kotlin.jvm").version("1.9.22")
+                }
+            }
+            """, """
+            pluginManagement {
+                plugins {
+                    kotlin("jvm") version "2.3.0"
+                    custom.id("org.jetbrains.kotlin.jvm").version("1.9.22")
+                }
+            }
+            """),
+          buildGradleKts("plugins { kotlin(\"jvm\") }"),
+          kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
+    }
+
+    @Test void appliedLegacyCompilerNeedsAPrerequisiteBeforeSourcesExist() {
+        rewriteRun(
+          buildGradleKts("plugins { kotlin(\"jvm\") version \"1.8.20\" }"),
+          properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
+    }
+
+    @Test void anAppliedLegacyJsChildPreservesTheSharedBuild() {
+        rewriteRun(
+          settingsGradleKts("include(\"jvm\", \"js\")"),
+          buildGradleKts("plugins { java }"),
+          buildGradleKts("plugins { kotlin(\"jvm\") version \"2.2.21\" }", s -> s.path("jvm/build.gradle.kts")),
+          buildGradleKts("plugins { kotlin(\"js\") version \"1.9.22\" }", s -> s.path("js/build.gradle.kts")),
+          properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
 }

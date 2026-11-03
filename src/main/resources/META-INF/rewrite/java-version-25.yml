@@ -76,16 +76,12 @@ type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeOwnedGradleKotlinCompilerForJava25
 displayName: Upgrade an editable Gradle Kotlin 2 compiler before Java 25
 description: >-
-  Upgrade owned literal Kotlin 2.x declarations, including settings plugin management, to the verified 2.3 compiler baseline.
+  Upgrade owned literal Kotlin JVM 2.x declarations, including settings plugin management, to the verified 2.3 compiler baseline.
   Runs only in eligible Gradle builds with actual compiled Kotlin; never crosses Kotlin 1.x to K2 or downgrades newer compilers.
-preconditions:
+recipeList:
   - org.openrewrite.java.migrate.search.CheckKotlinGradleJava25Compatibility:
       minimumCompilerVersion: 2.3.0
-      markEditableCompiler: true
-recipeList:
-  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
-      pluginIdPattern: org.jetbrains.kotlin.*
-      newVersion: 2.3.0
+      upgradeEditableCompiler: true
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
