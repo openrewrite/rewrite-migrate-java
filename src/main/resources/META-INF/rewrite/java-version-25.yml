@@ -212,6 +212,7 @@ recipeList:
       newVersion: 7.4.0
   - org.openrewrite.github.SetupJavaAdoptOpenJDKToTemurin
   - org.openrewrite.java.migrate.UpgradeSpringBootParentForJava25
+  - org.openrewrite.java.migrate.UpgradeStandaloneSpringCoreForJava25
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
