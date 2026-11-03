@@ -173,7 +173,9 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                         if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
                             caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
                         }
-                        if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) {
+                        // A labeled `break` leaves an enclosing statement too, which a `yield` would not
+                        if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break && ((J.Break) caseStatements.get(1)).getLabel() == null) ||
+                                (caseStatements.size() == 1 && isLastCase)) {
                             return extractAssignmentOfVariable(caseStatements.get(0), variableId);
                         }
                         return null;

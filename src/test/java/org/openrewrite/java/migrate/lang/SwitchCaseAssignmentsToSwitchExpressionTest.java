@@ -918,4 +918,31 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void notConvertWhenBreakIsLabeled() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int[] keys) {
+                      outer:
+                      for (int key : keys) {
+                          String formatted = "initialValue";
+                          switch (key) {
+                              case 1:
+                                  formatted = "one";
+                                  break outer;
+                              default:
+                                  formatted = "other";
+                          }
+                          System.out.println(formatted);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
