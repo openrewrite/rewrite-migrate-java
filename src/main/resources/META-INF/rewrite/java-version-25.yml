@@ -35,6 +35,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
   - org.openrewrite.java.migrate.UpgradeBuildToJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava25ForKotlin
+  - org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
   - org.openrewrite.java.migrate.UpgradePluginsForJava25
   - org.openrewrite.java.migrate.io.ReplaceSystemOutWithIOPrint
   - org.openrewrite.java.migrate.lang.MigrateProcessWaitForDuration
@@ -508,3 +509,17 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       version: 1.18.40
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25
+displayName: Align Gradle Java and Kotlin targets after upgrading Kotlin
+description: >-
+  Aligns Gradle Java and Kotlin bytecode targets using the actual Kotlin compiler plugin declaration after its upgrade,
+  rather than the original dependency model. Preserves Kotlin 1.x and bounds the target by the compiler's support.
+  Unmodeled nested builds are left unchanged.
+preconditions:
+  - org.openrewrite.java.migrate.search.ModuleHasKotlinSource
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeGradleJavaVersion:
+      version: 25
