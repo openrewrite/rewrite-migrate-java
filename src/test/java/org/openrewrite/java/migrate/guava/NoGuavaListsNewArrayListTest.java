@@ -165,6 +165,37 @@ class NoGuavaListsNewArrayListTest implements RewriteTest {
     }
 
     @Test
+    void keepElementsOnTheirLines() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.List;
+
+              class Test {
+                  List<String> names = Lists.newArrayList(
+                    "a",
+                    "b");
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.Arrays;
+              import java.util.List;
+
+              class Test {
+                  List<String> names = new ArrayList<>(Arrays.asList(
+                    "a",
+                    "b"));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void keepNewArrayListWithElementsAndTypeArguments() {
         //language=java
         rewriteRun(

@@ -20,6 +20,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -61,11 +62,14 @@ public class NoGuavaListsNewArrayListWithElements extends Recipe {
                 maybeRemoveImport("com.google.common.collect.Lists");
                 maybeAddImport("java.util.ArrayList");
                 maybeAddImport("java.util.Arrays");
-                return JavaTemplate.builder("new ArrayList<>(Arrays.asList(" +
-                                            String.join(", ", nCopies(m.getArguments().size(), "#{any()}")) + "))")
+                J.NewClass newArrayList = JavaTemplate.builder("new ArrayList<>(Arrays.asList(" +
+                                                                String.join(", ", nCopies(m.getArguments().size(), "#{any()}")) + "))")
                         .imports("java.util.ArrayList", "java.util.Arrays")
                         .build()
                         .apply(getCursor(), m.getCoordinates().replace(), m.getArguments().toArray());
+                // The original argument list keeps the elements' line breaks and comments
+                return newArrayList.withArguments(ListUtils.map(newArrayList.getArguments(), asList ->
+                        ((J.MethodInvocation) asList).getPadding().withArguments(m.getPadding().getArguments())));
             }
         });
     }
