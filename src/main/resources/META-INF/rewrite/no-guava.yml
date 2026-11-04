@@ -196,6 +196,8 @@ preconditions:
       version: "[11,)"
   - org.openrewrite.Singleton
 recipeList:
+  # XXX InlineMethodCallsRecipeGenerator gives the generated recipes no Java version precondition.
+  # Five of them need Java 9 or 11 (`optional.stream()`, `string.repeat(count)`), so all of them wait for Java 11.
   - com.google.guava.InlineGuavaMethods
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf
   - org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf
