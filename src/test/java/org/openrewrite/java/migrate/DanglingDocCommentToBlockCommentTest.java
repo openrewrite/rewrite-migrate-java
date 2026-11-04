@@ -195,6 +195,143 @@ class DanglingDocCommentToBlockCommentTest implements RewriteTest {
     }
 
     @Test
+    void leaveDocumentationOfMultipleVariablesAlone() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  /** Documents both fields. */
+                  public int a, b;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveDocumentationAfterStraySemicolonAlone() {
+        rewriteRun(
+          java(
+            """
+              interface A {
+                  /** Documents first. */
+                  default void first() { };
+
+                  /** Documents second. */
+                  default void second() { };
+
+                  /** Documents third. */
+                  void third();
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveDocumentationAfterNestedTypeSemicolonAlone() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  private enum E {P, Q};
+
+                  /** Documents the field. */
+                  private final String s = "";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveDocumentationOfFirstFieldAlone() {
+        rewriteRun(
+          java(
+            """
+              public class A extends RuntimeException {
+
+                  /**
+                   * The version identifier for this Serializable class. Increment only if the
+                   * <i>serialized</i> form of the class changes.
+                   */
+                  private static final long serialVersionUID = 1L;
+
+                  /**
+                   * Default URL to download the maven-wrapper.jar from, if no 'downloadUrl' is provided.
+                   */
+                  private static final String DEFAULT_DOWNLOAD_URL =
+                    "https://repo.maven.apache.org/maven2/io/takari/maven-wrapper/0.4.2/maven-wrapper-0.4.2.jar";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveDocumentationBeforeAnnotatedClassAfterImportAlone() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              /** Documents the class. */
+              @Deprecated
+              class A {
+                  List<String> l;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void onlyTheLastDocumentationCommentIsAttached() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  /** Documents nothing. */
+                  /** Documents both fields. */
+                  public int a, b;
+              }
+              """,
+            """
+              class A {
+                  /* Documents nothing. */
+                  /** Documents both fields. */
+                  public int a, b;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void localVariableDocumentationStillDocumentsNothing() {
+        rewriteRun(
+          java(
+            """
+              class A {
+                  void a() {
+                      /** Documents nothing. */
+                      int x = 1, y = 2;
+                  }
+              }
+              """,
+            """
+              class A {
+                  void a() {
+                      /* Documents nothing. */
+                      int x = 1, y = 2;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leaveAttachedDocumentationAlone() {
         rewriteRun(
           java(
