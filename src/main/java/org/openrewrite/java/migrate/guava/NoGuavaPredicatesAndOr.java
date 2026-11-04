@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -88,12 +89,16 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
-                // A lambda or method reference needs a cast to its functional type before `and` or `or` can be called on it
-                JavaType.FullyQualified functionalType = TypeUtils.asFullyQualified(result.getType());
-                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && functionalType != null) {
-                    String typeString = result.getType().toString().replace(functionalType.getPackageName() + ".", "");
-                    result = JavaTemplate.builder("((" + typeString + ") #{any()})")
-                            .imports(functionalType.getFullyQualifiedName())
+                // A lambda or method reference needs a cast before `and` or `or` can be called on it.
+                // The call's own return type fits every argument, since each is a `Predicate<? super T>`.
+                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && method.getMethodType() != null) {
+                    JavaType returnType = method.getMethodType().getReturnType();
+                    // JavaTemplate writes a type variable in the cast as `Object`
+                    if (hasTypeVariable(returnType)) {
+                        return method;
+                    }
+                    String functionalType = TypeUtils.toFullyQualifiedName(TypeUtils.toString(returnType));
+                    result = JavaTemplate.builder("((" + functionalType + ") #{any()})")
                             .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "guava"))
                             .build()
                             .apply(getCursor(), method.getCoordinates().replace(), result);
@@ -108,6 +113,17 @@ public class NoGuavaPredicatesAndOr extends Recipe {
             }
 
         });
+    }
+
+    private static boolean hasTypeVariable(@Nullable JavaType type) {
+        if (type instanceof JavaType.GenericTypeVariable) {
+            JavaType.GenericTypeVariable variable = (JavaType.GenericTypeVariable) type;
+            return !"?".equals(variable.getName()) || variable.getBounds().stream().anyMatch(NoGuavaPredicatesAndOr::hasTypeVariable);
+        }
+        if (type instanceof JavaType.Parameterized) {
+            return ((JavaType.Parameterized) type).getTypeParameters().stream().anyMatch(NoGuavaPredicatesAndOr::hasTypeVariable);
+        }
+        return type instanceof JavaType.Array && hasTypeVariable(((JavaType.Array) type).getElemType());
     }
 
     private boolean atLeastOneArgumentIsMethodInvocationOfPredicates(List<Expression> arguments) {
