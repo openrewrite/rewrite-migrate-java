@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -28,6 +27,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Collections.nCopies;
 
@@ -39,7 +39,8 @@ public class NoGuavaPrimitiveAsList extends Recipe {
     final String displayName = "Prefer `Arrays.asList(..)` over Guava primitives";
 
     @Getter
-    final String description = "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)`.";
+    final String description = "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)` " +
+            "where each argument is an element of the primitive type or its box, so the list keeps its element type.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -77,39 +78,22 @@ public class NoGuavaPrimitiveAsList extends Recipe {
      * so an array or a widened argument would change the element type of the list.
      */
     private static boolean argumentsAreElements(J.MethodInvocation asList) {
-        JavaType.Primitive elementType = asList.getMethodType() == null ? null :
-                elementType(asList.getMethodType().getDeclaringType().getClassName());
-        if (elementType == null) {
+        JavaType.Method method = asList.getMethodType();
+        if (method == null || method.getParameterTypes().size() != 1 ||
+            !(method.getParameterTypes().get(0) instanceof JavaType.Array)) {
             return false;
         }
+        JavaType elementType = ((JavaType.Array) method.getParameterTypes().get(0)).getElemType();
+        if (!(elementType instanceof JavaType.Primitive)) {
+            return false;
+        }
+        String boxedType = ((JavaType.Primitive) elementType).getClassName();
         for (Expression argument : asList.getArguments()) {
-            if (!(argument instanceof J.Empty) && argument.getType() != elementType) {
+            if (!(argument instanceof J.Empty) && argument.getType() != elementType &&
+                !TypeUtils.isOfClassType(argument.getType(), boxedType)) {
                 return false;
             }
         }
         return true;
-    }
-
-    private static JavaType.@Nullable Primitive elementType(String primitivesClass) {
-        switch (primitivesClass) {
-            case "Booleans":
-                return JavaType.Primitive.Boolean;
-            case "Bytes":
-                return JavaType.Primitive.Byte;
-            case "Chars":
-                return JavaType.Primitive.Char;
-            case "Doubles":
-                return JavaType.Primitive.Double;
-            case "Floats":
-                return JavaType.Primitive.Float;
-            case "Ints":
-                return JavaType.Primitive.Int;
-            case "Longs":
-                return JavaType.Primitive.Long;
-            case "Shorts":
-                return JavaType.Primitive.Short;
-            default:
-                return null;
-        }
     }
 }
