@@ -21,7 +21,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.tree.J;
@@ -44,7 +43,7 @@ public class UpgradeJavaVersion extends Recipe {
 
     String description = "Upgrade build plugin configuration to use the specified Java version. " +
             "This recipe changes `java.toolchain.languageVersion` in `build.gradle(.kts)` of Gradle projects, " +
-            "or `maven-compiler-plugin` target version and related settings. " +
+            "Java-authored Gradle compiler release configuration, or `maven-compiler-plugin` target version and related settings. " +
             "Will not downgrade if the version is newer than the specified version.";
 
     @Override
@@ -54,7 +53,8 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpdateMavenProjectPropertyJavaVersion(version),
                 new UpgradeUnmodeledMavenJavaVersion(version),
                 new org.openrewrite.jenkins.UpgradeJavaVersion(version, null),
-                new UpdateJavaCompatibility(version, null, null, false, null),
+                new UpgradeGradleJavaVersion(version),
+                new UpgradeJavaGradleReleaseVersion(version),
                 new UpdateSdkMan(String.valueOf(version), null),
                 new UpgradeJavaCiContainerImage(version),
                 new UpgradeDockerImageVersion(version),

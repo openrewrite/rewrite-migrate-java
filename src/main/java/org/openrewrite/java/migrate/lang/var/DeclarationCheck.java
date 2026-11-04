@@ -453,13 +453,9 @@ final class DeclarationCheck {
 
         Expression transformedInitializer = transformerInitializer.apply(initializer);
 
-        List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> {
-            JavaType.Variable variableType = it.getVariableType() == null ? null : it.getVariableType().withOwner(null);
-            return it
-                    .withName(it.getName().withType(transformedInitializer.getType()).withFieldType(variableType))
-                    .withInitializer(transformedInitializer)
-                    .withVariableType(variableType);
-        });
+        List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> it
+                .withName(it.getName().withType(transformedInitializer.getType()))
+                .withInitializer(transformedInitializer));
         J.Identifier typeExpression = new J.Identifier(randomId(), vd.getTypeExpression() == null ? EMPTY : vd.getTypeExpression().getPrefix(),
                 Markers.build(singleton(JavaVarKeyword.build())), emptyList(), "var", transformedInitializer.getType(), null);
 

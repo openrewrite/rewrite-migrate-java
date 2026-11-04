@@ -61,6 +61,8 @@ recipeList:
       groupId: org.projectlombok
       artifactId: lombok
       newVersion: 1.18.x
+  - org.openrewrite.java.migrate.lombok.UpgradeFreefairLombokVersion:
+      version: 1.18.48
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: lombok.experimental.Builder
       newFullyQualifiedTypeName: lombok.Builder

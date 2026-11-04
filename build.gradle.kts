@@ -61,6 +61,7 @@ recipeDependencies {
     testParserClasspath("org.glassfish:jakarta.faces:3.0.3")
     testParserClasspath("org.jboss.logging:jboss-logging:3.6.0.Final")
     testParserClasspath("org.springframework:spring-core:6.1.13")
+    testParserClasspath("org.mockito:mockito-all:1.10.19")
 }
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
@@ -89,6 +90,7 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-github-actions:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
+    runtimeOnly("org.openrewrite.recipe:rewrite-testing-frameworks:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-joda:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
