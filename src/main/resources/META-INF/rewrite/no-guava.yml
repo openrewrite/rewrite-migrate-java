@@ -270,6 +270,11 @@ preconditions:
   - org.openrewrite.java.migrate.guava.DoesNotRequireGuavaType:
       guavaType: com.google.common.base.Optional
       javaType: java.util.Optional
+      replacedMethods:
+        - com.google.common.base.Optional absent()
+        - com.google.common.base.Optional of(..)
+        - com.google.common.base.Optional fromNullable(..)
+        - com.google.common.base.Optional fromJavaUtil(..)
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull

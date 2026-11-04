@@ -442,4 +442,26 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
             );
         }
     }
+
+    @Test
+    void doNotChangeOptionalWhenStaticMethodHasNoJavaEquivalent() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Iterable<String> present(Iterable<Optional<String>> optionals) {
+                      return Optional.presentInstances(optionals);
+                  }
+
+                  Optional<String> none() {
+                      return Optional.absent();
+                  }
+              }
+              """
+          )
+        );
+    }
 }

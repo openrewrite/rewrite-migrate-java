@@ -25,6 +25,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.internal.TypesInUse;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
@@ -87,8 +88,18 @@ public class DoesNotRequireGuavaType extends Recipe {
             typesDeclaredInFile.add(declared.getDeclaringType().getFullyQualifiedName());
         }
         for (JavaType.Method method : typesInUse.getUsedMethods()) {
-            if (changesAlongWithType(method.getDeclaringType().getFullyQualifiedName(), typesDeclaredInFile) ||
-                replaced.stream().anyMatch(matcher -> matcher.matches(method))) {
+            if (replaced.stream().anyMatch(matcher -> matcher.matches(method))) {
+                continue;
+            }
+            String declaringType = method.getDeclaringType().getFullyQualifiedName();
+            if (declaringType.equals(guavaType)) {
+                // Changing the type moves a static method onto the Java type, so it counts unless the recipe list replaces it
+                if (method.hasFlags(Flag.Static)) {
+                    return true;
+                }
+                continue;
+            }
+            if (changesAlongWithType(declaringType, typesDeclaredInFile)) {
                 continue;
             }
             for (JavaType parameterType : method.getParameterTypes()) {
@@ -105,14 +116,12 @@ public class DoesNotRequireGuavaType extends Recipe {
     }
 
     /**
-     * Calls to the Guava type's own methods are left to the recipe that replaces the type.
      * Changing the type rewrites methods declared in this file together with their calls.
      */
     private boolean changesAlongWithType(String declaringType, Set<String> typesDeclaredInFile) {
-        return declaringType.equals(guavaType) ||
-               // XXX ChangeMethodName, ChangeType and ChangeMethodTargetToStatic keep the old method's parameter types,
-               // so a call they moved to a JDK method still names the Guava type. No JDK method takes a Guava type.
-               declaringType.startsWith("java.") ||
+        // XXX ChangeMethodName, ChangeType and ChangeMethodTargetToStatic keep the old method's parameter types,
+        // so a call they moved to a JDK method still names the Guava type. No JDK method takes a Guava type.
+        return declaringType.startsWith("java.") ||
                typesDeclaredInFile.contains(declaringType);
     }
 }
