@@ -107,10 +107,11 @@ public class DoesNotRequireGuavaType extends Recipe {
     /**
      * Calls to the Guava type's own methods are left to the recipe that replaces the type.
      * Changing the type rewrites methods declared in this file together with their calls.
-     * A JDK method names a Guava type only when an earlier recipe moved the call there and kept its parameter types.
      */
     private boolean changesAlongWithType(String declaringType, Set<String> typesDeclaredInFile) {
         return declaringType.equals(guavaType) ||
+               // XXX ChangeMethodName, ChangeType and ChangeMethodTargetToStatic keep the old method's parameter types,
+               // so a call they moved to a JDK method still names the Guava type. No JDK method takes a Guava type.
                declaringType.startsWith("java.") ||
                typesDeclaredInFile.contains(declaringType);
     }
