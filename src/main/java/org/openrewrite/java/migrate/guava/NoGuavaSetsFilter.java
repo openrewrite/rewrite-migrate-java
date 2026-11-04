@@ -20,7 +20,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -29,7 +28,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singleton;
 
@@ -91,33 +89,12 @@ public class NoGuavaSetsFilter extends Recipe {
 
                 /**
                  * The comparator supplier reads the set a second time, from inside a lambda.
-                 * So the set must be {@code this.field}, or a variable the method never assigns.
                  */
                 private boolean canReadTwice(Expression set) {
-                    if (set instanceof J.FieldAccess && ((J.FieldAccess) set).getTarget() instanceof J.Identifier &&
-                        "this".equals(((J.Identifier) ((J.FieldAccess) set).getTarget()).getSimpleName())) {
-                        return true;
-                    }
-                    if (!(set instanceof J.Identifier) || ((J.Identifier) set).getFieldType() == null) {
-                        return false;
-                    }
-                    J.MethodDeclaration method = getCursor().firstEnclosing(J.MethodDeclaration.class);
-                    return method != null && !isAssigned(method, ((J.Identifier) set).getSimpleName());
-                }
-
-                // XXX rewrite-java has no query for whether a local variable is effectively final,
-                // so this takes any assignment to a variable of that name in the method as a reassignment.
-                private boolean isAssigned(J.MethodDeclaration method, String name) {
-                    AtomicBoolean assigned = new AtomicBoolean();
-                    new JavaIsoVisitor<AtomicBoolean>() {
-                        @Override
-                        public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
-                            found.compareAndSet(false, assignment.getVariable() instanceof J.Identifier &&
-                                                       ((J.Identifier) assignment.getVariable()).getSimpleName().equals(name));
-                            return super.visitAssignment(assignment, found);
-                        }
-                    }.visit(method, assigned);
-                    return assigned.get();
+                    boolean thisField = set instanceof J.FieldAccess && ((J.FieldAccess) set).getTarget() instanceof J.Identifier &&
+                                        "this".equals(((J.Identifier) ((J.FieldAccess) set).getTarget()).getSimpleName());
+                    boolean variable = set instanceof J.Identifier && ((J.Identifier) set).getFieldType() != null;
+                    return (thisField || variable) && LambdaCapture.canCapture(getCursor(), set);
                 }
             }
         );

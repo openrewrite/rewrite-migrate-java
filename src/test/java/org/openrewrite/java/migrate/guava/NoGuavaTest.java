@@ -434,6 +434,33 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void preconditionsCheckNotNullWithFormat() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class Test {
+                  Object test(Object value, String key) {
+                      return Preconditions.checkNotNull(value, "no value for %s", key);
+                  }
+              }
+              """,
+            """
+              import static java.util.Objects.requireNonNull;
+
+              class Test {
+                  Object test(Object value, String key) {
+                      return requireNonNull(value, () -> String.format("no value for %s", key));
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @ExpectedToFail("Sets.filter has special handling for sorted sets which now gets lost")
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/898#discussion_r2461706208")
     @Test
