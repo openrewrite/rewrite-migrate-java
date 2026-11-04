@@ -35,6 +35,7 @@ recipeList:
       artifactId: springfox-swagger2
       newVersion: 2.10.x
       overrideManagedVersion: true
+  - org.openrewrite.java.migrate.guava.NoGuavaCollectionFactoryTypeArguments
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose

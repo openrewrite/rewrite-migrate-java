@@ -363,6 +363,65 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void keepsTypeArgumentsOfCollectionFactories() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.collect.Lists;
+              import com.google.common.collect.Maps;
+              import com.google.common.collect.Sets;
+
+              class A {
+                  static class Item {
+                      int size() {
+                          return 1;
+                      }
+                  }
+
+                  int list() {
+                      return Lists.<Item>newArrayList().stream().mapToInt(Item::size).sum();
+                  }
+
+                  int map() {
+                      return Maps.<String, Integer>newHashMap().keySet().stream().mapToInt(String::length).sum();
+                  }
+
+                  int set() {
+                      return Sets.<String>newHashSet().stream().mapToInt(String::length).sum();
+                  }
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.HashMap;
+              import java.util.HashSet;
+
+              class A {
+                  static class Item {
+                      int size() {
+                          return 1;
+                      }
+                  }
+
+                  int list() {
+                      return new ArrayList<Item>().stream().mapToInt(Item::size).sum();
+                  }
+
+                  int map() {
+                      return new HashMap<String, Integer>().keySet().stream().mapToInt(String::length).sum();
+                  }
+
+                  int set() {
+                      return new HashSet<String>().stream().mapToInt(String::length).sum();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @ExpectedToFail("Sets.filter has special handling for sorted sets which now gets lost")
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/pull/898#discussion_r2461706208")
     @Test
