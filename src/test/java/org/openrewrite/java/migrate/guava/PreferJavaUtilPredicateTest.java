@@ -222,6 +222,24 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                   Predicate<String> notEmpty() {
                       return Predicates.not(s -> s.isEmpty());
                   }
+
+                  Predicate<String> notEither(Predicate<String> isEmpty) {
+                      return Predicates.not(isEmpty);
+                  }
+              }
+              """
+          ),
+
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class MethodReference {
+                  Predicate<String> notEmpty() {
+                      return Predicates.not(String::isEmpty);
+                  }
               }
               """
           ),
@@ -265,6 +283,26 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                   Predicate<String> isNotNullA = Predicates.and(isA, Predicates.notNull());
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void keepPredicatesNotOfSupertypeBeforeJava11() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> notNull(Predicate<Object> isNull) {
+                      return Predicates.not(isNull);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
           )
         );
     }

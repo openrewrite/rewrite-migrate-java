@@ -28,6 +28,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -59,9 +60,12 @@ public class PreferJavaUtilOptionalOrSupplier extends Recipe {
             if (METHOD_MATCHER.matches(method)) {
                 JavaSourceFile sourceFile = getCursor().firstEnclosingOrThrow(JavaSourceFile.class);
                 boolean beforeJava9 = new UsesJavaVersion<>(1, 8).visit(sourceFile, ctx) != sourceFile;
-                mi = JavaTemplate.builder(beforeJava9 ?
-                                "#{any(java.util.Optional)}.map(Optional::of).orElse(#{any(java.util.Optional)})" :
-                                "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})")
+                // `orElse(second)` needs `second` to have the receiver's type, where Guava's `or` takes `Optional<? extends T>`
+                boolean sameType = mi.getSelect() != null &&
+                                   TypeUtils.isOfType(mi.getSelect().getType(), mi.getArguments().get(0).getType());
+                mi = JavaTemplate.builder(!beforeJava9 ? "#{any(java.util.Optional)}.or(() -> #{any(java.util.Optional)})" :
+                                sameType ? "#{any(java.util.Optional)}.map(Optional::of).orElse(#{any(java.util.Optional)})" :
+                                        "Optional.ofNullable(#{any(java.util.Optional)}.orElse(#{any(java.util.Optional)}.orElse(null)))")
                         .contextSensitive()
                         .imports("java.util.Optional")
                         .build()

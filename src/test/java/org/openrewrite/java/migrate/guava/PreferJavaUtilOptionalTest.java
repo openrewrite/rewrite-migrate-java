@@ -401,6 +401,34 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         );
     }
 
+    @Test
+    void orOptionalOfSubtypeBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<Number> foo(Optional<Number> firstChoice, Optional<Integer> secondChoice) {
+                      return firstChoice.or(secondChoice);
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<Number> foo(Optional<Number> firstChoice, Optional<Integer> secondChoice) {
+                      return Optional.ofNullable(firstChoice.orElse(secondChoice.orElse(null)));
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NotYetImplemented {
 

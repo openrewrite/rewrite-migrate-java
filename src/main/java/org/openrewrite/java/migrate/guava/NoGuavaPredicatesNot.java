@@ -28,6 +28,7 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
 public class NoGuavaPredicatesNot extends Recipe {
     private static final String PREDICATES_NOT_PATTERN = "com.google.common.base.Predicates not(com.google.common.base.Predicate)";
@@ -61,6 +62,10 @@ public class NoGuavaPredicatesNot extends Recipe {
                 Expression predicate = mi.getArguments().get(0);
                 // A lambda or method reference fits Guava's `not` whichever `Predicate` type the file ends up with
                 if (predicate instanceof J.Lambda || predicate instanceof J.MemberReference) {
+                    return mi;
+                }
+                // `negate()` keeps the argument's type, where Guava's `not` takes a `Predicate<? super T>`
+                if (mi.getMethodType() == null || !TypeUtils.isOfType(predicate.getType(), mi.getMethodType().getReturnType())) {
                     return mi;
                 }
                 maybeRemoveImport("com.google.common.base.Predicates");

@@ -41,7 +41,8 @@ public class NoGuavaIterablesAnyFilter extends Recipe {
     final String displayName = "Prefer `Collection.stream().anyMatch(Predicate)`";
 
     @Getter
-    final String description = "Prefer `Collection.stream().anyMatch(Predicate)` over `Iterables.any(Collection, Predicate)`.";
+    final String description = "Prefer `Collection.stream().anyMatch(Predicate)` over `Iterables.any(Collection, Predicate)`, " +
+            "and a filtered stream collected to a `List` over `Iterables.filter(Collection, Predicate)`.";
 
     @Getter
     final Set<String> tags = singleton( "guava" );
