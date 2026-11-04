@@ -38,6 +38,33 @@ class NoGuavaTest implements RewriteTest {
 
     @DocumentExample
     @Test
+    void preconditionsCheckArgument() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  void f(String name) {
+                      Preconditions.checkArgument(name != null, "name is required");
+                  }
+              }
+              """,
+            """
+              class A {
+                  void f(String name) {
+                      if (name == null) {
+                          throw new IllegalArgumentException("name is required");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void moreObjectsFirstNonNullToObjectsRequireNonNullElse() {
         rewriteRun(
           //language=java
