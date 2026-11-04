@@ -106,9 +106,11 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 if ("copyOf".equals(methodName) && !isArgumentCompatibleWithJavaCopyOf(mi)) {
                     return mi;
                 }
-                // `List.of(array)` and `Set.of(array)` spread the array, where Guava's `of(array)` holds it as one element
-                if ("of".equals(methodName) && mi.getArguments().size() == 1 &&
-                    mi.getArguments().get(0).getType() instanceof JavaType.Array) {
+                // `List.of(array)` and `Set.of(array)` spread an array of references into its elements,
+                // where Guava's `of(array)` holds the array as one element
+                JavaType onlyArgument = mi.getArguments().size() == 1 ? mi.getArguments().get(0).getType() : null;
+                if ("of".equals(methodName) && onlyArgument instanceof JavaType.Array &&
+                    !(((JavaType.Array) onlyArgument).getElemType() instanceof JavaType.Primitive)) {
                     return mi;
                 }
                 if (!isConvertible(mi.getArguments())) {
@@ -215,17 +217,9 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                     }
                 } else if (parent instanceof J.NewClass) {
                     J.NewClass c = (J.NewClass) parent;
-                    int index = 0;
-                    if (c.getConstructorType() != null) {
-                        for (Expression argument : c.getArguments()) {
-                            if (IMMUTABLE_MATCHER.matches(argument)) {
-                                break;
-                            }
-                            index++;
-                        }
-                        if (c.getConstructorType() != null) {
-                            isParentTypeDownCast = isParentTypeMatched(parameterType(c.getConstructorType(), index));
-                        }
+                    int index = c.getArguments().indexOf(immutableMethod);
+                    if (c.getConstructorType() != null && index != -1) {
+                        isParentTypeDownCast = isParentTypeMatched(parameterType(c.getConstructorType(), index));
                     }
                 } else if (parent instanceof J.NewArray) {
                     J.NewArray a = (J.NewArray) parent;

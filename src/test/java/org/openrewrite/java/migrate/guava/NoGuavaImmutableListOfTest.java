@@ -722,7 +722,7 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
     }
 
     @Test
-    void doNotChangeSingleArrayElement() {
+    void singleArrayElementConvertsOnlyForPrimitiveArrays() {
         rewriteRun(
           version(
             //language=java
@@ -732,8 +732,72 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
                 import java.util.List;
 
                 class A {
-                    List<String[]> test(String[] array) {
+                    List<String[]> strings(String[] array) {
                         return ImmutableList.of(array);
+                    }
+
+                    List<int[]> ints(int[] array) {
+                        return ImmutableList.of(array);
+                    }
+                }
+                """,
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    List<String[]> strings(String[] array) {
+                        return ImmutableList.of(array);
+                    }
+
+                    List<int[]> ints(int[] array) {
+                        return List.of(array);
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void constructorArguments() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    A(List<String> list, ImmutableList<String> immutable) {
+                    }
+
+                    A(String format, Object... args) {
+                    }
+
+                    void test() {
+                        new A(ImmutableList.of("a"), ImmutableList.of("b"));
+                        new A("%s %s", "a", ImmutableList.of("b"));
+                    }
+                }
+                """,
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    A(List<String> list, ImmutableList<String> immutable) {
+                    }
+
+                    A(String format, Object... args) {
+                    }
+
+                    void test() {
+                        new A(List.of("a"), ImmutableList.of("b"));
+                        new A("%s %s", "a", List.of("b"));
                     }
                 }
                 """
