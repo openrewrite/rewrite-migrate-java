@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -23,10 +24,13 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Comment;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.Javadoc;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class DanglingDocCommentToBlockComment extends Recipe {
@@ -40,7 +44,7 @@ public class DanglingDocCommentToBlockComment extends Recipe {
     final String description = "A documentation comment that does not precede a declaration documents nothing, and " +
             "since Java 22 `-Xlint:dangling-doc-comments` warns about it, which fails any build using `-Werror`. " +
             "Changing `/**` to `/*` keeps the text and silences the warning. A documentation comment that is attached " +
-            "to a declaration is left alone.";
+            "to a declaration, including a field that declares several variables, is left alone.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -53,7 +57,43 @@ public class DanglingDocCommentToBlockComment extends Recipe {
                 if (loc == Space.Location.COMPILATION_UNIT_PREFIX) {
                     return space;
                 }
-                return space.withComments(ListUtils.map(space.getComments(), DanglingDocCommentToBlockComment::toBlockComment));
+                int attached = isMemberDeclarationPrefix(loc) ? lastDocumentationComment(space) : -1;
+                return space.withComments(ListUtils.map(space.getComments(), (i, comment) ->
+                        i == attached ? comment : toBlockComment(comment)));
+            }
+
+            /**
+             * Not every documentation comment that javac attaches to a declaration parses to a
+             * {@link org.openrewrite.java.tree.Javadoc.DocComment}, the one on a field declaring several variables
+             * among them, so what the comment precedes has the last word.
+             */
+            private boolean isMemberDeclarationPrefix(Space.Location loc) {
+                switch (loc) {
+                    case CLASS_DECLARATION_PREFIX:
+                    case METHOD_DECLARATION_PREFIX:
+                    case ENUM_VALUE_PREFIX:
+                        return true;
+                    case VARIABLE_DECLARATIONS_PREFIX:
+                        Cursor parent = getCursor().getParentTreeCursor();
+                        if (!(parent.getValue() instanceof J.Block)) {
+                            return false;
+                        }
+                        Object owner = parent.getParentTreeCursor().getValue();
+                        return owner instanceof J.ClassDeclaration || owner instanceof J.NewClass;
+                    default:
+                        return false;
+                }
+            }
+
+            private int lastDocumentationComment(Space space) {
+                List<Comment> comments = space.getComments();
+                for (int i = comments.size() - 1; i >= 0; i--) {
+                    Comment comment = comments.get(i);
+                    if (comment instanceof Javadoc.DocComment || toBlockComment(comment) != comment) {
+                        return i;
+                    }
+                }
+                return -1;
             }
         });
     }
