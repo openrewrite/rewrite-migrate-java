@@ -232,6 +232,8 @@ abstract class AbstractNoGuavaImmutableOf extends Recipe {
                 return isParentTypeDownCast;
             }
 
+            // XXX rewrite-java has no lookup of the parameter an argument binds to. `getParameterTypes().get(index)`
+            // returns the varargs array type, or throws when more arguments than parameters are passed.
             private @Nullable JavaType parameterType(JavaType.Method method, int index) {
                 List<JavaType> parameterTypes = method.getParameterTypes();
                 int last = parameterTypes.size() - 1;
