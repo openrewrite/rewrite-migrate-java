@@ -177,4 +177,22 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void doNotConvertWhenAnAndCallStaysOnGuava() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> isA = Predicates.equalTo("a");
+                  Predicate<String> isNotNullA = Predicates.and(isA, Predicates.notNull());
+              }
+              """
+          )
+        );
+    }
 }
