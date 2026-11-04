@@ -265,6 +265,36 @@ class NoGuavaRefasterTest implements RewriteTest {
                   }
               }
               """
+          ),
+          //language=java
+          java(
+            """
+              import com.google.common.base.Objects;
+              import com.google.common.base.Strings;
+
+              class B {
+                  boolean same(String a, String b) {
+                      return Objects.equal(a, b);
+                  }
+
+                  String orEmpty(String s) {
+                      return Strings.nullToEmpty(s);
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Objects;
+
+              class B {
+                  boolean same(String a, String b) {
+                      return Objects.equal(a, b);
+                  }
+
+                  String orEmpty(String s) {
+                      return java.util.Objects.toString(s, "");
+                  }
+              }
+              """
           )
         );
     }

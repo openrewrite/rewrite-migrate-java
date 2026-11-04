@@ -424,8 +424,8 @@ public class NoGuavaRefaster {
         }
     }
 
-    // `new TreeSet<>(..)` given a `SortedSet` keeps that set's comparator, where Guava's `newTreeSet(Iterable)`
-    // sorts by natural order. So that overload stays.
+    // `Sets.newTreeSet(Iterable)` has no template. Given a `SortedSet`, `new TreeSet<>(..)` keeps that set's
+    // comparator, where Guava sorts by natural order.
     @RecipeDescriptor(
             name = "Prefer `new TreeSet<>(Comparator)`",
             description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this."
