@@ -691,4 +691,35 @@ class NoGuavaImmutableSetOfTest implements RewriteTest {
             11)
         );
     }
+
+    @Test
+    void doNotChangeEnumFieldsThatAreNotConstants() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import com.google.common.collect.ImmutableSet;
+                import java.util.Set;
+
+                class Test {
+                    enum Mode {
+                        ON, OFF;
+                        static final Mode DEFAULT = ON;
+                        Mode next;
+                    }
+
+                    Set<Mode> alias() {
+                        return ImmutableSet.of(Mode.ON, Mode.DEFAULT);
+                    }
+
+                    Set<Mode> instance(Mode mode) {
+                        return ImmutableSet.of(mode.next, Mode.OFF);
+                    }
+                }
+                """
+            ),
+            11)
+        );
+    }
 }

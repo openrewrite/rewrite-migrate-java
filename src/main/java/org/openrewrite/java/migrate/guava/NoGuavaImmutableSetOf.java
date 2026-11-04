@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.guava;
 
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
@@ -34,10 +35,12 @@ public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
         super("com.google.common.collect.ImmutableSet", "java.util.Set", convertReturnType);
     }
 
-    /**
-     * {@code Set.of} throws on equal elements, where Guava keeps one of them.
-     * Two or more elements convert only when each is a literal or an enum constant and no two are the same.
-     */
+    @Override
+    public String getDescription() {
+        return super.getDescription() + " Two or more elements convert only when they are distinct literals or enum constants, " +
+               "since `Set.of` rejects duplicates.";
+    }
+
     @Override
     boolean isConvertible(List<Expression> elements) {
         if (elements.size() < 2) {
@@ -60,9 +63,8 @@ public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
         }
         JavaType.Variable field = element instanceof J.Identifier ? ((J.Identifier) element).getFieldType() :
                 element instanceof J.FieldAccess ? ((J.FieldAccess) element).getName().getFieldType() : null;
-        JavaType.FullyQualified enumType = field == null ? null : TypeUtils.asFullyQualified(field.getType());
-        if (enumType != null && enumType.getKind() == JavaType.FullyQualified.Kind.Enum &&
-            TypeUtils.isOfType(field.getOwner(), enumType)) {
+        JavaType.FullyQualified enumType = field == null ? null : TypeUtils.asFullyQualified(field.getOwner());
+        if (enumType != null && field.hasFlags(Flag.Enum)) {
             return enumType.getFullyQualifiedName() + "." + field.getName();
         }
         return null;
