@@ -23,6 +23,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.javaVersion;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class AddMissingMethodImplementationTest implements RewriteTest {
 
@@ -230,6 +231,20 @@ class AddMissingMethodImplementationTest implements RewriteTest {
                   I1 i1 = new SuperClass() {
                   };
               }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveKotlinAlone() {
+        rewriteRun(
+          spec -> spec.recipe(new AddMissingMethodImplementation("java.lang.Runnable", "java.lang.Runnable run()",
+            "public void run() { }")),
+          //language=kotlin
+          kotlin(
+            """
+              class Delegating(runnable: Runnable) : Runnable by runnable
               """
           )
         );
