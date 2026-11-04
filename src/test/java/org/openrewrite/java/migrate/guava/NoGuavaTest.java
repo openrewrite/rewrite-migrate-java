@@ -229,7 +229,7 @@ class NoGuavaTest implements RewriteTest {
     }
 
     @Test
-    void predicatesEqualToBoxesPrimitiveTypeArgument() {
+    void predicatesEqualToTakesInferredTypeArgument() {
         rewriteRun(
           //language=java
           java(
@@ -237,46 +237,53 @@ class NoGuavaTest implements RewriteTest {
               import com.google.common.base.Predicate;
               import com.google.common.base.Predicates;
 
+              import java.util.Map;
+
               class A {
                   Predicate<Integer> isFive() {
                       return Predicates.equalTo(5);
                   }
+
+                  Predicate<Number> isFiveNumber() {
+                      return Predicates.equalTo(5);
+                  }
+
+                  Predicate<String> isNull() {
+                      return Predicates.equalTo(null);
+                  }
+
+                  Predicate<Map.Entry<String, String>> isEntry(Map.Entry<String, String> entry) {
+                      return Predicates.equalTo(entry);
+                  }
+
+                  <T> Predicate<T> is(T t) {
+                      return Predicates.equalTo(t);
+                  }
               }
               """,
             """
+              import java.util.Map;
               import java.util.function.Predicate;
 
               class A {
                   Predicate<Integer> isFive() {
                       return Predicate.<Integer>isEqual(5);
                   }
-              }
-              """
-          )
-        );
-    }
 
-    @Test
-    void predicatesEqualToNullHasNoTypeArgument() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import com.google.common.base.Predicate;
-              import com.google.common.base.Predicates;
-
-              class A {
-                  Predicate<String> isNull() {
-                      return Predicates.equalTo(null);
+                  Predicate<Number> isFiveNumber() {
+                      return Predicate.<Number>isEqual(5);
                   }
-              }
-              """,
-            """
-              import java.util.function.Predicate;
 
-              class A {
                   Predicate<String> isNull() {
-                      return Predicate.isEqual(null);
+                      return Predicate.<String>isEqual(null);
+                  }
+
+                  Predicate<Map.Entry<String, String>> isEntry(Map.Entry<String, String> entry) {
+                      return Predicate.<Map.Entry<String, String>>isEqual(entry);
+                  }
+
+                  <T> Predicate<T> is(T t) {
+                      return Predicate.isEqual(t);
                   }
               }
               """
