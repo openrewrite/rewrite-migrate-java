@@ -168,6 +168,31 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void stringsIsNullOrEmpty() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Strings;
+
+              class Test {
+                  static boolean hasText(String s) {
+                      return !Strings.isNullOrEmpty(s);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static boolean hasText(String s) {
+                      return s != null && !s.isEmpty();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/920")
     @Test
     void iterablesAllMigration() {
