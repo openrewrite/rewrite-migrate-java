@@ -66,6 +66,12 @@ recipeDependencies {
 
 val rewriteVersion = rewriteRecipe.rewriteVersion.get()
 dependencies {
+    constraints {
+        runtimeOnly("com.google.guava:guava:33.8.0-jre") {
+            because("CVE-2026-102554, fixed in Guava 33.7.2")
+        }
+    }
+
     compileOnly("org.projectlombok:lombok:latest.release")
     compileOnly("org.apache.groovy:groovy:4.+")
 
