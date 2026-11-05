@@ -38,7 +38,9 @@ public class NoGuavaCreateTempDir extends Recipe {
     final String displayName = "Prefer `Files#createTempDirectory()`";
 
     @Getter
-    final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
+    final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)` where a " +
+            "`throws` clause or `catch` for `IOException`, `Exception` or `Throwable` handles the `IOException` it throws. " +
+            "A call in a lambda, or in a class body outside a method, stays.";
 
     @Getter
     final Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
@@ -69,7 +71,7 @@ public class NoGuavaCreateTempDir extends Recipe {
         }
 
         /**
-         * A {@code try} handles what its body throws, not what its catch or finally blocks throw.
+         * A {@code try} handles what its resources and body throw, not what its catch or finally blocks throw.
          * Lambdas and class bodies end the search, as nothing around them handles what they throw.
          */
         private boolean isIOExceptionHandled() {
@@ -87,9 +89,12 @@ public class NoGuavaCreateTempDir extends Recipe {
                     J.MethodDeclaration md = (J.MethodDeclaration) value;
                     return md.getThrows() != null && md.getThrows().stream().anyMatch(n -> coversIOException(n.getType()));
                 }
-                if (value instanceof J.Try && ((J.Try) value).getBody() == child &&
-                    ((J.Try) value).getCatches().stream().anyMatch(c -> coversIOException(c.getParameter().getType()))) {
-                    return true;
+                if (value instanceof J.Try) {
+                    J.Try tr = (J.Try) value;
+                    if ((tr.getBody() == child || child instanceof J.Try.Resource) &&
+                        tr.getCatches().stream().anyMatch(c -> coversIOException(c.getParameter().getType()))) {
+                        return true;
+                    }
                 }
                 child = (J) value;
             }

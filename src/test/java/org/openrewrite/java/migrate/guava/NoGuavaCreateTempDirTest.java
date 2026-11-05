@@ -279,6 +279,47 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
     }
 
     @Test
+    void convertedInResourceOfTryCatchingIOException() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.io.Files;
+              import java.io.File;
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  void read() {
+                      try (InputStream in = new FileInputStream(new File(Files.createTempDir(), "a"))) {
+                          in.read();
+                      } catch (IOException e) {
+                      }
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.io.InputStream;
+              import java.nio.file.Files;
+
+              class A {
+                  void read() {
+                      try (InputStream in = new FileInputStream(new File(Files.createTempDirectory(null).toFile(), "a"))) {
+                          in.read();
+                      } catch (IOException e) {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void guavaCreateTempDirIsMethodArgument() {
         //language=java
         rewriteRun(
