@@ -637,4 +637,31 @@ class NoGuavaTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void listsNewArrayListWithElements() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.List;
+
+              class A {
+                  List<String> names = Lists.newArrayList("a", "b");
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.Arrays;
+              import java.util.List;
+
+              class A {
+                  List<String> names = new ArrayList<>(Arrays.asList("a", "b"));
+              }
+              """
+          )
+        );
+    }
 }
