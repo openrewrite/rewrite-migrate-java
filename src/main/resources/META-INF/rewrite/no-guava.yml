@@ -36,6 +36,7 @@ recipeList:
       newVersion: 2.10.x
       overrideManagedVersion: true
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
+  - org.openrewrite.java.migrate.guava.NoGuavaFilesToString
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter

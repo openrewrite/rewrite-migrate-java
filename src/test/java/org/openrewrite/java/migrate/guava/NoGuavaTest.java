@@ -66,6 +66,41 @@ class NoGuavaTest implements RewriteTest {
     }
 
     @Test
+    void filesToStringAfterInlining() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.io.Files;
+
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.charset.StandardCharsets;
+
+              class A {
+                  String read(File file) throws IOException {
+                      return Files.toString(file, StandardCharsets.UTF_8);
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.charset.StandardCharsets;
+              import java.nio.file.Files;
+
+              class A {
+                  String read(File file) throws IOException {
+                      return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
+        );
+    }
+
+    @Test
     void upgradeSpringfoxThatStillUsesGuavaOptional() {
         rewriteRun(
           //language=xml
