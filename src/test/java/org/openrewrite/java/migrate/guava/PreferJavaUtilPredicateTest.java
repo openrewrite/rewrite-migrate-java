@@ -24,6 +24,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class PreferJavaUtilPredicateTest implements RewriteTest {
     @Override
@@ -179,6 +180,96 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
     }
 
     @Test
+    void predicatesNotBeforeJava11() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> notEmpty(Predicate<String> isEmpty) {
+                      return Predicates.not(isEmpty);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> notEmpty(Predicate<String> isEmpty) {
+                      return isEmpty.negate();
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
+    }
+
+    @Test
+    void predicatesNotOfLambdaOrExpressionBeforeJava11() {
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Lambda {
+                  Predicate<String> notEmpty() {
+                      return Predicates.not(s -> s.isEmpty());
+                  }
+
+                  Predicate<String> notEither(Predicate<String> isEmpty) {
+                      return Predicates.not(isEmpty);
+                  }
+              }
+              """
+          ),
+
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class MethodReference {
+                  Predicate<String> notEmpty() {
+                      return Predicates.not(String::isEmpty);
+                  }
+              }
+              """
+          ),
+
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Conditional {
+                  Predicate<String> notEither(boolean flag, Predicate<String> a, Predicate<String> b) {
+                      return Predicates.not(flag ? a : b);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class Conditional {
+                  Predicate<String> notEither(boolean flag, Predicate<String> a, Predicate<String> b) {
+                      return (flag ? a : b).negate();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotConvertWhenAnAndCallStaysOnGuava() {
         rewriteRun(
           //language=java
@@ -192,6 +283,26 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
                   Predicate<String> isNotNullA = Predicates.and(isA, Predicates.notNull());
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void keepPredicatesNotOfSupertypeBeforeJava11() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> notNull(Predicate<Object> isNull) {
+                      return Predicates.not(isNull);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
           )
         );
     }

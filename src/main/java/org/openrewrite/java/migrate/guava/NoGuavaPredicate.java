@@ -21,7 +21,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
-import org.openrewrite.java.ChangeMethodTargetToStatic;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
@@ -69,7 +68,6 @@ public class NoGuavaPredicate extends Recipe {
         return Arrays.asList(
                 new NoGuavaPredicatesAndOr(),
                 new NoGuavaPredicatesEqualTo(),
-                new ChangeMethodTargetToStatic("com.google.common.base.Predicates not(com.google.common.base.Predicate)",
-                        JAVA_PREDICATE, null, null));
+                new NoGuavaPredicatesNot());
     }
 }

@@ -667,6 +667,107 @@ class NoGuavaTest implements RewriteTest {
     }
 
     @Test
+    void keepStringsRepeatBeforeJava11() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Strings;
+
+              class A {
+                  String three(String s) {
+                      return Strings.repeat(s, 3);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
+    }
+
+    @Test
+    void keepByteStreamsBeforeJava9() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.io.ByteStreams;
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  byte[] read(InputStream in) throws IOException {
+                      return ByteStreams.toByteArray(in);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
+    }
+
+    @Test
+    void keepSkipFullyBeforeJava12() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.io.ByteStreams;
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  void skip(InputStream in) throws IOException {
+                      ByteStreams.skipFully(in, 10L);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
+        );
+    }
+
+    @Test
+    void useJava11ApisOnJava11() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Strings;
+              import com.google.common.io.ByteStreams;
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  String three(String s) {
+                      return Strings.repeat(s, 3);
+                  }
+
+                  byte[] read(InputStream in) throws IOException {
+                      return ByteStreams.toByteArray(in);
+                  }
+              }
+              """,
+            """
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  String three(String s) {
+                      return s.repeat(3);
+                  }
+
+                  byte[] read(InputStream in) throws IOException {
+                      return in.readAllBytes();
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
+        );
+    }
+
+    @Test
     void listsNewArrayListWithElements() {
         rewriteRun(
           //language=java
