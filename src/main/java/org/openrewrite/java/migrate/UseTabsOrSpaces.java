@@ -50,7 +50,7 @@ public class UseTabsOrSpaces extends Recipe {
                     JavaSourceFile cu = (JavaSourceFile) requireNonNull(tree);
                     TabsAndIndentsStyle style = Style.from(TabsAndIndentsStyle.class, cu, IntelliJ::tabsAndIndents)
                             .withUseTabCharacter(useTabs);
-                    return new NormalizeTabsOrSpacesVisitor<>(style).visit(tree, ctx);
+                    return new NormalizeTabsOrSpacesVisitor<>(style, null).visit(tree, ctx);
                 }
                 return (J) tree;
             }
