@@ -391,12 +391,17 @@ class NoGuavaTest implements RewriteTest {
                   int set() {
                       return Sets.<String>newHashSet().stream().mapToInt(String::length).sum();
                   }
+
+                  int copyOnWrite() {
+                      return Lists.<String>newCopyOnWriteArrayList().stream().mapToInt(String::length).sum();
+                  }
               }
               """,
             """
               import java.util.ArrayList;
               import java.util.HashMap;
               import java.util.HashSet;
+              import java.util.concurrent.CopyOnWriteArrayList;
 
               class A {
                   static class Item {
@@ -415,6 +420,51 @@ class NoGuavaTest implements RewriteTest {
 
                   int set() {
                       return new HashSet<String>().stream().mapToInt(String::length).sum();
+                  }
+
+                  int copyOnWrite() {
+                      return new CopyOnWriteArrayList<String>().stream().mapToInt(String::length).sum();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepsTypeArgumentsQualifiedWhereTheSimpleNameIsTaken() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package org.example;
+
+              public class HashMap {
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import com.google.common.collect.Maps;
+              import org.example.HashMap;
+
+              class A {
+                  HashMap own = new HashMap();
+
+                  int keys() {
+                      return Maps.<String, Integer>newHashMap().keySet().size();
+                  }
+              }
+              """,
+            """
+              import org.example.HashMap;
+
+              class A {
+                  HashMap own = new HashMap();
+
+                  int keys() {
+                      return new java.util.HashMap<String, Integer>().keySet().size();
                   }
               }
               """
