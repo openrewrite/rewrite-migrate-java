@@ -89,9 +89,17 @@ public class NoGuavaStringsIsNullOrEmpty extends Recipe {
         }
         if (expression instanceof J.FieldAccess) {
             J.FieldAccess fieldAccess = (J.FieldAccess) expression;
-            return isNonVolatileVariable(fieldAccess.getName().getFieldType()) && readsSameValueTwice(fieldAccess.getTarget());
+            return isNonVolatileVariable(fieldAccess.getName().getFieldType()) &&
+                   (isClassName(fieldAccess.getTarget()) || readsSameValueTwice(fieldAccess.getTarget()));
         }
         return false;
+    }
+
+    private static boolean isClassName(Expression expression) {
+        JavaType.Variable variable = expression instanceof J.Identifier ? ((J.Identifier) expression).getFieldType() :
+                expression instanceof J.FieldAccess ? ((J.FieldAccess) expression).getName().getFieldType() : null;
+        return (expression instanceof J.Identifier || expression instanceof J.FieldAccess) &&
+               variable == null && expression.getType() instanceof JavaType.FullyQualified;
     }
 
     private static boolean isNonVolatileVariable(JavaType.@Nullable Variable variable) {

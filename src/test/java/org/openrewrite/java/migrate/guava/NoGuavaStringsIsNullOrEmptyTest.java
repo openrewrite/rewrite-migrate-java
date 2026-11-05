@@ -121,6 +121,35 @@ class NoGuavaStringsIsNullOrEmptyTest implements RewriteTest {
     }
 
     @Test
+    void staticFieldQualifiedByItsClass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Strings;
+
+              class A {
+                  static String defaultName;
+
+                  boolean unnamed() {
+                      return Strings.isNullOrEmpty(A.defaultName);
+                  }
+              }
+              """,
+            """
+              class A {
+                  static String defaultName;
+
+                  boolean unnamed() {
+                      return A.defaultName == null || A.defaultName.isEmpty();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leavesArgumentsThatMayChangeBetweenReadsAlone() {
         //language=java
         rewriteRun(
