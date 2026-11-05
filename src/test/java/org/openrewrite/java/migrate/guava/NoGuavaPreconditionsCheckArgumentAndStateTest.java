@@ -19,10 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.kotlin.KotlinParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.kotlin.Assertions.kotlin;
 
 class NoGuavaPreconditionsCheckArgumentAndStateTest implements RewriteTest {
     @Override
@@ -138,6 +140,23 @@ class NoGuavaPreconditionsCheckArgumentAndStateTest implements RewriteTest {
                       checkArgument(x > 0, null);
                       if (x > 1) checkArgument(x > 2); else checkArgument(x < 0);
                   }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveKotlinAlone() {
+        rewriteRun(
+          spec -> spec.parser(KotlinParser.builder().classpathFromResources(new InMemoryExecutionContext(), "guava")),
+          //language=kotlin
+          kotlin(
+            """
+              import com.google.common.base.Preconditions
+
+              fun f(name: String?) {
+                  Preconditions.checkArgument(name != null, "name is required")
               }
               """
           )

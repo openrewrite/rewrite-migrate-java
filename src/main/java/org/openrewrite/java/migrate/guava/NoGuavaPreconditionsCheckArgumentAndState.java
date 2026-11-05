@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
@@ -60,11 +61,18 @@ public class NoGuavaPreconditionsCheckArgumentAndState extends Recipe {
                 Preconditions.or(new UsesMethod<>(CHECK_ARGUMENT), new UsesMethod<>(CHECK_STATE)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
+                    public boolean isAcceptable(SourceFile sourceFile, ExecutionContext ctx) {
+                        // The template writes Java statements, which other JVM languages don't all accept
+                        return sourceFile instanceof J.CompilationUnit;
+                    }
+
+                    @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                         String exception = CHECK_ARGUMENT.matches(mi) ? "IllegalArgumentException" :
                                 CHECK_STATE.matches(mi) ? "IllegalStateException" : null;
-                        // As the sole statement of an unbraced `if`, an inserted `if` would capture that `if`'s `else`
+                        // The inserted `if` goes only into a block.
+                        // As the body of an unbraced `if`, it would capture that `if`'s `else`.
                         if (exception == null || !(getCursor().getParentTreeCursor().getValue() instanceof J.Block)) {
                             return mi;
                         }
