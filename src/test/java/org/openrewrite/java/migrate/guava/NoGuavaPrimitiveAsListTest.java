@@ -234,4 +234,106 @@ class NoGuavaPrimitiveAsListTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotChangeArgumentsOfAnotherType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.Ints;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> wrap(int[] array) {
+                      return Ints.asList(array);
+                  }
+              }
+              """
+          ),
+
+          java(
+            """
+              import com.google.common.primitives.Longs;
+              import java.util.List;
+
+              class Widened {
+                  List<Long> longs = Longs.asList(1L, 2);
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceBoxedArguments() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.Ints;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> wrap(Integer boxed) {
+                      return Ints.asList(boxed, 2);
+                  }
+              }
+              """,
+            """
+              import java.util.Arrays;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> wrap(Integer boxed) {
+                      return Arrays.asList(boxed, 2);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeImmutableArrayAsList() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.ImmutableIntArray;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> view(ImmutableIntArray array) {
+                      return array.asList();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceWithoutArguments() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.primitives.Ints;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> none = Ints.asList();
+              }
+              """,
+            """
+              import java.util.Arrays;
+              import java.util.List;
+
+              class Test {
+                  List<Integer> none = Arrays.asList();
+              }
+              """
+          )
+        );
+    }
 }
