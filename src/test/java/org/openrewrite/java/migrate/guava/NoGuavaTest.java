@@ -66,6 +66,41 @@ class NoGuavaTest implements RewriteTest {
     }
 
     @Test
+    void filesToStringAfterInlining() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.io.Files;
+
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.charset.StandardCharsets;
+
+              class A {
+                  String read(File file) throws IOException {
+                      return Files.toString(file, StandardCharsets.UTF_8);
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.charset.StandardCharsets;
+              import java.nio.file.Files;
+
+              class A {
+                  String read(File file) throws IOException {
+                      return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
+          )
+        );
+    }
+
+    @Test
     void upgradeSpringfoxThatStillUsesGuavaOptional() {
         rewriteRun(
           //language=xml
@@ -168,6 +203,31 @@ class NoGuavaTest implements RewriteTest {
         );
     }
 
+    @Test
+    void stringsIsNullOrEmpty() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Strings;
+
+              class Test {
+                  static boolean hasText(String s) {
+                      return !Strings.isNullOrEmpty(s);
+                  }
+              }
+              """,
+            """
+              class Test {
+                  static boolean hasText(String s) {
+                      return s != null && !s.isEmpty();
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/920")
     @Test
     void iterablesAllMigration() {
@@ -221,6 +281,97 @@ class NoGuavaTest implements RewriteTest {
               class A {
                   public static Predicate<String> isHelloPredicate() {
                       return Predicate.<String>isEqual("hello");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void predicatesEqualToTakesInferredTypeArgument() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              import java.util.Map;
+
+              class A {
+                  Predicate<Integer> isFive() {
+                      return Predicates.equalTo(5);
+                  }
+
+                  Predicate<Number> isFiveNumber() {
+                      return Predicates.equalTo(5);
+                  }
+
+                  Predicate<String> isNull() {
+                      return Predicates.equalTo(null);
+                  }
+
+                  Predicate<Map.Entry<String, String>> isEntry(Map.Entry<String, String> entry) {
+                      return Predicates.equalTo(entry);
+                  }
+
+                  <T> Predicate<T> is(T t) {
+                      return Predicates.equalTo(t);
+                  }
+              }
+              """,
+            """
+              import java.util.Map;
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<Integer> isFive() {
+                      return Predicate.<Integer>isEqual(5);
+                  }
+
+                  Predicate<Number> isFiveNumber() {
+                      return Predicate.<Number>isEqual(5);
+                  }
+
+                  Predicate<String> isNull() {
+                      return Predicate.<String>isEqual(null);
+                  }
+
+                  Predicate<Map.Entry<String, String>> isEntry(Map.Entry<String, String> entry) {
+                      return Predicate.<Map.Entry<String, String>>isEqual(entry);
+                  }
+
+                  <T> Predicate<T> is(T t) {
+                      return Predicate.isEqual(t);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void predicatesAndWithLambdas() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> nonEmpty() {
+                      return Predicates.and(s -> s != null, s -> !s.isEmpty());
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> nonEmpty() {
+                      return ((Predicate<String>) s -> s != null).and(s -> !s.isEmpty());
                   }
               }
               """
@@ -314,13 +465,14 @@ class NoGuavaTest implements RewriteTest {
               }
               """,
             """
+              import java.util.LinkedHashSet;
               import java.util.Set;
               import java.util.function.Predicate;
               import java.util.stream.Collectors;
 
               class Test {
                   public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
-                      return set.stream().filter(isNotNull).collect(Collectors.toSet());
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(LinkedHashSet::new));
                   }
               }
               """
@@ -355,7 +507,132 @@ class NoGuavaTest implements RewriteTest {
 
               class Test {
                   public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
-                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(TreeSet::new));
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(set.comparator())));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterOnThisFieldKeepsTheComparator() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  SortedSet<Object> set;
+
+                  Set<Object> test(Predicate<Object> isNotNull) {
+                      return Sets.filter(this.set, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+              import java.util.TreeSet;
+              import java.util.function.Predicate;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  SortedSet<Object> set;
+
+                  Set<Object> test(Predicate<Object> isNotNull) {
+                      return this.set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(this.set.comparator())));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterLeftAloneWhereTheSetCannotBeReadTwice() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              abstract class Test {
+                  abstract SortedSet<Object> sorted();
+
+                  Set<Object> fromCall(Predicate<Object> isNotNull) {
+                      return Sets.filter(sorted(), isNotNull);
+                  }
+
+                  Set<Object> fromReassigned(SortedSet<Object> set, Predicate<Object> isNotNull) {
+                      if (set.isEmpty()) {
+                          set = sorted();
+                      }
+                      return Sets.filter(set, isNotNull);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterLeftAloneForWildcardElementType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  Set<? extends Number> test(SortedSet<? extends Number> set, Predicate<Number> positive) {
+                      return Sets.filter(set, positive);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceSetsFilterUsingNavigableSet() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.NavigableSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  NavigableSet<Object> test(NavigableSet<Object> set, Predicate<Object> isNotNull) {
+                      return Sets.filter(set, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.NavigableSet;
+              import java.util.TreeSet;
+              import java.util.function.Predicate;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  NavigableSet<Object> test(NavigableSet<Object> set, Predicate<Object> isNotNull) {
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(set.comparator())));
                   }
               }
               """
@@ -385,6 +662,60 @@ class NoGuavaTest implements RewriteTest {
               }
               """
             // This now gets converted, but skips past a `instanceof SortedSet` check that keeps it a sorted set
+          )
+        );
+    }
+
+    @Test
+    void listsNewArrayListWithElements() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.Lists;
+
+              import java.util.List;
+
+              class A {
+                  List<String> names = Lists.newArrayList("a", "b");
+              }
+              """,
+            """
+              import java.util.ArrayList;
+              import java.util.Arrays;
+              import java.util.List;
+
+              class A {
+                  List<String> names = new ArrayList<>(Arrays.asList("a", "b"));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preconditionsCheckArgument() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Preconditions;
+
+              class A {
+                  void f(String name) {
+                      Preconditions.checkArgument(name != null, "name is required");
+                  }
+              }
+              """,
+            """
+              class A {
+                  void f(String name) {
+                      if (name == null) {
+                          throw new IllegalArgumentException("name is required");
+                      }
+                  }
+              }
+              """
           )
         );
     }

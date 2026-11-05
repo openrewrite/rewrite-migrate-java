@@ -16,10 +16,12 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -63,15 +65,15 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 }
                 J.MethodInvocation m = (J.MethodInvocation) j;
                 if (PREDICATES_AND.matches(m)) {
-                    return handlePredicatesMethod(m, "and");
+                    return handlePredicatesMethod(m, "and", ctx);
                 }
                 if (PREDICATES_OR.matches(m)) {
-                    return handlePredicatesMethod(m, "or");
+                    return handlePredicatesMethod(m, "or", ctx);
                 }
                 return m;
             }
 
-            private J handlePredicatesMethod(J.MethodInvocation method, String operation) {
+            private J handlePredicatesMethod(J.MethodInvocation method, String operation, ExecutionContext ctx) {
                 List<Expression> arguments = method.getArguments();
                 if (arguments.size() < 2) {
                     return method;
@@ -87,10 +89,19 @@ public class NoGuavaPredicatesAndOr extends Recipe {
                 // Build the chain: first.operation(second).operation(third)...
                 Expression result = arguments.get(0);
 
-               // If the first argument is a method reference or a lambda, wrap it with a cast
-                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && result.getType() != null) {
-                    String typeString = result.getType().toString().replace("com.google.common.base.", "");
-                    result = JavaTemplate.apply("((" + typeString + ") #{any()})", getCursor(), method.getCoordinates().replace(), result);
+                // A lambda or method reference needs a cast before `and` or `or` can be called on it.
+                // The call's own return type fits every argument, since each is a `Predicate<? super T>`.
+                if ((result instanceof J.MemberReference || result instanceof J.Lambda) && method.getMethodType() != null) {
+                    JavaType returnType = method.getMethodType().getReturnType();
+                    // JavaTemplate writes a type variable in the cast as `Object`
+                    if (hasTypeVariable(returnType)) {
+                        return method;
+                    }
+                    String functionalType = TypeUtils.toFullyQualifiedName(TypeUtils.toString(returnType));
+                    result = JavaTemplate.builder("((" + functionalType + ") #{any()})")
+                            .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "guava"))
+                            .build()
+                            .apply(getCursor(), method.getCoordinates().replace(), result);
                 }
                 for (int i = 1; i < arguments.size(); i++) {
                     result = JavaTemplate.apply("#{any(java.util.function.Predicate)}." + operation + "(#{any(java.util.function.Predicate)})",
@@ -102,6 +113,17 @@ public class NoGuavaPredicatesAndOr extends Recipe {
             }
 
         });
+    }
+
+    private static boolean hasTypeVariable(@Nullable JavaType type) {
+        if (type instanceof JavaType.GenericTypeVariable) {
+            JavaType.GenericTypeVariable variable = (JavaType.GenericTypeVariable) type;
+            return !"?".equals(variable.getName()) || variable.getBounds().stream().anyMatch(NoGuavaPredicatesAndOr::hasTypeVariable);
+        }
+        if (type instanceof JavaType.Parameterized) {
+            return ((JavaType.Parameterized) type).getTypeParameters().stream().anyMatch(NoGuavaPredicatesAndOr::hasTypeVariable);
+        }
+        return type instanceof JavaType.Array && hasTypeVariable(((JavaType.Array) type).getElemType());
     }
 
     private boolean atLeastOneArgumentIsMethodInvocationOfPredicates(List<Expression> arguments) {

@@ -186,4 +186,116 @@ class NoGuavaRefasterTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void mapsNewConcurrentMap() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.Maps;
+
+              import java.util.concurrent.ConcurrentMap;
+
+              class A {
+                  ConcurrentMap<String, Integer> counts = Maps.newConcurrentMap();
+              }
+              """,
+            """
+              import java.util.concurrent.ConcurrentHashMap;
+              import java.util.concurrent.ConcurrentMap;
+
+              class A {
+                  ConcurrentMap<String, Integer> counts = new ConcurrentHashMap<>();
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void setsNewTreeSet() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.collect.Sets;
+
+              import java.util.Comparator;
+              import java.util.TreeSet;
+
+              class A {
+                  TreeSet<String> natural = Sets.newTreeSet();
+                  TreeSet<String> reversed = Sets.newTreeSet(Comparator.reverseOrder());
+              }
+              """,
+            """
+              import java.util.Comparator;
+              import java.util.TreeSet;
+
+              class A {
+                  TreeSet<String> natural = new TreeSet<>();
+                  TreeSet<String> reversed = new TreeSet<>(Comparator.reverseOrder());
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void stringsNullToEmpty() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Strings;
+
+              class A {
+                  String orEmpty(String s) {
+                      return Strings.nullToEmpty(s);
+                  }
+              }
+              """,
+            """
+              import java.util.Objects;
+
+              class A {
+                  String orEmpty(String s) {
+                      return Objects.toString(s, "");
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              import com.google.common.base.Objects;
+              import com.google.common.base.Strings;
+
+              class B {
+                  boolean same(String a, String b) {
+                      return Objects.equal(a, b);
+                  }
+
+                  String orEmpty(String s) {
+                      return Strings.nullToEmpty(s);
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Objects;
+
+              class B {
+                  boolean same(String a, String b) {
+                      return Objects.equal(a, b);
+                  }
+
+                  String orEmpty(String s) {
+                      return java.util.Objects.toString(s, "");
+                  }
+              }
+              """
+          )
+        );
+    }
 }
