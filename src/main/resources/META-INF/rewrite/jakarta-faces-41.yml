@@ -55,11 +55,11 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.text.FindAndReplace:
+  - org.openrewrite.java.migrate.jakarta.FindAndReplaceInXml:
       find: "http://omnifaces.org/ui"
       replace: "omnifaces"
       filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
+  - org.openrewrite.java.migrate.jakarta.FindAndReplaceInXml:
       find: "http://omnifaces.org/functions"
       replace: "omnifaces"
       filePattern: '**/*.xhtml'

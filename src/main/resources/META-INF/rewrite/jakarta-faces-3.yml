@@ -91,7 +91,7 @@ tags:
   - faces
   - jsf
 recipeList:
-  - org.openrewrite.text.FindAndReplace:
+  - org.openrewrite.java.migrate.jakarta.FindAndReplaceInXml:
       find: javax.
       replace: jakarta.
       filePattern: '**/*.xhtml'
