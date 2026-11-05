@@ -129,4 +129,70 @@ class PreferJavaUtilPredicateTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void combinePredicates() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> both(Predicate<String> a, Predicate<String> b) {
+                      return Predicates.and(a, b);
+                  }
+              }
+              """,
+            """
+              import java.util.function.Predicate;
+
+              class A {
+                  Predicate<String> both(Predicate<String> a, Predicate<String> b) {
+                      return a.and(b);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotCombinePredicatesPassedToGuava() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+              import com.google.common.collect.Iterables;
+
+              class A {
+                  Iterable<String> both(Iterable<String> strings, Predicate<String> a, Predicate<String> b) {
+                      return Iterables.filter(strings, Predicates.and(a, b));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotConvertWhenAnAndCallStaysOnGuava() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class A {
+                  Predicate<String> isA = Predicates.equalTo("a");
+                  Predicate<String> isNotNullA = Predicates.and(isA, Predicates.notNull());
+              }
+              """
+          )
+        );
+    }
 }

@@ -38,13 +38,10 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
   - org.openrewrite.java.migrate.guava.NoGuavaFilesToString
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
-  - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayListWithElements
   - org.openrewrite.java.migrate.guava.NoGuavaPreconditionsCheckArgumentAndState
-  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
-  - org.openrewrite.java.migrate.guava.NoGuavaPredicatesEqualTo
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
   - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
@@ -254,7 +251,13 @@ tags:
   - RSPEC-S4738
 preconditions:
   - org.openrewrite.Singleton
+  - org.openrewrite.java.migrate.guava.DoesNotRequireGuavaType:
+      guavaType: com.google.common.base.Function
+      javaType: java.util.function.Function
+      replacedMethods:
+        - com.google.common.base.Functions compose(..)
 recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Function
       newFullyQualifiedTypeName: java.util.function.Function
@@ -269,6 +272,14 @@ tags:
   - RSPEC-S4738
 preconditions:
   - org.openrewrite.Singleton
+  - org.openrewrite.java.migrate.guava.DoesNotRequireGuavaType:
+      guavaType: com.google.common.base.Optional
+      javaType: java.util.Optional
+      replacedMethods:
+        - com.google.common.base.Optional absent()
+        - com.google.common.base.Optional of(..)
+        - com.google.common.base.Optional fromNullable(..)
+        - com.google.common.base.Optional fromJavaUtil(..)
 recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull
@@ -305,9 +316,6 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.ChangeMethodTargetToStatic:
-      methodPattern: com.google.common.base.Predicates not(com.google.common.base.Predicate)
-      fullyQualifiedTargetTypeName: java.util.function.Predicate
   - org.openrewrite.java.migrate.guava.NoGuavaPredicate
 
 ---
@@ -320,6 +328,9 @@ tags:
   - RSPEC-S4738
 preconditions:
   - org.openrewrite.Singleton
+  - org.openrewrite.java.migrate.guava.DoesNotRequireGuavaType:
+      guavaType: com.google.common.base.Supplier
+      javaType: java.util.function.Supplier
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.google.common.base.Supplier

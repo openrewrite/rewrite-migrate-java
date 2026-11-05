@@ -16,70 +16,60 @@
 package org.openrewrite.java.migrate.guava;
 
 import lombok.Getter;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeMethodName;
+import org.openrewrite.java.ChangeMethodTargetToStatic;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaSourceFile;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.marker.SearchResult;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class NoGuavaPredicate extends Recipe {
+    private static final String GUAVA_PREDICATE = "com.google.common.base.Predicate";
+    private static final String JAVA_PREDICATE = "java.util.function.Predicate";
+
     @Getter
     final String displayName = "Change Guava's `Predicate` into `java.util.function.Predicate` where possible";
 
     @Getter
-    final String description = "Change the type only where no methods are used that explicitly require a Guava `Predicate`.";
+    final String description = "Replace `Predicates.and`, `or`, `not` and `equalTo` and change the type, " +
+            "in source files where no remaining method call requires a Guava `Predicate`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(
-                Preconditions.not(new UsesPredicateMethod<>()),
-                new JavaIsoVisitor<ExecutionContext>() {
-                    @Override
-                    public J preVisit(J java, ExecutionContext ctx) {
-                        // Apply both sub-recipes once over the whole tree; without this preVisit
-                        // re-runs them on every descendant node, making the recipe quadratic.
-                        stopAfterPreVisit();
-                        J j = (J) new ChangeMethodName(
-                                "com.google.common.base.Predicate apply(..)",
-                                "test",
-                                true,
-                                false
-                        ).getVisitor().visitNonNull(java, ctx, getCursor().getParentOrThrow());
-                        return (J) new ChangeType(
-                                "com.google.common.base.Predicate",
-                                "java.util.function.Predicate",
-                                false
-                        ).getVisitor().visitNonNull(j, ctx, getCursor().getParentOrThrow());
-                    }
+        return new JavaIsoVisitor<ExecutionContext>() {
+            @Override
+            public J preVisit(J java, ExecutionContext ctx) {
+                // The sub-recipes each visit the whole tree, so this visitor stops at the source file
+                stopAfterPreVisit();
+                Cursor parent = getCursor().getParentOrThrow();
+                J j = java;
+                for (Recipe conversion : conversions()) {
+                    j = (J) conversion.getVisitor().visitNonNull(j, ctx, parent);
                 }
-        );
+                // The conversions produce `java.util.function.Predicate` values, which fit only where the type changes too.
+                // `NoGuavaPredicatesAndOr` keeps some calls, so the check runs on the converted file.
+                if (new DoesNotRequireGuavaType(GUAVA_PREDICATE, JAVA_PREDICATE, null).getVisitor().visitNonNull(j, ctx, parent) == j) {
+                    return java;
+                }
+                j = (J) new ChangeMethodName(GUAVA_PREDICATE + " apply(..)", "test", true, false)
+                        .getVisitor().visitNonNull(j, ctx, parent);
+                return (J) new ChangeType(GUAVA_PREDICATE, JAVA_PREDICATE, false)
+                        .getVisitor().visitNonNull(j, ctx, parent);
+            }
+        };
     }
 
-    private static class UsesPredicateMethod<P> extends JavaIsoVisitor<P> {
-        private static final MethodMatcher PREDICATE_METHOD_MATCHER = new MethodMatcher("*..* *(.., com.google.common.base.Predicate)");
-        private static final MethodMatcher NOT_MATCHER = new MethodMatcher("*..* not(com.google.common.base.Predicate)");
-
-        @Override
-        public J preVisit(J tree, P p) {
-            stopAfterPreVisit();
-            if (tree instanceof JavaSourceFile) {
-                JavaSourceFile cu = (JavaSourceFile) tree;
-                for (JavaType.Method type : cu.getTypesInUse().getUsedMethods()) {
-                    if (PREDICATE_METHOD_MATCHER.matches(type) &&
-                            // Make an exception for `not` methods; those can be safely converted
-                            !NOT_MATCHER.matches(type)) {
-                        return SearchResult.found(cu);
-                    }
-                }
-            }
-            return tree;
-        }
+    private static List<Recipe> conversions() {
+        return Arrays.asList(
+                new NoGuavaPredicatesAndOr(),
+                new NoGuavaPredicatesEqualTo(),
+                new ChangeMethodTargetToStatic("com.google.common.base.Predicates not(com.google.common.base.Predicate)",
+                        JAVA_PREDICATE, null, null));
     }
 }
