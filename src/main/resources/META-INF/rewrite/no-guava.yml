@@ -36,10 +36,13 @@ recipeList:
       newVersion: 2.10.x
       overrideManagedVersion: true
   - org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir
+  - org.openrewrite.java.migrate.guava.NoGuavaFilesToString
   - org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor
   - org.openrewrite.java.migrate.guava.NoGuavaFunctionsCompose
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesAnyFilter
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
+  - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayListWithElements
+  - org.openrewrite.java.migrate.guava.NoGuavaPreconditionsCheckArgumentAndState
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesAndOr
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesEqualTo
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
@@ -47,6 +50,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
   - org.openrewrite.java.migrate.guava.NoGuavaSetsFilter
   - org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet
+  - org.openrewrite.java.migrate.guava.NoGuavaStringsIsNullOrEmpty
   - org.openrewrite.java.migrate.guava.PreferJavaNioCharsetStandardCharsets
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
   - org.openrewrite.java.migrate.guava.PreferJavaUtilFunction
@@ -106,6 +110,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListRecipe
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListFromCollectionRecipe
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes$ListsNewArrayListWithCapacityRecipe
+  - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayListWithElements
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

@@ -20,19 +20,25 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singleton;
 
 public class NoGuavaSetsFilter extends Recipe {
     private static final MethodMatcher SETS_FILTER = new MethodMatcher("com.google.common.collect.Sets filter(java.util.Set, com.google.common.base.Predicate)");
     private static final MethodMatcher SETS_FILTER_SORTED_SET = new MethodMatcher("com.google.common.collect.Sets filter(java.util.SortedSet, com.google.common.base.Predicate)");
+    private static final MethodMatcher SETS_FILTER_NAVIGABLE_SET = new MethodMatcher("com.google.common.collect.Sets filter(java.util.NavigableSet, com.google.common.base.Predicate)");
 
     @Getter
     final String displayName = "Prefer `Collection.stream().filter(Predicate)`";
@@ -45,18 +51,21 @@ public class NoGuavaSetsFilter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(new UsesMethod<>(SETS_FILTER), new UsesMethod<>(SETS_FILTER_SORTED_SET));
+        TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(new UsesMethod<>(SETS_FILTER),
+                new UsesMethod<>(SETS_FILTER_SORTED_SET), new UsesMethod<>(SETS_FILTER_NAVIGABLE_SET));
         return Preconditions.check(precondition, new JavaVisitor<ExecutionContext>() {
                 @Override
                 public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                    if (SETS_FILTER_SORTED_SET.matches(method)) {
+                    if ((SETS_FILTER_SORTED_SET.matches(method) || SETS_FILTER_NAVIGABLE_SET.matches(method)) &&
+                        canReadTwice(method.getArguments().get(0))) {
                         maybeRemoveImport("com.google.common.base.Predicate");
                         maybeRemoveImport("com.google.common.collect.Sets");
                         maybeAddImport("java.util.TreeSet");
                         maybeAddImport("java.util.function.Predicate");
                         maybeAddImport("java.util.stream.Collectors");
 
-                        return JavaTemplate.builder("#{any(java.util.Collection)}.stream().filter(#{any(java.util.function.Predicate)}).collect(Collectors.toCollection(TreeSet::new))")
+                        return JavaTemplate.builder("#{set:any(java.util.SortedSet)}.stream().filter(#{any(java.util.function.Predicate)})" +
+                                                    ".collect(Collectors.toCollection(() -> new TreeSet<>(#{set}.comparator())))")
                                 .imports("java.util.TreeSet")
                                 .imports("java.util.stream.Collectors")
                                 .build()
@@ -68,11 +77,13 @@ public class NoGuavaSetsFilter extends Recipe {
                     if (SETS_FILTER.matches(method)) {
                         maybeRemoveImport("com.google.common.base.Predicate");
                         maybeRemoveImport("com.google.common.collect.Sets");
-                        maybeAddImport("java.util.TreeSet");
+                        maybeAddImport("java.util.LinkedHashSet");
                         maybeAddImport("java.util.function.Predicate");
                         maybeAddImport("java.util.stream.Collectors");
 
-                        return JavaTemplate.builder("#{any(java.util.Collection)}.stream().filter(#{any(java.util.function.Predicate)}).collect(Collectors.toSet())")
+                        // A `LinkedHashSet` keeps the iteration order of the filtered set, sorted or not
+                        return JavaTemplate.builder("#{any(java.util.Collection)}.stream().filter(#{any(java.util.function.Predicate)}).collect(Collectors.toCollection(LinkedHashSet::new))")
+                                .imports("java.util.LinkedHashSet")
                                 .imports("java.util.stream.Collectors")
                                 .build()
                                 .apply(getCursor(),
@@ -81,6 +92,43 @@ public class NoGuavaSetsFilter extends Recipe {
                                         method.getArguments().get(1));
                     }
                     return super.visitMethodInvocation(method, ctx);
+                }
+
+                /**
+                 * The comparator supplier reads the set a second time, from inside a lambda.
+                 * So the set must be {@code this.field}, or a variable the method never assigns.
+                 * A wildcard element type gives the two reads unrelated capture types.
+                 */
+                private boolean canReadTwice(Expression set) {
+                    JavaType.Parameterized type = TypeUtils.asParameterized(set.getType());
+                    if (type != null && type.getTypeParameters().stream().anyMatch(t ->
+                            t instanceof JavaType.GenericTypeVariable && "?".equals(((JavaType.GenericTypeVariable) t).getName()))) {
+                        return false;
+                    }
+                    if (set instanceof J.FieldAccess && ((J.FieldAccess) set).getTarget() instanceof J.Identifier &&
+                        "this".equals(((J.Identifier) ((J.FieldAccess) set).getTarget()).getSimpleName())) {
+                        return true;
+                    }
+                    if (!(set instanceof J.Identifier) || ((J.Identifier) set).getFieldType() == null) {
+                        return false;
+                    }
+                    J.MethodDeclaration method = getCursor().firstEnclosing(J.MethodDeclaration.class);
+                    return method != null && !isAssigned(method, ((J.Identifier) set).getSimpleName());
+                }
+
+                // XXX rewrite-java has no query for whether a local variable is effectively final,
+                // so this takes any assignment to a variable of that name in the method as a reassignment.
+                private boolean isAssigned(J.MethodDeclaration method, String name) {
+                    AtomicBoolean assigned = new AtomicBoolean();
+                    new JavaIsoVisitor<AtomicBoolean>() {
+                        @Override
+                        public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
+                            found.compareAndSet(false, assignment.getVariable() instanceof J.Identifier &&
+                                                       ((J.Identifier) assignment.getVariable()).getSimpleName().equals(name));
+                            return super.visitAssignment(assignment, found);
+                        }
+                    }.visit(method, assigned);
+                    return assigned.get();
                 }
             }
         );
