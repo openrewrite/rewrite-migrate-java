@@ -32,10 +32,6 @@ final class LambdaCapture {
      * Whether a lambda written at the cursor may read every variable of the expression.
      */
     static boolean canCapture(Cursor cursor, Expression expression) {
-        J.MethodDeclaration method = cursor.firstEnclosing(J.MethodDeclaration.class);
-        if (method == null) {
-            return false;
-        }
         Set<String> variables = new HashSet<>();
         new JavaIsoVisitor<Set<String>>() {
             @Override
@@ -46,7 +42,11 @@ final class LambdaCapture {
                 return identifier;
             }
         }.visit(expression, variables);
-        return variables.isEmpty() || !isAssigned(method, variables);
+        if (variables.isEmpty()) {
+            return true;
+        }
+        J.MethodDeclaration method = cursor.firstEnclosing(J.MethodDeclaration.class);
+        return method != null && !isAssigned(method, variables);
     }
 
     // XXX rewrite-java has no query for whether a local variable is effectively final,
@@ -73,7 +73,11 @@ final class LambdaCapture {
             }
 
             private boolean isNamed(Expression variable) {
-                return variable instanceof J.Identifier && names.contains(((J.Identifier) variable).getSimpleName());
+                Expression unwrapped = variable;
+                while (unwrapped instanceof J.Parentheses) {
+                    unwrapped = (Expression) ((J.Parentheses<?>) unwrapped).getTree();
+                }
+                return unwrapped instanceof J.Identifier && names.contains(((J.Identifier) unwrapped).getSimpleName());
             }
         }.visit(method, assigned);
         return assigned.get();

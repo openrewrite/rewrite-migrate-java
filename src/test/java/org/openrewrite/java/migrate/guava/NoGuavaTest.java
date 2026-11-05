@@ -378,6 +378,7 @@ class NoGuavaTest implements RewriteTest {
 
               class Test {
                   SortedSet<Object> set;
+                  Set<Object> nonNull = Sets.filter(this.set, o -> o != null);
 
                   Set<Object> test(Predicate<Object> isNotNull) {
                       return Sets.filter(this.set, isNotNull);
@@ -393,6 +394,7 @@ class NoGuavaTest implements RewriteTest {
 
               class Test {
                   SortedSet<Object> set;
+                  Set<Object> nonNull = this.set.stream().filter(o -> o != null).collect(Collectors.toCollection(() -> new TreeSet<>(this.set.comparator())));
 
                   Set<Object> test(Predicate<Object> isNotNull) {
                       return this.set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(this.set.comparator())));

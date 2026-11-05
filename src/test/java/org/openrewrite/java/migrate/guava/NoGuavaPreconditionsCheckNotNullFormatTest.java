@@ -69,6 +69,29 @@ class NoGuavaPreconditionsCheckNotNullFormatTest implements RewriteTest {
     }
 
     @Test
+    void convertedOutsideAMethodWhenTheLambdaCapturesNothing() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Preconditions.checkNotNull;
+
+              class A {
+                  static final String HOME = checkNotNull(System.getProperty("user.home"), "missing %s", "user.home");
+              }
+              """,
+            """
+              import static java.util.Objects.requireNonNull;
+
+              class A {
+                  static final String HOME = requireNonNull(System.getProperty("user.home"), () -> String.format("missing %s", "user.home"));
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leftAloneWhereTheLambdaCannotCaptureAnArgument() {
         //language=java
         rewriteRun(
@@ -91,6 +114,12 @@ class NoGuavaPreconditionsCheckNotNullFormatTest implements RewriteTest {
                   void compound(Object value, int count) {
                       count += 1;
                       checkNotNull(value, "no value after %s", count);
+                  }
+
+                  void parenthesized(Object[] values) {
+                      for (int i = 0; i < values.length; (i)++) {
+                          checkNotNull(values[i], "no value at %s", i);
+                      }
                   }
               }
               """
