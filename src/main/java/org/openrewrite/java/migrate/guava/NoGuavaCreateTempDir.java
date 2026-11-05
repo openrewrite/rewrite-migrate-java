@@ -28,6 +28,7 @@ import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class NoGuavaCreateTempDir extends Recipe {
@@ -37,7 +38,9 @@ public class NoGuavaCreateTempDir extends Recipe {
     final String displayName = "Prefer `Files#createTempDirectory()`";
 
     @Getter
-    final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)`. Transformations are limited to scopes throwing or catching `java.io.IOException`.";
+    final String description = "Replaces Guava `Files#createTempDir()` with Java `Files#createTempDirectory(..)` where a " +
+            "`throws` clause or `catch` for `IOException`, `Exception` or `Throwable` handles the `IOException` it throws. " +
+            "A call in a lambda, or in a class body outside a method, stays.";
 
     @Getter
     final Set<String> tags = new HashSet<>( Arrays.asList( "RSPEC-S4738", "guava" ) );
@@ -61,28 +64,50 @@ public class NoGuavaCreateTempDir extends Recipe {
         @Override
         public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
-            if (GUAVA_CREATE_TEMP_DIR.matches(mi)) {
-                Cursor parent = getCursor().dropParentUntil(j -> j instanceof J.MethodDeclaration || j instanceof J.Try || j instanceof J.ClassDeclaration);
-                J parentValue = parent.getValue();
-                if (parentValue instanceof J.MethodDeclaration) {
-                    J.MethodDeclaration md = (J.MethodDeclaration) parentValue;
-                    if (md.getThrows() != null && md.getThrows().stream().anyMatch(n -> isIOExceptionOrException(TypeUtils.asFullyQualified(n.getType())))) {
-                        mi = toFilesCreateTempDir(mi);
-                    }
-                } else if (parentValue instanceof J.Try) {
-                    J.Try tr = (J.Try) parentValue;
-                    if (tr.getCatches().stream().anyMatch(n -> isIOExceptionOrException(TypeUtils.asFullyQualified(n.getParameter().getTree().getType())))) {
-                        mi = toFilesCreateTempDir(mi);
-                    }
-                }
+            if (GUAVA_CREATE_TEMP_DIR.matches(mi) && isIOExceptionHandled()) {
+                mi = toFilesCreateTempDir(mi);
             }
             return mi;
         }
 
-        private boolean isIOExceptionOrException(JavaType.@Nullable FullyQualified fqCatch) {
-            return fqCatch != null &&
-                    ("java.io.IOException".equals(fqCatch.getFullyQualifiedName()) ||
-                            "java.lang.Exception".equals(fqCatch.getFullyQualifiedName()));
+        /**
+         * A {@code try} handles what its resources and body throw, not what its catch or finally blocks throw.
+         * Lambdas and class bodies end the search, as nothing around them handles what they throw.
+         */
+        private boolean isIOExceptionHandled() {
+            J child = null;
+            for (Iterator<Object> path = getCursor().getPath(); path.hasNext(); ) {
+                Object value = path.next();
+                if (!(value instanceof J)) {
+                    continue;
+                }
+                if (value instanceof J.Lambda || value instanceof J.ClassDeclaration ||
+                    value instanceof J.NewClass && ((J.NewClass) value).getBody() == child) {
+                    return false;
+                }
+                if (value instanceof J.MethodDeclaration) {
+                    J.MethodDeclaration md = (J.MethodDeclaration) value;
+                    return md.getThrows() != null && md.getThrows().stream().anyMatch(n -> coversIOException(n.getType()));
+                }
+                if (value instanceof J.Try) {
+                    J.Try tr = (J.Try) value;
+                    if ((tr.getBody() == child || child instanceof J.Try.Resource) &&
+                        tr.getCatches().stream().anyMatch(c -> coversIOException(c.getParameter().getType()))) {
+                        return true;
+                    }
+                }
+                child = (J) value;
+            }
+            return false;
+        }
+
+        private boolean coversIOException(@Nullable JavaType type) {
+            if (type instanceof JavaType.MultiCatch) {
+                return ((JavaType.MultiCatch) type).getThrowableTypes().stream().anyMatch(this::coversIOException);
+            }
+            return TypeUtils.isOfClassType(type, "java.io.IOException") ||
+                   TypeUtils.isOfClassType(type, "java.lang.Exception") ||
+                   TypeUtils.isOfClassType(type, "java.lang.Throwable");
         }
 
         private J.MethodInvocation toFilesCreateTempDir(J.MethodInvocation methodInvocation) {
