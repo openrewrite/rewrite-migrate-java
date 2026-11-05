@@ -16,6 +16,15 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.jspecify.annotations.Nullable;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.Flag;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableSetOf() {
@@ -24,5 +33,40 @@ public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
 
     public NoGuavaImmutableSetOf(@Nullable Boolean convertReturnType) {
         super("com.google.common.collect.ImmutableSet", "java.util.Set", convertReturnType);
+    }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription() + " Two or more elements convert only when they are distinct literals or enum constants, " +
+               "since `Set.of` rejects duplicates.";
+    }
+
+    @Override
+    boolean isConvertible(List<Expression> elements) {
+        if (elements.size() < 2) {
+            return true;
+        }
+        Set<String> distinct = new HashSet<>();
+        for (Expression element : elements) {
+            String constant = constant(element);
+            if (constant == null || !distinct.add(constant)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static @Nullable String constant(Expression element) {
+        if (element instanceof J.Literal) {
+            J.Literal literal = (J.Literal) element;
+            return literal.getValue() == null ? null : literal.getType() + ":" + literal.getValue();
+        }
+        JavaType.Variable field = element instanceof J.Identifier ? ((J.Identifier) element).getFieldType() :
+                element instanceof J.FieldAccess ? ((J.FieldAccess) element).getName().getFieldType() : null;
+        JavaType.FullyQualified enumType = field == null ? null : TypeUtils.asFullyQualified(field.getOwner());
+        if (enumType != null && field.hasFlags(Flag.Enum)) {
+            return enumType.getFullyQualifiedName() + "." + field.getName();
+        }
+        return null;
     }
 }

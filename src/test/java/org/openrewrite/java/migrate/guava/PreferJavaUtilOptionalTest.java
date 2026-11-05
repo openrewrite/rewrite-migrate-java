@@ -289,6 +289,146 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
         );
     }
 
+    @Test
+    void doNotChangeOptionalReturnedByGuava() {
+        //language=java
+        rewriteRun(java(
+            """
+              import com.google.common.base.Optional;
+              import com.google.common.collect.Iterables;
+
+              class A {
+                  String firstEmpty(Iterable<String> strings) {
+                      Optional<String> found = Iterables.tryFind(strings, String::isEmpty);
+                      return found.orNull();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void changeOptionalReturnedByMethodInSameFile() {
+        //language=java
+        rewriteRun(java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> find() {
+                      return Optional.absent();
+                  }
+
+                  String findOrNull() {
+                      return find().orNull();
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> find() {
+                      return Optional.empty();
+                  }
+
+                  String findOrNull() {
+                      return find().orElse(null);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void asSetBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+              import java.util.Set;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.asSet();
+                  }
+              }
+              """,
+            """
+              import java.util.Collections;
+              import java.util.Optional;
+              import java.util.Set;
+
+              class A {
+                  Set<String> foo(Optional<String> optional) {
+                      return optional.map(Collections::singleton).orElse(Collections.emptySet());
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void orOptionalBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return firstChoice.or(secondChoice);
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<String> foo(Optional<String> firstChoice, Optional<String> secondChoice) {
+                      return firstChoice.map(Optional::of).orElse(secondChoice);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void orOptionalOfSubtypeBeforeJava9() {
+        //language=java
+        rewriteRun(
+          spec -> spec.allSources(s -> s.markers(javaVersion(8))),
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Optional<Number> foo(Optional<Number> firstChoice, Optional<Integer> secondChoice) {
+                      return firstChoice.or(secondChoice);
+                  }
+              }
+              """,
+            """
+              import java.util.Optional;
+
+              class A {
+                  Optional<Number> foo(Optional<Number> firstChoice, Optional<Integer> secondChoice) {
+                      return Optional.ofNullable(firstChoice.orElse(secondChoice.orElse(null)));
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class NotYetImplemented {
 
@@ -388,5 +528,27 @@ class PreferJavaUtilOptionalTest implements RewriteTest {
               )
             );
         }
+    }
+
+    @Test
+    void doNotChangeOptionalWhenStaticMethodHasNoJavaEquivalent() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Optional;
+
+              class A {
+                  Iterable<String> present(Iterable<Optional<String>> optionals) {
+                      return Optional.presentInstances(optionals);
+                  }
+
+                  Optional<String> none() {
+                      return Optional.absent();
+                  }
+              }
+              """
+          )
+        );
     }
 }

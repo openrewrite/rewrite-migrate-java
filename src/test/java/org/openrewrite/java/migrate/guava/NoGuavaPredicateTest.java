@@ -286,6 +286,52 @@ class NoGuavaPredicateTest implements RewriteTest {
     }
 
     @Test
+    void doNotChangeWhenPredicateIsNotLastParameter() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Iterables;
+              import java.util.List;
+
+              class Test {
+                  String firstEmpty(List<String> strings, Predicate<String> isEmpty) {
+                      return Iterables.find(strings, isEmpty, "none");
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void changeWhenCalledMethodReturnsGuavaPredicate() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  Predicate<String> notNull = Predicates.notNull();
+              }
+              """,
+            """
+              import com.google.common.base.Predicates;
+
+              import java.util.function.Predicate;
+
+              class Test {
+                  Predicate<String> notNull = Predicates.notNull();
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void doNotChangeWhenUsingMapsFilterKeys() {
         // Maps.filterKeys requires Guava Predicate as last parameter
         rewriteRun(
