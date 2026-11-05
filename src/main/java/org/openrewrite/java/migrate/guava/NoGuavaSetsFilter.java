@@ -26,6 +26,8 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Set;
 
@@ -34,6 +36,7 @@ import static java.util.Collections.singleton;
 public class NoGuavaSetsFilter extends Recipe {
     private static final MethodMatcher SETS_FILTER = new MethodMatcher("com.google.common.collect.Sets filter(java.util.Set, com.google.common.base.Predicate)");
     private static final MethodMatcher SETS_FILTER_SORTED_SET = new MethodMatcher("com.google.common.collect.Sets filter(java.util.SortedSet, com.google.common.base.Predicate)");
+    private static final MethodMatcher SETS_FILTER_NAVIGABLE_SET = new MethodMatcher("com.google.common.collect.Sets filter(java.util.NavigableSet, com.google.common.base.Predicate)");
 
     @Getter
     final String displayName = "Prefer `Collection.stream().filter(Predicate)`";
@@ -46,11 +49,13 @@ public class NoGuavaSetsFilter extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(new UsesMethod<>(SETS_FILTER), new UsesMethod<>(SETS_FILTER_SORTED_SET));
+        TreeVisitor<?, ExecutionContext> precondition = Preconditions.or(new UsesMethod<>(SETS_FILTER),
+                new UsesMethod<>(SETS_FILTER_SORTED_SET), new UsesMethod<>(SETS_FILTER_NAVIGABLE_SET));
         return Preconditions.check(precondition, new JavaVisitor<ExecutionContext>() {
                 @Override
                 public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
-                    if (SETS_FILTER_SORTED_SET.matches(method) && canReadTwice(method.getArguments().get(0))) {
+                    if ((SETS_FILTER_SORTED_SET.matches(method) || SETS_FILTER_NAVIGABLE_SET.matches(method)) &&
+                        canReadTwice(method.getArguments().get(0))) {
                         maybeRemoveImport("com.google.common.base.Predicate");
                         maybeRemoveImport("com.google.common.collect.Sets");
                         maybeAddImport("java.util.TreeSet");
@@ -89,12 +94,21 @@ public class NoGuavaSetsFilter extends Recipe {
 
                 /**
                  * The comparator supplier reads the set a second time, from inside a lambda.
+                 * So the set must be {@code this.field}, or a variable the lambda can capture.
+                 * A wildcard element type gives the two reads unrelated capture types.
                  */
                 private boolean canReadTwice(Expression set) {
-                    boolean thisField = set instanceof J.FieldAccess && ((J.FieldAccess) set).getTarget() instanceof J.Identifier &&
-                                        "this".equals(((J.Identifier) ((J.FieldAccess) set).getTarget()).getSimpleName());
-                    boolean variable = set instanceof J.Identifier && ((J.Identifier) set).getFieldType() != null;
-                    return (thisField || variable) && LambdaCapture.canCapture(getCursor(), set);
+                    JavaType.Parameterized type = TypeUtils.asParameterized(set.getType());
+                    if (type != null && type.getTypeParameters().stream().anyMatch(t ->
+                            t instanceof JavaType.GenericTypeVariable && "?".equals(((JavaType.GenericTypeVariable) t).getName()))) {
+                        return false;
+                    }
+                    if (set instanceof J.FieldAccess && ((J.FieldAccess) set).getTarget() instanceof J.Identifier &&
+                        "this".equals(((J.Identifier) ((J.FieldAccess) set).getTarget()).getSimpleName())) {
+                        return true;
+                    }
+                    return set instanceof J.Identifier && ((J.Identifier) set).getFieldType() != null &&
+                           LambdaCapture.canCapture(getCursor(), set);
                 }
             }
         );
