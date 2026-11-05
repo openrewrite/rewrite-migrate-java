@@ -27,6 +27,7 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.migrate.guava.NoGuavaCollectionFactoryTypeArguments
   - org.openrewrite.java.migrate.guava.NoGuavaJava11
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
