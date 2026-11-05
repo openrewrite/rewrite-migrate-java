@@ -42,6 +42,7 @@ recipeList:
   - org.openrewrite.java.migrate.guava.NoGuavaIterablesTransform
   - org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayListWithElements
   - org.openrewrite.java.migrate.guava.NoGuavaPreconditionsCheckArgumentAndState
+  - org.openrewrite.java.migrate.guava.NoGuavaPreconditionsCheckNotNullFormat
   - org.openrewrite.java.migrate.guava.NoGuavaPredicatesInstanceOf
   - org.openrewrite.java.migrate.guava.NoGuavaPrimitiveAsList
   - org.openrewrite.java.migrate.guava.NoGuavaRefasterRecipes
