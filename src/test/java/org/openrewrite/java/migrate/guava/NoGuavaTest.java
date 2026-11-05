@@ -339,13 +339,14 @@ class NoGuavaTest implements RewriteTest {
               }
               """,
             """
+              import java.util.LinkedHashSet;
               import java.util.Set;
               import java.util.function.Predicate;
               import java.util.stream.Collectors;
 
               class Test {
                   public static Set<Object> test(Set<Object> set, Predicate<Object> isNotNull) {
-                      return set.stream().filter(isNotNull).collect(Collectors.toSet());
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(LinkedHashSet::new));
                   }
               }
               """
@@ -380,7 +381,132 @@ class NoGuavaTest implements RewriteTest {
 
               class Test {
                   public static Set<Object> test(SortedSet<Object> set, Predicate<Object> isNotNull) {
-                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(TreeSet::new));
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(set.comparator())));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterOnThisFieldKeepsTheComparator() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  SortedSet<Object> set;
+
+                  Set<Object> test(Predicate<Object> isNotNull) {
+                      return Sets.filter(this.set, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+              import java.util.TreeSet;
+              import java.util.function.Predicate;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  SortedSet<Object> set;
+
+                  Set<Object> test(Predicate<Object> isNotNull) {
+                      return this.set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(this.set.comparator())));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterLeftAloneWhereTheSetCannotBeReadTwice() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              abstract class Test {
+                  abstract SortedSet<Object> sorted();
+
+                  Set<Object> fromCall(Predicate<Object> isNotNull) {
+                      return Sets.filter(sorted(), isNotNull);
+                  }
+
+                  Set<Object> fromReassigned(SortedSet<Object> set, Predicate<Object> isNotNull) {
+                      if (set.isEmpty()) {
+                          set = sorted();
+                      }
+                      return Sets.filter(set, isNotNull);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void sortedSetsFilterLeftAloneForWildcardElementType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Set;
+              import java.util.SortedSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  Set<? extends Number> test(SortedSet<? extends Number> set, Predicate<Number> positive) {
+                      return Sets.filter(set, positive);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceSetsFilterUsingNavigableSet() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.NavigableSet;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Sets;
+
+              class Test {
+                  NavigableSet<Object> test(NavigableSet<Object> set, Predicate<Object> isNotNull) {
+                      return Sets.filter(set, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.NavigableSet;
+              import java.util.TreeSet;
+              import java.util.function.Predicate;
+              import java.util.stream.Collectors;
+
+              class Test {
+                  NavigableSet<Object> test(NavigableSet<Object> set, Predicate<Object> isNotNull) {
+                      return set.stream().filter(isNotNull).collect(Collectors.toCollection(() -> new TreeSet<>(set.comparator())));
                   }
               }
               """
