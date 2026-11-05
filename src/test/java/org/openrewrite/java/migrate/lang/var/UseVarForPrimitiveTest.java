@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
+import org.openrewrite.staticanalysis.RemoveUnusedLocalVariables;
 import org.openrewrite.test.RecipeSpec;
 
 import static org.openrewrite.groovy.Assertions.groovy;
@@ -495,6 +496,36 @@ class UseVarForPrimitiveTest extends VarBaseTest {
                   class A {
                     void m() {
                         final var s = "hello";
+                    }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void keepVariableTypeOwnerSoReadsStillMatchDeclaration() {
+            rewriteRun(
+              spec -> spec.recipes(new UseVarForPrimitive(), new RemoveUnusedLocalVariables(null, null, null)),
+              //language=java
+              java(
+                """
+                  package com.example.app;
+
+                  class A {
+                    byte[] m() {
+                        String s = "hello";
+                        return s.getBytes();
+                    }
+                  }
+                  """,
+                """
+                  package com.example.app;
+
+                  class A {
+                    byte[] m() {
+                        var s = "hello";
+                        return s.getBytes();
                     }
                   }
                   """

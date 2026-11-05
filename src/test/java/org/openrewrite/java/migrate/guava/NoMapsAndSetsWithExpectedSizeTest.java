@@ -55,10 +55,10 @@ class NoMapsAndSetsWithExpectedSizeTest implements RewriteTest {
 
               class A {
                   void method() {
-                      Map<String, String> a = new HashMap<>(1);
-                      Map<String, String> b = new LinkedHashMap<>(1);
-                      Set<String> c = new HashSet<>(1);
-                      Set<String> d = new LinkedHashSet<>(1);
+                      Map<String, String> a = HashMap.newHashMap(1);
+                      Map<String, String> b = LinkedHashMap.newLinkedHashMap(1);
+                      Set<String> c = HashSet.newHashSet(1);
+                      Set<String> d = LinkedHashSet.newLinkedHashSet(1);
                   }
               }
               """,
