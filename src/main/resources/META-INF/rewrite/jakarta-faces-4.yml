@@ -64,7 +64,6 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/*.xhtml'
-  - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeNamespaceValue:
       oldValue: "http://java.sun.com/jsf/html"
