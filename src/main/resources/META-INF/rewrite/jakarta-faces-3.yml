@@ -83,20 +83,6 @@ recipeList:
       newPackageName: jakarta.faces
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE9
-displayName: Faces XHTML migration for Jakarta EE 9
-description: Find and replace javax references to jakarta in XHTML files.
-tags:
-  - jakarta
-  - faces
-  - jsf
-recipeList:
-  - org.openrewrite.java.migrate.jakarta.FindAndReplaceInXml:
-      find: javax.
-      replace: jakarta.
-      filePattern: '**/*.xhtml'
----
-type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml
 displayName: Migrate xmlns entries in `faces-config.xml` files
 description: Java EE has been rebranded to Jakarta EE, necessitating an XML namespace relocation.
