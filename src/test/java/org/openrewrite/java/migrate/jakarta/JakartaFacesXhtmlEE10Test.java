@@ -197,6 +197,26 @@ class JakartaFacesXhtmlEE10Test implements RewriteTest {
     }
 
     @Test
+    void migrateCompositeLibrary() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:my="http://xmlns.jcp.org/jsf/composite/components">
+                  <my:widget/>
+              </ui:composition>
+              """,
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:my="jakarta.faces.composite/components">
+                  <my:widget/>
+              </ui:composition>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/page.xhtml")
+          )
+        );
+    }
+
+    @Test
     void leaveOtherXmlFiles() {
         rewriteRun(
           //language=xml
