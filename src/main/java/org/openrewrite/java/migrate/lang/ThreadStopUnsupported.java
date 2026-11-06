@@ -28,7 +28,10 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.trait.Comments;
+
+import java.util.List;
 
 public class ThreadStopUnsupported extends Recipe {
     private static final MethodMatcher THREAD_STOP_MATCHER = new MethodMatcher("java.lang.Thread stop()");
@@ -40,9 +43,9 @@ public class ThreadStopUnsupported extends Recipe {
 
     @Getter
     final String description = "`Thread.resume()`, `Thread.stop()`, and `Thread.suspend()` always throw an `UnsupportedOperationException` in Java 21+. " +
-            "This recipe makes that explicit, and adds a comment pointing to the " +
+            "This recipe makes that explicit where the call ends a method body, and adds a comment pointing to the " +
             "[migration guide](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html), " +
-            "as the migration is more complicated. On earlier Java versions only the comment is added.";
+            "as the migration is more complicated. Elsewhere, and on earlier Java versions, only the comment is added.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -54,8 +57,9 @@ public class ThreadStopUnsupported extends Recipe {
             @Override
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J j = super.visitMethodInvocation(method, ctx);
-                if (THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) || THREAD_SUSPEND_MATCHER.matches(method)) {
-                    if (usesJava21(ctx)) {
+                if ((THREAD_STOP_MATCHER.matches(method) || THREAD_RESUME_MATCHER.matches(method) || THREAD_SUSPEND_MATCHER.matches(method)) &&
+                        isStatement(method)) {
+                    if (endsMethodBody(method) && usesJava21(ctx)) {
                         j = JavaTemplate.apply("throw new UnsupportedOperationException()", getCursor(), method.getCoordinates().replace());
                     }
                     if (j.getComments().isEmpty()) {
@@ -63,6 +67,24 @@ public class ThreadStopUnsupported extends Recipe {
                     }
                 }
                 return j;
+            }
+
+            // Neither a `throw` nor a comment fits where the call is an expression, such as an expression lambda body
+            private boolean isStatement(J.MethodInvocation method) {
+                Object parent = getCursor().getParentTreeCursor().getValue();
+                return parent instanceof J.Block ||
+                        parent instanceof J.Case && ((J.Case) parent).getStatements().stream().anyMatch(s -> s == method);
+            }
+
+            // Anywhere else, a `throw` could make the following code unreachable, which does not compile
+            private boolean endsMethodBody(J.MethodInvocation method) {
+                Cursor blockCursor = getCursor().getParentTreeCursor();
+                if (!(blockCursor.getValue() instanceof J.Block) ||
+                        !(blockCursor.getParentTreeCursor().getValue() instanceof J.MethodDeclaration)) {
+                    return false;
+                }
+                List<Statement> statements = blockCursor.<J.Block>getValue().getStatements();
+                return statements.get(statements.size() - 1) == method;
             }
 
             private boolean usesJava21(ExecutionContext ctx) {
