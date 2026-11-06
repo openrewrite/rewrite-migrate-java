@@ -251,4 +251,195 @@ class UseJavaUtilBase64Test implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void unsupportedLegacyOverloadsLeaveTheCompilationUnitAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Decoder;
+              import test.sun.misc.BASE64Encoder;
+              import java.io.IOException;
+              import java.io.InputStream;
+              import java.io.OutputStream;
+              import java.nio.ByteBuffer;
+
+              class Test {
+                  void encode(InputStream stream, OutputStream output, byte[] bytes, ByteBuffer buffer) throws IOException {
+                      BASE64Encoder encoder = new BASE64Encoder();
+                      encoder.encode(stream, output);
+                      encoder.encode(bytes, output);
+                      encoder.encode(buffer, output);
+                      String encoded = encoder.encode(buffer);
+                      encoder.encodeBuffer(stream, output);
+                      encoder.encodeBuffer(bytes, output);
+                      encoder.encodeBuffer(buffer, output);
+                      encoded += encoder.encodeBuffer(buffer);
+                  }
+
+                  void decode(InputStream stream, OutputStream output, String text) throws IOException {
+                      BASE64Decoder decoder = new BASE64Decoder();
+                      decoder.decode(stream, output);
+                      decoder.decode(text, output);
+                      decoder.decodeBuffer(stream, output);
+                      decoder.decodeBuffer(text, output);
+                      byte[] first = decoder.decodeBuffer(stream);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void oneUnsupportedOverloadSuppressesTheSupportedRewritesInTheSameFile() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Encoder;
+              import java.io.IOException;
+              import java.io.OutputStream;
+
+              class Test {
+                  void test(byte[] bBytes, OutputStream output) throws IOException {
+                      BASE64Encoder encoder = new BASE64Encoder();
+                      String encoded = encoder.encode(bBytes);
+                      encoder.encodeBuffer(bBytes, output);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void methodReferenceToLegacyCoderLeavesTheCompilationUnitAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Encoder;
+              import java.util.function.Function;
+
+              class Test {
+                  Function<byte[], String> test() {
+                      BASE64Encoder encoder = new BASE64Encoder();
+                      return encoder::encode;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void receiverDeclaredAsLegacySupertypeLeavesTheCompilationUnitAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Decoder;
+              import test.sun.misc.BASE64Encoder;
+              import test.sun.misc.CharacterDecoder;
+              import test.sun.misc.CharacterEncoder;
+              import java.io.IOException;
+
+              class Test {
+                  void test(byte[] bBytes, String text) throws IOException {
+                      CharacterEncoder encoder = new BASE64Encoder();
+                      String encoded = encoder.encode(bBytes);
+                      encoded += encoder.encodeBuffer(bBytes);
+                      CharacterDecoder decoder = new BASE64Decoder();
+                      byte[] decoded = decoder.decodeBuffer(text);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void subclassOfLegacyEncoderLeavesTheCompilationUnitAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Encoder;
+
+              class UrlSafeEncoder extends BASE64Encoder {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void anonymousSubclassOfLegacyDecoderLeavesTheCompilationUnitAlone() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Decoder;
+
+              class Test {
+                  BASE64Decoder decoder = new BASE64Decoder() {
+                  };
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void stillMigratesHelperMethodWithLegacyEncoderParameter() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package test.sun.misc;
+
+              import test.sun.misc.BASE64Encoder;
+
+              class Test {
+                  String test(byte[] bBytes) {
+                      return encode(new BASE64Encoder(), bBytes);
+                  }
+
+                  String encode(BASE64Encoder encoder, byte[] bBytes) {
+                      return encoder.encode(bBytes);
+                  }
+              }
+              """,
+            """
+              package test.sun.misc;
+
+              import java.util.Base64;
+
+              class Test {
+                  String test(byte[] bBytes) {
+                      return encode(Base64.getEncoder(), bBytes);
+                  }
+
+                  String encode(Base64.Encoder encoder, byte[] bBytes) {
+                      return encoder.encodeToString(bBytes);
+                  }
+              }
+              """
+          )
+        );
+    }
 }
