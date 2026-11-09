@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
@@ -75,6 +76,52 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
       </project>
       """;
 
+    @DocumentExample
+    @Test
+    void migrateRemovedMatcherApiWhenUpgradingMockito3() {
+        rewriteRun(
+          mavenProject("example",
+            pomXml(mockitoCorePom("3.0.0"),
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsPattern("<version>5\\.\\d+.*</version>").actual())),
+            srcTestJava(java(
+              """
+                import java.util.List;
+
+                import static org.mockito.Matchers.anyListOf;
+                import static org.mockito.Matchers.eq;
+
+                class ExampleTest {
+                    String match(String value) {
+                        return eq(value);
+                    }
+
+                    List<String> matchList() {
+                        return anyListOf(String.class);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                import static org.mockito.ArgumentMatchers.anyList;
+                import static org.mockito.ArgumentMatchers.eq;
+
+                class ExampleTest {
+                    String match(String value) {
+                        return eq(value);
+                    }
+
+                    List<String> matchList() {
+                        return anyList();
+                    }
+                }
+                """
+            ))
+          )
+        );
+    }
+
     @Test
     void excludeTransitiveOnlyLegacyMockitoFromApiMigration() {
         rewriteRun(
@@ -123,12 +170,10 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
                             <scope>test</scope>
                         </dependency>
                     </dependencies>"""),
-          spec -> spec.after(pom -> {
-              assertThat(pom).containsPattern("(?s)<artifactId>maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.[^<]+</version>")
-                .contains("-javaagent:${org.mockito:mockito-core:jar}")
-                .contains("<version>1.4.0.RELEASE</version>");
-              return pom;
-          })
+          spec -> spec.after(pom -> assertThat(pom)
+            .containsPattern("(?s)<artifactId>maven-surefire-plugin</artifactId>\\s*<version>3\\.5\\.[^<]+</version>")
+            .contains("-javaagent:${org.mockito:mockito-core:jar}")
+            .contains("<version>1.4.0.RELEASE</version>").actual())
         ));
     }
 
@@ -156,51 +201,6 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
                 class ExampleTest {
                     String match(String value) {
                         return eq(value);
-                    }
-                }
-                """
-            ))
-          )
-        );
-    }
-
-    @Test
-    void migrateRemovedMatcherApiWhenUpgradingMockito3() {
-        rewriteRun(
-          mavenProject("example",
-            pomXml(mockitoCorePom("3.0.0"),
-              spec -> spec.after(pom -> assertThat(pom)
-                .containsPattern("<version>5\\.\\d+.*</version>").actual())),
-            srcTestJava(java(
-              """
-                import java.util.List;
-
-                import static org.mockito.Matchers.anyListOf;
-                import static org.mockito.Matchers.eq;
-
-                class ExampleTest {
-                    String match(String value) {
-                        return eq(value);
-                    }
-
-                    List<String> matchList() {
-                        return anyListOf(String.class);
-                    }
-                }
-                """,
-              """
-                import java.util.List;
-
-                import static org.mockito.ArgumentMatchers.anyList;
-                import static org.mockito.ArgumentMatchers.eq;
-
-                class ExampleTest {
-                    String match(String value) {
-                        return eq(value);
-                    }
-
-                    List<String> matchList() {
-                        return anyList();
                     }
                 }
                 """
@@ -294,7 +294,8 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
 
     @Test
     void leaveBuildWithoutMockitoAlone() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>org.example</groupId>
