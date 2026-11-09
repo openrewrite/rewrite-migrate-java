@@ -354,17 +354,19 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeMockito1ForJava25
-displayName: Upgrade Mockito 1 APIs and dependencies for Java 25
+displayName: Upgrade Mockito 1 to 4 APIs and dependencies for Java 25
 description: >-
-  Replace obsolete Mockito 1 dependencies, including mockito-all, and migrate removed APIs before upgrading to Mockito 5.
-  Scope the legacy API migrations to modules directly declaring Mockito 1 so modern matcher semantics remain unchanged.
-  Transitive-only Mockito 1 (for example from an external framework parent) is excluded: its dependency cannot safely
-  be upgraded here, so migrating APIs would leave incompatible Mockito 1 on the classpath. Upgrade that dependency manually.
+  Replace obsolete Mockito 1 dependencies, including mockito-all, and migrate APIs removed up to Mockito 5 (such as
+  `Matchers` and `anyListOf`) before upgrading to Mockito 5. Scope the legacy API migrations to modules directly declaring
+  Mockito 1 to 4 so modern matcher semantics remain unchanged; the Mockito 1 matcher null-semantics migration only
+  applies to mockito-all. Transitive-only legacy Mockito (for example from an external framework parent) is excluded:
+  its dependency cannot safely be upgraded here, so migrating APIs would leave incompatible Mockito on the classpath.
+  Upgrade that dependency manually.
 preconditions:
   - org.openrewrite.java.dependencies.search.ModuleHasDependency:
       groupIdPattern: org.mockito
       artifactIdPattern: mockito-*
-      version: "[1,2)"
+      version: "[1,5)"
       onlyDirect: true
 recipeList:
   - org.openrewrite.java.testing.mockito.Mockito1to5Migration
