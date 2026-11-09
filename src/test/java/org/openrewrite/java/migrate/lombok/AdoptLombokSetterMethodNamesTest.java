@@ -125,6 +125,46 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
     }
 
     @Test
+void renamePrimitiveBooleanWithIsPrefix() {
+    rewriteRun(// language=java
+      java(
+        """
+          class A {
+              boolean isFoo;
+              void storeFoo(boolean isFoo) { this.isFoo = isFoo; }
+          }
+          """,
+        """
+          class A {
+              boolean isFoo;
+              void setFoo(boolean isFoo) { this.isFoo = isFoo; }
+          }
+          """
+      )
+    );
+}
+
+@Test
+void renameBoxedBooleanWithIsPrefix() {
+    rewriteRun(// language=java
+      java(
+        """
+          class A {
+              Boolean isFoo;
+              void storeFoo(Boolean isFoo) { this.isFoo = isFoo; }
+          }
+          """,
+        """
+          class A {
+              Boolean isFoo;
+              void setIsFoo(Boolean isFoo) { this.isFoo = isFoo; }
+          }
+          """
+      )
+    );
+}
+
+    @Test
     void renameClassBooleanInSingleClass() {
         rewriteRun(// language=java
           java(

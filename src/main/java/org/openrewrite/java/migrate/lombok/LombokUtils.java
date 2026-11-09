@@ -143,7 +143,7 @@ class LombokUtils {
         JavaType.FullyQualified declaringType = method.getMethodType().getDeclaringType();
         if (variable instanceof J.Identifier) {
             J.Identifier assignedVar = (J.Identifier) variable;
-            if (hasMatchingSetterMethodName(method, assignedVar.getSimpleName())) {
+            if (hasMatchingSetterMethodName(method, assignedVar.getType(), assignedVar.getSimpleName())) {
                 if (assignedVar.getFieldType() != null && declaringType == assignedVar.getFieldType().getOwner()) {
                     // Don't replace instance methods accessing static fields
                     return !assignedVar.getFieldType().hasFlags(Flag.Static);
@@ -151,7 +151,7 @@ class LombokUtils {
             }
         } else if (variable instanceof J.FieldAccess) {
             J.FieldAccess assignedField = (J.FieldAccess) variable;
-            if (hasMatchingSetterMethodName(method, assignedField.getSimpleName())) {
+            if (hasMatchingSetterMethodName(method, assignedField.getType(), assignedField.getSimpleName())) {
                 Expression target = assignedField.getTarget();
                 // Only handle "this.field" pattern, not "someObject.field"
                 if (target instanceof J.Identifier && "this".equals(((J.Identifier) target).getSimpleName())) {
@@ -167,9 +167,9 @@ class LombokUtils {
         return false;
     }
 
-    private static boolean hasMatchingSetterMethodName(J.MethodDeclaration method, String simpleName) {
-        return method.getSimpleName().equals("set" + StringUtils.capitalize(simpleName));
-    }
+    private static boolean hasMatchingSetterMethodName(J.MethodDeclaration method, @Nullable JavaType type, String simpleName) {
+    return method.getSimpleName().equals(deriveSetterMethodName(type, simpleName));
+}
 
     public static boolean isEffectivelySetter(J.MethodDeclaration method) {
         if (method.getType() != JavaType.Primitive.Void) {
@@ -201,8 +201,14 @@ class LombokUtils {
     }
 
     public static String deriveSetterMethodName(JavaType.Variable fieldType) {
-        return "set" + StringUtils.capitalize(fieldType.getName());
-    }
+    return deriveSetterMethodName(fieldType.getType(), fieldType.getName());
+}
+
+    private static String deriveSetterMethodName(@Nullable JavaType type, String fieldName) {
+        String setterBaseName = type == JavaType.Primitive.Boolean && IS_PREFIX.matcher(fieldName).lookingAt() ?
+            fieldName.substring(2) : fieldName;
+        return "set" + StringUtils.capitalize(setterBaseName);
+}
 
     static AccessLevel getAccessLevel(J.MethodDeclaration methodDeclaration) {
         if (methodDeclaration.hasModifier(Public)) {
