@@ -22,6 +22,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.xml.Assertions.xml;
 
 class JakartaEE10Test implements RewriteTest {
 
@@ -56,6 +57,126 @@ class JakartaEE10Test implements RewriteTest {
                 .as("EE9 dependencies").doesNotContain("org.eclipse.jetty.ee9.websocket", "jetty-ee9-websocket-jetty-server")
                 .as("EE10 dependencies").contains("org.eclipse.jetty.ee10.websocket", "jetty-ee10-websocket-jetty-server")
                 .actual())
+          )
+        );
+    }
+
+    @Test
+    void keepJakartaEE11Descriptors() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_1.xsd"
+                            version="4.1">
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="4.1"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_1.xsd">
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/app.taglib.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+                       version="6.1">
+              </web-app>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/web.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="6.1"
+                            xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_1.xsd">
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateJavaEEDescriptors() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
+                            version="2.3">
+              </faces-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
+                            version="4.0">
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="2.3"
+                              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_3.xsd">
+              </facelet-taglib>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="4.0"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/app.taglib.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_4_0.xsd"
+                            version="4.0">
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_0.xsd"
+                            version="6.0">
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
           )
         );
     }

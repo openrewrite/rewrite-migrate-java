@@ -107,6 +107,24 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
     @Nested
     class NoChanges {
         @Test
+        void tagLibraryAlreadyOnJakartaFaces() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <facelet-taglib version="4.1"
+                                  xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_1.xsd">
+                  </facelet-taglib>
+                  """,
+                sourceSpecs -> sourceSpecs.path("faces-taglib.xml")
+              )
+            );
+        }
+
+        @Test
         void fileNotTagLibraryXml() {
             rewriteRun(
               //language=xml
