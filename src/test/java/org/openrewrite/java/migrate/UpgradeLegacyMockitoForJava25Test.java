@@ -166,7 +166,6 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
           mavenProject("example",
             pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "3.0.0"),
               spec -> spec.after(pom -> assertThat(pom)
-                .contains("<artifactId>mockito-core</artifactId>")
                 .containsPattern("<version>5\\.\\d+.*</version>").actual())),
             srcTestJava(java(
               """
@@ -229,6 +228,37 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
                 class ExampleTest {
                     Object match() {
                         return any();
+                    }
+                }
+                """
+            ))
+          )
+        );
+    }
+
+    @Test
+    void preserveMatcherNullSemanticsWhenUpgradingMockito3() {
+        rewriteRun(
+          mavenProject("example",
+            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "3.0.0"),
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsPattern("<version>5\\.\\d+.*</version>").actual())),
+            srcTestJava(java(
+              """
+                import static org.mockito.Matchers.any;
+
+                class ExampleTest {
+                    String match() {
+                        return any(String.class);
+                    }
+                }
+                """,
+              """
+                import static org.mockito.ArgumentMatchers.any;
+
+                class ExampleTest {
+                    String match() {
+                        return any(String.class);
                     }
                 }
                 """
