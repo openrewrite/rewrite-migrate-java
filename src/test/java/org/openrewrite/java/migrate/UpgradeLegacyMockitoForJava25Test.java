@@ -161,6 +161,83 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     }
 
     @Test
+    void migrateRemovedMatcherApiWhenUpgradingMockito3() {
+        rewriteRun(
+          mavenProject("example",
+            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "3.0.0"),
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<artifactId>mockito-core</artifactId>")
+                .containsPattern("<version>5\\.\\d+.*</version>").actual())),
+            srcTestJava(java(
+              """
+                import java.util.List;
+
+                import static org.mockito.Matchers.anyListOf;
+                import static org.mockito.Matchers.eq;
+
+                class ExampleTest {
+                    String match(String value) {
+                        return eq(value);
+                    }
+
+                    List<String> matchList() {
+                        return anyListOf(String.class);
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                import static org.mockito.ArgumentMatchers.anyList;
+                import static org.mockito.ArgumentMatchers.eq;
+
+                class ExampleTest {
+                    String match(String value) {
+                        return eq(value);
+                    }
+
+                    List<String> matchList() {
+                        return anyList();
+                    }
+                }
+                """
+            ))
+          )
+        );
+    }
+
+    @Test
+    void migrateRemovedMatcherApiWhenUpgradingMockito2() {
+        rewriteRun(
+          mavenProject("example",
+            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "2.8.47"),
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsPattern("<version>5\\.\\d+.*</version>").actual())),
+            srcTestJava(java(
+              """
+                import static org.mockito.Matchers.any;
+
+                class ExampleTest {
+                    Object match() {
+                        return any();
+                    }
+                }
+                """,
+              """
+                import static org.mockito.ArgumentMatchers.any;
+
+                class ExampleTest {
+                    Object match() {
+                        return any();
+                    }
+                }
+                """
+            ))
+          )
+        );
+    }
+
+    @Test
     void preserveModernMatcherNullSemantics() {
         rewriteRun(
           mavenProject("example",
