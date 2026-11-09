@@ -43,6 +43,10 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
       </project>
       """;
 
+    private static String mockitoCorePom(String version) {
+        return POM.replace("mockito-all", "mockito-core").replace("1.10.19", version);
+    }
+
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25")
@@ -164,7 +168,7 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     void migrateRemovedMatcherApiWhenUpgradingMockito3() {
         rewriteRun(
           mavenProject("example",
-            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "3.0.0"),
+            pomXml(mockitoCorePom("3.0.0"),
               spec -> spec.after(pom -> assertThat(pom)
                 .containsPattern("<version>5\\.\\d+.*</version>").actual())),
             srcTestJava(java(
@@ -209,7 +213,7 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     void migrateRemovedMatcherApiWhenUpgradingMockito2() {
         rewriteRun(
           mavenProject("example",
-            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "2.8.47"),
+            pomXml(mockitoCorePom("2.8.47"),
               spec -> spec.after(pom -> assertThat(pom)
                 .containsPattern("<version>5\\.\\d+.*</version>").actual())),
             srcTestJava(java(
@@ -237,10 +241,10 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     }
 
     @Test
-    void preserveMatcherNullSemanticsWhenUpgradingMockito3() {
+    void keepAnyClassMatcherWhenUpgradingMockito3() {
         rewriteRun(
           mavenProject("example",
-            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "3.0.0"),
+            pomXml(mockitoCorePom("3.0.0"),
               spec -> spec.after(pom -> assertThat(pom)
                 .containsPattern("<version>5\\.\\d+.*</version>").actual())),
             srcTestJava(java(
@@ -271,7 +275,7 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     void preserveModernMatcherNullSemantics() {
         rewriteRun(
           mavenProject("example",
-            pomXml(POM.replace("mockito-all", "mockito-core").replace("1.10.19", "5.20.0"),
+            pomXml(mockitoCorePom("5.20.0"),
               spec -> spec.after(pom -> assertThat(pom).contains("<artifactId>mockito-core</artifactId>").actual())),
             srcTestJava(java(
               """
