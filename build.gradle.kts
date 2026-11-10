@@ -97,6 +97,7 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-java-dependencies:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-static-analysis:$rewriteVersion")
     runtimeOnly("org.openrewrite.recipe:rewrite-testing-frameworks:$rewriteVersion")
+    runtimeOnly("org.openrewrite.recipe:rewrite-migrate-gradle:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-joda:$rewriteVersion")
     implementation("org.openrewrite.recipe:rewrite-jenkins:$rewriteVersion")
     implementation("org.openrewrite:rewrite-templating:$rewriteVersion")
