@@ -135,11 +135,15 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: faces-config
+      oldValue: ^3\.\d+$
       newValue: 4.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: faces-config
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd
+      oldValue: (?s)(?<prefix>.*https?://jakarta\.ee/xml/ns/jakartaee/web-facesconfig_)3_\d+(?<suffix>\.xsd.*)
+      newValue: ${prefix}4_0${suffix}
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaFacesTagLibraryXml4
@@ -155,11 +159,15 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: facelet-taglib
+      oldValue: ^3\.\d+$
       newValue: 4.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: facelet-taglib
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd
+      oldValue: (?s)(?<prefix>.*https?://jakarta\.ee/xml/ns/jakartaee/web-facelettaglibrary_)3_\d+(?<suffix>\.xsd.*)
+      newValue: ${prefix}4_0${suffix}
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaWebFragmentXml6
@@ -175,11 +183,15 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-fragment
+      oldValue: ^5\.\d+$
       newValue: 6.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-fragment
-      newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_0.xsd
+      oldValue: (?s)(?<prefix>.*https?://jakarta\.ee/xml/ns/jakartaee/web-fragment_)5_\d+(?<suffix>\.xsd.*)
+      newValue: ${prefix}6_0${suffix}
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JakartaWebXml6
@@ -195,13 +207,13 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-app
-      oldValue: ^[12345]\.\d+$
+      oldValue: ^5\.\d+$
       newValue: 6.0
       regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-app
-      oldValue: (?s)(?<prefix>.*https://jakarta\.ee/xml/ns/jakartaee/web-app_)5_\d+(?<suffix>\.xsd.*)
+      oldValue: (?s)(?<prefix>.*https?://jakarta\.ee/xml/ns/jakartaee/web-app_)5_\d+(?<suffix>\.xsd.*)
       newValue: ${prefix}6_0${suffix}
       regex: true
 ---
