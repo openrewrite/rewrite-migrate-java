@@ -148,7 +148,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityManager
 displayName: Remove `SecurityManager` permission checks
-description: The Security Manager API is unsupported in Java 24. This recipe removes calls to the `java.lang.SecurityManager#check*(..)` methods.
+description: >-
+  The Security Manager API is unsupported in Java 24. This recipe removes calls to the `java.lang.SecurityManager#check*(..)` methods
+  on the system `SecurityManager`, and keeps checks on other `SecurityManager` instances, which still enforce their own policy.
 tags:
   - java25
   - security
@@ -160,8 +162,7 @@ preconditions:
       methodPattern: java.lang.SecurityManager#check*(..)
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: java.lang.SecurityManager#check*(..)
+  - org.openrewrite.java.migrate.RemoveSystemSecurityManagerChecks
   - org.openrewrite.staticanalysis.UnnecessaryCatch
   - org.openrewrite.staticanalysis.UnnecessaryThrows
 
