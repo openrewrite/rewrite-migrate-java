@@ -303,6 +303,11 @@ recipeList:
       oldValue: "javax\\."
       newValue: "jakarta."
       regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "jakarta\\.sql\\."
+      newValue: "javax.sql."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml

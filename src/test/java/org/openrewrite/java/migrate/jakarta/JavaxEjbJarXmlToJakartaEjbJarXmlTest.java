@@ -134,6 +134,58 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
     }
 
     @Test
+    void keepJavaxSql() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+                  version="3.2">
+                  <enterprise-beans>
+                      <session>
+                          <ejb-name>OrderService</ejb-name>
+                          <resource-ref>
+                              <res-ref-name>jdbc/Orders</res-ref-name>
+                              <res-type>javax.sql.DataSource</res-type>
+                          </resource-ref>
+                          <resource-ref>
+                              <res-ref-name>jms/Orders</res-ref-name>
+                              <res-type>javax.jms.QueueConnectionFactory</res-type>
+                          </resource-ref>
+                      </session>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+                  version="4.0">
+                  <enterprise-beans>
+                      <session>
+                          <ejb-name>OrderService</ejb-name>
+                          <resource-ref>
+                              <res-ref-name>jdbc/Orders</res-ref-name>
+                              <res-type>javax.sql.DataSource</res-type>
+                          </resource-ref>
+                          <resource-ref>
+                              <res-ref-name>jms/Orders</res-ref-name>
+                              <res-type>jakarta.jms.QueueConnectionFactory</res-type>
+                          </resource-ref>
+                      </session>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/ejb-jar.xml")
+          )
+        );
+    }
+
+    @Test
     void laterXmlRecipesStillApply() {
         rewriteRun(
           spec -> spec.recipes(
