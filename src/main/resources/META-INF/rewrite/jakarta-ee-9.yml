@@ -1204,6 +1204,8 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/*orm.xml'
+  - org.openrewrite.xml.search.FindTags:
+      xPath: "/entity-mappings[@xmlns='http://java.sun.com/xml/ns/persistence/orm' or @xmlns='http://xmlns.jcp.org/xml/ns/persistence/orm']"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
