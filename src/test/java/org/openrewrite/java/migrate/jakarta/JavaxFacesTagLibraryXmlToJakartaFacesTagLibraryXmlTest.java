@@ -104,6 +104,79 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
         );
     }
 
+    @Test
+    void migrateTagLibraryWithAnotherName() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="2.2"
+                              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_2.xsd">
+                  <function>
+                      <function-name>getFileContent</function-name>
+                      <function-class>javax.util.ShowcaseUtil</function-class>
+                      <function-signature>java.lang.String getFileContent(java.lang.String)</function-signature>
+                  </function>
+              </facelet-taglib>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="3.0"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd">
+                  <function>
+                      <function-name>getFileContent</function-name>
+                      <function-class>jakarta.util.ShowcaseUtil</function-class>
+                      <function-signature>java.lang.String getFileContent(java.lang.String)</function-signature>
+                  </function>
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/components.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateToFaces4AsPartOfFaces3xMigrationToFaces4x() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="2.3"
+                              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_3.xsd">
+                  <namespace>http://example.com/ui</namespace>
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>javax.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
+              </facelet-taglib>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="4.0"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+                  <namespace>http://example.com/ui</namespace>
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>jakarta.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/example.taglib.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
         @Test
@@ -130,12 +203,16 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-faces-taglib.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

@@ -21,6 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
 import static org.openrewrite.xml.Assertions.xml;
 
@@ -128,6 +129,49 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
               </ejb-jar>
               """,
             sourceSpecs -> sourceSpecs.path("ejb-jar.xml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApply() {
+        rewriteRun(
+          spec -> spec.recipes(
+            Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"),
+            new ChangeTagAttribute("//*[local-name()='ejb-jar']", "metadata-complete", "true", "false", null)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+                  version="3.2" metadata-complete="false">
+                  <enterprise-beans>
+                      <message-driven>
+                          <ejb-name>OrderListener</ejb-name>
+                          <messaging-type>javax.jms.MessageListener</messaging-type>
+                      </message-driven>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+                  version="4.0" metadata-complete="true">
+                  <enterprise-beans>
+                      <message-driven>
+                          <ejb-name>OrderListener</ejb-name>
+                          <messaging-type>jakarta.jms.MessageListener</messaging-type>
+                      </message-driven>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/ejb-jar.xml")
           )
         );
     }

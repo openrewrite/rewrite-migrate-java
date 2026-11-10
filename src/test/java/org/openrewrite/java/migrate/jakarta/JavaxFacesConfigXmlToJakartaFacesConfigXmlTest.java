@@ -112,6 +112,87 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
         );
     }
 
+    @Test
+    void migrateFacesConfigWithAnotherName() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
+                            version="2.2">
+                  <render-kit>
+                      <renderer>
+                          <component-family>javax.faces.Output</component-family>
+                          <renderer-type>javax.faces.Head</renderer-type>
+                          <renderer-class>org.apache.myfaces.renderkit.html.HtmlHeadRenderer</renderer-class>
+                      </renderer>
+                  </render-kit>
+              </faces-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd"
+                            version="3.0">
+                  <render-kit>
+                      <renderer>
+                          <component-family>jakarta.faces.Output</component-family>
+                          <renderer-type>jakarta.faces.Head</renderer-type>
+                          <renderer-class>org.apache.myfaces.renderkit.html.HtmlHeadRenderer</renderer-class>
+                      </renderer>
+                  </render-kit>
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/mylib.faces-config.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateToFaces4AsPartOfFaces3xMigrationToFaces4x() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
+                            version="2.3">
+                  <render-kit>
+                      <renderer>
+                          <component-family>javax.faces.Output</component-family>
+                          <renderer-type>javax.faces.Head</renderer-type>
+                          <renderer-class>com.example.HeadRenderer</renderer-class>
+                      </renderer>
+                  </render-kit>
+              </faces-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
+                            version="4.0">
+                  <render-kit>
+                      <renderer>
+                          <component-family>jakarta.faces.Output</component-family>
+                          <renderer-type>jakarta.faces.Head</renderer-type>
+                          <renderer-class>com.example.HeadRenderer</renderer-class>
+                      </renderer>
+                  </render-kit>
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
         @Test
@@ -138,12 +219,16 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-faces-config.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

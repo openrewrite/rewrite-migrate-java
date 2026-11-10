@@ -132,6 +132,41 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
         );
     }
 
+    @Test
+    void migrateToServlet6AsPartOfFaces3xMigrationToFaces4x() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.Faces3xMigrationToFaces4x"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="4.0"
+                            xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_4_0.xsd">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="6.0"
+                            xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_0.xsd">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
         @Test
@@ -158,12 +193,16 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-web-fragment.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

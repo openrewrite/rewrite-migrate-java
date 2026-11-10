@@ -21,6 +21,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
 import static org.openrewrite.xml.Assertions.xml;
 
@@ -127,6 +128,45 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
               </validation-config>
               """,
             sourceSpecs -> sourceSpecs.path("validation.xml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApply() {
+        rewriteRun(
+          spec -> spec.recipes(
+            Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"),
+            new ChangeTagAttribute("//*[local-name()='executable-validation']", "enabled", "false", "true", null)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="http://xmlns.jcp.org/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/validation/configuration http://xmlns.jcp.org/xml/ns/validation/configuration/validation-configuration-2.0.xsd"
+                   version="2.0">
+                  <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
+                  <executable-validation enabled="true"/>
+                  <property name="javax.validator.fail_fast">true</property>
+              </validation-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
+                   version="3.0">
+                  <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
+                  <executable-validation enabled="false"/>
+                  <property name="jakarta.validator.fail_fast">true</property>
+              </validation-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/validation.xml")
           )
         );
     }

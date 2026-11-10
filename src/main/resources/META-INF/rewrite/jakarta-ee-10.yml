@@ -298,10 +298,11 @@ recipeList:
       attributeName: xsi:schemaLocation
       elementName: ejb-jar
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/ejb-jar.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml
@@ -330,10 +331,16 @@ recipeList:
       attributeName: xsi:schemaLocation
       elementName: validation-config
       newValue: https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/validation.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
+  - org.openrewrite.xml.ChangeTagAttribute:
+      attributeName: name
+      elementName: //property
+      oldValue: javax.
+      newValue: jakarta.
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovalsServletJakarta10
