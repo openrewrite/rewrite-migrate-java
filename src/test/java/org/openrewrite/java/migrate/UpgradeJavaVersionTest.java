@@ -34,6 +34,7 @@ import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
+import static org.openrewrite.yaml.Assertions.yaml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
 
@@ -685,4 +686,28 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
+    @Test
+    void upgradesGitLabCiImages() {
+        rewriteRun(
+          yaml(
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-17
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:21-jdk
+              """,
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-25
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:25-jdk
+              """,
+            spec -> spec.path(".gitlab-ci.yml")
+          )
+        );
+    }
 }
