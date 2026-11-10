@@ -25,6 +25,9 @@ import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +37,10 @@ public class BeanDiscovery extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
     private static final Pattern VERSION_PATTERN = Pattern.compile("_([^\\/\\.]+)\\.xsd");
+    private static final Set<String> CDI_NAMESPACES = new HashSet<>(Arrays.asList(
+            "http://java.sun.com/xml/ns/javaee",
+            "http://xmlns.jcp.org/xml/ns/javaee",
+            "https://jakarta.ee/xml/ns/jakartaee"));
 
     String displayName = "Add `version` and `bean-discovery-mode` to `beans.xml` files without a version";
 
@@ -55,7 +62,9 @@ public class BeanDiscovery extends Recipe {
                 boolean hasBeanDiscoveryMode = false;
                 String idealVersion = null;
                 for (Xml.Attribute attribute : t.getAttributes()) {
-                    if ("bean-discovery-mode".equals(attribute.getKeyAsString())) {
+                    if ("xmlns".equals(attribute.getKeyAsString()) && !CDI_NAMESPACES.contains(attribute.getValueAsString())) {
+                        return t;
+                    } else if ("bean-discovery-mode".equals(attribute.getKeyAsString())) {
                         hasBeanDiscoveryMode = true;
                     } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
                         String schemaLocation = attribute.getValueAsString();
