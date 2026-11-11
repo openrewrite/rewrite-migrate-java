@@ -103,8 +103,56 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
         );
     }
 
+    @Test
+    void migrateBeanValidation11() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
+                   version="1.1">
+              </validation-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
+                   version="3.0">
+              </validation-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("validation.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
+        @Test
+        void keepJakartaEE11AsPartOfJakartaEE10() {
+            rewriteRun(
+              spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <validation-config
+                       xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.1.xsd"
+                       version="3.1">
+                  </validation-config>
+                  """,
+                sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/validation.xml")
+              )
+            );
+        }
+
         @Test
         void fileNotWebXml() {
             rewriteRun(

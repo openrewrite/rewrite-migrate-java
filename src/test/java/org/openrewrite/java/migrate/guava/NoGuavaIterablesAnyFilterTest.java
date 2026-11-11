@@ -23,6 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class NoGuavaIterablesAnyFilterTest implements RewriteTest {
 
@@ -140,6 +141,40 @@ class NoGuavaIterablesAnyFilterTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void replaceIterablesFilterBeforeJava16() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.Collection;
+
+              import com.google.common.base.Predicate;
+              import com.google.common.collect.Iterables;
+
+              class Test {
+                  Iterable<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
+                      return Iterables.filter(collection, isNotNull);
+                  }
+              }
+              """,
+            """
+              import java.util.Collection;
+              import java.util.stream.Collectors;
+
+              import com.google.common.base.Predicate;
+
+              class Test {
+                  Iterable<Object> test(Collection<Object> collection, Predicate<Object> isNotNull) {
+                      return collection.stream().filter(isNotNull).collect(Collectors.toList());
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(11))
           )
         );
     }

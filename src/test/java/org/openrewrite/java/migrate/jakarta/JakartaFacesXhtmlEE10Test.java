@@ -20,6 +20,7 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
 import static org.openrewrite.xml.Assertions.xml;
 
@@ -165,6 +166,65 @@ class JakartaFacesXhtmlEE10Test implements RewriteTest {
               </ui:composition>
               """,
             sourceSpecs -> sourceSpecs.path("gchart-jcp.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApplyToMigratedPages() {
+        rewriteRun(
+          spec -> spec.recipes(
+            Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
+              .activateRecipes("org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE10"),
+            new ChangeTagAttribute("//*[local-name()='fileUpload' and namespace-uri()='primefaces']",
+              "dragDropSupport", "false", null, null)
+          ),
+          //language=xml
+          xml(
+            """
+              <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui">
+                  <p:fileUpload dragDropSupport="true"/>
+              </ui:composition>
+              """,
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:p="primefaces">
+                  <p:fileUpload dragDropSupport="false"/>
+              </ui:composition>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/upload.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void migrateCompositeLibrary() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:my="http://xmlns.jcp.org/jsf/composite/components">
+                  <my:widget/>
+              </ui:composition>
+              """,
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:my="jakarta.faces.composite/components">
+                  <my:widget/>
+              </ui:composition>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/page.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void leaveOtherXmlFiles() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <facelet-taglib xmlns:h="http://xmlns.jcp.org/jsf/html"/>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/example.xml")
           )
         );
     }

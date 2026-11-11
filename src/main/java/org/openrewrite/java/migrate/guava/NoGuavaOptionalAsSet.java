@@ -23,8 +23,10 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 
 import java.util.Set;
 
@@ -37,7 +39,8 @@ public class NoGuavaOptionalAsSet extends Recipe {
     final String displayName = "Prefer `Optional.stream().collect(Collectors.toSet())`";
 
     @Getter
-    final String description = "Prefer `Optional.stream().collect(Collectors.toSet())` over `Optional.asSet()`.";
+    final String description = "Prefer `Optional.stream().collect(Collectors.toSet())` over `Optional.asSet()`, " +
+            "or `Optional.map(Collections::singleton).orElse(Collections.emptySet())` before Java 9.";
 
     @Getter
     final Set<String> tags = singleton( "guava" );
@@ -48,6 +51,14 @@ public class NoGuavaOptionalAsSet extends Recipe {
                     @Override
                     public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         if (OPTIONAL_AS_SET.matches(method)) {
+                            JavaSourceFile sourceFile = getCursor().firstEnclosingOrThrow(JavaSourceFile.class);
+                            if (new UsesJavaVersion<>(1, 8).visit(sourceFile, ctx) != sourceFile) {
+                                maybeAddImport("java.util.Collections");
+                                return JavaTemplate.builder("#{any(java.util.Optional)}.map(Collections::singleton).orElse(Collections.emptySet())")
+                                        .imports("java.util.Collections")
+                                        .build()
+                                        .apply(getCursor(), method.getCoordinates().replace(), method.getSelect());
+                            }
                             maybeAddImport("java.util.stream.Collectors");
                             return JavaTemplate.builder("#{any(java.util.Optional)}.stream().collect(Collectors.toSet())")
                                     .imports("java.util.stream.Collectors")

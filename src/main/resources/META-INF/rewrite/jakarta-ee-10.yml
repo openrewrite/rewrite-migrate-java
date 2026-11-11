@@ -257,6 +257,8 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/beans.xml'
+  - org.openrewrite.xml.search.FindTags:
+      xPath: "/beans[@xmlns='http://java.sun.com/xml/ns/javaee' or @xmlns='http://xmlns.jcp.org/xml/ns/javaee' or @version='3.0' or contains(@xsi:schemaLocation, 'beans_3_0.xsd')]"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
@@ -312,6 +314,8 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/validation.xml'
+  - org.openrewrite.xml.search.FindTags:
+      xPath: "/validation-config[@xmlns='http://jboss.org/xml/ns/javax/validation/configuration' or @xmlns='http://xmlns.jcp.org/xml/ns/validation/configuration']"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
