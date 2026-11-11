@@ -116,38 +116,30 @@ class UpgradeBitbucketPipelinesJavaImageTest implements RewriteTest {
     }
 
     @Test
-    void upgradeNameOfImageWithCredentials() {
+    void upgradeNameOfImageInObjectForm() {
         rewriteRun(
           yaml(
             """
               image:
-                name: my.registry.io/openjdk:17-jdk
-                username: $REGISTRY_USERNAME
-                password: $REGISTRY_PASSWORD
+                name: openjdk:17-jdk
               pipelines:
                 default:
                   - step:
                       image:
                         name: eclipse-temurin:21
-                        aws:
-                          access-key: $AWS_ACCESS_KEY
-                          secret-key: $AWS_SECRET_KEY
+                        run-as-user: 1000
                       script:
                         - ./mvnw verify
               """,
             """
               image:
-                name: my.registry.io/eclipse-temurin:25-jdk
-                username: $REGISTRY_USERNAME
-                password: $REGISTRY_PASSWORD
+                name: eclipse-temurin:25-jdk
               pipelines:
                 default:
                   - step:
                       image:
                         name: eclipse-temurin:25
-                        aws:
-                          access-key: $AWS_ACCESS_KEY
-                          secret-key: $AWS_SECRET_KEY
+                        run-as-user: 1000
                       script:
                         - ./mvnw verify
               """,
