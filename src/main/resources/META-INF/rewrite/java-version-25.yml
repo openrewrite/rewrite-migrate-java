@@ -332,6 +332,11 @@ recipeList:
       artifactId: aspectj*
       newVersion: 1.9.x
   - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.mockito
+      oldArtifactId: mockito-all
+      newArtifactId: mockito-core
+      newVersion: 5.20.x
   # mockito-inline was last published as 5.2.0 and inline mocking is the default in mockito-core 5.x, so fold it in
   # before the bump below rather than leaving a coordinate that no longer resolves.
   - org.openrewrite.java.dependencies.ChangeDependency:
