@@ -710,4 +710,55 @@ class UpgradeJavaVersionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void upgradesBitbucketPipelinesImagesAlongsidePom() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>17</maven.compiler.release>
+                </properties>
+              </project>
+              """,
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>25</maven.compiler.release>
+                </properties>
+              </project>
+              """
+          ),
+          yaml(
+            """
+              image: maven:3.9-eclipse-temurin-17
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            """
+              image: maven:3.9-eclipse-temurin-25
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            spec -> spec.path("bitbucket-pipelines.yml")
+          )
+        );
+    }
 }

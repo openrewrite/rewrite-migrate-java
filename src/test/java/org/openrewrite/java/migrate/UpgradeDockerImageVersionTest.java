@@ -83,6 +83,10 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "bellsoft/liberica-openjdk-debian, 17.0.20.1-1-cds, bellsoft/liberica-openjdk-debian, 25-cds, 25",
       "bellsoft/liberica-openjdk-debian, 17.0.19-11, bellsoft/liberica-openjdk-debian, 25, 25",
       "sapmachine, 17.0.21.0.2-jre, sapmachine, 25-jre, 25",
+      // Build images move to a published tag for the new Java version
+      "maven, 3-jdk-8, maven, 3.9-eclipse-temurin-25, 25",
+      "gradle, 8-jdk17, gradle, 8-jdk21, 21",
+      "gradle, 8-jdk17, gradle, 9-jdk25, 25",
     })
     @ParameterizedTest
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {

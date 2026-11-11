@@ -27,13 +27,16 @@ import org.openrewrite.docker.trait.DockerFrom;
 import org.openrewrite.docker.tree.Docker;
 import org.openrewrite.internal.ListUtils;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
+import static org.openrewrite.java.migrate.JavaImageReference.path;
+import static org.openrewrite.java.migrate.JavaImageReference.splitReference;
+import static org.openrewrite.java.migrate.JavaImageReference.upgradedImageName;
+import static org.openrewrite.java.migrate.JavaImageReference.upgradedTag;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -44,21 +47,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             example = "11")
     Integer version;
 
-    private static final String NEW_IMAGE = "eclipse-temurin";
-    private static final Set<String> DEPRECATED_IMAGES = new HashSet<>(asList("openjdk", "adoptopenjdk"));
-    private static final Set<String> CURRENT_IMAGES = new HashSet<>(asList(
-            "eclipse-temurin", "amazoncorretto", "azul/zulu-openjdk",
-            "bellsoft/liberica-openjdk-debian", "bellsoft/liberica-openjdk-alpine",
-            "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
-    ));
-
-    private static final int OLDEST_VERSION = 8;
-    /// The feature version, then any patch or update version as published by the various vendors, such as
-    /// `.0.9_9` and `u392-b08` of Temurin, `.0.20.1-17.68` of Zulu or `.0.19-11` of Liberica, then the variant.
-    private static final Pattern VERSIONED_TAG = Pattern.compile(
-            "(\\d{1,3})(?:u\\d+(?:-b\\d+)?|(?:\\.\\d+)+(?:_\\d+)?(?:-\\d+(?:\\.\\d+)*)?)?(\\D.*)?");
-    private static final Pattern MAVEN_TAG = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)");
-
     private static final String ARG_DEFAULTS = "argDefaults";
     private static final String ARG_UPGRADES = "argUpgrades";
 
@@ -66,7 +54,10 @@ public class UpgradeDockerImageVersion extends Recipe {
     String description = "Upgrade Docker image tags to use the specified Java version. " +
             "Updates common Java Docker images including `eclipse-temurin`, `amazoncorretto`, `azul/zulu-openjdk`, " +
             "and others. Also migrates deprecated images (`openjdk`, `adoptopenjdk`) to `eclipse-temurin`, " +
-            "preserving any tag suffix such as `-jre-alpine`. A pinned patch or update version is dropped, as in " +
+            "preserving any tag suffix such as `-jre-alpine`. The `maven` build images move to the maintained " +
+            "`3.9-eclipse-temurin` tags, including from the deprecated `maven:3-jdk-8`, while the `gradle` build images " +
+            "move to a Gradle release that runs on the new Java version where the old one can not, as in `gradle:8-jdk17` " +
+            "becoming `gradle:9-jdk25`. A pinned patch or update version is dropped, as in " +
             "`17.0.9_9-jdk` becoming `25-jdk`, as images are not published for that patch of the new version. " +
             "When a `FROM` is built from a build argument, the default value of the corresponding global `ARG` is " +
             "upgraded instead, such that `ARG java_version=17` used as `FROM eclipse-temurin:${java_version}` " +
@@ -120,7 +111,7 @@ public class UpgradeDockerImageVersion extends Recipe {
                 }
 
                 DockerFrom image = new DockerFrom(getCursor());
-                String newTag = upgradedTag(image.getImageName().orElse(""), image.getTag().orElse(""));
+                String newTag = upgradedTag(image.getImageName().orElse(""), image.getTag().orElse(""), version);
                 if (newTag == null) {
                     return from;
                 }
@@ -165,7 +156,7 @@ public class UpgradeDockerImageVersion extends Recipe {
         }
 
         String newImageName = upgradedImageName(imageName);
-        String newTag = upgradedTag(imageName, tag);
+        String newTag = upgradedTag(imageName, tag, version);
         if (newImageName == null || newTag == null) {
             return from;
         }
@@ -187,39 +178,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             }
         }
         return from.withDigest(null);
-    }
-
-    private @Nullable String upgradedImageName(String imageName) {
-        String registry = registry(imageName);
-        String path = path(imageName);
-        if (DEPRECATED_IMAGES.contains(path)) {
-            return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
-        }
-        return CURRENT_IMAGES.contains(path) || "maven".equals(path) ? imageName : null;
-    }
-
-    private @Nullable String upgradedTag(String imageName, String tag) {
-        if ("maven".equals(path(imageName))) {
-            Matcher mavenTag = MAVEN_TAG.matcher(tag);
-            if (!mavenTag.matches() || Integer.parseInt(mavenTag.group(2)) >= version) {
-                return null;
-            }
-            // Old Maven patch releases are not rebuilt with newer JDKs. Use the maintained 3.9 tag.
-            return mavenTag.group(1) + "-eclipse-temurin-" + version + mavenTag.group(3);
-        }
-        return upgradedTag(tag);
-    }
-
-    private @Nullable String upgradedTag(String tag) {
-        Matcher matcher = VERSIONED_TAG.matcher(tag);
-        if (!matcher.matches()) {
-            return null;
-        }
-        int currentVersion = Integer.parseInt(matcher.group(1));
-        if (currentVersion < OLDEST_VERSION || version <= currentVersion) {
-            return null;
-        }
-        return version + (matcher.group(2) == null ? "" : matcher.group(2));
     }
 
     private static boolean containsVariable(Docker.@Nullable Argument argument) {
@@ -264,32 +222,6 @@ public class UpgradeDockerImageVersion extends Recipe {
         return text.toString();
     }
 
-    /// @return The registry `imageName` is pulled from, or `null` where it names no registry.
-    /// A variable reference is left in the component that holds it, so `${REGISTRY}/app` is
-    /// pulled from `${REGISTRY}`.
-    private static @Nullable String registry(String imageName) {
-        int slash = imageName.indexOf('/');
-        return slash >= 0 && isRegistry(imageName.substring(0, slash)) ? imageName.substring(0, slash) : null;
-    }
-
-    /// @return The path of `imageName` within its registry, as `library/ubuntu` of
-    /// `docker.io/library/ubuntu`.
-    private static String path(String imageName) {
-        String registry = registry(imageName);
-        return registry == null ? imageName : imageName.substring(registry.length() + 1);
-    }
-
-    /// Registry-ness cannot be told from the syntax: `mcr.microsoft.com/windows/servercore` names a
-    /// registry, while `redhat/ubi9-minimal` names an organisation on Docker Hub. This is the rule
-    /// Docker itself settles that by; the last clause holds because a path component may not carry
-    /// an uppercase character.
-    private static boolean isRegistry(String component) {
-        return component.indexOf('.') >= 0 ||
-                component.indexOf(':') >= 0 ||
-                "localhost".equals(component) ||
-                !component.equals(component.toLowerCase(Locale.ROOT));
-    }
-
     private static @Nullable String soleVariable(Docker.Argument argument) {
         List<Docker.ArgumentContent> contents = argument.getContents();
         return contents.size() == 1 && contents.get(0) instanceof Docker.EnvironmentVariable ?
@@ -307,16 +239,6 @@ public class UpgradeDockerImageVersion extends Recipe {
             }
         }
         return ((Docker.EnvironmentVariable) contents.get(0)).getName();
-    }
-
-    private static String @Nullable [] splitReference(String reference) {
-        int at = reference.indexOf('@');
-        String withoutDigest = at == -1 ? reference : reference.substring(0, at);
-        int colon = withoutDigest.indexOf(':', withoutDigest.lastIndexOf('/') + 1);
-        if (colon == -1) {
-            return null;
-        }
-        return new String[]{withoutDigest.substring(0, colon), withoutDigest.substring(colon + 1)};
     }
 
     /// The registry an image is pulled from is left as written, which may be a variable, so only the trailing
