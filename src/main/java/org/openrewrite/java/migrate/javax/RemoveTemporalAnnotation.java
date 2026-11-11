@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -25,12 +26,13 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
@@ -39,7 +41,6 @@ import static java.util.stream.Collectors.toSet;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class RemoveTemporalAnnotation extends Recipe {
-    private static final Pattern TEMPORAL_TYPE = Pattern.compile(".*TemporalType\\.(TIMESTAMP|DATE|TIME)");
     private static final String JAVA_SQL_TIMESTAMP = "java.sql.Timestamp";
     private static final String JAVA_SQL_TIME = "java.sql.Time";
     private static final String JAVA_SQL_DATE = "java.sql.Date";
@@ -83,13 +84,10 @@ public class RemoveTemporalAnnotation extends Recipe {
                             return multiVariable;
                         }
 
-                        J.Annotation temporal = temporalAnnos.iterator().next();
-                        String temporalArg = temporal.getArguments().iterator().next().toString();
-                        Matcher temporalMatch = TEMPORAL_TYPE.matcher(temporalArg);
-                        if (!temporalMatch.find()) {
+                        String temporalType = getTemporalType(temporalAnnos.iterator().next());
+                        if (temporalType == null) {
                             return multiVariable;
                         }
-                        String temporalType = temporalMatch.group(1);
 
                         if (DO_NOT_REMOVE.get(temporalType).equals(varClass)) {
                             return multiVariable;
@@ -103,5 +101,27 @@ public class RemoveTemporalAnnotation extends Recipe {
                     }
                 }
         );
+    }
+
+    private static @Nullable String getTemporalType(J.Annotation temporal) {
+        if (temporal.getArguments() == null || temporal.getArguments().isEmpty()) {
+            return null;
+        }
+        Expression arg = temporal.getArguments().get(0);
+        if (arg instanceof J.Assignment) {
+            arg = ((J.Assignment) arg).getAssignment();
+        }
+        JavaType.Variable constant = null;
+        if (arg instanceof J.Identifier) {
+            constant = ((J.Identifier) arg).getFieldType();
+        } else if (arg instanceof J.FieldAccess) {
+            constant = ((J.FieldAccess) arg).getName().getFieldType();
+        }
+        if (constant == null ||
+                !TypeUtils.isOfClassType(constant.getOwner(), "javax.persistence.TemporalType") ||
+                !DO_NOT_REMOVE.containsKey(constant.getName())) {
+            return null;
+        }
+        return constant.getName();
     }
 }

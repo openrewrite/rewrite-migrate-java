@@ -137,4 +137,47 @@ class RemoveTemporalAnnotationTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void removeTemporalAnnotationWithStaticallyImportedTemporalType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import javax.persistence.Temporal;
+              import java.sql.Date;
+              import java.sql.Timestamp;
+
+              import static javax.persistence.TemporalType.DATE;
+              import static javax.persistence.TemporalType.TIMESTAMP;
+
+              public class TemporalDates {
+                  @Temporal(DATE)
+                  private Date dateDate;
+
+                  @Temporal(value = TIMESTAMP)
+                  private Timestamp timestampTimestamp;
+
+                  @Temporal(TIMESTAMP)
+                  private Date dateTimestamp;
+              }
+              """,
+            """
+              import javax.persistence.Temporal;
+              import java.sql.Date;
+              import java.sql.Timestamp;
+
+              import static javax.persistence.TemporalType.TIMESTAMP;
+
+              public class TemporalDates {
+                  private Date dateDate;
+
+                  private Timestamp timestampTimestamp;
+
+                  @Temporal(TIMESTAMP)
+                  private Date dateTimestamp;
+              }
+              """
+          )
+        );
+    }
 }

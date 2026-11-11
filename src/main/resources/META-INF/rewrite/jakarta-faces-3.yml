@@ -94,7 +94,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: faces-config
+      oldValue: ^[12]\.\d+$
       newValue: 3.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: faces-config
@@ -102,7 +104,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: faces-config
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd
+      regex: true
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
@@ -120,7 +124,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: facelet-taglib
+      oldValue: ^[12]\.\d+$
       newValue: 3.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: facelet-taglib
@@ -128,7 +134,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: facelet-taglib
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd
+      regex: true
   - org.openrewrite.text.FindAndReplace:
       find: javax.
       replace: jakarta.
@@ -146,7 +154,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-fragment
+      oldValue: ^[1234]\.\d+$
       newValue: 5.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: web-fragment
@@ -154,7 +164,9 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-fragment
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd
+      regex: true
   - org.openrewrite.text.FindAndReplace:
       find: "javax."
       replace: "jakarta."
