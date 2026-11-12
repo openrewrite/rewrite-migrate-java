@@ -18,18 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.xml.ChangeTagAttribute;
 
+import static org.openrewrite.test.RewriteTest.fromRuntimeClasspath;
 import static org.openrewrite.xml.Assertions.xml;
 
 class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml");
     }
 
     @DocumentExample
@@ -136,8 +135,7 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
     void laterXmlRecipesStillApply() {
         rewriteRun(
           spec -> spec.recipes(
-            Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"),
+            fromRuntimeClasspath("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"),
             new ChangeTagAttribute("//*[local-name()='executable-validation']", "enabled", "false", "true", null)
           ),
           //language=xml

@@ -18,18 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.xml.ChangeTagAttribute;
 
+import static org.openrewrite.test.RewriteTest.fromRuntimeClasspath;
 import static org.openrewrite.xml.Assertions.xml;
 
 class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml");
     }
 
     @DocumentExample
@@ -189,8 +188,7 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
     void laterXmlRecipesStillApply() {
         rewriteRun(
           spec -> spec.recipes(
-            Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"),
+            fromRuntimeClasspath("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"),
             new ChangeTagAttribute("//*[local-name()='ejb-jar']", "metadata-complete", "true", "false", null)
           ),
           //language=xml
