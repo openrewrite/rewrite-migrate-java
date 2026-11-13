@@ -248,7 +248,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
-  - org.openrewrite.gradle.MigrateToGradle9
+  - org.openrewrite.gradle.migrate.MigrateToGradle9
   # Older resolvers reference JvmVendorSpec.IBM_SEMERU, removed in Gradle 9.
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: org.gradle.toolchains.foojay-resolver*
