@@ -15,11 +15,14 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
-import java.util.regex.Pattern;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.regex.Pattern;
+
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
@@ -31,46 +34,160 @@ class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
     @Test
     void changeVersionAndAddClassfier() {
         rewriteRun(
-          //language=xml
-          pomXml(
-            """
-              <?xml version="1.0" encoding="UTF-8"?>
-              <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>org.sample</groupId>
-                <artifactId>sample</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                  <dependency>
-                    <groupId>org.primefaces</groupId>
-                    <artifactId>primefaces</artifactId>
-                    <version>12.0.0</version>
-                  </dependency>
-                </dependencies>
-              </project>
-              """,
-            spec -> spec.after(actual -> {
-                String version = Pattern.compile("<version>(14\\.0\\.\\d+)</version>")
-                  .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
-                return """
-                  <?xml version="1.0" encoding="UTF-8"?>
-                  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-                    <modelVersion>4.0.0</modelVersion>
-                    <groupId>org.sample</groupId>
-                    <artifactId>sample</artifactId>
-                    <version>1.0.0</version>
-                    <dependencies>
-                      <dependency>
-                        <groupId>org.primefaces</groupId>
-                        <artifactId>primefaces</artifactId>
-                        <version>%s</version>
-                        <classifier>jakarta</classifier>
-                      </dependency>
-                    </dependencies>
-                  </project>
-                  """.formatted(version);
-            })
+          mavenProject("sample",
+            //language=xml
+            pomXml(
+              """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.primefaces</groupId>
+                      <artifactId>primefaces</artifactId>
+                      <version>12.0.0</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> {
+                  String version = Pattern.compile("<version>(14\\.0\\.\\d+)</version>")
+                    .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
+                  return """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>org.sample</groupId>
+                      <artifactId>sample</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                        <dependency>
+                          <groupId>org.primefaces</groupId>
+                          <artifactId>primefaces</artifactId>
+                          <version>%s</version>
+                          <classifier>jakarta</classifier>
+                        </dependency>
+                      </dependencies>
+                    </project>
+                    """.formatted(version);
+              })
+            )
           )
         );
+    }
+
+    @Test
+    void addClassifierToPrimeFacesExtensions() {
+        rewriteRun(
+          mavenProject("sample",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>org.primefaces.extensions</groupId>
+                      <artifactId>primefaces-extensions</artifactId>
+                      <version>12.0.0</version>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> {
+                  String version = Pattern.compile("<version>(14\\.0\\.\\d+)</version>")
+                    .matcher(actual).results().reduce((a, b) -> b).orElseThrow().group(1);
+                  return """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>org.sample</groupId>
+                      <artifactId>sample</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                        <dependency>
+                          <groupId>org.primefaces.extensions</groupId>
+                          <artifactId>primefaces-extensions</artifactId>
+                          <version>%s</version>
+                          <classifier>jakarta</classifier>
+                        </dependency>
+                      </dependencies>
+                    </project>
+                    """.formatted(version);
+              })
+            )
+          )
+        );
+    }
+
+    @Nested
+    class NoChange {
+        @Test
+        void primeFaces16ThroughJakartaEE10() {
+            rewriteRun(
+              spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+              mavenProject("sample",
+                //language=xml
+                pomXml(
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>org.sample</groupId>
+                      <artifactId>sample</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                        <dependency>
+                          <groupId>org.primefaces</groupId>
+                          <artifactId>primefaces</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                        <dependency>
+                          <groupId>org.primefaces.extensions</groupId>
+                          <artifactId>primefaces-extensions</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                      </dependencies>
+                    </project>
+                    """
+                )
+              )
+            );
+        }
+
+        @Test
+        void primeFaces16() {
+            rewriteRun(
+              mavenProject("sample",
+                //language=xml
+                pomXml(
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>org.sample</groupId>
+                      <artifactId>sample</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                        <dependency>
+                          <groupId>org.primefaces</groupId>
+                          <artifactId>primefaces</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                        <dependency>
+                          <groupId>org.primefaces.extensions</groupId>
+                          <artifactId>primefaces-extensions</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                      </dependencies>
+                    </project>
+                    """
+                )
+              )
+            );
+        }
     }
 }
