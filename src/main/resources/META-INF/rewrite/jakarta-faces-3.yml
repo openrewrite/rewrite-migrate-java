@@ -285,9 +285,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-displayName: Use `StateManagementStrategy`
+displayName: Replace removed `StateManager` methods
 description: >-
-  Faces 3.0 introduced using `StateManagementStrategy` in favor of `StateManager`, which was later removed in Faces 4.0.
+  Replace deprecated `StateManager` methods with `saveView` and `restoreView`. Faces 4.0 removed those from
+  `StateManager` as well, so code that saves or restores views through it still needs a manual move to
+  `StateManagementStrategy`.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -308,14 +310,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
       newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
