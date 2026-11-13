@@ -55,11 +55,16 @@ final class JavaImageReference {
     static {
         OLDEST_GRADLE.put(11, new int[]{5, 0});
         OLDEST_GRADLE.put(17, new int[]{7, 3});
+        OLDEST_GRADLE.put(18, new int[]{7, 5});
+        OLDEST_GRADLE.put(19, new int[]{7, 6});
+        OLDEST_GRADLE.put(20, new int[]{8, 3});
         OLDEST_GRADLE.put(21, new int[]{8, 5});
         OLDEST_GRADLE.put(22, new int[]{8, 8});
         OLDEST_GRADLE.put(23, new int[]{8, 10});
         OLDEST_GRADLE.put(24, new int[]{8, 14});
         OLDEST_GRADLE.put(25, new int[]{9, 1, 0});
+        OLDEST_GRADLE.put(26, new int[]{9, 4, 0});
+        OLDEST_GRADLE.put(27, new int[]{9, 8, 0});
     }
 
     private JavaImageReference() {

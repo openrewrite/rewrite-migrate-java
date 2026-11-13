@@ -81,6 +81,7 @@ class UpgradeJavaContainerImagesTest implements RewriteTest {
       "maven:3.6.3-jdk-11, maven:3.9-eclipse-temurin-25",
       // Gradle 8 can not run on Java 25, and no gradle:8-jdk25 image is published
       "gradle:8-jdk17, gradle:9-jdk25",
+      // Gradle 9.1.0 is the first release to run on Java 25, written to the precision of the pinned 8.5
       "gradle:8.5-jdk21-alpine, gradle:9.1-jdk25-alpine",
       "gradle:9-jdk21, gradle:9-jdk25",
       "gradle:jdk17, gradle:jdk25",
@@ -102,6 +103,7 @@ class UpgradeJavaContainerImagesTest implements RewriteTest {
       "gradle:7-jdk11, 21, gradle:8-jdk21",
       "gradle:8.4.1-jdk17, 21, gradle:8.5.0-jdk21",
       "gradle:8.10-jdk17, 21, gradle:8.10-jdk21",
+      "gradle:9.1-jdk25, 26, gradle:9.4-jdk26",
     })
     @ParameterizedTest
     void upgradeGradleOnlyWhereItCanNotRunOnTheNewJavaVersion(String before, int version, String after) {
