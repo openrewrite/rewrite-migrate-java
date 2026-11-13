@@ -21,7 +21,9 @@ import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 
 import java.util.List;
+import java.util.Set;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
 /// @deprecated Use [UpgradeJavaContainerImages], which covers these and other CI and Kubernetes files.
@@ -34,6 +36,8 @@ public class UpgradeJavaCiContainerImage extends Recipe {
 
     String displayName = "Upgrade CircleCI OpenJDK job images";
     String description = "Deprecated in favor of `UpgradeJavaContainerImages`, which this delegates to.";
+
+    Set<String> tags = singleton("deprecated");
 
     @Override
     public List<Recipe> getRecipeList() {
