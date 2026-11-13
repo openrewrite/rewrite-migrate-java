@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
@@ -64,11 +65,11 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
               }
               """,
             """
+              import jakarta.faces.application.StateManager;
               import jakarta.faces.component.UIViewRoot;
               import jakarta.faces.context.FacesContext;
-              import jakarta.faces.view.StateManagementStrategy;
 
-              class StateManagerParent extends StateManagementStrategy {
+              class StateManagerParent extends StateManager {
 
                   @Override
                   public UIViewRoot restoreView(FacesContext arg0, String arg1, String arg2) {
@@ -112,23 +113,22 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
                }
               """,
             """
+              import jakarta.faces.application.StateManager;
               import jakarta.faces.context.FacesContext;
-              import jakarta.faces.view.StateManagementStrategy;
-
               import java.io.IOException;
 
-              class StateMgrTest {
+               class StateMgrTest {
 
                    public void test() throws IOException {
 
-                       StateManagementStrategy st = null;
+                       StateManager st = null;
                        FacesContext fc = null;
                        String var1 = null;
                        String var2 = null;
                        st.restoreView(fc,var1,var2);
                        st.saveView(fc);
                        st.saveView(fc);
-                       StateManagementStrategy.SerializedView sv = null;
+                       StateManager.SerializedView sv = null;
                        st.writeState(fc,sv);
                    }
                }
@@ -137,4 +137,25 @@ class RemovedStateManagerMethodsTest implements RewriteTest {
         );
     }
 
+    @Nested
+    class NoChange {
+        @Test
+        void keepStateManagerConstants() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import jakarta.faces.application.StateManager;
+                  import jakarta.faces.context.FacesContext;
+
+                  class FaceletView {
+                      boolean isBuildingInitialState(FacesContext facesContext) {
+                          return facesContext.getAttributes().containsKey(StateManager.IS_BUILDING_INITIAL_STATE);
+                      }
+                  }
+                  """
+              )
+            );
+        }
+    }
 }
