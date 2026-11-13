@@ -21,6 +21,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.test.RecipeQualityValidation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
@@ -173,7 +174,6 @@ class AddJakartaXmlBindRuntimeTest implements RewriteTest {
     @Test
     void recognizesUnattributedFactoryCalls() {
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.none()),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jaxb-runtime</artifactId>", "<scope>runtime</scope>" ).actual();
@@ -220,7 +220,8 @@ class AddJakartaXmlBindRuntimeTest implements RewriteTest {
     void unattributedFactoryGetsCompileApiBeforeRuntime() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind")
-            .typeValidationOptions(TypeValidation.none()),
+            // The migrated import `jakarta.xml.bind.JAXBContext` is not on the test classpath (only the `javax` stub is), so it has no type in the output.
+            .recipeQualityValidation(RecipeQualityValidation.all().types(TypeValidation.all().identifiers(false))),
           mavenProject("app",
             pomXml(POM, spec -> spec.after(pom -> {
                 return assertThat( pom ).contains( "<artifactId>jakarta.xml.bind-api</artifactId>",

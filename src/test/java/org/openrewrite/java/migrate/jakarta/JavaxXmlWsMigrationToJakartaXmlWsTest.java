@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.test.RecipeQualityValidation;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
@@ -43,7 +44,8 @@ class JavaxXmlWsMigrationToJakartaXmlWsTest implements RewriteTest {
     @Test
     void addApiForTypesPreviouslySuppliedByJavaEight() {
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          // The migrated import `jakarta.xml.ws.http.HTTPException` is not on the test classpath (only the `javax` stub is), so it has no type in the output.
+          spec -> spec.recipeQualityValidation(RecipeQualityValidation.all().types(TypeValidation.all().identifiers(false))),
           mavenProject("app",
             pomXml(
               """

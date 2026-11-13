@@ -327,7 +327,8 @@ class JavaxXmlBindMigrationToJakartaXmlBindTest implements RewriteTest {
     @Test
     void addApiForUnattributedJdkAnnotation() {
         rewriteRun(
-          spec -> spec.typeValidationOptions(TypeValidation.none()),
+          // The input refers to `XmlTransient`, which is not on the classpath, so it has no type.
+          spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           mavenProject("app",
             srcMainJava(
               java(
