@@ -19,7 +19,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.FindSourceFiles;
 import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.ListUtils;
@@ -45,17 +47,9 @@ public class UpgradeBitbucketPipelinesJavaImage extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new YamlIsoVisitor<ExecutionContext>() {
+        return Preconditions.check(new FindSourceFiles("bitbucket-pipelines.yml"), new YamlIsoVisitor<ExecutionContext>() {
             private final JsonPathMatcher defaultImage = new JsonPathMatcher("$.image");
             private final JsonPathMatcher serviceImage = new JsonPathMatcher("$.definitions.services.*.image");
-
-            @Override
-            public Yaml.Documents visitDocuments(Yaml.Documents documents, ExecutionContext ctx) {
-                if (!"bitbucket-pipelines.yml".equals(documents.getSourcePath().toString())) {
-                    return documents;
-                }
-                return super.visitDocuments(documents, ctx);
-            }
 
             @Override
             public Yaml.Mapping.Entry visitMappingEntry(Yaml.Mapping.Entry entry, ExecutionContext ctx) {
@@ -89,6 +83,6 @@ public class UpgradeBitbucketPipelinesJavaImage extends Recipe {
                 String upgraded = JavaImageReference.upgrade(reference.getValue(), version);
                 return upgraded == null ? image : reference.withValue(upgraded);
             }
-        };
+        });
     }
 }
