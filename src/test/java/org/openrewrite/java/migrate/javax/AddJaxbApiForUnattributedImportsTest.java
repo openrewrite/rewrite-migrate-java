@@ -29,7 +29,8 @@ class AddJaxbApiForUnattributedImportsTest implements RewriteTest {
     void addApiForUnresolvedImport() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.javax.AddJaxbAPIDependencies")
-            .typeValidationOptions(TypeValidation.none()),
+            // The input refers to `DatatypeConverter`, which is not on the classpath, so it has no type.
+            .typeValidationOptions(TypeValidation.all().identifiers(false)),
           java(
             """
               import javax.xml.bind.DatatypeConverter;
@@ -71,7 +72,7 @@ class AddJaxbApiForUnattributedImportsTest implements RewriteTest {
     @Test
     void scopeToNearestModuleAndTestSources() {
         rewriteRun(
-          spec -> spec.recipe(new AddApiDependencyForImports("javax.xml.bind", "jakarta.xml.bind", "jakarta.xml.bind-api", "2.3.x")).typeValidationOptions(TypeValidation.none()),
+          spec -> spec.recipe(new AddApiDependencyForImports("javax.xml.bind", "jakarta.xml.bind", "jakarta.xml.bind-api", "2.3.x")),
           java(
             "import javax.xml.bind.DatatypeConverter; class Test {}",
             spec -> spec.path("app/src/test/java/Test.java")

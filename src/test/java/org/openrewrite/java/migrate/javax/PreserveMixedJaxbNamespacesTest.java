@@ -69,7 +69,8 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
 
     @Test
     void existingGradleLegacyApiAndScopeArePreserved() {
-        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+        // The input refers to `JAXBContext`, which is not on the classpath, so it has no type.
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
             spec -> spec.path("src/main/java/Example.java")),
           buildGradle("""
@@ -97,7 +98,8 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
 
     @Test
     void mavenExistingLegacyScopeAndVersionArePreserved() {
-        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+        // The input refers to `JAXBContext`, which is not on the classpath, so it has no type.
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
             spec -> spec.path("src/main/java/Example.java")),
           pomXml(pom(dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "3.0.1", "") +
@@ -138,7 +140,8 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
     void mainJavaImportsNeedCompileApiAlongsideModernApi() {
         String modern = dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "4.0.2", "");
         String legacy = dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "");
-        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+        // The input refers to `JAXBContext`, which is not on the classpath, so it has no type.
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
             s -> s.path("src/main/java/Example.java")),
           pomXml(pom(modern + legacy),
@@ -185,7 +188,8 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
     void sourceUsageIsScopedToNearestModule() {
         String dependencies = dependency("jakarta.xml.bind", "jakarta.xml.bind-api", "4.0.2", "") +
           dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "");
-        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+        // The input refers to `JAXBContext`, which is not on the classpath, so it has no type.
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           java("import javax.xml.bind.JAXBContext; class Example { JAXBContext context; }",
             spec -> spec.path("source-module/src/main/java/Example.java")),
           pomXml(pom(dependencies), pom(dependencies + dependency("javax.xml.bind", "jaxb-api", "2.3.1", "")),
@@ -196,7 +200,8 @@ class PreserveMixedJaxbNamespacesTest implements RewriteTest {
 
     @Test
     void kotlinImportsNeedCompileApi() {
-        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.none()),
+        // The input refers to `JAXBContext`, which is not on the classpath, so it has no type.
+        rewriteRun(spec -> spec.typeValidationOptions(TypeValidation.all().identifiers(false)),
           org.openrewrite.kotlin.Assertions.kotlin(
             "import javax.xml.bind.JAXBContext\nclass Example { val context: JAXBContext? = null }",
             source -> source.path("src/main/kotlin/Example.kt")),
