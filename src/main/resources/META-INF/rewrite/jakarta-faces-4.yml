@@ -298,20 +298,12 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.maven.ChangeDependencyClassifier:
-      groupId: org.primefaces
-      artifactId: primefaces
-      newClassifier: jakarta
-      changeManagedDependency: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFaces
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces
       artifactId: primefaces
       newVersion: 14.0.x
-  - org.openrewrite.maven.ChangeDependencyClassifier:
-      groupId: org.primefaces.extensions
-      artifactId: primefaces-extensions
-      newClassifier: jakarta
-      changeManagedDependency: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFacesExtensions
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
@@ -328,3 +320,41 @@ recipeList:
       groupId: org.apache.myfaces.core
       artifactId: myfaces-impl
       newVersion: 4.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFaces
+displayName: Add the `jakarta` classifier to PrimeFaces
+description: >-
+  Select the Jakarta build of PrimeFaces through its `jakarta` classifier. PrimeFaces 16 and later only publish
+  Jakarta builds, without a classifier, so modules already on those versions are left unchanged.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.primefaces
+      artifactIdPattern: primefaces
+      version: "[16,)"
+      invertMarking: true
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces
+      artifactId: primefaces
+      newClassifier: jakarta
+      changeManagedDependency: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFacesExtensions
+displayName: Add the `jakarta` classifier to PrimeFaces Extensions
+description: >-
+  Select the Jakarta build of PrimeFaces Extensions through its `jakarta` classifier. PrimeFaces Extensions 16 and
+  later only publish Jakarta builds, without a classifier, so modules already on those versions are left unchanged.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.primefaces.extensions
+      artifactIdPattern: primefaces-extensions
+      version: "[16,)"
+      invertMarking: true
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces.extensions
+      artifactId: primefaces-extensions
+      newClassifier: jakarta
+      changeManagedDependency: true

@@ -15,12 +15,14 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import java.util.regex.Pattern;
 
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
@@ -73,5 +75,39 @@ class UpgradeFacesOpenSourceLibrariesTest implements RewriteTest {
             })
           )
         );
+    }
+
+    @Nested
+    class NoChange {
+        @Test
+        void primeFaces16() {
+            rewriteRun(
+              mavenProject("sample",
+                //language=xml
+                pomXml(
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>org.sample</groupId>
+                      <artifactId>sample</artifactId>
+                      <version>1.0.0</version>
+                      <dependencies>
+                        <dependency>
+                          <groupId>org.primefaces</groupId>
+                          <artifactId>primefaces</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                        <dependency>
+                          <groupId>org.primefaces.extensions</groupId>
+                          <artifactId>primefaces-extensions</artifactId>
+                          <version>16.0.0</version>
+                        </dependency>
+                      </dependencies>
+                    </project>
+                    """
+                )
+              )
+            );
+        }
     }
 }
