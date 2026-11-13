@@ -56,7 +56,7 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpgradeGradleJavaVersion(version),
                 new UpgradeJavaGradleReleaseVersion(version),
                 new UpdateSdkMan(String.valueOf(version), null),
-                new UpgradeJavaCiContainerImage(version),
+                new UpgradeJavaContainerImages(version),
                 new org.openrewrite.gitlab.UpgradeJavaVersion(version),
                 new UpgradeDockerImageVersion(version),
                 new UpgradeKotlinJvmTargetVersion(version)

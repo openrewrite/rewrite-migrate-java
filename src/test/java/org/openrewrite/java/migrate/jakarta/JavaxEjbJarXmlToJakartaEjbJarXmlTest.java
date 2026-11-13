@@ -18,17 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
+import static org.openrewrite.test.RewriteTest.fromRuntimeClasspath;
 import static org.openrewrite.xml.Assertions.xml;
 
 class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml");
     }
 
     @DocumentExample
@@ -52,6 +52,10 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
                           <ejb-class>com.mydomain.HelloSessionBean</ejb-class>
                           <session-type>Stateless</session-type>
                           <transaction-type>Container</transaction-type>
+                          <resource-ref>
+                              <res-ref-name>jdbc/Hello</res-ref-name>
+                              <res-type>javax.sql.DataSource</res-type>
+                          </resource-ref>
                       </session>
                       <message-driven>
                           <ejb-name>MessageBean</ejb-name>
@@ -97,6 +101,10 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
                           <ejb-class>com.mydomain.HelloSessionBean</ejb-class>
                           <session-type>Stateless</session-type>
                           <transaction-type>Container</transaction-type>
+                          <resource-ref>
+                              <res-ref-name>jdbc/Hello</res-ref-name>
+                              <res-type>javax.sql.DataSource</res-type>
+                          </resource-ref>
                       </session>
                       <message-driven>
                           <ejb-name>MessageBean</ejb-name>
@@ -128,6 +136,48 @@ class JavaxEjbJarXmlToJakartaEjbJarXmlTest implements RewriteTest {
               </ejb-jar>
               """,
             sourceSpecs -> sourceSpecs.path("ejb-jar.xml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApply() {
+        rewriteRun(
+          spec -> spec.recipes(
+            fromRuntimeClasspath("org.openrewrite.java.migrate.jakarta.JavaxEjbJarXmlToJakartaEjbJarXml"),
+            new ChangeTagAttribute("//*[local-name()='ejb-jar']", "metadata-complete", "true", "false", null)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+                  version="3.2" metadata-complete="false">
+                  <enterprise-beans>
+                      <message-driven>
+                          <ejb-name>OrderListener</ejb-name>
+                          <messaging-type>javax.jms.MessageListener</messaging-type>
+                      </message-driven>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <ejb-jar xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd"
+                  version="4.0" metadata-complete="true">
+                  <enterprise-beans>
+                      <message-driven>
+                          <ejb-name>OrderListener</ejb-name>
+                          <messaging-type>jakarta.jms.MessageListener</messaging-type>
+                      </message-driven>
+                  </enterprise-beans>
+              </ejb-jar>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/ejb-jar.xml")
           )
         );
     }
