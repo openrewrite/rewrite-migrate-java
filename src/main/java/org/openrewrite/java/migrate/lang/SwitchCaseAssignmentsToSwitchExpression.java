@@ -92,6 +92,10 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
 
                     private J.@Nullable SwitchExpression buildNewSwitchExpression(J.Switch originalSwitch, J.VariableDeclarations.NamedVariable originalVariable) {
                         J.Identifier originalVariableId = originalVariable.getName();
+                        // `T x = switch (x)` reads `x` before it is initialized
+                        if (containsIdentifier(originalVariableId, originalSwitch.getSelector())) {
+                            return null;
+                        }
                         AtomicBoolean isQualified = new AtomicBoolean(true);
                         AtomicBoolean isDefaultCaseAbsent = new AtomicBoolean(true);
                         AtomicBoolean isUsingArrows = new AtomicBoolean(true);
@@ -155,6 +159,11 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                                 (isLastCaseEmpty.get() && !shouldAddDefaultCase)) {
                             return null;
                         }
+                        // The added `default` evaluates the initializer after the selector, which may have changed what it reads
+                        if (shouldAddDefaultCase && !(originalInitializer instanceof J.Literal) &&
+                                canHaveSideEffects(originalSwitch.getSelector())) {
+                            return null;
+                        }
 
                         if (shouldAddDefaultCase) {
                             updatedCases.add(createDefaultCase(originalSwitch, originalInitializer.withPrefix(Space.SINGLE_SPACE), isUsingArrows.get()));
@@ -173,7 +182,9 @@ public class SwitchCaseAssignmentsToSwitchExpression extends Recipe {
                         if (caseStatements.size() == 1 && caseStatements.get(0) instanceof J.Block) {
                             caseStatements = ((J.Block) caseStatements.get(0)).getStatements();
                         }
-                        if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break) || (caseStatements.size() == 1 && isLastCase)) {
+                        // A labeled `break` leaves an enclosing statement too, which a `yield` would not
+                        if ((caseStatements.size() == 2 && caseStatements.get(1) instanceof J.Break && ((J.Break) caseStatements.get(1)).getLabel() == null) ||
+                                (caseStatements.size() == 1 && isLastCase)) {
                             return extractAssignmentOfVariable(caseStatements.get(0), variableId);
                         }
                         return null;

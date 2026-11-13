@@ -918,4 +918,102 @@ class SwitchCaseAssignmentsToSwitchExpressionTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void notConvertWhenBreakIsLabeled() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int[] keys) {
+                      outer:
+                      for (int key : keys) {
+                          String formatted = "initialValue";
+                          switch (key) {
+                              case 1:
+                                  formatted = "one";
+                                  break outer;
+                              default:
+                                  formatted = "other";
+                          }
+                          System.out.println(formatted);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void notConvertWhenSelectorReadsTheVariable() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat() {
+                      String formatted = "a";
+                      switch (formatted) {
+                          case "a": formatted = "b"; break;
+                          default: formatted = "c"; break;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void notConvertWhenSelectorSideEffectsReachTheDefault() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int i) {
+                      int formatted = i;
+                      switch (i++) {
+                          case 1: formatted = 10; break;
+                          case 2: formatted = 20; break;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertWhenSelectorSideEffectsCannotReachLiteralDefault() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Test {
+                  void doFormat(int i) {
+                      String formatted = "other";
+                      switch (i++) {
+                          case 1: formatted = "one"; break;
+                          case 2: formatted = "two"; break;
+                      }
+                  }
+              }
+              """,
+            """
+              class Test {
+                  void doFormat(int i) {
+                      String formatted = switch (i++) {
+                          case 1 -> "one";
+                          case 2 -> "two";
+                          default -> "other";
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
 }
