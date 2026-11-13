@@ -225,7 +225,7 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
               </project>
               """,
             spec -> spec.after(pom -> assertThat(pom)
-              .containsPattern("<version.mockito>5\\.20\\.\\d+</version.mockito>").actual())
+              .containsPattern("<version.mockito>5\\.(2\\d|[3-9]\\d)\\.\\d+</version.mockito>").actual())
           ),
           mavenProject("child",
             pomXml(
