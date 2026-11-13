@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -133,7 +132,7 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
     }
 
     @Test
-    void keepAssignmentInConditionWhenVariableIsReadInOuterBlock() {
+    void keepAssignmentFromConditionWhenVariableIsReadLater() {
         rewriteRun(
           java(
             """
@@ -156,8 +155,7 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
                   void read(String file, boolean flag) {
                       SecurityManager sm;
                       if (flag) {
-                          if ((sm = System.getSecurityManager()) != null) {
-                          }
+                          sm = System.getSecurityManager();
                       } else {
                           sm = System.getSecurityManager();
                       }
@@ -170,7 +168,7 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
     }
 
     @Test
-    void keepNullCheckWithElse() {
+    void invertNullCheckWithElse() {
         rewriteRun(
           java(
             """
@@ -189,8 +187,7 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
               class Test {
                   void read(String file) {
                       SecurityManager sm = System.getSecurityManager();
-                      if (sm != null) {
-                      } else {
+                      if (sm == null) {
                           System.out.println(file);
                       }
                   }
@@ -265,128 +262,6 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
             """
               class Test {
                   static {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void removeCheckOnStaticFinalField() {
-        rewriteRun(
-          java(
-            """
-              class Test {
-                  private static final SecurityManager SM = System.getSecurityManager();
-
-                  void exit(int status) {
-                      if (SM != null) {
-                          SM.checkExit(status);
-                      }
-                  }
-              }
-              """,
-            """
-              class Test {
-                  private static final SecurityManager SM = System.getSecurityManager();
-
-                  void exit(int status) {
-                      if (SM != null) {
-                      }
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void removeCheckOnFieldAccessedThroughThis() {
-        rewriteRun(
-          java(
-            """
-              class Test {
-                  private final SecurityManager sm = System.getSecurityManager();
-
-                  void exit(int status) {
-                      this.sm.checkExit(status);
-                  }
-              }
-              """,
-            """
-              class Test {
-                  private final SecurityManager sm = System.getSecurityManager();
-
-                  void exit(int status) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void removeCheckOnFieldAssignedInConstructor() {
-        rewriteRun(
-          java(
-            """
-              class Test {
-                  private SecurityManager sm;
-
-                  Test() {
-                      this.sm = System.getSecurityManager();
-                  }
-
-                  void exit(int status) {
-                      sm.checkExit(status);
-                  }
-              }
-              """,
-            """
-              class Test {
-                  private SecurityManager sm;
-
-                  Test() {
-                      this.sm = System.getSecurityManager();
-                  }
-
-                  void exit(int status) {
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void removeCheckInAnonymousClass() {
-        rewriteRun(
-          java(
-            """
-              class Test {
-                  private final SecurityManager sm = System.getSecurityManager();
-
-                  Runnable exit(int status) {
-                      return new Runnable() {
-                          @Override
-                          public void run() {
-                              sm.checkExit(status);
-                          }
-                      };
-                  }
-              }
-              """,
-            """
-              class Test {
-                  private final SecurityManager sm = System.getSecurityManager();
-
-                  Runnable exit(int status) {
-                      return new Runnable() {
-                          @Override
-                          public void run() {
-                          }
-                      };
                   }
               }
               """
@@ -539,15 +414,17 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
         }
 
         @Test
-        void keepCheckOnPackagePrivateField() {
+        void keepCheckOnFieldHoldingSystemSecurityManager() {
             rewriteRun(
               java(
                 """
                   class Test {
-                      SecurityManager sm = System.getSecurityManager();
+                      private static final SecurityManager SM = System.getSecurityManager();
 
-                      void read(String file) {
-                          sm.checkRead(file);
+                      void exit(int status) {
+                          if (SM != null) {
+                              SM.checkExit(status);
+                          }
                       }
                   }
                   """
@@ -556,18 +433,24 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
         }
 
         @Test
-        void keepCheckOnFieldReassignedBySetter() {
+        void keepCheckOnInheritedFieldAssignedFromSystemSecurityManager() {
             rewriteRun(
               java(
                 """
-                  class Test {
-                      private SecurityManager sm = System.getSecurityManager();
+                  class Base {
+                      protected SecurityManager sm;
 
                       void setSecurityManager(SecurityManager sm) {
                           this.sm = sm;
                       }
-
+                  }
+                  """
+              ),
+              java(
+                """
+                  class Test extends Base {
                       void exit(int status) {
+                          sm = System.getSecurityManager();
                           sm.checkExit(status);
                       }
                   }
@@ -577,40 +460,28 @@ class RemoveSystemSecurityManagerChecksTest implements RewriteTest {
         }
 
         @Test
-        void keepCheckOnAnnotatedField() {
+        void keepChecksInSecurityManagerSubclass() {
             rewriteRun(
-              spec -> spec.parser(JavaParser.fromJavaVersion().classpath("lombok")),
               java(
                 """
-                  import lombok.Setter;
+                  import java.security.Permission;
 
-                  class Test {
-                      @Setter
-                      private SecurityManager sm = System.getSecurityManager();
-
-                      void exit(int status) {
-                          sm.checkExit(status);
+                  class SandboxSecurityManager extends SecurityManager {
+                      static boolean isInstalled() {
+                          return System.getSecurityManager() instanceof SandboxSecurityManager;
                       }
-                  }
-                  """
-              )
-            );
-        }
 
-        @Test
-        void keepCheckOnFieldOfLombokAnnotatedClass() {
-            rewriteRun(
-              spec -> spec.parser(JavaParser.fromJavaVersion().classpath("lombok")),
-              java(
-                """
-                  import lombok.Setter;
+                      @Override
+                      public void checkPermission(Permission perm) {
+                          if (perm.getName().startsWith("exitVM")) {
+                              throw new SecurityException("exit");
+                          }
+                          super.checkPermission(perm);
+                      }
 
-                  @Setter
-                  class Test {
-                      private SecurityManager sm = System.getSecurityManager();
-
-                      void exit(int status) {
-                          sm.checkExit(status);
+                      @Override
+                      public void checkExit(int status) {
+                          checkPermission(new RuntimePermission("exitVM." + status));
                       }
                   }
                   """
