@@ -40,7 +40,7 @@ final class JavaImageReference {
     /// `.0.9_9` and `u392-b08` of Temurin, `.0.20.1-17.68` of Zulu or `.0.19-11` of Liberica, then the variant.
     private static final Pattern VERSIONED_TAG = Pattern.compile(
             "(\\d{1,3})(?:u\\d+(?:-b\\d+)?|(?:\\.\\d+)+(?:_\\d+)?(?:-\\d+(?:\\.\\d+)*)?)?(\\D.*)?");
-    private static final Pattern MAVEN_TAG = Pattern.compile("(3\\.9)(?:\\.\\d+)?-eclipse-temurin-(\\d+)(.*)");
+    private static final Pattern MAVEN_TAG = Pattern.compile("3((?:\\.\\d+){0,2})-(eclipse-temurin|amazoncorretto)-(\\d+)(.*)");
     /// The OpenJDK based Maven images are no longer published; only those without a variant suffix have an
     /// `eclipse-temurin` based counterpart for every Java version.
     private static final Pattern DEPRECATED_MAVEN_TAG = Pattern.compile("3(?:\\.\\d+){0,2}-jdk-(\\d+)");
@@ -79,24 +79,23 @@ final class JavaImageReference {
     }
 
     static @Nullable String upgradedImageName(String imageName) {
-        String registry = registry(imageName);
-        String path = path(imageName);
-        if (DEPRECATED_IMAGES.contains(path)) {
-            return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
+        String repository = repository(imageName);
+        if (DEPRECATED_IMAGES.contains(repository)) {
+            return imageName.substring(0, imageName.length() - repository.length()) + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(path) || "maven".equals(path) || "gradle".equals(path) ||
-               "cimg/openjdk".equals(path) ? imageName : null;
+        return CURRENT_IMAGES.contains(repository) || "maven".equals(repository) || "gradle".equals(repository) ||
+               "cimg/openjdk".equals(repository) ? imageName : null;
     }
 
     static @Nullable String upgradedTag(String imageName, String tag, int version) {
-        String path = path(imageName);
-        if ("maven".equals(path)) {
+        String repository = repository(imageName);
+        if ("maven".equals(repository)) {
             return upgradedMavenTag(tag, version);
         }
-        if ("gradle".equals(path)) {
+        if ("gradle".equals(repository)) {
             return upgradedGradleTag(tag, version);
         }
-        if ("cimg/openjdk".equals(path)) {
+        if ("cimg/openjdk".equals(repository)) {
             Matcher circleCiTag = CIRCLECI_TAG.matcher(tag);
             return circleCiTag.matches() && isUpgrade(Integer.parseInt(circleCiTag.group(1)), version) ?
                     version + ".0" + (circleCiTag.group(2) == null ? "" : circleCiTag.group(2)) : null;
@@ -111,9 +110,10 @@ final class JavaImageReference {
     private static @Nullable String upgradedMavenTag(String tag, int version) {
         Matcher mavenTag = MAVEN_TAG.matcher(tag);
         if (mavenTag.matches()) {
-            // Old Maven patch releases are not rebuilt with newer JDKs. Use the maintained 3.9 tag.
-            return isUpgrade(Integer.parseInt(mavenTag.group(2)), version) ?
-                    mavenTag.group(1) + "-eclipse-temurin-" + version + mavenTag.group(3) : null;
+            // Old Maven releases are not rebuilt with newer JDKs, so a pinned one moves to the maintained 3.9 line
+            String maven = mavenTag.group(1).isEmpty() ? "3" : "3.9";
+            return isUpgrade(Integer.parseInt(mavenTag.group(3)), version) ?
+                    maven + '-' + mavenTag.group(2) + '-' + version + mavenTag.group(4) : null;
         }
         Matcher deprecatedTag = DEPRECATED_MAVEN_TAG.matcher(tag);
         return deprecatedTag.matches() && isUpgrade(Integer.parseInt(deprecatedTag.group(1)), version) ?
@@ -165,6 +165,12 @@ final class JavaImageReference {
     static String path(String imageName) {
         String registry = registry(imageName);
         return registry == null ? imageName : imageName.substring(registry.length() + 1);
+    }
+
+    /// @return The path of `imageName` without the `library/` namespace Docker Hub keeps its official images in.
+    private static String repository(String imageName) {
+        String path = path(imageName);
+        return path.startsWith("library/") ? path.substring("library/".length()) : path;
     }
 
     /// Registry-ness cannot be told from the syntax: `mcr.microsoft.com/windows/servercore` names a

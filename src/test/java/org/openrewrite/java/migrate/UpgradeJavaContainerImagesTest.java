@@ -416,6 +416,113 @@ class UpgradeJavaContainerImagesTest implements RewriteTest {
               )
             );
         }
+        @Test
+        void upgradeImageFamilies() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaContainerImages(21)),
+              yaml(
+                """
+                  image: eclipse-temurin:17
+                  default:
+                    image: registry.example.com/library/eclipse-temurin:17-jdk-alpine
+                  corretto:
+                    image: amazoncorretto:17-alpine
+                    script: java -version
+                  maven:
+                    image: maven:3.9.6-eclipse-temurin-17
+                    script: mvn verify
+                  maven-corretto:
+                    image:
+                      name: maven:3-amazoncorretto-17-debian
+                    script: mvn verify
+                  gradle:
+                    image: gradle:8.10-jdk17
+                    script: gradle build
+                  gradle-alpine:
+                    image: gradle:jdk11-alpine
+                    script: gradle build
+                  """,
+                """
+                  image: eclipse-temurin:21
+                  default:
+                    image: registry.example.com/library/eclipse-temurin:21-jdk-alpine
+                  corretto:
+                    image: amazoncorretto:21-alpine
+                    script: java -version
+                  maven:
+                    image: maven:3.9-eclipse-temurin-21
+                    script: mvn verify
+                  maven-corretto:
+                    image:
+                      name: maven:3-amazoncorretto-21-debian
+                    script: mvn verify
+                  gradle:
+                    image: gradle:8.10-jdk21
+                    script: gradle build
+                  gradle-alpine:
+                    image: gradle:jdk21-alpine
+                    script: gradle build
+                  """,
+                spec -> spec.path(".gitlab-ci.yml")
+              )
+            );
+        }
+
+        @Test
+        void upgradeAnchoredImageOnce() {
+            rewriteRun(
+              yaml(
+                """
+                  .jdk: &jdk maven:3-eclipse-temurin-17
+                  .runtime: &runtime
+                    name: eclipse-temurin:17-jre
+                  build:
+                    image: *jdk
+                    script: mvn verify
+                  test:
+                    image: *jdk
+                    services:
+                      - *runtime
+                    script: mvn test
+                  """,
+                """
+                  .jdk: &jdk maven:3-eclipse-temurin-25
+                  .runtime: &runtime
+                    name: eclipse-temurin:25-jre
+                  build:
+                    image: *jdk
+                    script: mvn verify
+                  test:
+                    image: *jdk
+                    services:
+                      - *runtime
+                    script: mvn test
+                  """,
+                spec -> spec.path(".gitlab-ci.yml")
+              )
+            );
+        }
+
+        @Test
+        void leaveImagesWithoutAJavaVersionAlone() {
+            rewriteRun(
+              yaml(
+                """
+                  .unrelated: &unrelated eclipse-temurin:17
+                  build:
+                    image: maven:3.9.6
+                    script: mvn verify
+                  test:
+                    image: eclipse-temurin
+                    script: ./mvnw test
+                  lint:
+                    image: node:18
+                    script: npm run lint
+                  """,
+                spec -> spec.path(".gitlab-ci.yml")
+              )
+            );
+        }
     }
 
     @Nested

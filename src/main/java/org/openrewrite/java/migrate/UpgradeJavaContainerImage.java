@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.FindSourceFiles;
 import org.openrewrite.Option;
@@ -28,9 +29,16 @@ import org.openrewrite.yaml.JsonPathMatcher;
 import org.openrewrite.yaml.YamlIsoVisitor;
 import org.openrewrite.yaml.tree.Yaml;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Collections.emptySet;
+
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UpgradeJavaContainerImage extends Recipe {
+
+    private static final String ALIASED_IMAGES = "ALIASED_IMAGES";
 
     @Option(displayName = "Java version",
             description = "The Java version to upgrade to.",
@@ -60,6 +68,30 @@ public class UpgradeJavaContainerImage extends Recipe {
         JsonPathMatcher matcher = new JsonPathMatcher(jsonPath);
         return Preconditions.check(new FindSourceFiles(filePattern), new YamlIsoVisitor<ExecutionContext>() {
             @Override
+            public Yaml.Document visitDocument(Yaml.Document document, ExecutionContext ctx) {
+                Set<String> aliasedImages = new HashSet<>();
+                new YamlIsoVisitor<Set<String>>() {
+                    @Override
+                    public Yaml.Mapping.Entry visitMappingEntry(Yaml.Mapping.Entry entry, Set<String> anchors) {
+                        if (matcher.matches(getCursor())) {
+                            addAnchors(entry.getValue(), anchors);
+                        }
+                        return super.visitMappingEntry(entry, anchors);
+                    }
+
+                    @Override
+                    public Yaml.Sequence.Entry visitSequenceEntry(Yaml.Sequence.Entry entry, Set<String> anchors) {
+                        if (matcher.matches(getCursor())) {
+                            addAnchors(entry.getBlock(), anchors);
+                        }
+                        return super.visitSequenceEntry(entry, anchors);
+                    }
+                }.visit(document, aliasedImages, getCursor().getParentOrThrow());
+                getCursor().putMessage(ALIASED_IMAGES, aliasedImages);
+                return super.visitDocument(document, ctx);
+            }
+
+            @Override
             public Yaml.Mapping.Entry visitMappingEntry(Yaml.Mapping.Entry entry, ExecutionContext ctx) {
                 Yaml.Mapping.Entry e = super.visitMappingEntry(entry, ctx);
                 return matcher.matches(getCursor()) ? e.withValue(upgraded(e.getValue())) : e;
@@ -69,6 +101,23 @@ public class UpgradeJavaContainerImage extends Recipe {
             public Yaml.Sequence.Entry visitSequenceEntry(Yaml.Sequence.Entry entry, ExecutionContext ctx) {
                 Yaml.Sequence.Entry e = super.visitSequenceEntry(entry, ctx);
                 return matcher.matches(getCursor()) ? e.withBlock(upgraded(e.getBlock())) : e;
+            }
+
+            @Override
+            public Yaml.Scalar visitScalar(Yaml.Scalar scalar, ExecutionContext ctx) {
+                Yaml.Scalar s = super.visitScalar(scalar, ctx);
+                return isAliasedImage(s.getAnchor()) ? (Yaml.Scalar) upgraded(s) : s;
+            }
+
+            @Override
+            public Yaml.Mapping visitMapping(Yaml.Mapping mapping, ExecutionContext ctx) {
+                Yaml.Mapping m = super.visitMapping(mapping, ctx);
+                return isAliasedImage(m.getAnchor()) ? (Yaml.Mapping) upgraded(m) : m;
+            }
+
+            private boolean isAliasedImage(Yaml.@Nullable Anchor anchor) {
+                return anchor != null &&
+                       getCursor().<Set<String>>getNearestMessage(ALIASED_IMAGES, emptySet()).contains(anchor.getKey());
             }
 
             private Yaml.Block upgraded(Yaml.Block image) {
@@ -85,5 +134,18 @@ public class UpgradeJavaContainerImage extends Recipe {
                 return upgraded == null ? image : reference.withValue(upgraded);
             }
         });
+    }
+
+    /// An image given as an alias is upgraded where its anchor is defined, so that every alias follows.
+    private static void addAnchors(Yaml.Block image, Set<String> anchors) {
+        if (image instanceof Yaml.Alias) {
+            anchors.add(((Yaml.Alias) image).getAnchor().getKey());
+        } else if (image instanceof Yaml.Mapping) {
+            for (Yaml.Mapping.Entry entry : ((Yaml.Mapping) image).getEntries()) {
+                if ("name".equals(entry.getKey().getValue())) {
+                    addAnchors(entry.getValue(), anchors);
+                }
+            }
+        }
     }
 }

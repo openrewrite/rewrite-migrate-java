@@ -54,8 +54,9 @@ public class UpgradeDockerImageVersion extends Recipe {
     String description = "Upgrade Docker image tags to use the specified Java version. " +
             "Updates common Java Docker images including `eclipse-temurin`, `amazoncorretto`, `azul/zulu-openjdk`, " +
             "and others. Also migrates deprecated images (`openjdk`, `adoptopenjdk`) to `eclipse-temurin`, " +
-            "preserving any tag suffix such as `-jre-alpine`. The `maven` build images move to the maintained " +
-            "`3.9-eclipse-temurin` tags, including from the deprecated `maven:3-jdk-8`, while the `gradle` build images " +
+            "preserving any tag suffix such as `-jre-alpine`. The `eclipse-temurin` and `amazoncorretto` based `maven` " +
+            "build images move to the `3` or maintained `3.9` line, including from the deprecated `maven:3-jdk-8`, " +
+            "while the `gradle` build images " +
             "move to a Gradle release that runs on the new Java version where the old one can not, as in `gradle:8-jdk17` " +
             "becoming `gradle:9-jdk25`. A pinned patch or update version is dropped, as in " +
             "`17.0.9_9-jdk` becoming `25-jdk`, as images are not published for that patch of the new version. " +
