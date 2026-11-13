@@ -90,6 +90,9 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.xml.search.FindTags:
+      xPath: /faces-config
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -107,10 +110,11 @@ recipeList:
       oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd
       regex: true
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/faces-config.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml
@@ -120,6 +124,9 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.xml.search.FindTags:
+      xPath: /facelet-taglib
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -137,10 +144,11 @@ recipeList:
       oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd
       regex: true
-  - org.openrewrite.text.FindAndReplace:
-      find: javax.
-      replace: jakarta.
-      filePattern: '**/*taglib*.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
@@ -150,6 +158,9 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/web-fragment.xml'
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
@@ -167,14 +178,16 @@ recipeList:
       oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd
       regex: true
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/web-fragment.xml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "jakarta.sql."
-      replace: "javax.sql."
-      filePattern: '**/web-fragment.xml'
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "jakarta\\.sql\\."
+      newValue: "javax.sql."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml

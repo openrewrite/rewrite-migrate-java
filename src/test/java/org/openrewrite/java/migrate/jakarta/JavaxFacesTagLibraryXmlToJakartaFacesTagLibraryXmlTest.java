@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,8 +26,7 @@ import static org.openrewrite.xml.Assertions.xml;
 class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml");
     }
 
     @DocumentExample
@@ -99,7 +97,7 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
                   </function>
               </facelet-taglib>
               """,
-            sourceSpecs -> sourceSpecs.path("faces-taglib.xml")
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/components.xml")
           )
         );
     }
@@ -130,12 +128,16 @@ class JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXmlTest implements RewriteT
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-faces-taglib.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

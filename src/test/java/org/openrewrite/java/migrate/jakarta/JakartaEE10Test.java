@@ -126,6 +126,9 @@ class JakartaEE10Test implements RewriteTest {
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
                             version="2.3">
+                  <application>
+                      <el-resolver>javax.faces.el.CustomResolver</el-resolver>
+                  </application>
               </faces-config>
               """,
             """
@@ -134,6 +137,9 @@ class JakartaEE10Test implements RewriteTest {
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
                             version="4.0">
+                  <application>
+                      <el-resolver>jakarta.faces.el.CustomResolver</el-resolver>
+                  </application>
               </faces-config>
               """,
             sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
@@ -146,6 +152,10 @@ class JakartaEE10Test implements RewriteTest {
                               xmlns="http://xmlns.jcp.org/xml/ns/javaee"
                               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                               xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_3.xsd">
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>javax.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
               </facelet-taglib>
               """,
             """
@@ -154,6 +164,10 @@ class JakartaEE10Test implements RewriteTest {
                               xmlns="https://jakarta.ee/xml/ns/jakartaee"
                               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>jakarta.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
               </facelet-taglib>
               """,
             sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/app.taglib.xml")
@@ -166,6 +180,10 @@ class JakartaEE10Test implements RewriteTest {
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_4_0.xsd"
                             version="4.0">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
               </web-fragment>
               """,
             """
@@ -174,6 +192,10 @@ class JakartaEE10Test implements RewriteTest {
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                             xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_0.xsd"
                             version="6.0">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
               </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
