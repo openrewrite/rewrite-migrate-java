@@ -59,15 +59,19 @@ public class RemoveSystemSecurityManagerChecks extends Recipe {
                 Preconditions.and(new UsesMethod<>(CHECK), new UsesMethod<>(GET_SECURITY_MANAGER)),
                 new RemoveMethodInvocationsVisitor(singletonMap(CHECK, args -> true)) {
                     private Set<JavaType.Variable> systemLocals = emptySet();
-                    private boolean cleanupScheduled;
 
                     @Override
                     public @Nullable J visit(@Nullable Tree tree, ExecutionContext ctx) {
-                        if (tree instanceof JavaSourceFile) {
-                            systemLocals = findSystemSecurityManagerLocals((JavaSourceFile) tree);
-                            cleanupScheduled = false;
+                        if (!(tree instanceof JavaSourceFile)) {
+                            return super.visit(tree, ctx);
                         }
-                        return super.visit(tree, ctx);
+                        systemLocals = findSystemSecurityManagerLocals((JavaSourceFile) tree);
+                        J after = super.visit(tree, ctx);
+                        if (after == tree || after == null) {
+                            return after;
+                        }
+                        after = (J) new EmptyBlock().getVisitor().visitNonNull(after, ctx);
+                        return (J) new RemoveUnusedLocalVariables(null, SECURITY_MANAGER, true).getVisitor().visitNonNull(after, ctx);
                     }
 
                     @Override
@@ -79,11 +83,6 @@ public class RemoveSystemSecurityManagerChecks extends Recipe {
                         boolean onSystem = GET_SECURITY_MANAGER.matches(select);
                         if (!onSystem && !(select instanceof J.Identifier && systemLocals.contains(((J.Identifier) select).getFieldType()))) {
                             return method;
-                        }
-                        if (!cleanupScheduled) {
-                            cleanupScheduled = true;
-                            doAfterVisit(new EmptyBlock().getVisitor());
-                            doAfterVisit(new RemoveUnusedLocalVariables(null, SECURITY_MANAGER, true).getVisitor());
                         }
                         // Do not leave the select `System.getSecurityManager()` behind as a statement
                         return onSystem ? null : super.visitMethodInvocation(method, ctx);
