@@ -83,6 +83,13 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "bellsoft/liberica-openjdk-debian, 17.0.20.1-1-cds, bellsoft/liberica-openjdk-debian, 25-cds, 25",
       "bellsoft/liberica-openjdk-debian, 17.0.19-11, bellsoft/liberica-openjdk-debian, 25, 25",
       "sapmachine, 17.0.21.0.2-jre, sapmachine, 25-jre, 25",
+      // Build images move to a published tag for the new Java version
+      "maven, 3-jdk-8, maven, 3.9-eclipse-temurin-25, 25",
+      "maven, 3-eclipse-temurin-17, maven, 3-eclipse-temurin-25, 25",
+      "maven, 3.8.6-eclipse-temurin-17-alpine, maven, 3.9-eclipse-temurin-25-alpine, 25",
+      "maven, 3-amazoncorretto-17-debian, maven, 3-amazoncorretto-25-debian, 25",
+      "gradle, 8-jdk17, gradle, 8-jdk21, 21",
+      "gradle, 8-jdk17, gradle, 9-jdk25, 25",
     })
     @ParameterizedTest
     void upgradeDockerImage(String fromImage, String fromTag, String toImage, String toTag, int targetVersion) {
@@ -378,6 +385,9 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       // A registry the FROM spells out
       "docker.io/eclipse-temurin:11-jre, docker.io/eclipse-temurin:25-jre",
       "docker.io/openjdk:11-jre, docker.io/eclipse-temurin:25-jre",
+      // Docker Hub keeps its official images in the library namespace
+      "docker.io/library/openjdk:11-jre, docker.io/library/eclipse-temurin:25-jre",
+      "library/eclipse-temurin:11-jre, library/eclipse-temurin:25-jre",
       "myregistry:5000/openjdk:11-jre, myregistry:5000/eclipse-temurin:25-jre",
       "localhost/eclipse-temurin:11-jre, localhost/eclipse-temurin:25-jre",
       // A repository name may not be uppercase, so an uppercase segment can only be a registry
