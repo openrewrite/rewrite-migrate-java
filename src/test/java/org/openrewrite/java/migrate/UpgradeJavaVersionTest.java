@@ -697,6 +697,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   - postgres:16
               test:
                 image: eclipse-temurin:21-jdk
+              package:
+                image: gradle:8-jdk17
               """,
             """
               build:
@@ -705,6 +707,8 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   - postgres:16
               test:
                 image: eclipse-temurin:25-jdk
+              package:
+                image: gradle:9-jdk25
               """,
             spec -> spec.path(".gitlab-ci.yml")
           )

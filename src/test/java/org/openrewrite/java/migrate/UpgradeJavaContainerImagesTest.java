@@ -26,11 +26,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.yaml.Assertions.yaml;
 
-class UpgradeBitbucketPipelinesJavaImageTest implements RewriteTest {
+class UpgradeJavaContainerImagesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new UpgradeBitbucketPipelinesJavaImage(25));
+        spec.recipe(new UpgradeJavaContainerImages(25));
     }
 
     @DocumentExample
@@ -106,7 +106,7 @@ class UpgradeBitbucketPipelinesJavaImageTest implements RewriteTest {
     @ParameterizedTest
     void upgradeGradleOnlyWhereItCanNotRunOnTheNewJavaVersion(String before, int version, String after) {
         rewriteRun(
-          spec -> spec.recipe(new UpgradeBitbucketPipelinesJavaImage(version)),
+          spec -> spec.recipe(new UpgradeJavaContainerImages(version)),
           yaml(
             "image: %s".formatted(before),
             "image: %s".formatted(after),
@@ -373,5 +373,267 @@ class UpgradeBitbucketPipelinesJavaImageTest implements RewriteTest {
               )
             );
         }
+    }
+
+    @Nested
+    class GitLab {
+
+        @Test
+        void upgradeGlobalDefaultJobAndServiceImages() {
+            rewriteRun(
+              yaml(
+                """
+                  image: openjdk:17
+                  default:
+                    image: eclipse-temurin:17-jdk
+                  build:
+                    image:
+                      name: gradle:8-jdk17
+                      entrypoint: [""]
+                    services:
+                      - postgres:16
+                      - name: eclipse-temurin:17-jre
+                        alias: stub
+                    script:
+                      - gradle build
+                  """,
+                """
+                  image: eclipse-temurin:25
+                  default:
+                    image: eclipse-temurin:25-jdk
+                  build:
+                    image:
+                      name: gradle:9-jdk25
+                      entrypoint: [""]
+                    services:
+                      - postgres:16
+                      - name: eclipse-temurin:25-jre
+                        alias: stub
+                    script:
+                      - gradle build
+                  """,
+                spec -> spec.path(".gitlab-ci.yml")
+              )
+            );
+        }
+    }
+
+    @Nested
+    class GitHubActions {
+
+        @Test
+        void upgradeJobContainersButNotServices() {
+            rewriteRun(
+              yaml(
+                """
+                  jobs:
+                    build:
+                      container: maven:3.9-eclipse-temurin-17
+                    test:
+                      container:
+                        image: eclipse-temurin:21-jdk
+                      services:
+                        stub:
+                          image: eclipse-temurin:17-jre
+                  """,
+                """
+                  jobs:
+                    build:
+                      container: maven:3.9-eclipse-temurin-25
+                    test:
+                      container:
+                        image: eclipse-temurin:25-jdk
+                      services:
+                        stub:
+                          image: eclipse-temurin:17-jre
+                  """,
+                spec -> spec.path(".github/workflows/ci.yaml")
+              )
+            );
+        }
+    }
+
+    @Nested
+    class CircleCi {
+
+        @Test
+        void upgradePrimaryImageOfJobsAndExecutors() {
+            rewriteRun(
+              yaml(
+                """
+                  version: 2.1
+                  executors:
+                    jdk:
+                      docker:
+                        - image: cimg/openjdk:17.0-browsers
+                  jobs:
+                    test:
+                      docker:
+                        - image: eclipse-temurin:17
+                        - image: eclipse-temurin:17
+                  """,
+                """
+                  version: 2.1
+                  executors:
+                    jdk:
+                      docker:
+                        - image: cimg/openjdk:25.0-browsers
+                  jobs:
+                    test:
+                      docker:
+                        - image: eclipse-temurin:25
+                        - image: eclipse-temurin:17
+                  """,
+                spec -> spec.path(".circleci/config.yml")
+              )
+            );
+        }
+    }
+
+    @Nested
+    class AzurePipelines {
+
+        @Test
+        void upgradePipelineJobAndResourceContainers() {
+            rewriteRun(
+              yaml(
+                """
+                  resources:
+                    containers:
+                      - container: jdk
+                        image: openjdk:17-jdk
+                      - container: db
+                        image: postgres:16
+                  container: maven:3.9-eclipse-temurin-17
+                  stages:
+                    - stage: Build
+                      jobs:
+                        - job: Compile
+                          container:
+                            image: eclipse-temurin:21
+                        - job: Test
+                          container: jdk
+                  """,
+                """
+                  resources:
+                    containers:
+                      - container: jdk
+                        image: eclipse-temurin:25-jdk
+                      - container: db
+                        image: postgres:16
+                  container: maven:3.9-eclipse-temurin-25
+                  stages:
+                    - stage: Build
+                      jobs:
+                        - job: Compile
+                          container:
+                            image: eclipse-temurin:25
+                        - job: Test
+                          container: jdk
+                  """,
+                spec -> spec.path("azure-pipelines.yml")
+              )
+            );
+        }
+    }
+
+    @Nested
+    class Kubernetes {
+
+        @Test
+        void upgradeContainersAndInitContainers() {
+            rewriteRun(
+              yaml(
+                """
+                  apiVersion: batch/v1
+                  kind: CronJob
+                  metadata:
+                    name: report
+                  spec:
+                    schedule: "0 * * * *"
+                    jobTemplate:
+                      spec:
+                        template:
+                          spec:
+                            initContainers:
+                              - name: migrate
+                                image: registry.example.com/openjdk:17-jre
+                            containers:
+                              - name: report
+                                image: eclipse-temurin:17-jre-alpine
+                              - name: proxy
+                                image: envoyproxy/envoy:v1.31
+                  """,
+                """
+                  apiVersion: batch/v1
+                  kind: CronJob
+                  metadata:
+                    name: report
+                  spec:
+                    schedule: "0 * * * *"
+                    jobTemplate:
+                      spec:
+                        template:
+                          spec:
+                            initContainers:
+                              - name: migrate
+                                image: registry.example.com/eclipse-temurin:25-jre
+                            containers:
+                              - name: report
+                                image: eclipse-temurin:25-jre-alpine
+                              - name: proxy
+                                image: envoyproxy/envoy:v1.31
+                  """,
+                spec -> spec.path("deploy/k8s/cronjob.yaml")
+              ),
+              yaml(
+                """
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: app
+                  spec:
+                    containers:
+                      - name: app
+                        image: amazoncorretto:17
+                  """,
+                """
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: app
+                  spec:
+                    containers:
+                      - name: app
+                        image: amazoncorretto:25
+                  """,
+                spec -> spec.path("pod.yml")
+              )
+            );
+        }
+    }
+
+    @Test
+    void upgradeImagesAtACustomLocation() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeJavaContainerImage(25, "**/compose.yaml", "$.services.*.image")),
+          yaml(
+            """
+              services:
+                app:
+                  image: eclipse-temurin:17-jre
+                db:
+                  image: postgres:16
+              """,
+            """
+              services:
+                app:
+                  image: eclipse-temurin:25-jre
+                db:
+                  image: postgres:16
+              """,
+            spec -> spec.path("compose.yaml")
+          )
+        );
     }
 }

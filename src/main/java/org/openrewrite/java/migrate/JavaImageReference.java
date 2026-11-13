@@ -44,6 +44,8 @@ final class JavaImageReference {
     /// The OpenJDK based Maven images are no longer published; only those without a variant suffix have an
     /// `eclipse-temurin` based counterpart for every Java version.
     private static final Pattern DEPRECATED_MAVEN_TAG = Pattern.compile("3(?:\\.\\d+){0,2}-jdk-(\\d+)");
+    /// CircleCI publishes its convenience images for a feature version as `25.0`.
+    private static final Pattern CIRCLECI_TAG = Pattern.compile("(\\d+)\\.\\d+(?:\\.\\d+)?(-[a-z0-9-]+)?");
     private static final Pattern GRADLE_TAG = Pattern.compile("(?:(\\d+(?:\\.\\d+){0,2})-)?jdk(\\d+)(.*)");
 
     /// The oldest Gradle release able to run on each Java version, as the `gradle` images run Gradle on the
@@ -82,7 +84,8 @@ final class JavaImageReference {
         if (DEPRECATED_IMAGES.contains(path)) {
             return registry == null ? NEW_IMAGE : registry + '/' + NEW_IMAGE;
         }
-        return CURRENT_IMAGES.contains(path) || "maven".equals(path) || "gradle".equals(path) ? imageName : null;
+        return CURRENT_IMAGES.contains(path) || "maven".equals(path) || "gradle".equals(path) ||
+               "cimg/openjdk".equals(path) ? imageName : null;
     }
 
     static @Nullable String upgradedTag(String imageName, String tag, int version) {
@@ -92,6 +95,11 @@ final class JavaImageReference {
         }
         if ("gradle".equals(path)) {
             return upgradedGradleTag(tag, version);
+        }
+        if ("cimg/openjdk".equals(path)) {
+            Matcher circleCiTag = CIRCLECI_TAG.matcher(tag);
+            return circleCiTag.matches() && isUpgrade(Integer.parseInt(circleCiTag.group(1)), version) ?
+                    version + ".0" + (circleCiTag.group(2) == null ? "" : circleCiTag.group(2)) : null;
         }
         Matcher matcher = VERSIONED_TAG.matcher(tag);
         if (!matcher.matches() || !isUpgrade(Integer.parseInt(matcher.group(1)), version)) {
