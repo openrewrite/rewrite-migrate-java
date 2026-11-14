@@ -27,6 +27,7 @@ import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
 import java.util.Iterator;
 
@@ -57,7 +58,10 @@ public class AddMissingMethodImplementation extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return Preconditions.check(new UsesType<>(fullyQualifiedClassName, true), new ClassImplementationVisitor());
+        // The method template is Java, so printing it into a Kotlin or Groovy class would not compile.
+        return Preconditions.check(
+                Preconditions.and(new JavaFileChecker<>(), new UsesType<>(fullyQualifiedClassName, true)),
+                new ClassImplementationVisitor());
     }
 
     public class ClassImplementationVisitor extends JavaIsoVisitor<ExecutionContext> {
