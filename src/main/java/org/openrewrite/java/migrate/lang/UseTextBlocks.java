@@ -17,15 +17,24 @@ package org.openrewrite.java.migrate.lang;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Option;
+import org.openrewrite.Preconditions;
+import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.style.IntelliJ;
 import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JContainer;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
@@ -38,8 +47,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
 
 @EqualsAndHashCode(callSuper = false)
@@ -60,19 +70,41 @@ public class UseTextBlocks extends Recipe {
             required = false)
     boolean avoidLineContinuations;
 
+    /**
+     * Optional enhancement to migrate additive string concatenations containing variables or expressions
+     * into a text block combined with {@code .formatted(...)} (e.g. {@code """\n%s""".formatted(var)}).
+     * <p>
+     * Defaults to {@code false} to preserve strict backward compatibility with existing recipes and migrations.
+     */
+    @Option(displayName = "Whether to convert concatenations with variables using .formatted(...).",
+            description = "Whether or not string concatenations with variables should be converted to text blocks with .formatted(...). " +
+                          "The default value is false.",
+            example = "true",
+            required = false)
+    boolean formatVariables;
+
     public UseTextBlocks() {
         convertStringsWithoutNewlines = true;
         avoidLineContinuations = false;
+        formatVariables = false;
     }
 
-    public UseTextBlocks(boolean convertStringsWithoutNewlines) {
+    public UseTextBlocks(final boolean convertStringsWithoutNewlines) {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
         this.avoidLineContinuations = false;
+        this.formatVariables = false;
     }
 
-    public UseTextBlocks(boolean convertStringsWithoutNewlines, boolean avoidLineContinuations) {
+    public UseTextBlocks(final boolean convertStringsWithoutNewlines, final boolean avoidLineContinuations) {
         this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
         this.avoidLineContinuations = avoidLineContinuations;
+        this.formatVariables = false;
+    }
+
+    public UseTextBlocks(final boolean convertStringsWithoutNewlines, final boolean avoidLineContinuations, final boolean formatVariables) {
+        this.convertStringsWithoutNewlines = convertStringsWithoutNewlines;
+        this.avoidLineContinuations = avoidLineContinuations;
+        this.formatVariables = formatVariables;
     }
 
     String displayName = "Use text blocks";
@@ -89,32 +121,79 @@ public class UseTextBlocks extends Recipe {
         );
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
-            public J visitBinary(J.Binary binary, ExecutionContext ctx) {
-                List<J.Literal> stringLiterals = new ArrayList<>();
-
-                StringBuilder contentSb = new StringBuilder();
-                StringBuilder concatenationSb = new StringBuilder();
-
-                boolean allLiterals = allLiterals(binary);
-                if (!allLiterals) {
-                    return binary; // Not super.visitBinary(binary, ctx) because we don't want to visit the children
-                }
-
+            public J visitBinary(final J.Binary binary, final ExecutionContext ctx) {
                 if (containsComments(binary)) {
                     return binary;
                 }
 
-                boolean flattenable = flatAdditiveStringLiterals(binary, stringLiterals, contentSb, concatenationSb);
-                if (!flattenable) {
+                if (!formatVariables) {
+                    final boolean allLiterals = allLiterals(binary);
+                    if (!allLiterals) {
+                        return binary; // Not super.visitBinary(binary, ctx) because we don't want to visit the children
+                    }
+
+                    final List<J.Literal> stringLiterals = new ArrayList<>();
+                    final StringBuilder contentSb = new StringBuilder();
+                    final StringBuilder concatenationSb = new StringBuilder();
+
+                    final boolean flattenable = flatAdditiveStringLiterals(binary, stringLiterals, contentSb, concatenationSb);
+                    if (!flattenable) {
+                        return super.visitBinary(binary, ctx);
+                    }
+
+                    final boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
+                    if (!hasNewLineInConcatenation) {
+                        return super.visitBinary(binary, ctx);
+                    }
+
+                    final String content = contentSb.toString();
+                    if (content.contains("\r")) {
+                        // Carriage returns aren't yet carried over into text blocks, which always end with a newline \n
+                        return super.visitBinary(binary, ctx);
+                    }
+
+                    if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
+                        return super.visitBinary(binary, ctx);
+                    }
+
+                    return toTextBlock(binary, content, stringLiterals, concatenationSb.toString());
+                }
+
+                final List<Operand> operands = new ArrayList<>();
+                final StringBuilder concatenationSb = new StringBuilder();
+
+                final boolean collectSuccess = collectOperands(
+                        binary,
+                        true,
+                        operands,
+                        concatenationSb,
+                        false
+                );
+                if (!collectSuccess) {
                     return super.visitBinary(binary, ctx);
                 }
 
-                boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
+                boolean hasStringLiteral = false;
+                for (final Operand op : operands) {
+                    if (!op.isVariable()) {
+                        hasStringLiteral = true;
+                        break;
+                    }
+                }
+                if (!hasStringLiteral) {
+                    return super.visitBinary(binary, ctx);
+                }
+
+                final boolean hasNewLineInConcatenation = containsNewLineInContent(concatenationSb.toString());
                 if (!hasNewLineInConcatenation) {
                     return super.visitBinary(binary, ctx);
                 }
 
-                String content = contentSb.toString();
+                final StringBuilder contentSb = new StringBuilder();
+                for (final Operand op : operands) {
+                    contentSb.append(op.getContent());
+                }
+                final String content = contentSb.toString();
                 if (content.contains("\r")) {
                     // Carriage returns aren't yet carried over into text blocks, which always end with a newline \n
                     return super.visitBinary(binary, ctx);
@@ -124,42 +203,63 @@ public class UseTextBlocks extends Recipe {
                     return super.visitBinary(binary, ctx);
                 }
 
-                return toTextBlock(binary, content, stringLiterals, concatenationSb.toString());
+                boolean hasVariables = false;
+                for (final Operand op : operands) {
+                    if (op.isVariable()) {
+                        hasVariables = true;
+                        break;
+                    }
+                }
+                if (!hasVariables) {
+                    final List<J.Literal> stringLiterals = new ArrayList<>(operands.size());
+                    for (final Operand op : operands) {
+                        stringLiterals.add((J.Literal) op.getExpression());
+                    }
+                    return toTextBlock(binary, content, stringLiterals, concatenationSb.toString());
+                }
+
+                return toFormattedTextBlock(binary, operands, concatenationSb.toString());
             }
 
-
-            private J.Literal toTextBlock(J.Binary binary, String content, List<J.Literal> stringLiterals, String concatenation) {
+            private J.Literal toTextBlock(final J.Binary binary, String content, final List<J.Literal> stringLiterals, final String concatenation) {
                 final String passPhrase;
                 try {
                     passPhrase = generatePassword(content);
-                } catch (NoSuchAlgorithmException e) {
+                } catch (final NoSuchAlgorithmException e) {
                     throw new RuntimeException(e);
                 }
 
-                StringBuilder sb = new StringBuilder();
-                StringBuilder originalContent = new StringBuilder();
-                stringLiterals = stringLiterals.stream()
-                        .filter(s -> s.getValue() != null && !s.getValue().toString().isEmpty())
-                        .collect(toList());
-                boolean skipLineContinuations = avoidLineContinuations && containsNewLineInContent(content);
-                for (int i = 0; i < stringLiterals.size(); i++) {
-                    String s = requireNonNull(stringLiterals.get(i).getValue()).toString();
+                final StringBuilder sb = new StringBuilder();
+                final StringBuilder originalContent = new StringBuilder();
+                final List<J.Literal> filteredLiterals = new ArrayList<>();
+                for (final J.Literal s : stringLiterals) {
+                    if (s.getValue() != null && !s.getValue().toString().isEmpty()) {
+                        filteredLiterals.add(s);
+                    }
+                }
+                final boolean skipLineContinuations = avoidLineContinuations && containsNewLineInContent(content);
+                for (int i = 0; i < filteredLiterals.size(); i++) {
+                    final String s = requireNonNull(filteredLiterals.get(i).getValue()).toString();
                     sb.append(s);
                     originalContent.append(s);
-                    if (i != stringLiterals.size() - 1) {
-                        String nextLine = requireNonNull(stringLiterals.get(i + 1).getValue()).toString();
-                        char nextChar = nextLine.charAt(0);
+                    if (i != filteredLiterals.size() - 1) {
+                        final String nextLine = requireNonNull(filteredLiterals.get(i + 1).getValue()).toString();
+                        final char nextChar = nextLine.charAt(0);
                         if (!s.endsWith("\n") && nextChar != '\n' && !skipLineContinuations) {
                             sb.append(passPhrase);
                         }
                     }
                 }
 
-                TabsAndIndentsStyle tabsAndIndentsStyle = Style.from(TabsAndIndentsStyle.class, getCursor().firstEnclosingOrThrow(SourceFile.class), IntelliJ::tabsAndIndents);
-                boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
-                int tabSize = tabsAndIndentsStyle.getTabSize();
+                final TabsAndIndentsStyle tabsAndIndentsStyle = Style.from(
+                        TabsAndIndentsStyle.class,
+                        getCursor().firstEnclosingOrThrow(SourceFile.class),
+                        IntelliJ::tabsAndIndents
+                );
+                final boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
+                final int tabSize = tabsAndIndentsStyle.getTabSize();
 
-                String indentation = getIndents(concatenation, useTab, tabSize);
+                final String indentation = getIndents(concatenation, useTab, tabSize);
 
                 // references:
                 //  - https://docs.oracle.com/en/java/javase/14/docs/specs/text-blocks-jls.html
@@ -179,7 +279,7 @@ public class UseTextBlocks extends Recipe {
                 content = content.replace(" \n", "\\s\n");
                 // preserve a trailing space on the final content line, which a text block would otherwise strip,
                 // silently changing the string's value
-                boolean endsWithTrailingSpace = content.endsWith(" ");
+                final boolean endsWithTrailingSpace = content.endsWith(" ");
                 if (endsWithTrailingSpace) {
                     content = content.substring(0, content.length() - 1) + "\\s";
                 }
@@ -202,7 +302,192 @@ public class UseTextBlocks extends Recipe {
                         String.format("\"\"\"%s\"\"\"", content), null, JavaType.Primitive.String);
             }
 
-            private boolean isEndsWithSpecialCharacters(String content) {
+            /**
+             * Converts an additive concatenation containing variable expressions into a text block chained with
+             * {@code .formatted(args)}.
+             * <p>
+             * Architecture details:
+             * <ul>
+             *   <li>Literal {@code %} characters in string segments are safely escaped to {@code %%}.</li>
+             *   <li>Line continuations {@code \} and indentation are aligned identically to standard {@code toTextBlock}.</li>
+             *   <li>Attaches fully resolved {@link JavaType.Method} for {@code String.formatted(Object... args)} to both
+             *       the {@link J.Identifier} and {@link J.MethodInvocation} to ensure strict AST type attribution and pass
+             *       {@code FindMissingTypes} checks.</li>
+             * </ul>
+             */
+            private J.MethodInvocation toFormattedTextBlock(
+                    final J.Binary binary,
+                    final List<Operand> operands,
+                    final String concatenation
+            ) {
+                final List<Operand> filteredOperands = new ArrayList<>();
+                for (final Operand op : operands) {
+                    if (op.isVariable() || !op.getContent().isEmpty()) {
+                        filteredOperands.add(op);
+                    }
+                }
+
+                final StringBuilder templateContent = new StringBuilder();
+                for (int i = 0; i < filteredOperands.size(); i++) {
+                    final Operand op = filteredOperands.get(i);
+                    if (op.isVariable()) {
+                        templateContent.append(op.getContent());
+                    } else {
+                        templateContent.append(op.getContent().replace("%", "%%"));
+                    }
+                }
+                final String contentForPassword = templateContent.toString();
+                final String passPhrase;
+                try {
+                    passPhrase = generatePassword(contentForPassword);
+                } catch (final NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+
+                final StringBuilder sb = new StringBuilder();
+                final StringBuilder originalContent = new StringBuilder();
+                final boolean skipLineContinuations = avoidLineContinuations && containsNewLineInContent(contentForPassword);
+
+                for (int i = 0; i < filteredOperands.size(); i++) {
+                    final Operand op = filteredOperands.get(i);
+                    final String piece = op.isVariable() ? op.getContent() : op.getContent().replace("%", "%%");
+                    sb.append(piece);
+                    originalContent.append(piece);
+                    if (i != filteredOperands.size() - 1) {
+                        final Operand nextOp = filteredOperands.get(i + 1);
+                        final String nextPiece = nextOp.isVariable() ? nextOp.getContent() : nextOp.getContent().replace("%", "%%");
+                        final char nextChar = nextPiece.isEmpty() ? ' ' : nextPiece.charAt(0);
+                        if (!piece.endsWith("\n") && nextChar != '\n' && !skipLineContinuations && nextOp.isLineBreakBefore()) {
+                            sb.append(passPhrase);
+                        }
+                    }
+                }
+
+                final TabsAndIndentsStyle tabsAndIndentsStyle = Style.from(
+                        TabsAndIndentsStyle.class,
+                        getCursor().firstEnclosingOrThrow(SourceFile.class),
+                        IntelliJ::tabsAndIndents
+                );
+                final boolean useTab = tabsAndIndentsStyle.getUseTabCharacter();
+                final int tabSize = tabsAndIndentsStyle.getTabSize();
+
+                final String indentation = getIndents(concatenation, useTab, tabSize);
+
+                String content = sb.toString();
+                // escape backslashes
+                content = content.replace("\\", "\\\\");
+                // re-escape tab and form feed characters
+                content = content.replace("\t", "\\t");
+                content = content.replace("\f", "\\f");
+                // escape triple quotes
+                content = content.replace("\"\"\"", "\"\"\\\"");
+                // preserve trailing spaces before a newline
+                content = content.replace(" \n", "\\s\n");
+                // preserve a trailing space on the final content line
+                final boolean endsWithTrailingSpace = content.endsWith(" ");
+                if (endsWithTrailingSpace) {
+                    content = content.substring(0, content.length() - 1) + "\\s";
+                }
+                // handle preceding indentation
+                content = content.replace("\n", "\n" + indentation);
+                // handle line continuations
+                content = content.replace(passPhrase, "\\\n" + indentation);
+
+                // add first line
+                content = "\n" + indentation + content;
+
+                // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
+                // need to escape ending quote in the content. A trailing space additionally requires a line
+                // continuation so the closing delimiter does not introduce a spurious newline.
+                if (isEndsWithSpecialCharacters(sb.toString()) || endsWithTrailingSpace) {
+                    content = content + "\\\n" + indentation;
+                }
+
+                final J.Literal textBlock = new J.Literal(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        originalContent.toString(),
+                        String.format("\"\"\"%s\"\"\"", content),
+                        null,
+                        JavaType.Primitive.String
+                );
+
+                final List<Expression> variableExpressions = new ArrayList<>();
+                for (final Operand op : filteredOperands) {
+                    if (op.isVariable()) {
+                        variableExpressions.add(op.getExpression());
+                    }
+                }
+
+                final List<JRightPadded<Expression>> paddedArgs = new ArrayList<>(variableExpressions.size());
+                for (int i = 0; i < variableExpressions.size(); i++) {
+                    final Expression expr = variableExpressions.get(i);
+                    final Space prefix = (i == 0) ? Space.EMPTY : Space.format(" ");
+                    paddedArgs.add(JRightPadded.build(expr.withPrefix(prefix)));
+                }
+
+                final JContainer<Expression> argsContainer = JContainer.build(
+                        Space.EMPTY,
+                        paddedArgs,
+                        Markers.EMPTY
+                );
+
+                JavaType.FullyQualified stringType = TypeUtils.asFullyQualified(binary.getType());
+                if (stringType == null) {
+                    stringType = JavaType.ShallowClass.build("java.lang.String");
+                }
+                JavaType.Method formattedMethod = null;
+                for (final JavaType.Method m : stringType.getMethods()) {
+                    if ("formatted".equals(m.getName())) {
+                        formattedMethod = m;
+                        break;
+                    }
+                }
+                if (formattedMethod == null) {
+                    final JavaType objectArrayType = new JavaType.Array(
+                            null,
+                            JavaType.ShallowClass.build("java.lang.Object"),
+                            null
+                    );
+                    formattedMethod = new JavaType.Method(
+                            null,
+                            1L,
+                            stringType,
+                            "formatted",
+                            stringType,
+                            singletonList("args"),
+                            singletonList(objectArrayType),
+                            emptyList(),
+                            emptyList(),
+                            emptyList(),
+                            emptyList()
+                    );
+                }
+
+                final J.Identifier methodName = new J.Identifier(
+                        randomId(),
+                        Space.EMPTY,
+                        Markers.EMPTY,
+                        emptyList(),
+                        "formatted",
+                        formattedMethod,
+                        null
+                );
+
+                return new J.MethodInvocation(
+                        randomId(),
+                        binary.getPrefix(),
+                        Markers.EMPTY,
+                        JRightPadded.build(textBlock),
+                        null,
+                        methodName,
+                        argsContainer,
+                        formattedMethod
+                );
+            }
+
+            private boolean isEndsWithSpecialCharacters(final String content) {
                 return content.endsWith("\"") ||
                        content.endsWith("=") ||
                        content.endsWith("}") ||
@@ -211,16 +496,150 @@ public class UseTextBlocks extends Recipe {
         });
     }
 
-    private static boolean containsComments(Expression expression) {
+    private static boolean containsComments(final Expression expression) {
         if (expression instanceof J.Binary) {
-            J.Binary b = (J.Binary) expression;
+            final J.Binary b = (J.Binary) expression;
             if (!b.getPrefix().getComments().isEmpty() ||
                 !b.getPadding().getOperator().getBefore().getComments().isEmpty()) {
                 return true;
             }
             return containsComments(b.getLeft()) || containsComments(b.getRight());
         }
-        return expression instanceof J.Literal && !expression.getPrefix().getComments().isEmpty();
+        return !expression.getPrefix().getComments().isEmpty();
+    }
+
+    private static final class Operand {
+        private final Expression expression;
+        private final boolean variable;
+        private final String content;
+        private final boolean lineBreakBefore;
+
+        Operand(
+                final Expression expression,
+                final boolean variable,
+                final String content,
+                final boolean lineBreakBefore
+        ) {
+            this.expression = expression;
+            this.variable = variable;
+            this.content = content;
+            this.lineBreakBefore = lineBreakBefore;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public boolean isVariable() {
+            return variable;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public boolean isLineBreakBefore() {
+            return lineBreakBefore;
+        }
+    }
+
+    /**
+     * Maps an operand's resolved {@link JavaType} to a printf format specifier.
+     * <p>
+     * Note: Floats and doubles intentionally map to {@code %s} (rather than {@code %f}) to preserve exact decimal
+     * formatting and avoid locale-dependent comma vs dot separators when transforming string concatenations.
+     */
+    private static String getFormatSpecifier(final @Nullable JavaType type) {
+        final JavaType.Primitive primitive = TypeUtils.asPrimitive(type);
+        if (primitive != null) {
+            switch (primitive) {
+                case Int:
+                case Long:
+                case Short:
+                case Byte:
+                    return "%d";
+                case Boolean:
+                    return "%b";
+                case Char:
+                    return "%c";
+                default:
+                    return "%s";
+            }
+        }
+        final JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
+        if (fq != null) {
+            final String fqn = fq.getFullyQualifiedName();
+            if ("java.lang.Integer".equals(fqn) || "java.lang.Long".equals(fqn) || "java.lang.Short".equals(fqn) || "java.lang.Byte".equals(fqn)) {
+                return "%d";
+            }
+            if ("java.lang.Boolean".equals(fqn)) {
+                return "%b";
+            }
+            if ("java.lang.Character".equals(fqn)) {
+                return "%c";
+            }
+            return "%s";
+        }
+        return "%s";
+    }
+
+    private static boolean collectOperands(
+            final Expression expression,
+            final boolean formatVariables,
+            final List<Operand> operands,
+            final StringBuilder concatenationSb,
+            final boolean lineBreakBefore
+    ) {
+        if (expression instanceof J.Binary) {
+            final J.Binary b = (J.Binary) expression;
+            if (b.getOperator() == J.Binary.Type.Addition && TypeUtils.isString(b.getType())) {
+                concatenationSb.append(b.getPrefix().getWhitespace())
+                        .append("-");
+                concatenationSb.append(b.getPadding().getOperator().getBefore().getWhitespace())
+                        .append("-");
+
+                final boolean leftSuccess = collectOperands(
+                        b.getLeft(),
+                        formatVariables,
+                        operands,
+                        concatenationSb,
+                        lineBreakBefore
+                );
+                if (!leftSuccess) {
+                    return false;
+                }
+
+                final boolean hasLineBreakBetween = containsNewLineInContent(b.getPadding().getOperator().getBefore().getWhitespace()) ||
+                        containsNewLineInContent(b.getRight().getPrefix().getWhitespace());
+
+                return collectOperands(
+                        b.getRight(),
+                        formatVariables,
+                        operands,
+                        concatenationSb,
+                        hasLineBreakBetween
+                );
+            }
+        }
+        if (isRegularStringLiteral(expression)) {
+            final J.Literal l = (J.Literal) expression;
+            final String val = requireNonNull(l.getValue()).toString();
+            operands.add(new Operand(l, false, val, lineBreakBefore));
+            concatenationSb.append(l.getPrefix().getWhitespace())
+                    .append("-");
+            return true;
+        }
+        if (formatVariables) {
+            if (expression instanceof J.Literal && TypeUtils.isString(expression.getType())) {
+                return false;
+            }
+            final String specifier = getFormatSpecifier(expression.getType());
+            operands.add(new Operand(expression, true, specifier, lineBreakBefore));
+            concatenationSb.append(expression.getPrefix().getWhitespace())
+                    .append("-");
+            return true;
+        }
+        return false;
     }
 
     private static boolean allLiterals(Expression exp) {
