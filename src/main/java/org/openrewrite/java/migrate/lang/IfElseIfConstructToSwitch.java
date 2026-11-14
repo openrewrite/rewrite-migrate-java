@@ -382,7 +382,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return Space.SINGLE_SPACE;
         }
 
-        @SuppressWarnings("deprecation")
         private J.VariableDeclarations buildVariableDeclarations(J.InstanceOf instanceOf, Space prefix) {
             J.Identifier pattern = (J.Identifier) instanceOf.getPattern();
             J.VariableDeclarations.NamedVariable namedVar = new J.VariableDeclarations.NamedVariable(
@@ -401,7 +400,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     emptyList(),
                     emptyList(),
                     instanceOf.getClazz().withPrefix(Space.EMPTY),
-                    null,
                     null,
                     singletonList(JRightPadded.build(namedVar))
             );
