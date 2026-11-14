@@ -99,9 +99,7 @@ class UpgradeWro4jMavenPluginVersionTest implements RewriteTest {
                 </build>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                return assertThat( actual ).contains( "<wro4j.version>2" ).actual();
-            })
+            spec -> spec.after(actual -> assertThat( actual ).contains( "<wro4j.version>2" ).actual())
           )
         );
     }

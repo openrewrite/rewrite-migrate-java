@@ -302,9 +302,7 @@ class BouncyCastleTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec
-                .after(actual -> {
-                    return assertThat( actual ).containsOnlyOnce( "<artifactId>bcpkix-jdk18on</artifactId>" ).actual();
-                })
+                .after(actual -> assertThat( actual ).containsOnlyOnce( "<artifactId>bcpkix-jdk18on</artifactId>" ).actual())
                 .afterRecipe(doc -> assertThat(doc.getMarkers().findFirst(MavenResolutionResult.class)
                   .get().getDependencies().get(Scope.Compile))
                   .filteredOn(rd -> rd.getDepth() == 0)

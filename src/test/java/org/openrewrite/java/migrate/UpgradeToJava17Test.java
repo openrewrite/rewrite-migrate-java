@@ -116,13 +116,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 </dependencies>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                return assertThat( actual )
+            spec -> spec.after(actual -> assertThat( actual )
                         .doesNotContain( "<artifactId>mapstruct-jdk8</artifactId>" )
                         .contains( "<artifactId>mapstruct</artifactId>" )
                         .contains( "<artifactId>mapstruct-processor</artifactId>" )
-                        .contains( "<mapstruct.version>1.6.3</mapstruct.version>" ).actual();
-            })
+                        .contains( "<mapstruct.version>1.6.3</mapstruct.version>" ).actual())
           )
         );
     }
