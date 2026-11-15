@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -24,16 +25,12 @@ import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.xml.tree.Xml;
 
 public class AddApisForJaxwsCodegen extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Add APIs for javax JAX-WS generated sources";
-    }
+    @Getter
+    final String displayName = "Add APIs for javax JAX-WS generated sources";
 
-    @Override
-    public String getDescription() {
-        return "Add compile APIs for an explicitly configured MojoHaus 2.6 wsimport or Codecentric 2.3.0.RELEASE generate execution, " +
-               "even when generated sources are absent from the LST. Customized tool dependencies, external executables and test generation are excluded.";
-    }
+    @Getter
+    final String description = "Add compile APIs for an explicitly configured MojoHaus 2.6 wsimport or Codecentric 2.3.0.RELEASE generate execution, " +
+            "even when generated sources are absent from the LST. Customized tool dependencies, external executables and test generation are excluded.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

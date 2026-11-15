@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -25,11 +29,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.xml.XmlIsoVisitor;
 import org.openrewrite.xml.trait.Namespaced;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 

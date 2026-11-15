@@ -36,25 +36,6 @@ class JavaConcurrentAPIsTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(9)));
     }
 
-    @Test
-    void noChangeBeforeJava9() {
-        //language=java
-        rewriteRun(
-          java(
-            """
-              import java.util.concurrent.atomic.AtomicBoolean;
-              public class Test {
-                  public boolean method() {
-                      AtomicBoolean value = new AtomicBoolean();
-                      return value.weakCompareAndSet(true, true);
-                  }
-              }
-              """,
-            spec -> spec.markers(javaVersion(8))
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void atomicBooleanWeakCompareAndSet() {
@@ -79,6 +60,25 @@ class JavaConcurrentAPIsTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void noChangeBeforeJava9() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.util.concurrent.atomic.AtomicBoolean;
+              public class Test {
+                  public boolean method() {
+                      AtomicBoolean value = new AtomicBoolean();
+                      return value.weakCompareAndSet(true, true);
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
           )
         );
     }

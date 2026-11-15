@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 package org.openrewrite.java.migrate.javax;
-
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.openrewrite.config.Environment;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
+import org.openrewrite.config.Environment;
 import org.openrewrite.gradle.GradleParser;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.marker.SearchResult;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.Dependency;
 import org.openrewrite.maven.tree.GroupArtifactVersion;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.ResolvedGroupArtifactVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-import java.util.Collections;
-import static org.openrewrite.gradle.Assertions.buildGradle;
-import static org.openrewrite.maven.Assertions.pomXml;
-import static org.openrewrite.java.Assertions.*;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.java.Assertions.*;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class JaxwsNamespaceTest implements RewriteTest {
     @Override public void defaults(RecipeSpec spec) {
@@ -45,15 +46,15 @@ class JaxwsNamespaceTest implements RewriteTest {
           .build().activateRecipes("org.openrewrite.java.migrate.javax.AddJaxwsDependencies"));
     }
 
-    @ParameterizedTest
     @CsvSource({"implementation,3.0.1","implementation,4.0.2","compileOnly,4.0.2","runtimeOnly,4.0.2","testImplementation,4.0.2"})
+    @ParameterizedTest
     void retainJavaxCoordinateBesideTransitiveJakarta(String scope, String version) {
         ResolvedDependency modern = dependency("jakarta.xml.ws", "jakarta.xml.ws-api", version).withDepth(1);
         ResolvedDependency cxf = dependency("org.apache.cxf", "cxf-rt-frontend-jaxws", "4.1.2")
-          .withDependencies(Collections.singletonList(modern));
-        GradleDependencyConfiguration configuration = new GradleDependencyConfiguration(
-          "compileClasspath", null, true, true, false, false, Collections.emptyList(),
-          Collections.emptyList(), Collections.singletonList(cxf), null, null);
+          .withDependencies(List.of(modern));
+        var configuration = new GradleDependencyConfiguration(
+          "compileClasspath", null, true, true, false, false, List.of(),
+                List.of(), List.of(cxf), null, null);
         rewriteRun(buildGradle("""
           plugins { id 'java' }
           repositories { mavenCentral() }
@@ -61,12 +62,13 @@ class JaxwsNamespaceTest implements RewriteTest {
               %s 'javax.xml.ws:jaxws-api:2.3.1'
           }
           """.formatted(scope), spec -> spec.markers(GradleProject.builder().name("app").path(":app")
-            .nameToConfiguration(Collections.singletonMap("compileClasspath", configuration)).build())));
+            .nameToConfiguration(Map.of("compileClasspath", configuration)).build())));
     }
 
     @Test
     void retainBothMavenNamespaces() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>example</groupId>
@@ -90,7 +92,6 @@ class JaxwsNamespaceTest implements RewriteTest {
     }
 
 
-    @ParameterizedTest
     @CsvSource({
       "jakarta.xml.ws,jakarta.xml.ws-api,2.3.3,false",
       "jakarta.xml.ws,jakarta.xml.ws-api,3.0.1,true",
@@ -100,12 +101,13 @@ class JaxwsNamespaceTest implements RewriteTest {
       "jakarta.xml.ws,unrelated,4.0.2,false",
       "unrelated,jakarta.xml.ws-api,4.0.2,false"
     })
+    @ParameterizedTest
     void distinguishNamespaces(String group, String artifact, String version, boolean modern) {
-        GradleDependencyConfiguration configuration = new GradleDependencyConfiguration(
-          "compileClasspath", null, true, true, false, false, Collections.emptyList(),
-          Collections.emptyList(), Collections.singletonList(dependency(group, artifact, version)), null, null);
+        var configuration = new GradleDependencyConfiguration(
+          "compileClasspath", null, true, true, false, false, List.of(),
+                List.of(), List.of(dependency(group, artifact, version)), null, null);
         GradleProject model = GradleProject.builder().name("app").path(":app")
-          .nameToConfiguration(Collections.singletonMap("compileClasspath", configuration)).build();
+          .nameToConfiguration(Map.of("compileClasspath", configuration)).build();
         SourceFile source = GradleParser.builder().build().parse("plugins { id 'java' }").findFirst().orElseThrow();
         source = source.withMarkers(source.getMarkers().add(model));
         Tree selected = new JaxwsNamespace(modern).getVisitor().visit(source, new InMemoryExecutionContext());
@@ -116,7 +118,8 @@ class JaxwsNamespaceTest implements RewriteTest {
 
     @Test
     void retainJavaxCoordinateWithManagedModernApi() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>example</groupId>
@@ -143,11 +146,11 @@ class JaxwsNamespaceTest implements RewriteTest {
           """));
     }
 
-    @ParameterizedTest
     @CsvSource({
       "javax.xml.ws,jaxws-api,2.3.1,javax.xml.ws.http.HTTPException",
       "javax.jws,javax.jws-api,1.1,javax.jws.WebService"
     })
+    @ParameterizedTest
     void supplyJavaxApiWithoutReplacingModernApi(String group, String artifact, String version, String type) {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn(
@@ -194,11 +197,11 @@ class JaxwsNamespaceTest implements RewriteTest {
     }
 
 
-    @ParameterizedTest
     @CsvSource({
       "jakarta.xml.ws,jakarta.xml.ws-api,4.0.2,jakarta.jws,jakarta.jws-api,2.1.0,javax.jws.WebService",
       "jakarta.jws,jakarta.jws-api,3.0.0,jakarta.xml.ws,jakarta.xml.ws-api,2.3.3,javax.xml.ws.http.HTTPException"
     })
+    @ParameterizedTest
     void doNotDuplicateAnEquivalentLegacyApi(String modernGroup, String modernArtifact, String modernVersion,
                                              String legacyGroup, String legacyArtifact, String legacyVersion, String type) {
         rewriteRun(

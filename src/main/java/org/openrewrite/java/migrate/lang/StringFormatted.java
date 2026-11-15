@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.time.Duration;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -25,13 +27,10 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
-
-import java.time.Duration;
-import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -30,9 +32,6 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.util.Collections.singletonList;
 

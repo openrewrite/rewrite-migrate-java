@@ -175,9 +175,8 @@ class UseJavaUtilBase64Test implements RewriteTest {
     @Test
     void mime() {
         rewriteRun(
-          spec -> {
-              spec.recipe(new UseJavaUtilBase64("test.sun.misc", true));
-          },
+          spec ->
+              spec.recipe(new UseJavaUtilBase64("test.sun.misc", true)),
           //language=java
           java(
             """

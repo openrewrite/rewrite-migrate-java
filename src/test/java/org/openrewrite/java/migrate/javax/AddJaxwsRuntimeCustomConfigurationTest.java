@@ -17,8 +17,8 @@ package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -30,6 +30,25 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddJaxwsRuntime()).beforeRecipe(withToolingApi());
+    }
+
+    @DocumentExample
+    @Test
+    void customApiConfigurationFeedsUncoveredStandardClasspaths() {
+        rewriteRun(buildGradle(
+          """
+          apply plugin: 'java'
+          repositories { mavenCentral() }
+          configurations { soapApi }
+          configurations.implementation.extendsFrom(configurations.soapApi)
+          dependencies {
+              soapApi 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
+          }
+          """,
+                spec -> spec.after(after -> assertThat(after)
+                            .containsPattern("(?m)^\\s*compileOnly ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                            .containsPattern("(?m)^\\s*testImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                            .doesNotContain("soapApi \"com.sun.xml.ws", "soapApi 'com.sun.xml.ws").actual())));
     }
 
     @Test
@@ -46,17 +65,15 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
                   integrationTestImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
               }
               """,
-            spec -> spec.after(after -> {
-                assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-                assertThat(after).contains("compileOnly 'com.sun.xml.ws:jaxws-rt:2.3.7'");
-                return after;
-            })
+            spec -> spec.after(after -> assertThat(after)
+                        .containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                        .contains("compileOnly 'com.sun.xml.ws:jaxws-rt:2.3.7'").actual())
           )
         );
     }
 
     @ParameterizedTest
-    @CsvSource({"org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5", "com.sun.xml.ws:jaxws-rt:2.3.7"})
+    @ValueSource(strings = {"org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5", "com.sun.xml.ws:jaxws-rt:2.3.7"})
     void customProviderCoversCustomApi(String provider) {
         rewriteRun(buildGradle("""
           apply plugin: 'java'
@@ -72,7 +89,8 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
 
     @Test
     void customApiConfigurationFeedsCoveredStandardClasspaths() {
-        rewriteRun(buildGradle("""
+        rewriteRun(buildGradle(
+          """
           apply plugin: 'java'
           repositories { mavenCentral() }
           configurations { soapApi }
@@ -85,26 +103,9 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
     }
 
     @Test
-    void customApiConfigurationFeedsUncoveredStandardClasspaths() {
-        rewriteRun(buildGradle("""
-          apply plugin: 'java'
-          repositories { mavenCentral() }
-          configurations { soapApi }
-          configurations.implementation.extendsFrom(configurations.soapApi)
-          dependencies {
-              soapApi 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
-          }
-          """, spec -> spec.after(after -> {
-            assertThat(after).containsPattern("(?m)^\\s*compileOnly ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-            assertThat(after).containsPattern("(?m)^\\s*testImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-            assertThat(after).doesNotContain("soapApi \"com.sun.xml.ws", "soapApi 'com.sun.xml.ws");
-            return after;
-        })));
-    }
-
-    @Test
     void customProviderConfigurationFeedsStandardRuntime() {
-        rewriteRun(buildGradle("""
+        rewriteRun(buildGradle(
+          """
           apply plugin: 'java'
           repositories { mavenCentral() }
           configurations { soapProvider }
@@ -118,7 +119,8 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
 
     @Test
     void sharedApiBucketDoesNotPolluteCoveredMainRuntime() {
-        rewriteRun(buildGradle("""
+        rewriteRun(buildGradle(
+          """
           apply plugin: 'java'
           repositories { mavenCentral() }
           sourceSets { integrationTest {} }
@@ -129,16 +131,16 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
               soapApi 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
               implementation 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'
           }
-          """, spec -> spec.after(after -> {
-            assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-            assertThat(after).doesNotContain("soapApi \"com.sun.xml.ws", "soapApi 'com.sun.xml.ws", "implementation \"com.sun.xml.ws", "testImplementation \"com.sun.xml.ws");
-            return after;
-        })));
+          """,
+                spec -> spec.after(after -> assertThat(after)
+                            .containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                            .doesNotContain("soapApi \"com.sun.xml.ws", "soapApi 'com.sun.xml.ws", "implementation \"com.sun.xml.ws", "testImplementation \"com.sun.xml.ws").actual())));
     }
 
     @Test
     void sharedRuntimeApiBucketDoesNotPolluteCoveredMainRuntime() {
-        rewriteRun(buildGradle("""
+        rewriteRun(buildGradle(
+          """
           apply plugin: 'java'
           repositories { mavenCentral() }
           sourceSets { integrationTest {} }
@@ -149,16 +151,16 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
               sharedApi 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
               implementation 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'
           }
-          """, spec -> spec.after(after -> {
-            assertThat(after).containsPattern("(?m)^\\s*integrationTest(?:Implementation|RuntimeOnly) ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-            assertThat(after).doesNotContain("sharedApi \"com.sun.xml.ws", "sharedApi 'com.sun.xml.ws", "implementation \"com.sun.xml.ws", "testImplementation \"com.sun.xml.ws");
-            return after;
-        })));
+          """,
+                spec -> spec.after(after -> assertThat(after)
+                            .containsPattern("(?m)^\\s*integrationTest(?:Implementation|RuntimeOnly) ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                            .doesNotContain("sharedApi \"com.sun.xml.ws", "sharedApi 'com.sun.xml.ws", "implementation \"com.sun.xml.ws", "testImplementation \"com.sun.xml.ws").actual())));
     }
 
     @Test
     void customCompileOnlyProviderStillNeedsRuntimeCoverage() {
-        rewriteRun(buildGradle("""
+        rewriteRun(buildGradle(
+          """
           apply plugin: 'java'
           repositories { mavenCentral() }
           sourceSets { integrationTest {} }
@@ -167,11 +169,10 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
               integrationTestImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
               integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'
           }
-          """, spec -> spec.after(after -> {
-            assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-            assertThat(after).contains("integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'");
-            return after;
-        })));
+          """,
+                spec -> spec.after(after -> assertThat(after)
+                            .containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                            .contains("integrationTestCompileOnly 'org.apache.cxf:cxf-rt-frontend-jaxws:3.5.5'").actual())));
     }
 
     @ParameterizedTest
@@ -197,12 +198,10 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
         } else {
             rewriteRun(
               spec -> spec.cycles(3).expectedCyclesThatMakeChanges(1),
-              buildGradle(before, spec -> spec.after(after -> {
-                  assertThat(after).containsPattern("(?m)^\\s*integrationTestRuntimeOnly ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-                  assertThat(after).doesNotContain("integrationTestImplementation \"com.sun.xml.ws", "integrationTestImplementation 'com.sun.xml.ws",
-                    "functionalTestRuntimeOnly \"com.sun.xml.ws", "functionalTestRuntimeOnly 'com.sun.xml.ws");
-                  return after;
-              }))
+              buildGradle(before, spec -> spec.after(after -> assertThat(after)
+                          .containsPattern("(?m)^\\s*integrationTestRuntimeOnly ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]")
+                          .doesNotContain("integrationTestImplementation \"com.sun.xml.ws", "integrationTestImplementation 'com.sun.xml.ws",
+                                  "functionalTestRuntimeOnly \"com.sun.xml.ws", "functionalTestRuntimeOnly 'com.sun.xml.ws").actual()))
             );
         }
     }
@@ -210,7 +209,8 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
     @Test
     void customApiInAppliedScript() {
         rewriteRun(
-          buildGradle("""
+          buildGradle(
+            """
             apply plugin: 'java'
             repositories { mavenCentral() }
             sourceSets { integrationTest {} }
@@ -218,15 +218,15 @@ class AddJaxwsRuntimeCustomConfigurationTest implements RewriteTest {
                 compileOnly 'com.sun.xml.ws:jaxws-rt:2.3.7'
             }
             apply from: 'dependencies.gradle'
-            """, spec -> spec.after(after -> {
-                assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]");
-                return after;
-            })),
-          buildGradle("""
+            """,
+                  spec -> spec.after(after -> assertThat(after).containsPattern("(?m)^\\s*integrationTestImplementation ['\"]com\\.sun\\.xml\\.ws:jaxws-rt:2\\.3\\.\\d+['\"]").actual())),
+          buildGradle(
+            """
             dependencies {
                 integrationTestImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
             }
-            """, spec -> spec.path("dependencies.gradle"))
+            """,
+                  spec -> spec.path("dependencies.gradle"))
         );
     }
 

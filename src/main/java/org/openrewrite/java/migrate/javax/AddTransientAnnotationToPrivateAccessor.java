@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -30,8 +31,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 

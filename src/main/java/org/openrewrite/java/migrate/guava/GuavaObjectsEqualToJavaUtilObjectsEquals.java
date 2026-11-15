@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
@@ -30,8 +31,6 @@ import org.openrewrite.java.VariableNameUtils;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GuavaObjectsEqualToJavaUtilObjectsEquals extends Recipe {
     private static final String GUAVA_EQUAL = "com.google.common.base.Objects equal(Object, Object)";

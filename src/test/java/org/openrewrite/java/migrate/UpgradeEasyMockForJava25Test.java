@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -44,6 +45,7 @@ class UpgradeEasyMockForJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
     }
 
+    @DocumentExample
     @Test
     void upgradeProxyImplementation() {
         rewriteRun(pomXml(POM, POM.replace("5.1.0", "5.6.0")));

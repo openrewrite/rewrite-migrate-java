@@ -15,15 +15,14 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -34,8 +33,8 @@ class MavenBuildPluginsForJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
     }
 
-    @ParameterizedTest
     @CsvSource({"maven-plugin-plugin,3.15.1,3.15.2", "maven-shade-plugin,3.6.0,3.6.1"})
+    @ParameterizedTest
     void upgradePluginsThatReadJava25Classes(String artifact, String oldVersion, String minimum) {
         rewriteRun(pomXml(pom(artifact, oldVersion, false), spec -> spec.after(after -> {
             assertCompatible(after, artifact, minimum);
@@ -43,8 +42,8 @@ class MavenBuildPluginsForJava25Test implements RewriteTest {
         })));
     }
 
-    @ParameterizedTest
     @CsvSource({"maven-plugin-plugin,3.15.1,3.15.2", "maven-shade-plugin,3.6.0,3.6.1"})
+    @ParameterizedTest
     void upgradeManagedPluginsThatReadJava25Classes(String artifact, String oldVersion, String minimum) {
         rewriteRun(pomXml(pom(artifact, oldVersion, true), spec -> spec.after(after -> {
             assertCompatible(after, artifact, minimum);
@@ -52,15 +51,16 @@ class MavenBuildPluginsForJava25Test implements RewriteTest {
         })));
     }
 
-    @ParameterizedTest
     @CsvSource({"maven-plugin-plugin,4.0.0-beta-1", "maven-shade-plugin,4.0.0-beta-1"})
+    @ParameterizedTest
     void preserveNewerMajorPluginLines(String artifact, String version) {
         rewriteRun(pomXml(pom(artifact, version, false)));
     }
 
     @Test
     void doesNotIntroducePluginsIntoPlainProjects() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>example</groupId>
@@ -73,7 +73,7 @@ class MavenBuildPluginsForJava25Test implements RewriteTest {
     private static void assertCompatible(String pom, String artifact, String minimum) {
         Matcher matcher = Pattern.compile("<artifactId>" + artifact + "</artifactId>\\s*<version>([^<]+)</version>").matcher(pom);
         assertThat(matcher.find()).isTrue();
-        assertThat(new LatestRelease(null).compare(null, matcher.group(1), minimum)).isGreaterThanOrEqualTo(0);
+        assertThat(new LatestRelease(null).compare(null, matcher.group(1), minimum)).isNotNegative();
     }
 
     private static String pom(String artifact, String version, boolean managed) {

@@ -15,16 +15,11 @@
  */
 package org.openrewrite.java.migrate.guava;
 
-import org.jspecify.annotations.Nullable;
-import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.Flag;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.TypeUtils;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
+import org.openrewrite.java.tree.*;
 
 public class NoGuavaImmutableSetOf extends AbstractNoGuavaImmutableOf {
     public NoGuavaImmutableSetOf() {

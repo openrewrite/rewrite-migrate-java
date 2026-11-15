@@ -15,11 +15,10 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.regex.Pattern;
 
 import static org.openrewrite.maven.Assertions.pomXml;
 

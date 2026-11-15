@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.Set;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -25,8 +26,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 

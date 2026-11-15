@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -30,10 +33,6 @@ import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.service.AnnotationService;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;

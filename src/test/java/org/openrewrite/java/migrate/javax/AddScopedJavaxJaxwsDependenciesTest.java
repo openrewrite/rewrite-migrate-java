@@ -19,10 +19,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
@@ -35,8 +38,14 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
             "package javax.jws; public @interface WebService {}"));
     }
 
-    @ParameterizedTest
+    @DocumentExample
+    @Test
+    void noSourceUseDoesNotPromoteRuntimeApi() {
+        rewriteRun(pomXml(pom("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "runtime")));
+    }
+
     @CsvSource({"test,jakarta.xml.ws,jakarta.xml.ws-api,2.3.3", "runtime,jakarta.xml.ws,jakarta.xml.ws-api,2.3.3", "test,javax.xml.ws,jaxws-api,2.3.1", "runtime,javax.xml.ws,jaxws-api,2.3.1"})
+    @ParameterizedTest
     void promoteExistingEquivalentForMain(String scope, String group, String artifact, String version) {
         String before = pom(group, artifact, version, scope);
         rewriteRun(mavenProject("app", srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
@@ -52,14 +61,9 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"compile", "provided", "runtime", "test"})
-    void testOnlyUseDoesNotBroadenExistingApi(String scope) {
+    void onlyUseDoesNotBroadenExistingApi(String scope) {
         rewriteRun(mavenProject("app", srcTestJava(java("class ExampleTest { javax.xml.ws.http.HTTPException error; }")),
           pomXml(pom("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", scope))));
-    }
-
-    @Test
-    void noSourceUseDoesNotPromoteRuntimeApi() {
-        rewriteRun(pomXml(pom("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "runtime")));
     }
 
     @ParameterizedTest
@@ -67,28 +71,28 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     void gradlePromotesExistingEquivalentForMain(String configuration) {
         String before = gradle(configuration);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle(before, before.replace(configuration + " '", "implementation '"),
+          buildGradle(before, before.replace(configuration + " '", "implementation '"),
             spec -> spec.markers(gradleModel(configuration, false))));
     }
 
     @Test
     void gradleCompileOnlyIsAlreadySuitableForMain() {
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle(gradle("compileOnly"),
+          buildGradle(gradle("compileOnly"),
             spec -> spec.markers(gradleModel("compileOnly", true))));
     }
 
     @Test
     void gradleTestOnlyUseKeepsTestApi() {
         rewriteRun(srcTestJava(java("class ExampleTest { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle(gradle("testImplementation"),
+          buildGradle(gradle("testImplementation"),
             spec -> spec.markers(gradleModel("testImplementation", false))));
     }
 
     @Test
     void gradleExistingTransitiveCompileApiIsSuitable() {
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle("plugins { id 'java' }",
+          buildGradle("plugins { id 'java' }",
             spec -> spec.markers(gradleModel("unrelated", true))));
     }
 
@@ -112,7 +116,7 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void buildSrcJavaDoesNotPromoteApplicationApi() {
         rewriteRun(java("class Tool { javax.xml.ws.http.HTTPException error; }", spec -> spec.path("buildSrc/src/main/java/Tool.java")),
-          org.openrewrite.gradle.Assertions.buildGradle(gradle("runtimeOnly"),
+          buildGradle(gradle("runtimeOnly"),
             spec -> spec.markers(gradleModel("runtimeOnly", false))));
     }
 
@@ -127,13 +131,10 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
         rewriteRun(java("class Integration { javax.xml.ws.http.HTTPException error; }", spec ->
             spec.path("src/integrationTest/java/Integration.java").markers(new org.openrewrite.java.marker.JavaSourceSet(
               org.openrewrite.Tree.randomId(), "integrationTest", java.util.List.of(), java.util.Map.of()))),
-          org.openrewrite.gradle.Assertions.buildGradle(gradle("runtimeOnly"), spec -> spec.markers(custom).after(after -> {
-              org.assertj.core.api.Assertions.assertThat(after)
-                .contains("runtimeOnly 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'")
-                .contains("integrationTestImplementation")
-                .doesNotContain("javax.xml.ws");
-              return after;
-          })));
+          buildGradle(gradle("runtimeOnly"), spec -> spec.markers(custom).after(after -> assertThat(after)
+                      .contains("runtimeOnly 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'")
+                      .contains("integrationTestImplementation")
+                      .doesNotContain("javax.xml.ws").actual())));
     }
 
     @Test
@@ -143,16 +144,13 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
         configurations.remove("testCompileClasspath");
         var model = base.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle("plugins { id 'java' }", spec -> spec.markers(model).after(after -> {
-              org.assertj.core.api.Assertions.assertThat(after).contains("implementation").contains("javax.xml.ws:jaxws-api:2.3.1")
-                .doesNotContain("jakarta.xml.ws-api:2.3.3");
-              return after;
-          })));
+          buildGradle("plugins { id 'java' }", spec -> spec.markers(model).after(after -> assertThat(after).contains("implementation").contains("javax.xml.ws:jaxws-api:2.3.1")
+                      .doesNotContain("jakarta.xml.ws-api:2.3.3").actual())));
     }
 
     @Test
     void managedOnlyEquivalentVersionDoesNotPreventAddingAnApiForTestSources() {
-        String before = """
+        var before = """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>example</groupId>
@@ -177,10 +175,7 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
           </project>
           """;
         rewriteRun(mavenProject("app", srcTestJava(java("class ExampleTest { javax.xml.ws.http.HTTPException error; }")),
-          pomXml(before, spec -> spec.after(after -> {
-              org.assertj.core.api.Assertions.assertThat(after).contains("javax.xml.ws").contains("<scope>test</scope>");
-              return after;
-          }))));
+          pomXml(before, spec -> spec.after(after -> assertThat(after).contains("javax.xml.ws").contains("<scope>test</scope>").actual()))));
     }
 
     @Test
@@ -212,12 +207,9 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     void mainUseSuppliesTransitiveRuntimeAliasWithoutBroadeningItsProvider() {
         String before = pom("com.sun.xml.ws", "jaxws-rt", "2.3.7", "runtime");
         rewriteRun(mavenProject("app", srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          pomXml(before, spec -> spec.after(after -> {
-              org.assertj.core.api.Assertions.assertThat(after).contains("<artifactId>jakarta.xml.ws-api</artifactId>")
-                .doesNotContain("<groupId>javax.xml.ws</groupId>")
-                .contains("<artifactId>jaxws-rt</artifactId>\n      <version>2.3.7</version>\n      <scope>runtime</scope>");
-              return after;
-          }))));
+          pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<artifactId>jakarta.xml.ws-api</artifactId>")
+                      .doesNotContain("<groupId>javax.xml.ws</groupId>")
+                      .contains("<artifactId>jaxws-rt</artifactId>\n      <version>2.3.7</version>\n      <scope>runtime</scope>").actual()))));
     }
 
     @Test
@@ -230,17 +222,16 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
         configurations.put("runtimeClasspath", configuration("runtimeClasspath", java.util.List.of(wrapper)));
         var runtime = model.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle("""
+          buildGradle(
+            """
             plugins { id 'java' }
             repositories { mavenCentral() }
             dependencies {
                 runtimeOnly 'example:wrapper:1'
             }
-            """, spec -> spec.markers(runtime).after(after -> {
-                org.assertj.core.api.Assertions.assertThat(after).contains("runtimeOnly 'example:wrapper:1'")
-                  .contains("implementation").contains("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3").doesNotContain("javax.xml.ws");
-                return after;
-            })));
+            """,
+                  spec -> spec.markers(runtime).after(after -> assertThat(after).contains("runtimeOnly 'example:wrapper:1'")
+                              .contains("implementation").contains("jakarta.xml.ws:jakarta.xml.ws-api:2.3.3").doesNotContain("javax.xml.ws").actual())));
     }
 
     @Test
@@ -251,19 +242,18 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
           dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "4.0.2"))));
         var mixed = model.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle("""
+          buildGradle(
+            """
             plugins { id 'java' }
             repositories { mavenCentral() }
             dependencies {
                 implementation 'jakarta.xml.ws:jakarta.xml.ws-api:4.0.2'
                 testImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'
             }
-            """, spec -> spec.markers(mixed).after(after -> {
-                org.assertj.core.api.Assertions.assertThat(after).contains("implementation 'jakarta.xml.ws:jakarta.xml.ws-api:4.0.2'")
-                  .contains("testImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'")
-                  .contains("javax.xml.ws:jaxws-api:2.3.1");
-                return after;
-            })));
+            """,
+                  spec -> spec.markers(mixed).after(after -> assertThat(after).contains("implementation 'jakarta.xml.ws:jakarta.xml.ws-api:4.0.2'")
+                              .contains("testImplementation 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'")
+                              .contains("javax.xml.ws:jaxws-api:2.3.1").actual())));
     }
 
     @Test
@@ -276,7 +266,7 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
           }
           """;
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          org.openrewrite.gradle.Assertions.buildGradle(before,
+          buildGradle(before,
             before.replaceFirst("runtimeOnly '", "implementation '"), spec -> spec.markers(gradleModel("runtimeOnly", false))));
     }
 
@@ -285,7 +275,7 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
         var sourceProject = new org.openrewrite.java.marker.JavaProject(org.openrewrite.Tree.randomId(), "source", null);
         var otherProject = new org.openrewrite.java.marker.JavaProject(org.openrewrite.Tree.randomId(), "other", null);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }", spec -> spec.markers(sourceProject))),
-          org.openrewrite.gradle.Assertions.buildGradle(gradle("runtimeOnly"),
+          buildGradle(gradle("runtimeOnly"),
             spec -> spec.markers(gradleModel("runtimeOnly", false), otherProject)));
     }
 
@@ -335,12 +325,9 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
         String before = pom("javax.xml.ws", "jaxws-api", "2.3.1", "compile")
           .replace("    <dependency>\n      <groupId>jakarta.jws</groupId>\n      <artifactId>jakarta.jws-api</artifactId>\n      <version>3.0.0</version>\n    </dependency>\n", "");
         rewriteRun(mavenProject("app", srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
-          pomXml(before, spec -> spec.after(after -> {
-              org.assertj.core.api.Assertions.assertThat(after).contains("<groupId>jakarta.xml.ws</groupId>")
-                .contains("<artifactId>jakarta.xml.ws-api</artifactId>").contains("<version>2.3.")
-                .doesNotContain("<groupId>javax.xml.ws</groupId>");
-              return after;
-          }))));
+          pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<groupId>jakarta.xml.ws</groupId>")
+                      .contains("<artifactId>jakarta.xml.ws-api</artifactId>").contains("<version>2.3.")
+                      .doesNotContain("<groupId>javax.xml.ws</groupId>").actual()))));
     }
 
     static String gradle(String configuration) {

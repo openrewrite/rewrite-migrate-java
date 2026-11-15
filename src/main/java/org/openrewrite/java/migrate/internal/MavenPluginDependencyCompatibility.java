@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -33,10 +36,6 @@ import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public final class MavenPluginDependencyCompatibility {
     private MavenPluginDependencyCompatibility() {

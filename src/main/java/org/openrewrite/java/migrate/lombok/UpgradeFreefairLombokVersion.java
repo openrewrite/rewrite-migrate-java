@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -29,8 +30,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.semver.LatestRelease;
-
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

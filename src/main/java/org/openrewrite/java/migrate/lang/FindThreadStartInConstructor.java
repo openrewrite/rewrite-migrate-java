@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -26,10 +29,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 

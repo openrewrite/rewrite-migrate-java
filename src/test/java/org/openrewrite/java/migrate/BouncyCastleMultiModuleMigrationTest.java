@@ -26,13 +26,13 @@ import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class BouncyCastleMultiModuleMigrationTest implements RewriteTest {
-    @ParameterizedTest
     @CsvSource({
       "8,bcprov,jdk18on",
       "8,bcpkix,jdk18on",
       "7,bcprov,jdk15to18",
       "7,bcpkix,jdk15to18"
     })
+    @ParameterizedTest
     void keepManagedAndVersionlessChildCoordinatesTogether(int javaVersion, String artifact, String target) {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava" + javaVersion),
@@ -61,7 +61,7 @@ class BouncyCastleMultiModuleMigrationTest implements RewriteTest {
               spec -> spec.after(identity()).afterRecipe(doc -> {
                   Xml.Tag dependency = doc.getRoot().getChild("dependencyManagement").orElseThrow()
                     .getChild("dependencies").orElseThrow().getChild("dependency").orElseThrow();
-                  assertThat(dependency.getChildValue("artifactId")).contains(artifact + "-" + target);
+                  assertThat(dependency.getChildValue("artifactId")).hasValue(artifact + "-" + target);
                   assertThat(dependency.getChildValue("version")).isPresent();
               })
             ),
@@ -87,7 +87,7 @@ class BouncyCastleMultiModuleMigrationTest implements RewriteTest {
                 spec -> spec.after(identity()).afterRecipe(doc -> {
                     Xml.Tag dependency = doc.getRoot().getChild("dependencies").orElseThrow()
                       .getChild("dependency").orElseThrow();
-                    assertThat(dependency.getChildValue("artifactId")).contains(artifact + "-" + target);
+                    assertThat(dependency.getChildValue("artifactId")).hasValue(artifact + "-" + target);
                     assertThat(dependency.getChild("version")).isEmpty();
                 })
               )

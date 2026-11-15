@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import java.util.List;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -23,8 +24,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
-
-import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;

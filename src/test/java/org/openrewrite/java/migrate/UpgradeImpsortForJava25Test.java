@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -32,40 +33,34 @@ class UpgradeImpsortForJava25Test implements RewriteTest {
         spec.recipe(new UpgradeImpsortForJava25());
     }
 
+    @DocumentExample
+    @Test
+    void leavesUnrelatedPluginsAlone() {
+        rewriteRun(pomXml(pom("1.13.0", "").replace("impsort-maven-plugin", "formatter-maven-plugin")));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "3.28.0", "3.27.1"})
     void addsOrUpgradesAffectedParser(String parserVersion) {
-        rewriteRun(pomXml(pom("1.13.0", parserVersion), spec -> spec.after(after -> {
-            assertThat(after).contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(pom("1.13.0", parserVersion), spec -> spec.after(after -> assertThat(after).contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>").actual())));
     }
 
     @Test
     void pluginManagement() {
         String before = pom("1.13.0", "").replace("<build>", "<build><pluginManagement>").replace("</build>", "</pluginManagement></build>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>").actual())));
     }
 
     @Test
     void resolvesPluginVersionProperty() {
         String before = pom("${impsort.version}", "").replace("<build>", "<properties><impsort.version>1.13.0</impsort.version></properties><build>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<version>${impsort.version}</version>").contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<version>${impsort.version}</version>").contains("<version>3.28.2</version>").actual())));
     }
 
     @Test
     void changesOldParserPropertyReferenceLocally() {
         String before = pom("1.13.0", "${parser.version}").replace("<build>", "<properties><parser.version>3.28.0</parser.version></properties><build>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<parser.version>3.28.0</parser.version>").contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<parser.version>3.28.0</parser.version>").contains("<version>3.28.2</version>").actual())));
     }
 
     @ParameterizedTest
@@ -78,11 +73,6 @@ class UpgradeImpsortForJava25Test implements RewriteTest {
     @ValueSource(strings = {"1.12.0", "1.13.1", "1.14.0", "2.0.0"})
     void leavesOtherImpsortVersionsAlone(String pluginVersion) {
         rewriteRun(pomXml(pom(pluginVersion, "")));
-    }
-
-    @Test
-    void leavesUnrelatedPluginsAlone() {
-        rewriteRun(pomXml(pom("1.13.0", "").replace("impsort-maven-plugin", "formatter-maven-plugin")));
     }
 
     @Test
@@ -111,11 +101,8 @@ class UpgradeImpsortForJava25Test implements RewriteTest {
     @Test
     void preservesUnrelatedPluginDependencies() {
         String before = pom("1.13.0", "").replace("</plugin>", "<dependencies><dependency><groupId>org.ow2.asm</groupId><artifactId>asm</artifactId><version>9.8</version></dependency></dependencies></plugin>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<artifactId>asm</artifactId>").contains("<version>9.8</version>")
-              .contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<artifactId>asm</artifactId>").contains("<version>9.8</version>")
+                    .contains("<artifactId>javaparser-core</artifactId>").contains("<version>3.28.2</version>").actual())));
     }
 
     @Test
@@ -124,11 +111,8 @@ class UpgradeImpsortForJava25Test implements RewriteTest {
           .replace("<build>", "<profiles><profile><id>legacy</id><properties><parser.version>3.28.0</parser.version></properties><build>")
           .replace("</build>", "</build></profile></profiles>")
           .replace("<profiles>", "<properties><parser.version>3.29.0</parser.version></properties><profiles>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<parser.version>3.29.0</parser.version>").contains("<parser.version>3.28.0</parser.version>")
-              .contains("<version>3.28.2</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<parser.version>3.29.0</parser.version>").contains("<parser.version>3.28.0</parser.version>")
+                    .contains("<version>3.28.2</version>").actual())));
     }
 
     @Test

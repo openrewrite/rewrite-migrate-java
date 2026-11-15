@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -32,13 +33,16 @@ class UpgradePlexusComponentMetadataForJava25Test implements RewriteTest {
         spec.recipe(new UpgradePlexusComponentMetadataForJava25());
     }
 
+    @DocumentExample
+    @Test
+    void preservesUnknownPluginVersion() {
+        rewriteRun(pomXml(pom("${external.plugin.version}", "", false)));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", "9.6", "9.7.1"})
     void addsOrUpgradesAffectedBytecodeReader(String asm) {
-        rewriteRun(pomXml(pom("2.2.0", asm, false), spec -> spec.after(after -> {
-            assertThat(after).contains("<artifactId>asm</artifactId>").contains("<version>9.8</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(pom("2.2.0", asm, false), spec -> spec.after(after -> assertThat(after).contains("<artifactId>asm</artifactId>").contains("<version>9.8</version>").actual())));
     }
 
     @Test
@@ -46,8 +50,7 @@ class UpgradePlexusComponentMetadataForJava25Test implements RewriteTest {
         rewriteRun(pomXml(pom(null, "", true), spec -> spec.after(after -> {
             assertThat(after).contains("<artifactId>mojo-parent</artifactId><version>87</version>")
               .contains("<artifactId>asm</artifactId>").contains("<version>9.8</version>");
-            assertThat(after).doesNotContain("<artifactId>plexus-component-metadata</artifactId><version>");
-            return after;
+            return assertThat(after).doesNotContain("<artifactId>plexus-component-metadata</artifactId><version>").actual();
         })));
     }
 
@@ -64,11 +67,6 @@ class UpgradePlexusComponentMetadataForJava25Test implements RewriteTest {
     }
 
     @Test
-    void preservesUnknownPluginVersion() {
-        rewriteRun(pomXml(pom("${external.plugin.version}", "", false)));
-    }
-
-    @Test
     void preservesUnmanagedVersionlessPlugin() {
         rewriteRun(pomXml(pom(null, "", false)));
     }
@@ -82,10 +80,7 @@ class UpgradePlexusComponentMetadataForJava25Test implements RewriteTest {
     void upgradesPropertyReferenceLocally() {
         String before = pom("2.2.0", "${asm.version}", false)
           .replace("<build>", "<properties><asm.version>9.6</asm.version></properties><build>");
-        rewriteRun(pomXml(before, spec -> spec.after(after -> {
-            assertThat(after).contains("<asm.version>9.6</asm.version>").contains("<version>9.8</version>");
-            return after;
-        })));
+        rewriteRun(pomXml(before, spec -> spec.after(after -> assertThat(after).contains("<asm.version>9.6</asm.version>").contains("<version>9.8</version>").actual())));
     }
 
     @Test

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -25,8 +26,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
-
-import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

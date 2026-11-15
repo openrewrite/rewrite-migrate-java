@@ -29,10 +29,13 @@ public class KotlinGradleJava25Prerequisites extends DataTable<KotlinGradleJava2
     public static class Row {
         @Column(displayName = "Build file", description = "The compiler declaration associated with the preserved Gradle build.")
         String buildFile;
+
         @Column(displayName = "Compiler version", description = "The declared compiler value or configured default, or unknown when unresolved.")
         String compilerVersion;
+
         @Column(displayName = "Reason", description = "Why this build is not automatically migrated.")
         String reason;
+
         @Column(displayName = "Manual prerequisite", description = "The explicit compatibility decision needed before Java 25 migration.")
         String manualPrerequisite;
     }

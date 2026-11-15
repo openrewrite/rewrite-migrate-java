@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -29,11 +33,6 @@ import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.trait.Comments;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

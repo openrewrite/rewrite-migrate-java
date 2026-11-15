@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -28,10 +31,6 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
