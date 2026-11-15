@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -23,9 +25,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.openrewrite.java.migrate.guava.PreferJavaStringJoin.JOIN_METHOD_MATCHER;
 import static org.openrewrite.java.tree.TypeUtils.isAssignableTo;

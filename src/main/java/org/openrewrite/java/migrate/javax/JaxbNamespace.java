@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -31,10 +34,6 @@ import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
-
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 

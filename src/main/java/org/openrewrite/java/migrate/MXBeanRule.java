@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -31,9 +33,6 @@ import org.openrewrite.java.tree.J.Modifier;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.List;
-import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static org.openrewrite.Tree.randomId;

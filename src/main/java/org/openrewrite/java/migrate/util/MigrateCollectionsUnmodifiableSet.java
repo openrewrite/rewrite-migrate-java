@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import java.util.List;
+import java.util.StringJoiner;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -29,9 +31,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.List;
-import java.util.StringJoiner;
 
 public class MigrateCollectionsUnmodifiableSet extends Recipe {
     private static final MethodMatcher UNMODIFIABLE_SET = new MethodMatcher("java.util.Collections unmodifiableSet(java.util.Set)");

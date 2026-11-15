@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
@@ -27,10 +30,6 @@ import org.openrewrite.java.migrate.table.JavaVersionTable;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.GitProvenance;
 import org.openrewrite.marker.Markers;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static java.util.Collections.emptyList;
 

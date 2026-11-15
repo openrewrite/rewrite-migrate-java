@@ -32,28 +32,6 @@ class OptionalStreamRecipeTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(11)));
     }
 
-    @Test
-    void noChangeBeforeJava9() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              import java.util.Optional;
-              import java.util.stream.Stream;
-
-              class Scratch {
-                public void foo() {
-                  Stream<Object> x = Stream.of(Optional.empty())
-                       .filter(Optional::isPresent)
-                       .map(Optional::get);
-                }
-              }
-              """,
-            spec -> spec.markers(javaVersion(8))
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void basic_case() {
@@ -84,6 +62,28 @@ class OptionalStreamRecipeTest implements RewriteTest {
               }
               """
           ));
+    }
+
+    @Test
+    void noChangeBeforeJava9() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import java.util.Optional;
+              import java.util.stream.Stream;
+
+              class Scratch {
+                public void foo() {
+                  Stream<Object> x = Stream.of(Optional.empty())
+                       .filter(Optional::isPresent)
+                       .map(Optional::get);
+                }
+              }
+              """,
+            spec -> spec.markers(javaVersion(8))
+          )
+        );
     }
 
     @Test

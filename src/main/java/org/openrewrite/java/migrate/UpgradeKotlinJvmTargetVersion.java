@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.Iterator;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -35,8 +36,6 @@ import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.Iterator;
 
 import static java.util.Collections.singletonList;
 

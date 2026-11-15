@@ -15,15 +15,14 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.test.RewriteTest;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.test.SourceSpecs.text;
@@ -31,10 +30,8 @@ import static org.openrewrite.test.SourceSpecs.text;
 
 class UpdateSdkManTest implements RewriteTest {
 
-    /**
-     * The nightly SDKMAN! candidates refresh drops patch versions as new ones appear, so tests that need an exact
-     * version read a currently available one from the same candidate list the recipe resolves against.
-     */
+    /// The nightly SDKMAN! candidates refresh drops patch versions as new ones appear, so tests that need an exact
+    /// version read a currently available one from the same candidate list the recipe resolves against.
     private static String latestPatchVersion(String majorVersion, String distribution) {
         Pattern pattern = Pattern.compile("^" + majorVersion + "\\.\\d+\\.\\d+-" + distribution + "$");
         try (InputStream candidates = UpdateSdkMan.class.getResourceAsStream("/sdkman-java.csv");

@@ -15,11 +15,10 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
 import lombok.Getter;
 import org.openrewrite.Recipe;
 import org.openrewrite.staticanalysis.RemoveExtraSemicolons;
-
-import java.util.List;
 
 import static java.util.Collections.singletonList;
 

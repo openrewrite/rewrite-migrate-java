@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.util;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.search.FindMethods;
 import org.openrewrite.java.tree.J;
@@ -31,6 +32,33 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new MigrateCollectionsUnmodifiableList());
+    }
+
+    @DocumentExample
+    @Test
+    void unmodifiableEmptyList() {
+        //language=java
+        rewriteRun(
+          version(
+            java(
+              """
+                import java.util.*;
+
+                class Test {
+                    List<Integer> l = Collections.unmodifiableList(Arrays.asList());
+                }
+                """,
+              """
+                import java.util.List;
+
+                class Test {
+                    List<Integer> l = List.of();
+                }
+                """
+            ),
+            9
+          )
+        );
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/67")
@@ -117,32 +145,6 @@ class MigrateCollectionsUnmodifiableListTest implements RewriteTest {
                         "1", // this is one
                         "2" // this is two
                     );
-                }
-                """
-            ),
-            9
-          )
-        );
-    }
-
-    @Test
-    void unmodifiableEmptyList() {
-        //language=java
-        rewriteRun(
-          version(
-            java(
-              """
-                import java.util.*;
-
-                class Test {
-                    List<Integer> l = Collections.unmodifiableList(Arrays.asList());
-                }
-                """,
-              """
-                import java.util.List;
-
-                class Test {
-                    List<Integer> l = List.of();
                 }
                 """
             ),

@@ -15,6 +15,12 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -30,13 +36,6 @@ import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import org.openrewrite.style.Style;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;

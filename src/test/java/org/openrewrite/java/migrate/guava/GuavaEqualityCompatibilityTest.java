@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.guava;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.ChangeMethodTargetToStatic;
@@ -46,9 +47,9 @@ class GuavaEqualityCompatibilityTest implements RewriteTest {
     }
 
     private void nested(int depth) {
-        String before = "left";
-        String after = "left";
-        for (int i = 0; i < depth; i++) {
+        var before = "left";
+        var after = "left";
+        for (var i = 0; i < depth; i++) {
             before = "equal(" + before + ", right)";
             after = "java.util.Objects.equals(" + after + ", right)";
         }
@@ -59,6 +60,7 @@ class GuavaEqualityCompatibilityTest implements RewriteTest {
         ));
     }
 
+    @DocumentExample
     @Test
     void legacyQualifiedKotlinControl() {
         rewriteRun(

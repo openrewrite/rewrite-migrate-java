@@ -92,7 +92,7 @@ class AboutJavaVersionTest implements RewriteTest {
     void reusedRecipeInstanceReportsEachRun() {
         var recipe = new AboutJavaVersion(null);
         var jv = new JavaVersion(randomId(), "me", "me", "17", "17");
-        for (int run = 0; run < 2; run++) {
+        for (var run = 0; run < 2; run++) {
             rewriteRun(
               spec -> spec.recipe(recipe)
                 .dataTable(JavaVersionRow.class, rows ->

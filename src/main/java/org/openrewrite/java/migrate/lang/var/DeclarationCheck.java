@@ -15,6 +15,11 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.UnaryOperator;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
@@ -22,12 +27,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
-
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.UnaryOperator;
 
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;

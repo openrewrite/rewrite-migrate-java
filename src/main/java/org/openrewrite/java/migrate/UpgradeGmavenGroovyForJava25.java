@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
@@ -24,17 +25,13 @@ import org.openrewrite.xml.ChangeTagValueVisitor;
 import org.openrewrite.xml.tree.Xml;
 
 public class UpgradeGmavenGroovyForJava25 extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Upgrade the GMaven Groovy 3 compiler for Java 25";
-    }
+    @Getter
+    final String displayName = "Upgrade the GMaven Groovy 3 compiler for Java 25";
 
-    @Override
-    public String getDescription() {
-        return "Raise explicit Groovy 3.0 compiler dependencies in GMaven plugins to at least 3.0.25, which includes ASM support " +
-               "for Java 25. Preserve other Groovy release lines and newer patches. Inherited version properties are overridden " +
-               "on the plugin dependency, leaving the parent and its other consumers unchanged.";
-    }
+    @Getter
+    final String description = "Raise explicit Groovy 3.0 compiler dependencies in GMaven plugins to at least 3.0.25, which includes ASM support " +
+            "for Java 25. Preserve other Groovy release lines and newer patches. Inherited version properties are overridden " +
+            "on the plugin dependency, leaving the parent and its other consumers unchanged.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

@@ -15,14 +15,13 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.openrewrite.Cursor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 final class LambdaCapture {
     private LambdaCapture() {

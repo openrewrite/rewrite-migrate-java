@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -27,10 +30,6 @@ import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;

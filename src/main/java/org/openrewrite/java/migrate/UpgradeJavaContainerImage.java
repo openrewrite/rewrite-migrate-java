@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -28,9 +30,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.yaml.JsonPathMatcher;
 import org.openrewrite.yaml.YamlIsoVisitor;
 import org.openrewrite.yaml.tree.Yaml;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static java.util.Collections.emptySet;
 
@@ -69,8 +68,7 @@ public class UpgradeJavaContainerImage extends Recipe {
         return Preconditions.check(new FindSourceFiles(filePattern), new YamlIsoVisitor<ExecutionContext>() {
             @Override
             public Yaml.Document visitDocument(Yaml.Document document, ExecutionContext ctx) {
-                Set<String> aliasedImages = new HashSet<>();
-                new YamlIsoVisitor<Set<String>>() {
+                Set<String> aliasedImages = new YamlIsoVisitor<Set<String>>() {
                     @Override
                     public Yaml.Mapping.Entry visitMappingEntry(Yaml.Mapping.Entry entry, Set<String> anchors) {
                         if (matcher.matches(getCursor())) {
@@ -86,7 +84,7 @@ public class UpgradeJavaContainerImage extends Recipe {
                         }
                         return super.visitSequenceEntry(entry, anchors);
                     }
-                }.visit(document, aliasedImages, getCursor().getParentOrThrow());
+                }.reduce(document, new HashSet<>(), getCursor().getParentOrThrow());
                 getCursor().putMessage(ALIASED_IMAGES, aliasedImages);
                 return super.visitDocument(document, ctx);
             }

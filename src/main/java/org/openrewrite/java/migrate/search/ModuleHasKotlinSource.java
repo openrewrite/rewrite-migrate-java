@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -28,10 +31,6 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

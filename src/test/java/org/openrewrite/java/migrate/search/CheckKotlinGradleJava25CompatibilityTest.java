@@ -16,19 +16,21 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
-import org.openrewrite.test.RecipeSpec;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.migrate.table.KotlinGradleJava25Prerequisites;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
 import static org.openrewrite.gradle.Assertions.settingsGradleKts;
 import static org.openrewrite.kotlin.Assertions.kotlin;
+import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.properties.Assertions.properties;
 import static org.openrewrite.test.SourceSpecs.text;
-import static org.openrewrite.maven.Assertions.pomXml;
 
 class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     private static final String PIPELINE = """
@@ -73,42 +75,52 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
 
     @Override public void defaults(RecipeSpec spec) { spec.recipeFromYaml(PIPELINE, "test.Java25Compatibility"); }
 
+    @DocumentExample
+    @Test
+    void javaOnlyKotlinDslAndTransitiveStdlibRemainEligible() {
+        rewriteRun(
+          buildGradleKts(
+            """
+            plugins { java }
+            dependencies { implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20") }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
+            """,
+            """
+            plugins { java }
+            dependencies { implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20") }
+            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+            """
+          ));
+    }
+
     @Test void oldCompilerPreservesTheWholeBuild() {
         rewriteRun(
           spec -> spec.dataTable(KotlinGradleJava25Prerequisites.Row.class, rows -> assertThat(rows).singleElement().satisfies(row -> {
               assertThat(row.getCompilerVersion()).isEqualTo("1.8.20");
               assertThat(row.getManualPrerequisite()).contains("not automatically migrated to K2");
           })),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "1.8.20" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")),
           properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
 
-    @Test void javaOnlyKotlinDslAndTransitiveStdlibRemainEligible() {
-        rewriteRun(
-          buildGradleKts("""
-            plugins { java }
-            dependencies { implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20") }
-            java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
-            plugins { java }
-            dependencies { implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20") }
-            java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """));
-    }
-
     @Test void supportedCompilerRemainsEligible() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
@@ -118,43 +130,53 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           buildGradleKts("java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }",
             "java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }"),
           settingsGradleKts("rootProject.name = \"legacy\"", s -> s.path("legacy/settings.gradle.kts")),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "1.8.20" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, s -> s.path("legacy/build.gradle.kts")),
+            """,
+                  s -> s.path("legacy/build.gradle.kts")),
           kotlin("class Proof", s -> s.path("legacy/src/main/kotlin/Proof.kt")));
     }
 
     @Test void resourceFixturesAreNotCompiledKotlin() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "1.8.20" apply false }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "1.8.20" apply false }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Fixture", s -> s.path("src/test/resources/project/src/main/kotlin/Fixture.kt")));
     }
 
     @Test void unresolvedCompilerRequiresAManualPrerequisite() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void editableK2MinorCompilerIsUpgradedBeforeJava25() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.2.21" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
@@ -162,13 +184,16 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
         rewriteRun(
           settingsGradleKts("pluginManagement { plugins { kotlin(\"jvm\") version \"2.2.21\" } }",
             "pluginManagement { plugins { kotlin(\"jvm\") version \"2.3.0\" } }"),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
@@ -186,11 +211,13 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     @Test void opaqueManagedK2CompilerIsPreserved() {
         rewriteRun(
           spec -> spec.dataTable(KotlinGradleJava25Prerequisites.Row.class, rows -> assertThat(rows).singleElement().satisfies(row -> assertThat(row.getCompilerVersion()).isEqualTo("2.0.0"))),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             val compilerVersion: String by project
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           properties("compilerVersion=2.0.0", s -> s.path("gradle.properties")),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
@@ -212,25 +239,31 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
 
     @Test void futureCompilerIsNotDowngraded() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.4.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "2.4.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void embeddedKotlinDslCompilerRemainsEligible() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { `kotlin-dsl` }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { `kotlin-dsl` }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           text("plugins {}", s -> s.path("src/main/kotlin/buildlogic.gradle.kts")));
     }
 
@@ -238,194 +271,231 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
         rewriteRun(
           buildGradleKts("plugins { kotlin(\"jvm\") version \"1.8.20\" }"),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")),
-          pomXml("""
+          pomXml(
+            """
             <project>
                 <modelVersion>4.0.0</modelVersion>
                 <groupId>example</groupId><artifactId>java-child</artifactId><version>1</version>
                 <properties><maven.compiler.release>17</maven.compiler.release></properties>
             </project>
-            """, """
+            """,
+            """
             <project>
                 <modelVersion>4.0.0</modelVersion>
                 <groupId>example</groupId><artifactId>java-child</artifactId><version>1</version>
                 <properties><maven.compiler.release>25</maven.compiler.release></properties>
             </project>
-            """, s -> s.path("maven-child/pom.xml")));
+            """,
+                  s -> s.path("maven-child/pom.xml")));
     }
 
     @Test void productionJava25CompositePreservesLegacyBuild() {
-        JavaProject module = new JavaProject(Tree.randomId(), "legacy", null);
+        var module = new JavaProject(Tree.randomId(), "legacy", null);
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
             .allSources(source -> source.markers(module, new JavaVersion(Tree.randomId(), "", "", "17", "17")))
             .dataTable(KotlinGradleJava25Prerequisites.Row.class, rows -> assertThat(rows).hasSize(1)),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "1.8.20" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")),
           properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
 
     @Test void productionJava25CompositeRetainsEditableK2MinorUpgrade() {
-        JavaProject module = new JavaProject(Tree.randomId(), "modern", null);
+        var module = new JavaProject(Tree.randomId(), "modern", null);
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25")
             .allSources(source -> source.markers(module, new JavaVersion(Tree.randomId(), "", "", "17", "17"))),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.2.21" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void unusedOldPluginDoesNotBlockEmbeddedCompiler() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { `kotlin-dsl`; kotlin("jvm") version "1.8.20" apply false }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { `kotlin-dsl`; kotlin("jvm") version "1.8.20" apply false }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           text("plugins {}", s -> s.path("src/main/kotlin/buildlogic.gradle.kts")));
     }
 
     @Test void unusedOldSettingsDefaultDoesNotOverrideAppliedCompiler() {
         rewriteRun(
           settingsGradleKts("pluginManagement { plugins { kotlin(\"jvm\") version \"1.8.20\" } }"),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void appliedCompilerInheritsOldSettingsDefault() {
         rewriteRun(
           settingsGradleKts("pluginManagement { plugins { kotlin(\"jvm\") version \"1.8.20\" } }"),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void uniquelyOwnedCompilerLiteralVariableIsEditable() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             val compilerVersion = "2.2.21"
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             val compilerVersion = "2.3.0"
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void collidingVariableNamesRequireAManualDecision() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             val compilerVersion = "2.2.21"
             plugins { kotlin("jvm") version compilerVersion }
             class Other { val compilerVersion = "unrelated" }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void providerVersionIsOpaqueEvenWithAMatchingDefaultProperty() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             val compilerVersion = providers.gradleProperty("externalCompiler").get()
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           properties("compilerVersion=2.4.0", s -> s.path("gradle.properties")),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void pluginBlockOwnedCompilerLiteralIsEditable() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins {
                 val compilerVersion = "2.2.21"
                 kotlin("jvm") version compilerVersion
             }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins {
                 val compilerVersion = "2.3.0"
                 kotlin("jvm") version compilerVersion
             }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void reassignedCompilerVariableIsOpaque() {
         rewriteRun(
-          buildGradleKts("""
+          buildGradleKts(
+            """
             var compilerVersion = "2.2.21"
             compilerVersion = "1.8.20"
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void unusedLegacyJsDeclarationIsNotCrossedToK2() {
         rewriteRun(
-          settingsGradleKts("""
+          settingsGradleKts(
+            """
             pluginManagement {
                 plugins {
                     kotlin("jvm") version "2.2.21"
                     kotlin("js") version "1.9.22"
                 }
             }
-            """, """
+            """,
+            """
             pluginManagement {
                 plugins {
                     kotlin("jvm") version "2.3.0"
                     kotlin("js") version "1.9.22"
                 }
             }
-            """),
-          buildGradleKts("""
+            """
+          ),
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }
-            """, """
+            """,
+            """
             plugins { kotlin("jvm") }
             java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
-            """),
+            """
+          ),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void customReceiverWithTheSamePluginIdIsNotACompilerDeclaration() {
         rewriteRun(
-          settingsGradleKts("""
+          settingsGradleKts(
+            """
             pluginManagement {
                 plugins {
                     kotlin("jvm") version "2.2.21"
                     custom.id("org.jetbrains.kotlin.jvm").version("1.9.22")
                 }
             }
-            """, """
+            """,
+            """
             pluginManagement {
                 plugins {
                     kotlin("jvm") version "2.3.0"
                     custom.id("org.jetbrains.kotlin.jvm").version("1.9.22")
                 }
             }
-            """),
+            """
+          ),
           buildGradleKts("plugins { kotlin(\"jvm\") }"),
           kotlin("class Proof", s -> s.path("src/main/kotlin/Proof.kt")));
     }
@@ -445,7 +515,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
           properties("distributionUrl=old-wrapper", s -> s.path("gradle/wrapper/gradle-wrapper.properties")));
     }
     @Test void independentBuildsOwnSameNamedCompilerVariablesSeparately() {
-        String before = """
+        var before = """
           plugins {
               val compilerVersion = "2.2.21"
               kotlin("jvm") version compilerVersion
@@ -463,7 +533,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     }
 
     @Test void sharedBuildVariableCollisionsStillRequireAManualDecision() {
-        String build = """
+        var build = """
           plugins {
               val compilerVersion = "2.2.21"
               kotlin("jvm") version compilerVersion
@@ -479,7 +549,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     }
 
     @Test void productionJava25AlignsMarkerlessOwnedRootCompiler() {
-        String before = """
+        var before = """
           plugins {
               val kotlinVersion = "2.2.0"
               kotlin("jvm") version kotlinVersion
@@ -505,18 +575,20 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
 
     @Test void alignmentDoesNotAssumeOpaqueMarkerlessCompiler() {
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             val compilerVersion: String by project
             plugins { kotlin("jvm") version compilerVersion }
             java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
-            """),
+            """
+          ),
           properties("compilerVersion=2.3.0", source -> source.path("gradle.properties")),
           kotlin("class Proof", source -> source.path("src/main/kotlin/Proof.kt")));
     }
 
     @Test void alignmentRetainsModeledLegacyCompilerCap() {
-        JavaProject module = new JavaProject(Tree.randomId(), "legacy", null);
-        String before = """
+        var module = new JavaProject(Tree.randomId(), "legacy", null);
+        var before = """
           plugins { kotlin("jvm") version "1.8.20" }
           java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
           """;
@@ -527,25 +599,27 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     }
     @Test void peerAlignmentDoesNotTreatUnmodeledBuildSrcAsRootKotlinSources() {
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
-          buildGradleKts("""
+          buildGradleKts(
+            """
             plugins { kotlin("jvm") version "2.3.0" }
             java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
-            """),
+            """
+          ),
           kotlin("class BuildLogic", source -> source.path("buildSrc/src/main/kotlin/BuildLogic.kt")));
     }
 
     @Test void alignmentMatchesModeledProjectValuesAcrossDifferentMarkerIds() {
-        JavaProject build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
-        JavaProject source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
-        String before = "plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }";
+        var build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        var source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        var before = "plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }";
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
           buildGradleKts(before, before.replace("of(17)", "of(19)"), file -> file.markers(build)),
           kotlin("class Proof", file -> file.path("src/main/kotlin/Proof.kt").markers(source)));
     }
 
     @Test void alignmentDistinguishesModeledProjectPublications() {
-        JavaProject build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
-        JavaProject source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "other", "1"));
+        var build = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "a", "1"));
+        var source = new JavaProject(Tree.randomId(), "legacy", new JavaProject.Publication("g", "other", "1"));
         rewriteRun(spec -> spec.recipeFromResources("org.openrewrite.java.migrate.AlignGradleKotlinTargetsForJava25"),
           buildGradleKts("plugins { kotlin(\"jvm\") version \"1.8.20\" }; java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }",
             file -> file.markers(build)),
@@ -553,7 +627,7 @@ class CheckKotlinGradleJava25CompatibilityTest implements RewriteTest {
     }
 
     @Test void standaloneRootAlignmentRemainsBoundedByTheActualK2Compiler() {
-        String before = """
+        var before = """
           plugins { kotlin("jvm") version "2.2.0" }
           java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
           """;

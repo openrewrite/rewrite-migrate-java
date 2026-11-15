@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -27,16 +30,9 @@ import org.openrewrite.docker.trait.DockerFrom;
 import org.openrewrite.docker.tree.Docker;
 import org.openrewrite.internal.ListUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
-import static org.openrewrite.java.migrate.JavaImageReference.path;
-import static org.openrewrite.java.migrate.JavaImageReference.splitReference;
-import static org.openrewrite.java.migrate.JavaImageReference.upgradedImageName;
-import static org.openrewrite.java.migrate.JavaImageReference.upgradedTag;
+import static org.openrewrite.java.migrate.JavaImageReference.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

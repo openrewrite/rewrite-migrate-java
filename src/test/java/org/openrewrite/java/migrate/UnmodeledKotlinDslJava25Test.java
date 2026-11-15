@@ -16,17 +16,34 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
 import org.openrewrite.java.marker.JavaProject;
+import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
 
 class UnmodeledKotlinDslJava25Test implements RewriteTest {
+
+    @Override
+    public void defaults(RecipeSpec spec) {
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeBuildToJava25");
+    }
+
+    @DocumentExample
+    @Test
+    void modeledJavaKotlinDslStillUpgrades() {
+        rewriteRun(
+          buildGradleKts(
+            "java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }",
+            "java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }",
+            spec -> spec.markers(new JavaProject(Tree.randomId(), "java-app", null)))
+        );
+    }
     @Test
     void preserveUnmodeledNestedToolchains() {
         rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeBuildToJava25"),
           buildGradleKts(
             "java { toolchain { languageVersion.set(JavaLanguageVersion.of(8)) } }",
             spec -> spec.path("integration-test/buildSrc/build.gradle.kts")),
@@ -36,17 +53,6 @@ class UnmodeledKotlinDslJava25Test implements RewriteTest {
           buildGradleKts(
             "java { toolchain { languageVersion.set(JavaLanguageVersion.of(24)) } }",
             spec -> spec.path("build.gradle.kts"))
-        );
-    }
-
-    @Test
-    void modeledJavaKotlinDslStillUpgrades() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeBuildToJava25"),
-          buildGradleKts(
-            "java { toolchain { languageVersion.set(JavaLanguageVersion.of(17)) } }",
-            "java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }",
-            spec -> spec.markers(new JavaProject(Tree.randomId(), "java-app", null)))
         );
     }
 }

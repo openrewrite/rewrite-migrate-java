@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -31,10 +34,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.staticanalysis.EmptyBlock;
 import org.openrewrite.staticanalysis.RemoveUnusedLocalVariables;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonMap;

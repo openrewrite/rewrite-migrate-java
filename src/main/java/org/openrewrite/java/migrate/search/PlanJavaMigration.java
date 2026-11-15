@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.io.File;
+import java.util.Collection;
 import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.java.marker.JavaVersion;
@@ -22,9 +24,6 @@ import org.openrewrite.java.migrate.table.JavaVersionMigrationPlan;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.BuildTool;
 import org.openrewrite.marker.Markers;
-
-import java.io.File;
-import java.util.Collection;
 
 import static java.util.Collections.emptyList;
 

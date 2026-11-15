@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -32,11 +36,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singleton;
 
@@ -88,11 +87,9 @@ public class NoGuavaPreconditionsCheckArgumentAndState extends Recipe {
                         maybeRemoveImport("com.google.common.base.Preconditions");
                         maybeRemoveImport("com.google.common.base.Preconditions.checkArgument");
                         maybeRemoveImport("com.google.common.base.Preconditions.checkState");
-                        return JavaTemplate.builder("if (" + conditionCode + ") {\n" +
-                                                    "    throw new " + exception + "(" + messageCode + ");\n" +
-                                                    "}")
-                                .build()
-                                .apply(getCursor(), mi.getCoordinates().replace(), parameters.toArray());
+                        return JavaTemplate.apply("if (" + conditionCode + ") {\n" +
+                                "    throw new " + exception + "(" + messageCode + ");\n" +
+                                "}", getCursor(), mi.getCoordinates().replace(), parameters.toArray());
                     }
                 }
         );
@@ -133,8 +130,7 @@ public class NoGuavaPreconditionsCheckArgumentAndState extends Recipe {
      * So an argument that assigns or increments keeps the Guava call. Method calls are assumed to have no side effects.
      */
     private static boolean hasSideEffect(Expression expression) {
-        AtomicBoolean found = new AtomicBoolean();
-        new JavaIsoVisitor<AtomicBoolean>() {
+        return new JavaIsoVisitor<AtomicBoolean>() {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean f) {
                 f.set(true);
@@ -154,8 +150,7 @@ public class NoGuavaPreconditionsCheckArgumentAndState extends Recipe {
                 }
                 return super.visitUnary(unary, f);
             }
-        }.visit(expression, found);
-        return found.get();
+        }.reduce(expression, new AtomicBoolean()).get();
     }
 
     private static String negatedConditionCode(Expression condition, List<Object> parameters) {

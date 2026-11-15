@@ -15,22 +15,19 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.*;
+import java.util.function.Predicate;
 import org.openrewrite.maven.tree.ResolvedDependency;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-import java.util.function.Predicate;
+import static java.util.Collections.newSetFromMap;
 
 final class ResolvedDependencyGraph {
     private ResolvedDependencyGraph() {
     }
 
     static boolean anyMatch(Collection<ResolvedDependency> roots, Predicate<ResolvedDependency> predicate) {
-        Set<ResolvedDependency> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        ArrayDeque<ResolvedDependency> pending = new ArrayDeque<>(roots);
+        Set<ResolvedDependency> visited = newSetFromMap(new IdentityHashMap<>());
+        Deque<ResolvedDependency> pending = new ArrayDeque<>(roots);
         while (!pending.isEmpty()) {
             ResolvedDependency dependency = pending.removeFirst();
             if (visited.add(dependency)) {

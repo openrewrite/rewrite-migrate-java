@@ -15,13 +15,12 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

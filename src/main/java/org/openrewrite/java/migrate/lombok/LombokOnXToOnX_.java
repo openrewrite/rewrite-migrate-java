@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.util.Set;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -26,8 +27,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 

@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.search;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.marker.JavaProject;
@@ -31,6 +32,7 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
         spec.recipe(new ModuleHasKotlinSource(false));
     }
 
+    @DocumentExample
     @Test
     void partialBuildModelsKeepExistingNonKotlinBehavior() {
         rewriteRun(
@@ -46,7 +48,7 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
 
     @Test
     void modeledKotlinModuleDoesNotEnterNonKotlinUpgrade() {
-        JavaProject module = new JavaProject(Tree.randomId(), "modern-kotlin", null);
+        var module = new JavaProject(Tree.randomId(), "modern-kotlin", null);
         rewriteRun(
           spec -> spec.recipe(new ModuleHasKotlinSource(true)),
           text("plugins {}", spec -> spec.path("build.gradle.kts").markers(module)),
@@ -68,7 +70,7 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
 
     @Test
     void precompiledGradleScriptsAreKotlinSources() {
-        JavaProject module = new JavaProject(Tree.randomId(), "buildSrc", null);
+        var module = new JavaProject(Tree.randomId(), "buildSrc", null);
         rewriteRun(
           text("plugins {}", "~~(Module has Kotlin source)~~>plugins {}", spec -> spec.path("integration-test/buildSrc/build.gradle.kts").markers(module)),
           text("plugins {}", "~~(Module has Kotlin source)~~>plugins {}", spec -> spec.path("integration-test/buildSrc/src/main/kotlin/example.gradle.kts").markers(module))
@@ -77,7 +79,7 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
 
     @Test
     void buildAndSettingsScriptsDoNotMakeJavaProjectsKotlinModules() {
-        JavaProject module = new JavaProject(Tree.randomId(), "app", null);
+        var module = new JavaProject(Tree.randomId(), "app", null);
         rewriteRun(
           text("plugins {}", spec -> spec.path("build.gradle.kts").markers(module)),
           text("rootProject.name = \"app\"", spec -> spec.path("settings.gradle.kts").markers(module))
@@ -86,7 +88,7 @@ class ModuleHasKotlinSourceTest implements RewriteTest {
 
     @Test
     void resourceFixturesAreNotCompiledKotlinSources() {
-        JavaProject module = new JavaProject(Tree.randomId(), "app", null);
+        var module = new JavaProject(Tree.randomId(), "app", null);
         rewriteRun(
           text("plugins {}", spec -> spec.path("build.gradle.kts").markers(module)),
           text("plugins {}", spec -> spec.path("src/test/resources/project/src/main/kotlin/example.gradle.kts").markers(module))

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.Comparator;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -26,9 +28,6 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
-
-import java.util.Comparator;
-import java.util.regex.Pattern;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

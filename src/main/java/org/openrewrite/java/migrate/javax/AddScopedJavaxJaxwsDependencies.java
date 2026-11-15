@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.nio.file.Path;
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -30,8 +32,7 @@ import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 
-import java.nio.file.Path;
-import java.util.*;
+import static java.util.Collections.*;
 
 /** Supply the namespace required by application sources, not by unrelated configurations or modules. */
 @Value
@@ -182,7 +183,7 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
 
     private static List<ResolvedDependency> graph(Collection<ResolvedDependency> roots) {
         List<ResolvedDependency> result = new ArrayList<>();
-        Set<ResolvedDependency> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<ResolvedDependency> seen = newSetFromMap(new IdentityHashMap<>());
         Deque<ResolvedDependency> pending = new ArrayDeque<>(roots);
         while (!pending.isEmpty()) {
             ResolvedDependency dependency = pending.removeFirst();
@@ -195,9 +196,9 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
     }
 
     private SourceFile supplyMaven(SourceFile file, MavenResolutionResult model, String sourceSet, ExecutionContext ctx) {
-        if (available(model.getDependencies().getOrDefault("main".equals(sourceSet) ? Scope.Compile : Scope.Test, Collections.emptyList())) ||
-            "main".equals(sourceSet) && model.getDependencies().getOrDefault(Scope.Provided, Collections.emptyList()).stream()
-                    .anyMatch(d -> declaredScope(model, d) == Scope.Provided && available(Collections.singletonList(d)))) {
+        if (available(model.getDependencies().getOrDefault("main".equals(sourceSet) ? Scope.Compile : Scope.Test, emptyList())) ||
+            "main".equals(sourceSet) && model.getDependencies().getOrDefault(Scope.Provided, emptyList()).stream()
+                    .anyMatch(d -> declaredScope(model, d) == Scope.Provided && available(singletonList(d)))) {
             return file;
         }
         List<ResolvedDependency> candidates = new ArrayList<>();

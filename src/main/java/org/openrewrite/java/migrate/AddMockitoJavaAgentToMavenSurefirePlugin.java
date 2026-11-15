@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.Nullable;
@@ -38,10 +41,6 @@ import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlIsoVisitor;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 

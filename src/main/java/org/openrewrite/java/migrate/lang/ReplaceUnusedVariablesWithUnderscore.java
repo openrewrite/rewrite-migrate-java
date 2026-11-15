@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -30,8 +31,6 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.VariableReferences;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

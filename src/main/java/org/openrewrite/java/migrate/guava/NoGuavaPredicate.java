@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.Arrays;
+import java.util.List;
 import lombok.Getter;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
@@ -24,9 +26,6 @@ import org.openrewrite.java.ChangeMethodName;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class NoGuavaPredicate extends Recipe {
     private static final String GUAVA_PREDICATE = "com.google.common.base.Predicate";

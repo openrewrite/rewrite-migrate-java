@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -25,10 +28,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.dependencies.ChangeDependency;
 import org.openrewrite.maven.tree.MavenResolutionResult;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

@@ -15,13 +15,12 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-
-import java.util.List;
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

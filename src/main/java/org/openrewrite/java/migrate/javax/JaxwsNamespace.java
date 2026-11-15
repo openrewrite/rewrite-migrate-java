@@ -15,9 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import lombok.EqualsAndHashCode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -30,10 +30,11 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Scope;
-import java.util.Collections;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 
 /** Build-file precondition: Jakarta JAX-WS 3+ cannot supply javax.xml.ws or javax.jws types. */
@@ -102,11 +103,11 @@ public class JaxwsNamespace extends Recipe {
 
     private static boolean mainCompileHasLegacy(Tree tree, String api) {
         return tree.getMarkers().findFirst(MavenResolutionResult.class).map(m ->
-                ResolvedDependencyGraph.anyMatch(m.getDependencies().getOrDefault(Scope.Compile, Collections.emptyList()),
+                ResolvedDependencyGraph.anyMatch(m.getDependencies().getOrDefault(Scope.Compile, emptyList()),
                         d -> isLegacy(api, d.getGroupId(), d.getArtifactId(), d.getVersion())) ||
-                m.getDependencies().getOrDefault(Scope.Provided, Collections.emptyList()).stream().anyMatch(d ->
+                m.getDependencies().getOrDefault(Scope.Provided, emptyList()).stream().anyMatch(d ->
                         declaredScope(m, d) == Scope.Provided &&
-                        ResolvedDependencyGraph.anyMatch(Collections.singletonList(d), child ->
+                        ResolvedDependencyGraph.anyMatch(singletonList(d), child ->
                                 isLegacy(api, child.getGroupId(), child.getArtifactId(), child.getVersion())))).orElse(false) ||
                tree.getMarkers().findFirst(GradleProject.class).map(g ->
                        g.getConfigurations().stream().filter(c -> "compileClasspath".equals(c.getName()) ||

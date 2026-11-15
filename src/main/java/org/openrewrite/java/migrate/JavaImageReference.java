@@ -15,16 +15,15 @@
  */
 package org.openrewrite.java.migrate;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.Arrays.asList;
 
 /// Upgrades the Java version of a container image reference, as found in a Dockerfile `FROM` or the
-/// `image` of a CI configuration, independent of the file it was read from.
+ /// `image` of a CI configuration, independent of the file it was read from.
 final class JavaImageReference {
 
     private static final String NEW_IMAGE = "eclipse-temurin";

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.time.Duration;
+import java.util.Set;
 import lombok.Getter;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
@@ -26,9 +28,6 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
-
-import java.time.Duration;
-import java.util.Set;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;

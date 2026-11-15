@@ -15,13 +15,13 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
 import org.openrewrite.gradle.marker.GradleBuildscript;
 import org.openrewrite.gradle.marker.GradlePluginDescriptor;
 import org.openrewrite.gradle.marker.GradleProject;
-
-import java.util.Collections;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -34,6 +34,7 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
     }
 
+    @DocumentExample
     @Test
     void migrateLegacyOptionalBase() {
         rewriteRun(
@@ -41,7 +42,7 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
             "plugins { id 'nebula.optional-base' version '7.0.0' }",
             "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }",
             spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
-              .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
+              .plugins(List.of(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
               .buildscript(GradleBuildscript.builder().build()).build())
           )
         );
@@ -58,7 +59,7 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
               plugins { id("com.netflix.nebula.optional-base") version "9.0.0" }
               """,
             spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
-              .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
+              .plugins(List.of(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
               .buildscript(GradleBuildscript.builder().build()).build())
           )
         );

@@ -31,53 +31,6 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
     spec.recipe(new AddMockitoJavaAgentToMavenSurefirePlugin());
   }
 
-    @Test
-    void legacyMockitoWithoutByteBuddyAgentIsUnchanged() {
-        rewriteRun(pomXml("""
-          <project>
-              <modelVersion>4.0.0</modelVersion>
-              <groupId>org.example</groupId>
-              <artifactId>example</artifactId>
-              <version>1</version>
-              <dependencies>
-                  <dependency>
-                      <groupId>org.mockito</groupId>
-                      <artifactId>mockito-core</artifactId>
-                      <version>1.10.19</version>
-                      <scope>test</scope>
-                  </dependency>
-              </dependencies>
-          </project>
-          """));
-    }
-
-    @Test
-    void transitiveMockito1FromExternalBootParentsHasNoAgent() {
-        for (String version : new String[]{"1.3.8.RELEASE", "1.4.0.RELEASE"}) {
-            rewriteRun(pomXml("""
-              <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <parent>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-parent</artifactId>
-                      <version>%s</version>
-                      <relativePath/>
-                  </parent>
-                  <groupId>org.example</groupId>
-                  <artifactId>example</artifactId>
-                  <version>1</version>
-                  <dependencies>
-                      <dependency>
-                          <groupId>org.springframework.boot</groupId>
-                          <artifactId>spring-boot-starter-test</artifactId>
-                          <scope>test</scope>
-                      </dependency>
-                  </dependencies>
-              </project>
-              """.formatted(version)));
-        }
-    }
-
     @DocumentExample
     @Test
     void addsMockitoAgentArgAndPropertiesGoalToMavenPlugins() {
@@ -170,6 +123,54 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
       )
     );
   }
+
+    @Test
+    void legacyMockitoWithoutByteBuddyAgentIsUnchanged() {
+        rewriteRun(pomXml(
+          """
+          <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.example</groupId>
+              <artifactId>example</artifactId>
+              <version>1</version>
+              <dependencies>
+                  <dependency>
+                      <groupId>org.mockito</groupId>
+                      <artifactId>mockito-core</artifactId>
+                      <version>1.10.19</version>
+                      <scope>test</scope>
+                  </dependency>
+              </dependencies>
+          </project>
+          """));
+    }
+
+    @Test
+    void transitiveMockito1FromExternalBootParentsHasNoAgent() {
+        for (String version : new String[]{"1.3.8.RELEASE", "1.4.0.RELEASE"}) {
+            rewriteRun(pomXml("""
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <parent>
+                      <groupId>org.springframework.boot</groupId>
+                      <artifactId>spring-boot-starter-parent</artifactId>
+                      <version>%s</version>
+                      <relativePath/>
+                  </parent>
+                  <groupId>org.example</groupId>
+                  <artifactId>example</artifactId>
+                  <version>1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.springframework.boot</groupId>
+                          <artifactId>spring-boot-starter-test</artifactId>
+                          <scope>test</scope>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """.formatted(version)));
+        }
+    }
 
   @Test
   void addsByteBuddyAgentArgWithSurefirePluginAndNoExistingConfigurationWithOlderMockitoVersion() {
