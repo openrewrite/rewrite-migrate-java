@@ -1034,7 +1034,6 @@ class UseTextBlocksTest implements RewriteTest {
         // supplementary characters encoded as surrogate pairs. Until that is fixed upstream, the recipe
         // must bail out rather than emit a broken text block that drops or re-escapes content.
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks()),
           java(
             """
              class Test {
@@ -1052,7 +1051,6 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void textBlockTrailingEscape() {
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks()),
           java(
             """
              package com.helloworld;
