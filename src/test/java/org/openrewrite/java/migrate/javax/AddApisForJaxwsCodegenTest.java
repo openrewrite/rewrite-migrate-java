@@ -208,7 +208,7 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void codecentricInheritedExecutionExecutableIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+        rewriteRun(
           pomXml(
             """
             <project>
@@ -239,7 +239,7 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void inheritedExecutionExecutableIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+        rewriteRun(
           pomXml(
             """
             <project>
@@ -270,7 +270,7 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void inheritedExecutionToolchainIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
+        rewriteRun(
           pomXml(
             """
             <project>

@@ -141,7 +141,7 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             </profile></profiles>
           </project>
           """;
-        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+        rewriteRun(
           pomXml(before, before.replace("3.0.23", "3.0.25")));
     }
     @Test
@@ -161,7 +161,7 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             </profile></profiles>
           </project>
           """;
-        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+        rewriteRun(
           pomXml(before, before.replace("3.0.23", "3.0.25")));
     }
 }
