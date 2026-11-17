@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
@@ -22,7 +23,10 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.gradle.toolingapi.Assertions.withToolingApi;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class FileuploadToFileUpload2Test implements RewriteTest {
@@ -39,6 +43,23 @@ class FileuploadToFileUpload2Test implements RewriteTest {
     @Test
     void changeCommonsFileuploadToJakartaServlet5() {
         rewriteRun(
+          //language=java
+          java(
+            """
+              import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+              class Upload {
+                  ServletFileUpload upload;
+              }
+              """,
+            """
+              import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
+
+              class Upload {
+                  JakartaServletFileUpload upload;
+              }
+              """
+          ),
           //language=xml
           pomXml(
             """
@@ -194,5 +215,229 @@ class FileuploadToFileUpload2Test implements RewriteTest {
               """
           )
         );
+    }
+
+    @Test
+    void migrateEveryModuleOfRepositoryUsingServletClasses() {
+        rewriteRun(
+          mavenProject("parent",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.0</version>
+                    <packaging>pom</packaging>
+                    <modules>
+                        <module>web</module>
+                        <module>service</module>
+                    </modules>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>commons-fileupload</groupId>
+                                <artifactId>commons-fileupload</artifactId>
+                                <version>1.5</version>
+                            </dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>
+                """,
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>parent</artifactId>
+                    <version>1.0</version>
+                    <packaging>pom</packaging>
+                    <modules>
+                        <module>web</module>
+                        <module>service</module>
+                    </modules>
+                    <dependencyManagement>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.commons</groupId>
+                                <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
+                                <version>2.0.0-M5</version>
+                            </dependency>
+                        </dependencies>
+                    </dependencyManagement>
+                </project>
+                """
+            ),
+            mavenProject("web",
+              //language=java
+              java(
+                """
+                  import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+                  class Upload {
+                      ServletFileUpload upload;
+                  }
+                  """,
+                """
+                  import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
+
+                  class Upload {
+                      JakartaServletFileUpload upload;
+                  }
+                  """
+              )
+            ),
+            mavenProject("service",
+              //language=java
+              java(
+                """
+                  import org.apache.commons.fileupload.FileItem;
+
+                  class Store {
+                      void save(FileItem item) {
+                      }
+                  }
+                  """,
+                """
+                  import org.apache.commons.fileupload2.core.FileItem;
+
+                  class Store {
+                      void save(FileItem item) {
+                      }
+                  }
+                  """
+              ),
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                          <groupId>com.example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1.0</version>
+                      </parent>
+                      <artifactId>service</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>commons-fileupload</groupId>
+                              <artifactId>commons-fileupload</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """,
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <parent>
+                          <groupId>com.example</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1.0</version>
+                      </parent>
+                      <artifactId>service</artifactId>
+                      <dependencies>
+                          <dependency>
+                              <groupId>org.apache.commons</groupId>
+                              <artifactId>commons-fileupload2-jakarta-servlet5</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void changeCommonsFileuploadToJakartaServlet5InGradle() {
+        rewriteRun(
+          spec -> spec.beforeRecipe(withToolingApi()),
+          mavenProject("demo",
+            //language=java
+            java(
+              """
+                import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+                class Upload {
+                    ServletFileUpload upload;
+                }
+                """,
+              """
+                import org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload;
+
+                class Upload {
+                    JakartaServletFileUpload upload;
+                }
+                """
+            ),
+            //language=groovy
+            buildGradle(
+              """
+                plugins {
+                    id 'java'
+                }
+
+                repositories {
+                    mavenCentral()
+                }
+
+                dependencies {
+                    implementation 'commons-fileupload:commons-fileupload:1.5'
+                }
+                """,
+              """
+                plugins {
+                    id 'java'
+                }
+
+                repositories {
+                    mavenCentral()
+                }
+
+                dependencies {
+                    implementation 'org.apache.commons:commons-fileupload2-jakarta-servlet5:2.0.0-M5'
+                }
+                """
+            )
+          )
+        );
+    }
+
+    @Nested
+    class NoChange {
+        @Test
+        void keepFileupload1WithoutServletClasses() {
+            rewriteRun(
+              //language=java
+              java(
+                """
+                  import org.apache.commons.fileupload.MultipartStream;
+
+                  class Parts {
+                      MultipartStream stream;
+                  }
+                  """
+              ),
+              //language=xml
+              pomXml(
+                """
+                  <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0</version>
+                      <dependencies>
+                          <dependency>
+                              <groupId>commons-fileupload</groupId>
+                              <artifactId>commons-fileupload</artifactId>
+                              <version>1.5</version>
+                          </dependency>
+                      </dependencies>
+                  </project>
+                  """
+              )
+            );
+        }
     }
 }

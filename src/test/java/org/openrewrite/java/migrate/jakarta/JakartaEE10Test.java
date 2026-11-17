@@ -17,10 +17,13 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
 
@@ -199,6 +202,54 @@ class JakartaEE10Test implements RewriteTest {
               </web-fragment>
               """,
             sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateFileuploadWhenServletClassesAreUsed() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "commons-fileupload-1.5")),
+          //language=java
+          java(
+            """
+              import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+              class Upload {
+                  ServletFileUpload upload;
+              }
+              """,
+            """
+              import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+
+              class Upload {
+                  JakartaServletFileUpload upload;
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>commons-fileupload</groupId>
+                          <artifactId>commons-fileupload</artifactId>
+                          <version>1.5</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom ->
+              assertThat(pom)
+                .doesNotContain("<artifactId>commons-fileupload</artifactId>")
+                .contains("<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>")
+                .actual())
           )
         );
     }

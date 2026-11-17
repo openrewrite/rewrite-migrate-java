@@ -435,16 +435,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
 displayName: Migrate `commons-fileupload` to `commons-fileupload2-jakarta-servlet5`
-description: Migrate Apache Commons FileUpload 1.x and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
+description: Migrate Apache Commons FileUpload 1.x servlet users and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: commons-fileupload
-      oldArtifactId: commons-fileupload
-      newGroupId: org.apache.commons
-      newArtifactId: commons-fileupload2-jakarta-servlet5
-      newVersion: 2.0.0-M5
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
@@ -453,6 +447,27 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileupload2.jakarta
       newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+  - org.openrewrite.java.migrate.jakarta.FileuploadServletToFileUpload2
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.FileuploadServletToFileUpload2
+displayName: Migrate `commons-fileupload` servlet users to `commons-fileupload2-jakarta-servlet5`
+description: >-
+  Migrate repositories that use the `org.apache.commons.fileupload.servlet` classes of Apache Commons FileUpload 1.x,
+  which are built on `javax.servlet`, to `commons-fileupload2-jakarta-servlet5`. Other repositories keep FileUpload 1.x,
+  as FileUpload 2 replaced some of its other classes, such as `MultipartStream`, with APIs this recipe does not migrate to.
+preconditions:
+  # Repository wide rather than per module: the parent pom managing the version, and sibling modules exchanging
+  # FileUpload types with the module using the servlet classes, have to move to FileUpload 2 together with it.
+  - org.openrewrite.java.migrate.search.RepositoryUsesType:
+      fullyQualifiedTypeName: org.apache.commons.fileupload.servlet.*
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: commons-fileupload
+      oldArtifactId: commons-fileupload
+      newGroupId: org.apache.commons
+      newArtifactId: commons-fileupload2-jakarta-servlet5
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletFileUpload
       newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload
