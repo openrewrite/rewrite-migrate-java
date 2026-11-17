@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -139,13 +140,48 @@ class AddApiDependencyForImportsTest implements RewriteTest {
     }
 
     @Test
-    void leavesAnnotationProcessingApiAlone() {
+    void leavesJdkAndJsr305AnnotationsAlone() {
         rewriteRun(
           spec -> spec.recipe(new AddApiDependencyForImports(
-            "jakarta.annotation", "jakarta.annotation", "jakarta.annotation-api", "2.0.0")),
+            "jakarta.annotation", "jakarta.annotation", "jakarta.annotation-api", "2.0.0"))
+            .parser(JavaParser.fromJavaVersion().classpath("jsr305")),
           mavenProject("app",
-            srcMainJava(java("import javax.annotation.processing.Processor; class A { Processor processor; }")),
+            srcMainJava(
+              java("import javax.annotation.processing.Processor; class A { Processor processor; }"),
+              java(
+                """
+                  import javax.annotation.CheckForNull;
+                  import javax.annotation.Nonnull;
+                  import javax.annotation.meta.When;
+                  class B {
+                      @Nonnull(when = When.ALWAYS)
+                      String name;
+                      @CheckForNull
+                      String find() { return null; }
+                  }
+                  """
+              )
+            ),
             pomXml(POM)
+          )
+        );
+    }
+
+    @Test
+    void countsNestedCommonAnnotationType() {
+        rewriteRun(
+          spec -> spec.recipe(new AddApiDependencyForImports(
+            "jakarta.annotation", "jakarta.annotation", "jakarta.annotation-api", "2.0.0"))
+            .parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api")),
+          mavenProject("app",
+            srcMainJava(java(
+              """
+                import static javax.annotation.Resource.AuthenticationType.APPLICATION;
+                class A { Object type = APPLICATION; }
+                """
+            )),
+            pomXml(POM, spec -> spec.after(pom -> assertThat(pom)
+              .contains("<artifactId>jakarta.annotation-api</artifactId>").actual()))
           )
         );
     }

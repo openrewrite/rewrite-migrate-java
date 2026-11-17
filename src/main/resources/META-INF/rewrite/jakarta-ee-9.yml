@@ -115,7 +115,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
 displayName: Migrate deprecated `javax.annotation` to `jakarta.annotation`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+description: >-
+  Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+  JSR-305 annotations such as `javax.annotation.Nonnull`, which share the `javax.annotation` package, are left unchanged.
 tags:
   - annotation
   - javax
@@ -151,10 +153,28 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.0.x
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation
-      newPackageName: jakarta.annotation
-      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
+  # Only the JSR-250 types; other javax.annotation types come from JSR-305 or the JDK
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Generated
+      newFullyQualifiedTypeName: jakarta.annotation.Generated
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ManagedBean
+      newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PostConstruct
+      newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PreDestroy
+      newFullyQualifiedTypeName: jakarta.annotation.PreDestroy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Priority
+      newFullyQualifiedTypeName: jakarta.annotation.Priority
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.security
       newPackageName: jakarta.annotation.security
@@ -1814,11 +1834,60 @@ preconditions:
         - org.glassfish.main:javax.annotation
         - jakarta.annotation:jakarta.annotation-api
 recipeList:
+  # Only the JSR-250 types; other javax.annotation types come from JSR-305 or the JDK
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.0.x
-      onlyIfUsing: javax.annotation..*
+      onlyIfUsing: javax.annotation.Generated
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.ManagedBean
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.PostConstruct
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.PreDestroy
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Priority
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Resource
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Resources
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.security.*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.sql.*
       acceptTransitive: true
 
 ---
