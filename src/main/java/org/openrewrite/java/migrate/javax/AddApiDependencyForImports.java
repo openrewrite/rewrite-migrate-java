@@ -15,11 +15,6 @@
  */
 package org.openrewrite.java.migrate.javax;
 
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -30,6 +25,9 @@ import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
+
+import java.nio.file.Path;
+import java.util.*;
 
 import static java.util.Collections.emptyList;
 
@@ -62,6 +60,9 @@ public class AddApiDependencyForImports extends ScanningRecipe<AddApiDependencyF
             "whose types could not be resolved by the parser because the JDK used to provide them. A module that " +
             "already has the API in the needed scope, or from a dependency it declares as provided, is left alone.";
 
+    private static final Set<String> COMMON_ANNOTATIONS = new HashSet<>(Arrays.asList(
+            "Generated", "ManagedBean", "PostConstruct", "PreDestroy", "Priority", "Resource", "Resources"));
+
     static class Accumulator {
         final Set<Path> poms = new HashSet<>();
         final Set<Path> sources = new HashSet<>();
@@ -86,9 +87,7 @@ public class AddApiDependencyForImports extends ScanningRecipe<AddApiDependencyF
                     for (J.Import anImport : cu.getImports()) {
                         String typeName = anImport.getTypeName();
                         if ((typeName.startsWith(packageName + ".") || typeName.startsWith(javaxPackage + ".")) &&
-                            // Still in the JDK (processing) or from JSR-305 (concurrent), not the Annotations API
-                            !typeName.startsWith("javax.annotation.processing.") &&
-                            !typeName.startsWith("javax.annotation.concurrent.")) {
+                            (!typeName.startsWith("javax.annotation.") || isCommonAnnotation(typeName))) {
                             acc.sources.add(cu.getSourcePath());
                             break;
                         }
@@ -97,6 +96,16 @@ public class AddApiDependencyForImports extends ScanningRecipe<AddApiDependencyF
                 return tree;
             }
         };
+    }
+
+    /**
+     * The `javax.annotation` package is shared with JSR-305 and with the JDK's `javax.annotation.processing`,
+     * so only the Common Annotations (JSR-250) types need the API.
+     */
+    private static boolean isCommonAnnotation(String typeName) {
+        String name = typeName.substring("javax.annotation.".length());
+        return "*".equals(name) || name.startsWith("security.") || name.startsWith("sql.") ||
+               COMMON_ANNOTATIONS.contains(name.split("[.$]", 2)[0]);
     }
 
     @Override
