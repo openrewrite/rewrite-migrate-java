@@ -15,20 +15,20 @@
  */
 package org.openrewrite.java.migrate;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.marker.Markers;
-import org.openrewrite.xml.ChangeTagAttribute;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -43,7 +43,7 @@ public class BeanDiscovery extends Recipe {
 
     String displayName = "Add `version` and `bean-discovery-mode` to `beans.xml` files without a version";
 
-    String description = "Alters `beans.xml` files with a missing `version` attribute to include this attribute as well as `bean-discovery-mode=\"all\"`, to maintain an explicit bean archive.";
+    String description = "Alters `beans.xml` files with a missing `version` attribute to include this attribute. A file that declares no `bean-discovery-mode` also gets `bean-discovery-mode=\"all\"`, to remain an explicit bean archive; a declared mode is kept.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -71,11 +71,8 @@ public class BeanDiscovery extends Recipe {
                     }
                 }
 
-                // Update or apply bean-discovery-mode=all
-                if (hasBeanDiscoveryMode) {
-                    TreeVisitor<?, ExecutionContext> changeTagVisitor = new ChangeTagAttribute("beans", "bean-discovery-mode", "all", null, null).getVisitor();
-                    t = (Xml.Tag) changeTagVisitor.visit(t, ctx, getCursor().getParentOrThrow());
-                } else {
+                // Only a missing mode is set: CDI 4.0 changed the default, a declared mode means the same in every version
+                if (!hasBeanDiscoveryMode) {
                     t = addAttribute(t, "bean-discovery-mode", "all", ctx);
                 }
 
