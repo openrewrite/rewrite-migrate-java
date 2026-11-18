@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lombok.log;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -22,8 +25,10 @@ import org.openrewrite.Preconditions;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.trait.Scope;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
@@ -31,6 +36,8 @@ import static java.util.Comparator.comparing;
 
 @EqualsAndHashCode(callSuper = false)
 public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
+
+    private static final String RENAMED_TO_LOG = LogVisitor.class.getName() + ".renamedToLog";
 
     private final String logType;
     private final String factoryType;
@@ -102,10 +109,30 @@ public class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
 
         if (!"log".equals(var.getSimpleName())) {
+            Scope.Binding binding = Scope.bindingOf(getCursor(), var).orElse(null);
+            List<Scope.Binding> renamed = getCursor().dropParentUntil(JavaSourceFile.class::isInstance)
+                    .computeMessageIfAbsent(RENAMED_TO_LOG, k -> new ArrayList<>());
+            if (binding == null || !binding.canRenameTo("log") ||
+                renamed.stream().anyMatch(other -> shadows(binding, other) || shadows(other, binding))) {
+                return multiVariable;
+            }
+            renamed.add(binding);
             doAfterVisit(new ChangeFieldName<>(classDeclaration.getType().getFullyQualifiedName(), var.getSimpleName(), "log"));
         }
 
         return null;
+    }
+
+    /**
+     * Whether the inner logger's {@code log} would hide the outer one from code in the inner logger's class that
+     * reads the outer one. {@link Scope.Binding#canRenameTo(String)} cannot tell when both are renamed in one visit,
+     * as it sees neither rename.
+     */
+    private static boolean shadows(Scope.Binding inner, Scope.Binding outer) {
+        UUID outerClass = outer.getScope().getTree().getId();
+        return inner.getScope().getCursor().getPathAsStream()
+                       .anyMatch(tree -> tree instanceof J && ((J) tree).getId().equals(outerClass)) &&
+               outer.references(inner.getScope().getCursor()).findAny().isPresent();
     }
 
     protected boolean isFactoryParameter(Expression argument, JavaType.FullyQualified classType) {
