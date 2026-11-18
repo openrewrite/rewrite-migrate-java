@@ -15,10 +15,6 @@
  */
 package org.openrewrite.java.migrate;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -30,6 +26,10 @@ import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.*;
+
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 
 @EqualsAndHashCode(callSuper = false)
@@ -37,7 +37,9 @@ import static org.openrewrite.xml.AddOrUpdateChild.addOrUpdateChild;
 public class JpaCacheProperties extends Recipe {
     String displayName = "Disable the persistence unit second-level cache";
 
-    String description = "Sets an explicit value for the shared cache mode.";
+    String description = "Sets an explicit shared cache mode on OpenJPA persistence units, so they keep OpenJPA's caching " +
+            "behaviour once they run on EclipseLink. Units that name another provider, set Hibernate or EclipseLink " +
+            "properties, or declare JPA 2.1 or later without a provider are left alone.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -76,11 +78,14 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
 
     private static final XPathMatcher PERSISTENCE_MATCHER = new XPathMatcher("/persistence");
     private static final String SHARED_CACHE_MODE_VALUE_UNSPECIFIED = "UNSPECIFIED";
+    private static final Set<String> OPENJPA_PROVIDERS = new HashSet<>(Arrays.asList(
+            "org.apache.openjpa.persistence.PersistenceProviderImpl",
+            "com.ibm.websphere.persistence.PersistenceProviderImpl"));
 
     @Override
     public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
         Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-        if (!"persistence-unit".equals(t.getName())) {
+        if (!"persistence-unit".equals(t.getName()) || usesAnotherProvider(t)) {
             return t;
         }
 
@@ -149,10 +154,16 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             if (scmValue != null) {
                 if (!v1) {
                     // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
+                    boolean emptyUnit = t.getContent() == null || t.getContent().isEmpty();
                     Content sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+                    if (!emptyUnit) {
+                        sharedCacheTag = autoFormat(sharedCacheTag, ctx, new Cursor(getCursor().getParentOrThrow(), t));
+                    }
                     t = t.withContent(ListUtils.insertInOrder((List<Content>) t.getContent(), sharedCacheTag, Comparator.comparing(c1 ->
                             c1 instanceof Xml.Tag && ("validation-mode".equals(((Xml.Tag) c1).getName()) || "properties".equals(((Xml.Tag) c1).getName())) ? 1 : 0)));
-                    t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
+                    if (emptyUnit) {
+                        t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
+                    }
                 } else {
                     // version="1.0"
                     // add a property for eclipselink
@@ -204,6 +215,33 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
      */
     private static Xml.Tag removeContent(Xml.Tag parent, Xml.Tag child, ExecutionContext ctx) {
         return (Xml.Tag) new RemoveContentVisitor<ExecutionContext>(child, false, false).visitNonNull(parent, ctx);
+    }
+
+    /**
+     * The explicit cache mode keeps OpenJPA's default (no shared cache) after the move to EclipseLink. A unit that names
+     * another provider, configures Hibernate or EclipseLink, or declares JPA 2.1 or later without a provider (OpenJPA was
+     * the default provider only up to JPA 2.0) keeps its provider's own default.
+     */
+    private boolean usesAnotherProvider(Xml.Tag puNode) {
+        Optional<String> provider = puNode.getChildValue("provider").map(String::trim);
+        if (provider.isPresent()) {
+            return !OPENJPA_PROVIDERS.contains(provider.get());
+        }
+        List<String> propertyNames = puNode.getChild("properties")
+                .map(properties -> properties.getChildren("property").stream()
+                        .map(property -> getAttributeValue("name", property))
+                        .filter(Objects::nonNull)
+                        .collect(toList()))
+                .orElse(emptyList());
+        if (propertyNames.stream().anyMatch(name -> name.startsWith("openjpa."))) {
+            return false;
+        }
+        if (propertyNames.stream().anyMatch(name -> name.startsWith("hibernate.") || name.startsWith("eclipselink."))) {
+            return true;
+        }
+        Object parent = getCursor().getParentTreeCursor().getValue();
+        String persistenceVersion = parent instanceof Xml.Tag ? getAttributeValue("version", (Xml.Tag) parent) : null;
+        return persistenceVersion != null && !persistenceVersion.trim().matches("1(\\..*)?|2(\\.0(\\..*)?)?");
     }
 
     private SharedDataHolder extractData(Xml.Tag puNode) {

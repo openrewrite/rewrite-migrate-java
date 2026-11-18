@@ -29,8 +29,8 @@ preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.migrate.javaee6
-  - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
   - org.openrewrite.java.migrate.JpaCacheProperties
+  - org.openrewrite.java.migrate.javaee7.OpenJPAPersistenceProvider
   - org.openrewrite.java.migrate.BeansXmlNamespace
   - org.openrewrite.java.migrate.AddStaticVariableOnProducerSessionBean
 ---
