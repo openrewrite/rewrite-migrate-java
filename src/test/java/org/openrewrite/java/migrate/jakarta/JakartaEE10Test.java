@@ -24,6 +24,8 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
 
@@ -250,6 +252,64 @@ class JakartaEE10Test implements RewriteTest {
                 .doesNotContain("<artifactId>commons-fileupload</artifactId>")
                 .contains("<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>")
                 .actual())
+          )
+        );
+    }
+
+    @Test
+    void migrateMailImplementationToAngusMail() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "mail-1.4.7")),
+          mavenProject("app",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import com.sun.mail.smtp.SMTPTransport;
+                  import javax.mail.Session;
+
+                  class Mailer {
+                      SMTPTransport transport(Session session) throws Exception {
+                          return (SMTPTransport) session.getTransport("smtp");
+                      }
+                  }
+                  """,
+                """
+                  import com.sun.mail.smtp.SMTPTransport;
+                  import jakarta.mail.Session;
+
+                  class Mailer {
+                      SMTPTransport transport(Session session) throws Exception {
+                          return (SMTPTransport) session.getTransport("smtp");
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>javax.mail</artifactId>
+                            <version>1.6.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>org.eclipse.angus</groupId>", "<artifactId>jakarta.mail</artifactId>")
+                .containsPattern("<version>1\\.\\d+\\.\\d+</version>")
+                .doesNotContain("<groupId>com.sun.mail</groupId>", "<artifactId>jakarta.mail-api</artifactId>")
+                .actual())
+            )
           )
         );
     }

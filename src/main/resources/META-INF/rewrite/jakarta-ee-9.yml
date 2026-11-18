@@ -738,28 +738,32 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+description: >-
+  Java EE has been rebranded to Jakarta EE, necessitating a package relocation. The `javax.mail` API moves to
+  `jakarta.mail:jakarta.mail-api`, and the artifacts that also bundle the mail implementation move to
+  `com.sun.mail:jakarta.mail`, so the implementation stays on the classpath.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.mail
       oldArtifactId: javax.mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
+      newGroupId: com.sun.mail
+      newArtifactId: jakarta.mail
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: com.sun.mail
-      oldArtifactId: jakarta.mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
-      newVersion: 2.0.x
+      overrideManagedVersion: true
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
+      newGroupId: com.sun.mail
+      newArtifactId: jakarta.mail
       newVersion: 2.0.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.mail
+      artifactId: jakarta.mail
+      newVersion: 2.0.x
+      overrideManagedVersion: true
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: javax.mail-api
@@ -1936,8 +1940,16 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
 displayName: Add the Jakarta Mail API when needed
-description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+description: >-
+  Add the migrated API without promoting an explicitly provided or compile-only dependency, nor duplicating the API
+  that a compile dependency on the mail implementation already bundles.
 preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: com.sun.mail
+      artifactId: jakarta.mail
+      onlyDirect: true
+      scope: compile
+      configuration: compileClasspath
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
       coordinates:
         - com.sun.mail:javax.mail

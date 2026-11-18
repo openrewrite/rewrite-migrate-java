@@ -56,6 +56,14 @@ recipeList:
   - org.openrewrite.java.migrate.jakarta.UpdateEclipseLinkDependencies
   - org.openrewrite.java.migrate.jakarta.UpdateFileupload2Dependencies
   - org.openrewrite.java.migrate.jakarta.UpdateYassonDependencies
+  # Angus Mail 1.x bundles the Jakarta Mail 2.1 API and keeps the `com.sun.mail` packages that 2.x renamed
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.mail
+      oldArtifactId: jakarta.mail
+      newGroupId: org.eclipse.angus
+      newArtifactId: jakarta.mail
+      newVersion: 1.x
+      overrideManagedVersion: true
   - org.openrewrite.java.migrate.jakarta.MigrateFastjsonForJakarta10
 ---
 type: specs.openrewrite.org/v1beta/recipe
