@@ -27,8 +27,8 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
-import org.openrewrite.java.VariableNameUtils;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.trait.Scope;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
@@ -39,7 +39,6 @@ import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
-import static org.openrewrite.java.VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER;
 
 public class ExtractExplicitConstructorInvocationArguments extends Recipe {
 
@@ -232,10 +231,7 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
             }
 
             private String uniqueName(String base, Set<String> usedNames) {
-                String candidate = VariableNameUtils.generateVariableName(base, getCursor(), INCREMENT_NUMBER);
-                for (int n = 1; usedNames.contains(candidate); n++) {
-                    candidate = VariableNameUtils.generateVariableName(base + n, getCursor(), INCREMENT_NUMBER);
-                }
+                String candidate = Scope.at(getCursor()).freeName(base, usedNames::contains);
                 usedNames.add(candidate);
                 return candidate;
             }
