@@ -361,4 +361,93 @@ class URLConstructorToURICreateTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void loopVariableIsNotALaterLocalOfItsName() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.URL;
+              import java.util.List;
+
+              class Test {
+                  void m(List<String> list) throws Exception {
+                      for (String u : list) {
+                          System.out.println(new URL(u));
+                      }
+                      String u = "https://test.com";
+                      System.out.println(u);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertedWhereOnlyAnotherLocalOfItsNameIsReassigned() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  void m(boolean secure) throws Exception {
+                      if (secure) {
+                          String u = "https://test.com";
+                          System.out.println(new URL(u));
+                      } else {
+                          String u = "http://test.com";
+                          u = "not/valid/url";
+                          System.out.println(u);
+                      }
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+
+              class Test {
+                  void m(boolean secure) throws Exception {
+                      if (secure) {
+                          String u = "https://test.com";
+                          System.out.println(URI.create(u).toURL());
+                      } else {
+                          String u = "http://test.com";
+                          u = "not/valid/url";
+                          System.out.println(u);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void fieldAssignedFromAnotherClassOfTheFile() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import java.net.URL;
+
+              class Test {
+                  static String u = "https://test.com";
+                  void m() throws Exception {
+                      System.out.println(new URL(u));
+                  }
+              }
+
+              class Other {
+                  void n() {
+                      Test.u = "not/valid/url";
+                  }
+              }
+              """
+          )
+        );
+    }
 }
