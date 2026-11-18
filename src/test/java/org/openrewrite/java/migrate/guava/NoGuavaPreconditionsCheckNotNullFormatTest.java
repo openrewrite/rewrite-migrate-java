@@ -69,7 +69,7 @@ class NoGuavaPreconditionsCheckNotNullFormatTest implements RewriteTest {
     }
 
     @Test
-    void convertedOutsideAMethodWhenTheLambdaCapturesNothing() {
+    void convertedOutsideAMethod() {
         //language=java
         rewriteRun(
           java(
@@ -77,14 +77,18 @@ class NoGuavaPreconditionsCheckNotNullFormatTest implements RewriteTest {
               import static com.google.common.base.Preconditions.checkNotNull;
 
               class A {
+                  static final String KEY = "user.dir";
                   static final String HOME = checkNotNull(System.getProperty("user.home"), "missing %s", "user.home");
+                  static final String DIR = checkNotNull(System.getProperty(KEY), "missing %s", KEY);
               }
               """,
             """
               import static java.util.Objects.requireNonNull;
 
               class A {
+                  static final String KEY = "user.dir";
                   static final String HOME = requireNonNull(System.getProperty("user.home"), () -> String.format("missing %s", "user.home"));
+                  static final String DIR = requireNonNull(System.getProperty(KEY), () -> String.format("missing %s", KEY));
               }
               """
           )
@@ -120,6 +124,91 @@ class NoGuavaPreconditionsCheckNotNullFormatTest implements RewriteTest {
                       for (int i = 0; i < values.length; (i)++) {
                           checkNotNull(values[i], "no value at %s", i);
                       }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertedWhereOnlyAnotherVariableOfTheNameIsReassigned() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Preconditions.checkNotNull;
+
+              class A {
+                  void m(Object value, Object[] values) {
+                      for (int i = 0; i < values.length; i++) {
+                      }
+                      int i = values.length;
+                      checkNotNull(value, "no value at %s", i);
+                  }
+              }
+              """,
+            """
+              import static java.util.Objects.requireNonNull;
+
+              class A {
+                  void m(Object value, Object[] values) {
+                      for (int i = 0; i < values.length; i++) {
+                      }
+                      int i = values.length;
+                      requireNonNull(value, () -> String.format("no value at %s", i));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertedWhereTheMessageReadsAnAssignedField() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Preconditions.checkNotNull;
+
+              class A {
+                  private int attempts;
+
+                  void m(Object value) {
+                      attempts++;
+                      checkNotNull(value, "no value after %s attempts", attempts);
+                  }
+              }
+              """,
+            """
+              import static java.util.Objects.requireNonNull;
+
+              class A {
+                  private int attempts;
+
+                  void m(Object value) {
+                      attempts++;
+                      requireNonNull(value, () -> String.format("no value after %s attempts", attempts));
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leftAloneWhereTheMessageAssignsALocal() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import static com.google.common.base.Preconditions.checkNotNull;
+
+              class A {
+                  void m(Object value) {
+                      int attempts;
+                      checkNotNull(value, "no value after %s attempts", attempts = 3);
                   }
               }
               """

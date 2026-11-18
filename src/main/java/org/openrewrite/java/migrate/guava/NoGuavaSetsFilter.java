@@ -25,12 +25,14 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.trait.Scope;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 
 public class NoGuavaSetsFilter extends Recipe {
     private static final MethodMatcher SETS_FILTER = new MethodMatcher("com.google.common.collect.Sets filter(java.util.Set, com.google.common.base.Predicate)");
@@ -107,7 +109,7 @@ public class NoGuavaSetsFilter extends Recipe {
                         return true;
                     }
                     return set instanceof J.Identifier && ((J.Identifier) set).getFieldType() != null &&
-                           LambdaCapture.canCapture(getCursor(), set);
+                           Scope.lambdaCanCapture(singletonList(Scope.cursorTo(getCursor(), set)));
                 }
             }
         );
