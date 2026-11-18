@@ -71,7 +71,10 @@ public class BeanDiscovery extends Recipe {
                     }
                 }
 
-                // Only a missing mode is set: CDI 4.0 changed the default, a declared mode means the same in every version
+                // Only a missing mode is set: CDI 4.0 changed the default from `all` to `annotated`, a declared mode means
+                // the same in every version. The CDI 1.1 to 3.0 specs also call any beans.xml without a version an explicit
+                // bean archive, but Weld and OpenWebBeans, the implementations behind Jakarta EE servers, honour a declared
+                // mode whatever the version.
                 if (!hasBeanDiscoveryMode) {
                     t = addAttribute(t, "bean-discovery-mode", "all", ctx);
                 }
