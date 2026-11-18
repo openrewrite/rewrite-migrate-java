@@ -269,6 +269,8 @@ preconditions:
       xPath: "/beans[@xmlns='http://java.sun.com/xml/ns/javaee' or @xmlns='http://xmlns.jcp.org/xml/ns/javaee' or @version='3.0' or contains(@xsi:schemaLocation, 'beans_3_0.xsd')]"
   - org.openrewrite.Singleton
 recipeList:
+  # Pins the pre-4.0 default discovery mode before the version moves to 4.0
+  - org.openrewrite.java.migrate.BeanDiscovery
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: beans
