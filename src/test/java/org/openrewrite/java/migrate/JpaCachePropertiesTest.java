@@ -1418,4 +1418,54 @@ class JpaCachePropertiesTest implements RewriteTest {
         );
     }
 
+    @Test
+    void onlyOpenJPAUnits() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+                  <persistence-unit name="hibernate">
+                      <provider> org.hibernate.jpa.HibernatePersistenceProvider </provider>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="hibernate.show_sql" value="true"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+                  <persistence-unit name="hibernate">
+                      <provider> org.hibernate.jpa.HibernatePersistenceProvider </provider>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <shared-cache-mode>NONE</shared-cache-mode>
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="hibernate.show_sql" value="true"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+                  <persistence-unit name="default-provider">
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path("jpa22/" + PERSISTENCE_FILENAME)
+          )
+        );
+    }
 }

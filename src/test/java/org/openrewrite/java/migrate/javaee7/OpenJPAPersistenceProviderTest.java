@@ -103,4 +103,108 @@ class OpenJPAPersistenceProviderTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void keepOnlyOpenJPAUnitsUncachedAsPartOfJavaEE7() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.javaee7"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+                  <persistence-unit name="openjpa">
+                      <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+                      <class>my.jpa.Account</class>
+
+
+                      <class>my.jpa.Customer</class>
+                  </persistence-unit>
+                  <persistence-unit name="hibernate">
+                      <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+                  <persistence-unit name="eclipselink">
+                      <class>my.jpa.Account</class>
+                      <properties>
+                          <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+                      </properties>
+                  </persistence-unit>
+                  <persistence-unit name="websphere">
+                      <provider>com.ibm.websphere.persistence.PersistenceProviderImpl</provider>
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+                  <persistence-unit name="hibernate-properties">
+                      <class>my.jpa.Account</class>
+                      <properties>
+                          <property name="hibernate.hbm2ddl.auto" value="update"/>
+                      </properties>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <class>my.jpa.Account</class>
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="eclipselink.logging.level" value="FINE"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+                  <persistence-unit name="openjpa">
+                      <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+                      <class>my.jpa.Account</class>
+
+
+                      <class>my.jpa.Customer</class>
+                      <shared-cache-mode>NONE</shared-cache-mode>
+                  </persistence-unit>
+                  <persistence-unit name="hibernate">
+                      <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+                  <persistence-unit name="eclipselink">
+                      <class>my.jpa.Account</class>
+                      <properties>
+                          <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+                      </properties>
+                  </persistence-unit>
+                  <persistence-unit name="websphere">
+                      <provider>com.ibm.websphere.persistence.PersistenceProviderImpl</provider>
+                      <class>my.jpa.Account</class>
+                      <shared-cache-mode>NONE</shared-cache-mode>
+                  </persistence-unit>
+                  <persistence-unit name="hibernate-properties">
+                      <class>my.jpa.Account</class>
+                      <properties>
+                          <property name="hibernate.hbm2ddl.auto" value="update"/>
+                      </properties>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <class>my.jpa.Account</class>
+                      <shared-cache-mode>NONE</shared-cache-mode>
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="eclipselink.logging.level" value="FINE"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/persistence.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+                  <persistence-unit name="default-provider">
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path("module/src/main/resources/META-INF/persistence.xml")
+          )
+        );
+    }
 }
