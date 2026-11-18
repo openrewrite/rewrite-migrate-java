@@ -149,10 +149,16 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
             if (scmValue != null) {
                 if (!v1) {
                     // Ideally we would insert <shared-cache-mode> before the <validation-mode> and <properties> nodes
+                    boolean emptyUnit = t.getContent() == null || t.getContent().isEmpty();
                     Content sharedCacheTag = Xml.Tag.build("<shared-cache-mode>" + scmValue + "</shared-cache-mode>");
+                    if (!emptyUnit) {
+                        sharedCacheTag = autoFormat(sharedCacheTag, ctx, new Cursor(getCursor().getParentOrThrow(), t));
+                    }
                     t = t.withContent(ListUtils.insertInOrder((List<Content>) t.getContent(), sharedCacheTag, Comparator.comparing(c1 ->
                             c1 instanceof Xml.Tag && ("validation-mode".equals(((Xml.Tag) c1).getName()) || "properties".equals(((Xml.Tag) c1).getName())) ? 1 : 0)));
-                    t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
+                    if (emptyUnit) {
+                        t = autoFormat(t, ctx, getCursor().getParentTreeCursor());
+                    }
                 } else {
                     // version="1.0"
                     // add a property for eclipselink
