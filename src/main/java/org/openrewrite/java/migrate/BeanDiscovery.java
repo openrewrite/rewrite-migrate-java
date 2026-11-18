@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.marker.Markers;
@@ -36,14 +37,15 @@ public class BeanDiscovery extends Recipe {
 
     private static final XPathMatcher BEANS_MATCHER = new XPathMatcher("/beans");
     private static final Pattern VERSION_PATTERN = Pattern.compile("_([^\\/\\.]+)\\.xsd");
+    private static final String JAKARTA_NAMESPACE = "https://jakarta.ee/xml/ns/jakartaee";
     private static final Set<String> CDI_NAMESPACES = new HashSet<>(Arrays.asList(
             "http://java.sun.com/xml/ns/javaee",
             "http://xmlns.jcp.org/xml/ns/javaee",
-            "https://jakarta.ee/xml/ns/jakartaee"));
+            JAKARTA_NAMESPACE));
 
-    String displayName = "Add `version` and `bean-discovery-mode` to `beans.xml` files without a version";
+    String displayName = "Add `version` and `bean-discovery-mode` to `beans.xml` files";
 
-    String description = "Alters `beans.xml` files with a missing `version` attribute to include this attribute. A file that declares no `bean-discovery-mode` also gets `bean-discovery-mode=\"all\"`, to remain an explicit bean archive; a declared mode is kept.";
+    String description = "Alters `beans.xml` files with a missing `version` attribute to include this attribute. A file that declares no `bean-discovery-mode` and has no version or one below 4.0 also gets `bean-discovery-mode=\"all\"`, so it remains an explicit bean archive under the CDI 4.0 default of `annotated`; a declared mode is kept.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -51,20 +53,25 @@ public class BeanDiscovery extends Recipe {
             @Override
             public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = (Xml.Tag) super.visitTag(tag, ctx);
-                if (!BEANS_MATCHER.matches(getCursor()) || t.getAttributes().stream()
-                        .map(Xml.Attribute::getKeyAsString)
-                        .anyMatch("version"::equals)) {
+                if (!BEANS_MATCHER.matches(getCursor())) {
                     return t;
                 }
 
                 // Determine which tags are already present
                 boolean hasBeanDiscoveryMode = false;
+                boolean javaxNamespace = false;
+                String version = null;
                 String idealVersion = null;
                 for (Xml.Attribute attribute : t.getAttributes()) {
-                    if ("xmlns".equals(attribute.getKeyAsString()) && !CDI_NAMESPACES.contains(attribute.getValueAsString())) {
-                        return t;
+                    if ("xmlns".equals(attribute.getKeyAsString())) {
+                        if (!CDI_NAMESPACES.contains(attribute.getValueAsString())) {
+                            return t;
+                        }
+                        javaxNamespace = !JAKARTA_NAMESPACE.equals(attribute.getValueAsString());
                     } else if ("bean-discovery-mode".equals(attribute.getKeyAsString())) {
                         hasBeanDiscoveryMode = true;
+                    } else if ("version".equals(attribute.getKeyAsString())) {
+                        version = attribute.getValueAsString();
                     } else if (attribute.getKeyAsString().endsWith("schemaLocation")) {
                         String schemaLocation = attribute.getValueAsString();
                         idealVersion = parseVersion(schemaLocation);
@@ -75,12 +82,19 @@ public class BeanDiscovery extends Recipe {
                 // the same in every version. The CDI 1.1 to 3.0 specs also call any beans.xml without a version an explicit
                 // bean archive, but Weld and OpenWebBeans, the implementations behind Jakarta EE servers, honour a declared
                 // mode whatever the version.
-                if (!hasBeanDiscoveryMode) {
+                if (!hasBeanDiscoveryMode && (version == null || isBeforeCdi4(version, idealVersion, javaxNamespace))) {
                     t = addAttribute(t, "bean-discovery-mode", "all", ctx);
                 }
+                return version != null ? t : addAttribute(t, "version", idealVersion != null ? idealVersion : "4.0", ctx);
+            }
 
-                // Add version attribute
-                return addAttribute(t, "version", idealVersion != null ? idealVersion : "4.0", ctx);
+            private boolean isBeforeCdi4(String version, @Nullable String schemaVersion, boolean javaxNamespace) {
+                try {
+                    return Integer.parseInt(version.trim().split("\\.")[0]) < 4;
+                } catch (NumberFormatException e) {
+                    // A placeholder such as `${cdi.version}`: the `javax` namespaces or the schema's version tell
+                    return javaxNamespace || schemaVersion != null && isBeforeCdi4(schemaVersion, null, false);
+                }
             }
 
             private String parseVersion(String schemaLocation) {
