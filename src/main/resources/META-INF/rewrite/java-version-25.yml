@@ -332,6 +332,11 @@ recipeList:
       groupId: org.aspectj
       artifactId: aspectj*
       newVersion: 1.9.x
+  # An old transitive AspectJ weaver can prevent javac from opening the classpath at all.
+  - org.openrewrite.maven.UpgradeTransitiveDependencyVersion:
+      groupId: org.aspectj
+      artifactId: aspectjweaver
+      version: 1.9.x
   - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.mockito
