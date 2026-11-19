@@ -348,6 +348,7 @@ recipeList:
       groupId: org.aspectj
       artifactId: aspectjweaver
       version: 1.9.x
+  - org.openrewrite.java.migrate.UpgradeTomcatForJava25
   - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.mockito

@@ -1156,4 +1156,48 @@ class UpgradeToJava25Test implements RewriteTest {
           )
         );
     }
+    @Test
+    void upgradesLegacyTomcatOnJava25() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>example</groupId>
+                    <artifactId>embedded-server</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                        <tomcat.version>8.0.36</tomcat.version>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-catalina</artifactId>
+                            <version>${tomcat.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat-util</artifactId>
+                            <version>${tomcat.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.tomcat.embed</groupId>
+                            <artifactId>tomcat-embed-core</artifactId>
+                            <version>8.0.36</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> assertThat(actual)
+                .contains("<maven.compiler.release>25</maven.compiler.release>")
+                .contains("<tomcat.version>9.0.")
+                .containsPattern("<artifactId>tomcat-embed-core</artifactId>\\s*<version>9\\.0\\.\\d+</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
 }
