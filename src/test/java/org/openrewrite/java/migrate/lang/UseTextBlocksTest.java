@@ -150,6 +150,32 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @Test
+    void preservesLocalTabsAndLeavesBlankLinesEmptyWithoutStyle() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Dialog {
+              \tString message =
+              \t\t"First\\n\\n" +
+              \t\t"Second\\n";
+              }
+              """,
+            """
+              class Dialog {
+              \tString message =
+              \t\t\"""
+              \t\tFirst
+
+              \t\tSecond
+              \t\t\""";
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void regular() {
@@ -200,7 +226,7 @@ class UseTextBlocksTest implements RewriteTest {
               class A {
                   void welcome() {
                       log(\"""
-                         \s
+
                           =========================================================
                                                                                   \\s
                                     Welcome to Spring Integration!                \\s
@@ -597,25 +623,25 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void indentationsWithTabsOnlyAndReplaceToSpaces() {
+    void preservesLocalTabsWithExplicitSpacesStyle() {
         rewriteRun(
           tabsAndIndents(style -> style.withUseTabCharacter(false), 4),
           //language=java
           java(
             """
               class Test {
-              	String query = "SELECT * FROM\\n" +
-              			"my_table\\n" +
-              			"WHERE something = 1;\\n";
+              \tString query = "SELECT * FROM\\n" +
+              \t\t\t"my_table\\n" +
+              \t\t\t"WHERE something = 1;\\n";
               }
               """,
             """
               class Test {
-              	String query = \"""
-                          SELECT * FROM
-                          my_table
-                          WHERE something = 1;
-                          \""";
+              \tString query = \"""
+              \t\t\tSELECT * FROM
+              \t\t\tmy_table
+              \t\t\tWHERE something = 1;
+              \t\t\t\""";
               }
               """
           )
@@ -777,10 +803,10 @@ class UseTextBlocksTest implements RewriteTest {
               class Test {
                   String s1 = \"""
                               line1
-                             \s
+
                               line3
-                             \s
-                             \s
+
+
                               line6
                               \""";
               }
