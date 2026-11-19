@@ -33,8 +33,7 @@ recipeList:
   - org.openrewrite.java.migrate.EnableLombokAnnotationProcessor
   - org.openrewrite.java.migrate.Java8toJava11
   - org.openrewrite.java.migrate.UpgradeBuildToJava17
-  - org.openrewrite.staticanalysis.InstanceOfPatternMatch
-  - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
+  - org.openrewrite.java.migrate.HandwrittenJava17Cleanups
   - org.openrewrite.java.migrate.RemovedRuntimeTraceMethods
   - org.openrewrite.java.migrate.RemovedToolProviderConstructor
   - org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors
@@ -79,6 +78,17 @@ recipeList:
       artifactId: mapstruct*
       newVersion: 1.6.x
   - org.openrewrite.java.migrate.AddLombokMapstructBinding
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenJava17Cleanups
+displayName: Apply optional Java 17 cleanups to handwritten source
+description: Adopt optional Java 17 language and library features in handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.staticanalysis.InstanceOfPatternMatch
+  - org.openrewrite.staticanalysis.AddSerialAnnotationToSerialVersionUID
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

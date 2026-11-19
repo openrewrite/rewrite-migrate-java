@@ -44,9 +44,7 @@ recipeList:
   - org.openrewrite.java.migrate.javax.AddInjectDependencies
   - org.openrewrite.java.migrate.javax.AddCommonAnnotationsDependencies
   # Remediate deprecations
-  - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
-  - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
-  - org.openrewrite.staticanalysis.UseTryWithResources
+  - org.openrewrite.java.migrate.HandwrittenJava11Cleanups
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.RemoveMethodInvocations:
@@ -56,8 +54,6 @@ recipeList:
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.lombok.UpdateLombokToJava11
   - org.openrewrite.java.migrate.net.JavaNetAPIs
-  - org.openrewrite.java.migrate.nio.file.PathsGetToPathOf
-  - org.openrewrite.java.migrate.nio.file.RedundantUtf8Charset
   - org.openrewrite.java.migrate.sql.JavaSqlAPIs
   - org.openrewrite.java.migrate.javax.JavaxLangModelUtil
   - org.openrewrite.java.migrate.javax.JavaxManagementMonitorAPIs
@@ -69,10 +65,7 @@ recipeList:
 # Disabled due to null safety issues in the current implementation
 # https://github.com/openrewrite/rewrite-migrate-java/issues/250
 #  - org.openrewrite.java.migrate.util.JavaUtilAPIs
-  - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
-  - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
-  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
-  - org.openrewrite.java.migrate.util.UsePredicateNot
+  - org.openrewrite.java.migrate.HandwrittenJava11UtilCleanups
 # Disabled as too opinionated for general use
 # https://github.com/openrewrite/rewrite-migrate-java/issues/958
 #  - org.openrewrite.java.migrate.util.UseEnumSetOf:
@@ -90,6 +83,31 @@ recipeList:
   - org.openrewrite.java.migrate.ReplaceLocalizedStreamMethods
   - org.openrewrite.java.migrate.ArrayStoreExceptionToTypeNotPresentException
   - org.openrewrite.java.migrate.IllegalArgumentExceptionToAlreadyConnectedException
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenJava11Cleanups
+displayName: Modernize handwritten Java for Java 11
+description: Apply optional resource, numeric and file API cleanups to handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
+  - org.openrewrite.staticanalysis.UseTryWithResources
+  - org.openrewrite.java.migrate.nio.file.PathsGetToPathOf
+  - org.openrewrite.java.migrate.nio.file.RedundantUtf8Charset
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenJava11UtilCleanups
+displayName: Adopt Java 11 utility APIs in handwritten Java
+description: Apply optional Optional and Predicate API cleanups to handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty
+  - org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent
+  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
+  - org.openrewrite.java.migrate.util.UsePredicateNot
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.UpgradeBuildToJava11

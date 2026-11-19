@@ -30,6 +30,80 @@ class UpgradeToJava21Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava21");
     }
 
+    @Test
+    void generatedSourcesReceiveCompatibilityMigrationsOnly() {
+        rewriteRun(
+          version(java(
+            """
+              import java.net.URL;
+              import java.util.List;
+              import java.util.Locale;
+
+              class Generated {
+                  Generated() {;}
+
+                  String first(List<String> items) {
+                      return items.iterator().next();
+                  }
+
+                  Locale locale() {
+                      return new Locale("en", "US");
+                  }
+
+                  URL url() throws Exception {
+                      return new URL("https://example.com");
+                  }
+              }
+              """,
+            """
+              import java.net.URI;
+              import java.net.URL;
+              import java.util.List;
+              import java.util.Locale;
+
+              class Generated {
+                  Generated() {;}
+
+                  String first(List<String> items) {
+                      return items.iterator().next();
+                  }
+
+                  Locale locale() {
+                      return new Locale("en", "US");
+                  }
+
+                  URL url() throws Exception {
+                      return URI.create("https://example.com").toURL();
+                  }
+              }
+              """,
+            spec -> spec.path("src-gen/Generated.java")), 21),
+          version(java(
+            """
+              import java.util.List;
+
+              class Handwritten {
+                  Handwritten() {;}
+
+                  String first(List<String> items) {
+                      return items.iterator().next();
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class Handwritten {
+                  Handwritten() {}
+
+                  String first(List<String> items) {
+                      return items.getFirst();
+                  }
+              }
+              """), 21)
+        );
+    }
+
     @DocumentExample
     @Test
     void ifElseIfAssignmentToSwitchExpressionInOnePass() {

@@ -42,6 +42,114 @@ class UseTextBlocksTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
+    @Test
+    void keepsEncodedDataInOrdinarySource() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Table {
+                  String withControls = "\\1\\37\\12" +
+                          "\\1\\10";
+                  String withNoncharacter = "a\\uFFFF\\12" +
+                          "b";
+                  String withOnlyOctalNewlines = "\\12" +
+                          "\\012";
+                  String withUnpairedHighSurrogate = "one\\n" +
+                          "\\uD800\\ntwo\\n";
+                  String withUnpairedLowSurrogate = "one\\n" +
+                          "\\uDFFF\\ntwo\\n";
+                  String withBidiEmbedding = "one\\n" +
+                          "\\u202E\\ntwo\\n";
+                  String withBidiIsolate = "one\\n" +
+                          "\\u2066\\ntwo\\n";
+                  String withZeroWidthSpace = "one\\n" +
+                          "\\u200B\\ntwo\\n";
+                  String withLineSeparator = "one\\n" +
+                          "\\u2028\\ntwo\\n";
+                  String withParagraphSeparator = "one\\n" +
+                          "\\u2029\\ntwo\\n";
+                  String withPrivateUse = "one\\n" +
+                          "\\uE000\\ntwo\\n";
+                  String withUnassigned = "one\\n" +
+                          "\\u0378\\ntwo\\n";
+                  String withBinaryTail = "one\\n" +
+                          "two\\n" +
+                          "\\1";
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void skipsGeneratedSourceDirectory() {
+        rewriteRun(
+          //language=java
+          java("""
+              class Table {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """, spec -> spec.path("module/src-gen/example/Table.java")),
+          java("""
+              class XtendTable {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """, spec -> spec.path("module/xtend-gen/example/XtendTable.java"))
+        );
+    }
+
+    @Test
+    void skipsAntlrHeaders() {
+        rewriteRun(
+          //language=java
+          java("""
+              // $ANTLR 3.5 Example.g 2020-01-01
+              class OldParser {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """),
+          //language=java
+          java("""
+              // Generated from Example.g4 by ANTLR 4.13.2
+              package example;
+
+              class NewParser {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """)
+        );
+    }
+
+    @Test
+    void skipsEntireFileContainingGeneratedDeclarations() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.processing.Generated;
+
+              class Mixed {
+                  @Generated("example")
+                  String generated() {
+                      return "first\\n" +
+                              "second";
+                  }
+
+                  String handwritten() {
+                      return "first\\n" +
+                              "second";
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void regular() {

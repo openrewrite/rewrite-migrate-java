@@ -40,10 +40,12 @@ import org.openrewrite.style.Style;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
+import static org.openrewrite.java.migrate.internal.GeneratedJavaSource.isGeneratedSource;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class UseTextBlocks extends Recipe {
+
     @Option(displayName = "Convert strings without newlines",
             description = "Whether strings without newlines should be converted to text blocks. " +
                           "The default value is true.",
@@ -88,6 +90,14 @@ public class UseTextBlocks extends Recipe {
         );
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
             @Override
+            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                if (isGeneratedSource(cu)) {
+                    return cu;
+                }
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
+            @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
 
@@ -114,9 +124,10 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 String content = contentSb.toString();
-                if (content.contains("\r")) {
-                    // Carriage returns aren't yet carried over into text blocks, which always end with a newline \n
-                    return super.visitBinary(binary, ctx);
+                if (containsNonTextCharacters(content) || stringLiterals.stream().anyMatch(UseTextBlocks::hasOctalEscape)) {
+                    // A decoded octal newline can occur inside an encoded table. Keep the entire
+                    // concatenation intact so a nested prefix isn't converted on its own.
+                    return binary;
                 }
 
                 if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
@@ -208,6 +219,27 @@ public class UseTextBlocks extends Recipe {
                        content.endsWith(";");
             }
         });
+    }
+
+    private static boolean containsNonTextCharacters(String content) {
+        return content.codePoints().anyMatch(c -> {
+            int type = Character.getType(c);
+            return (Character.isISOControl(c) && c != '\n' && c != '\t' && c != '\f') ||
+                   type == Character.FORMAT || type == Character.LINE_SEPARATOR ||
+                   type == Character.PARAGRAPH_SEPARATOR || type == Character.PRIVATE_USE ||
+                   type == Character.UNASSIGNED || type == Character.SURROGATE;
+        });
+    }
+
+    private static boolean hasOctalEscape(J.Literal literal) {
+        String source = requireNonNull(literal.getValueSource());
+        for (int i = source.indexOf('\\'); i >= 0 && i + 1 < source.length(); i = source.indexOf('\\', i + 2)) {
+            char escaped = source.charAt(i + 1);
+            if (escaped >= '0' && escaped <= '7') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean containsComments(Expression expression) {
