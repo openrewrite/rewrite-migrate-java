@@ -71,8 +71,6 @@ class UpdateLombokToJava11Test implements RewriteTest {
           );
     }
 
-    @DocumentExample
-    @SuppressWarnings({"DeprecatedLombok", "deprecation", "Lombok", "RedundantModifiersValueLombok"})
     @Test
     void preservesExistingLombokUsagePolicy() {
         rewriteRun(
@@ -87,6 +85,8 @@ class UpdateLombokToJava11Test implements RewriteTest {
         );
     }
 
+    @DocumentExample
+    @SuppressWarnings({"DeprecatedLombok", "deprecation", "Lombok", "RedundantModifiersValueLombok"})
     @Test
     void updateLombokToJava11() {
         rewriteRun(
