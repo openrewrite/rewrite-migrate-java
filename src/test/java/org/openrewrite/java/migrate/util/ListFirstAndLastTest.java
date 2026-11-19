@@ -34,6 +34,118 @@ class ListFirstAndLastTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(21)));
     }
 
+    @Test
+    void preservesFirstElementOperationsCaughtByIndexHandler() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              class T {
+                  void prune(List<Long> times, long cutoff) {
+                      try {
+                          while (times.get(0) < cutoff) {
+                              times.remove(0);
+                          }
+                      } catch (IndexOutOfBoundsException empty) {
+                          return;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preservesLastElementOperationsCaughtByMultiCatch() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              class T {
+                  String prune(List<String> times) {
+                      try {
+                          try {
+                              String last = times.get(times.size() - 1);
+                              times.remove(times.size() - 1);
+                              return last;
+                          } finally {
+                              System.out.println("checked");
+                          }
+                      } catch (IllegalArgumentException | IndexOutOfBoundsException ignored) {
+                          return null;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preservesOperationsWhenReplacementWouldEnterAnotherCatch() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+              import java.util.NoSuchElementException;
+
+              class T {
+                  String first(List<String> values) {
+                      try {
+                          return values.get(0);
+                      } catch (NoSuchElementException ignored) {
+                          return null;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void rewritesAddAndOperationsOutsideProtectedBody() {
+        rewriteRun(
+          java(
+            """
+              import java.util.List;
+
+              class T {
+                  String first(List<String> values, List<String> fallback) {
+                      try {
+                          values.add(0, "value");
+                          return values.get(0);
+                      } catch (IndexOutOfBoundsException ignored) {
+                          return fallback.get(0);
+                      } finally {
+                          fallback.remove(0);
+                      }
+                  }
+              }
+              """,
+            """
+              import java.util.List;
+
+              class T {
+                  String first(List<String> values, List<String> fallback) {
+                      try {
+                          values.addFirst("value");
+                          return values.get(0);
+                      } catch (IndexOutOfBoundsException ignored) {
+                          return fallback.getFirst();
+                      } finally {
+                          fallback.removeFirst();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @Nested
     class First {
         @Test

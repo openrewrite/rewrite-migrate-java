@@ -16,8 +16,11 @@
 package org.openrewrite.java.migrate.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -29,7 +32,10 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.NameTree;
 import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 
@@ -82,6 +88,12 @@ public class ListFirstAndLast extends Recipe {
                 return mi;
             }
 
+            // Indexed access throws IndexOutOfBoundsException on an empty list.
+            // The sequenced accessors throw NoSuchElementException instead.
+            if (!"add".equals(operation) && hasObservingCatch(getCursor())) {
+                return mi;
+            }
+
             // Limit *Last to identifiers for now, as x.get(x.size() - 1) requires the same reference for x
             if (mi.getSelect() instanceof J.Identifier) {
                 return handleSelectIdentifier((J.Identifier) mi.getSelect(), mi, operation);
@@ -95,6 +107,48 @@ public class ListFirstAndLast extends Recipe {
             }
 
             return mi;
+        }
+
+        private static boolean hasObservingCatch(Cursor cursor) {
+            Object child = null;
+            for (Iterator<Object> path = cursor.getPath(); path.hasNext(); ) {
+                Object parent = path.next();
+                if (parent instanceof J.MethodDeclaration || parent instanceof J.Lambda) {
+                    break;
+                }
+                if (parent instanceof J.Try) {
+                    J.Try tryable = (J.Try) parent;
+                    if ((tryable.getBody() == child || child instanceof J.Try.Resource) &&
+                            tryable.getCatches().stream().anyMatch(FirstLastVisitor::observesEmptyListException)) {
+                        return true;
+                    }
+                }
+                if (parent instanceof J) {
+                    child = parent;
+                }
+            }
+            return false;
+        }
+
+        private static boolean observesEmptyListException(J.Try.Catch catchClause) {
+            TypeTree caught = catchClause.getParameter().getTree().getTypeExpression();
+            if (caught instanceof J.MultiCatch) {
+                for (NameTree alternative : ((J.MultiCatch) caught).getAlternatives()) {
+                    if (observesEmptyListException(alternative.getType())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return caught != null && observesEmptyListException(caught.getType());
+        }
+
+        private static boolean observesEmptyListException(@Nullable JavaType caught) {
+            return TypeUtils.isAssignableTo("java.lang.IndexOutOfBoundsException", caught) ||
+                   TypeUtils.isAssignableTo("java.util.NoSuchElementException", caught) ||
+                   TypeUtils.isOfClassType(caught, "java.lang.RuntimeException") ||
+                   TypeUtils.isOfClassType(caught, "java.lang.Exception") ||
+                   TypeUtils.isOfClassType(caught, "java.lang.Throwable");
         }
 
         private static J.MethodInvocation handleSelectIdentifier(J.Identifier sequencedCollection, J.MethodInvocation mi, String operation) {
