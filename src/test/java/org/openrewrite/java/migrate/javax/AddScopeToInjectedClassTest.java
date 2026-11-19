@@ -33,7 +33,10 @@ class AddScopeToInjectedClassTest implements RewriteTest {
             //language=java
             """
               package javax.enterprise.context;
-              @Target({ElementType.Type})
+
+              import java.lang.annotation.*;
+
+              @Target({ElementType.TYPE})
               @Retention(RetentionPolicy.RUNTIME)
               public @interface Dependent {
               }
@@ -41,7 +44,10 @@ class AddScopeToInjectedClassTest implements RewriteTest {
             //language=java
             """
               package javax.inject;
-              @Target({ElementType.Type})
+
+              import java.lang.annotation.*;
+
+              @Target({ElementType.TYPE})
               @Retention(RetentionPolicy.RUNTIME)
               public @interface Inject {
               }
@@ -143,7 +149,7 @@ class AddScopeToInjectedClassTest implements RewriteTest {
               
               import java.lang.annotation.*;
               
-              @Target({ElementType.Type})
+              @Target({ElementType.TYPE})
               @Retention(RetentionPolicy.RUNTIME)
               public @interface NotInject {
               }

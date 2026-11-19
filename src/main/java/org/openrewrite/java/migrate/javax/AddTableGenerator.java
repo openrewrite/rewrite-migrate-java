@@ -26,6 +26,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
@@ -60,10 +61,11 @@ public class AddTableGenerator extends Recipe {
                             return multiVariable;
                         }
 
-                        J.VariableDeclarations updatedVariable = JavaTemplate.apply(
-                                "@javax.persistence.TableGenerator(name = \"OPENJPA_SEQUENCE_TABLE\", table = \"OPENJPA_SEQUENCE_TABLE\", pkColumnName = \"ID\", valueColumnName = \"SEQUENCE_VALUE\", pkColumnValue = \"0\")",
-                                getCursor(),
-                                multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
+                        J.VariableDeclarations updatedVariable = JavaTemplate.builder(
+                                        "@javax.persistence.TableGenerator(name = \"OPENJPA_SEQUENCE_TABLE\", table = \"OPENJPA_SEQUENCE_TABLE\", pkColumnName = \"ID\", valueColumnName = \"SEQUENCE_VALUE\", pkColumnValue = \"0\")")
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
+                                .build()
+                                .apply(getCursor(), multiVariable.getCoordinates().addAnnotation(Comparator.comparing(J.Annotation::getSimpleName)));
                         return super.visitVariableDeclarations(updatedVariable, ctx);
                     }
 
@@ -72,9 +74,11 @@ public class AddTableGenerator extends Recipe {
                         if (!GENERATED_VALUE.matches(annotation) && !GENERATED_VALUE_AUTO.matches(annotation)) {
                             return annotation;
                         }
-                        maybeRemoveImport("javax.persistence.GenerationType");
-                        return JavaTemplate.builder("strategy = javax.persistence.GenerationType.TABLE, generator = \"OPENJPA_SEQUENCE_TABLE\"")
+                        maybeAddImport("javax.persistence.GenerationType");
+                        return JavaTemplate.builder("strategy = GenerationType.TABLE, generator = \"OPENJPA_SEQUENCE_TABLE\"")
                                 .contextSensitive()
+                                .imports("javax.persistence.GenerationType")
+                                .javaParser(JavaParser.fromJavaVersion().classpathFromResources(ctx, "javax.persistence-api-2.2"))
                                 .build()
                                 .apply(getCursor(), annotation.getCoordinates().replaceArguments());
                     }
