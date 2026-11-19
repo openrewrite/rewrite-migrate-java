@@ -42,6 +42,26 @@ class UseTextBlocksTest implements RewriteTest {
           .allSources(s -> s.markers(javaVersion(17)));
     }
 
+    @Test
+    void keepsEncodedDataInOrdinarySource() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Table {
+                  String withControls = "\\1\\37\\12" +
+                          "\\1\\10";
+                  String withNoncharacter = "a\\uFFFF\\12" +
+                          "b";
+                  String withBinaryTail = "one\\n" +
+                          "two\\n" +
+                          "\\1";
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void regular() {

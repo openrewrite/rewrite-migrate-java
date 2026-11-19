@@ -114,9 +114,10 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 String content = contentSb.toString();
-                if (content.contains("\r")) {
-                    // Carriage returns aren't yet carried over into text blocks, which always end with a newline \n
-                    return super.visitBinary(binary, ctx);
+                if (containsNonTextCharacters(content)) {
+                    // A decoded octal newline can occur inside an encoded table. Keep the entire
+                    // concatenation intact so a nested prefix isn't converted on its own.
+                    return binary;
                 }
 
                 if (!convertStringsWithoutNewlines && !containsNewLineInContent(content)) {
@@ -208,6 +209,12 @@ public class UseTextBlocks extends Recipe {
                        content.endsWith(";");
             }
         });
+    }
+
+    private static boolean containsNonTextCharacters(String content) {
+        return content.codePoints().anyMatch(c ->
+                (Character.isISOControl(c) && c != '\n' && c != '\t' && c != '\f') ||
+                (c >= 0xfdd0 && c <= 0xfdef) || (c & 0xffff) >= 0xfffe);
     }
 
     private static boolean containsComments(Expression expression) {
