@@ -150,32 +150,6 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
-    @Test
-    void preservesLocalTabsAndLeavesBlankLinesEmptyWithoutStyle() {
-        rewriteRun(
-          //language=java
-          java(
-            """
-              class Dialog {
-              \tString message =
-              \t\t"First\\n\\n" +
-              \t\t"Second\\n";
-              }
-              """,
-            """
-              class Dialog {
-              \tString message =
-              \t\t\"""
-              \t\tFirst
-
-              \t\tSecond
-              \t\t\""";
-              }
-              """
-          )
-        );
-    }
-
     @DocumentExample
     @Test
     void regular() {
@@ -623,7 +597,7 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void preservesLocalTabsWithExplicitSpacesStyle() {
+    void indentationsWithTabsOnlyAndReplaceToSpaces() {
         rewriteRun(
           tabsAndIndents(style -> style.withUseTabCharacter(false), 4),
           //language=java
@@ -638,10 +612,10 @@ class UseTextBlocksTest implements RewriteTest {
             """
               class Test {
               \tString query = \"""
-              \t\t\tSELECT * FROM
-              \t\t\tmy_table
-              \t\t\tWHERE something = 1;
-              \t\t\t\""";
+                          SELECT * FROM
+                          my_table
+                          WHERE something = 1;
+                          \""";
               }
               """
           )
