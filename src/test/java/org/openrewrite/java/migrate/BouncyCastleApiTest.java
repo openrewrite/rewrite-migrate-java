@@ -183,7 +183,7 @@ class BouncyCastleApiTest implements RewriteTest {
 
               class A {
                   SPHINCSPlusSigner signer = new SPHINCSPlusSigner();
-                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha2_128f;
+                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha256_128f;
               }
               """,
             """
@@ -192,7 +192,7 @@ class BouncyCastleApiTest implements RewriteTest {
 
               class A {
                   SPHINCSPlusSigner signer = new SPHINCSPlusSigner();
-                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha2_128f;
+                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha256_128f;
               }
               """
           )

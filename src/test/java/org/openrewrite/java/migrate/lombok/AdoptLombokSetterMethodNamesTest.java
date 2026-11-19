@@ -557,7 +557,7 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
               java(
                 """
                   class A {
-                      Boolean Foo;
+                      Boolean foo;
                       void storeFoo(boolean foo) { this.foo = foo; }
                   }
                   """
@@ -571,7 +571,7 @@ class AdoptLombokSetterMethodNamesTest implements RewriteTest {
               java(
                 """
                   class A {
-                      boolean Foo;
+                      boolean foo;
                       void storeFoo(Boolean foo) { this.foo = foo; }
                   }
                   """

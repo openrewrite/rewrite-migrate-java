@@ -66,6 +66,7 @@ class AddTableGeneratorTest implements RewriteTest {
                 """
               import javax.persistence.Entity;
               import javax.persistence.GeneratedValue;
+              import javax.persistence.GenerationType;
               import javax.persistence.Id;
               import javax.persistence.TableGenerator;
 
@@ -74,11 +75,11 @@ class AddTableGeneratorTest implements RewriteTest {
                   // flag it
                   @Id
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
-                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   private int id;
 
                   // flag it.  Does not require @Id
-                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                   private int id2;
 
@@ -86,7 +87,7 @@ class AddTableGeneratorTest implements RewriteTest {
                   // A second TableGenerator will be created.
                   @TableGenerator(name = "SOME_TABLE", table = "SOME_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
-                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   private int id3;
               }
               """
@@ -114,13 +115,14 @@ class AddTableGeneratorTest implements RewriteTest {
             """
               import javax.persistence.Entity;
               import javax.persistence.GeneratedValue;
+              import javax.persistence.GenerationType;
               import javax.persistence.Id;
 
               @Entity
               class GeneratedValueName  {
                   @Id
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
-                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   private String name;
               }
               """
@@ -174,13 +176,14 @@ class AddTableGeneratorTest implements RewriteTest {
             """
               import javax.persistence.Entity;
               import javax.persistence.GeneratedValue;
+              import javax.persistence.GenerationType;
               import javax.persistence.Id;
 
               @Entity
               class GeneratedValueStrategySpaces  {
                   @Id
                   @javax.persistence.TableGenerator(name = "OPENJPA_SEQUENCE_TABLE", table = "OPENJPA_SEQUENCE_TABLE", pkColumnName = "ID", valueColumnName = "SEQUENCE_VALUE", pkColumnValue = "0")
-                  @GeneratedValue(strategy = javax.persistence.GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
+                  @GeneratedValue(strategy = GenerationType.TABLE, generator = "OPENJPA_SEQUENCE_TABLE")
                   private int id;
               }
               """
