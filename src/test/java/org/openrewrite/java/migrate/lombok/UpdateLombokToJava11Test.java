@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.text;
 
 class UpdateLombokToJava11Test implements RewriteTest {
 
@@ -68,6 +69,20 @@ class UpdateLombokToJava11Test implements RewriteTest {
                 """
             )
           );
+    }
+
+    @Test
+    void preservesExistingLombokUsagePolicy() {
+        rewriteRun(
+          text(
+            """
+              config.stopBubbling = true
+              lombok.val.flagUsage = warning
+              """,
+            spec -> spec.path("module/lombok.config")
+          ),
+          text("# Defaults apply", spec -> spec.path("lombok.config"))
+        );
     }
 
     @DocumentExample
