@@ -53,6 +53,26 @@ class UseTextBlocksTest implements RewriteTest {
                           "\\1\\10";
                   String withNoncharacter = "a\\uFFFF\\12" +
                           "b";
+                  String withOnlyOctalNewlines = "\\12" +
+                          "\\012";
+                  String withUnpairedHighSurrogate = "one\\n" +
+                          "\\uD800\\ntwo\\n";
+                  String withUnpairedLowSurrogate = "one\\n" +
+                          "\\uDFFF\\ntwo\\n";
+                  String withBidiEmbedding = "one\\n" +
+                          "\\u202E\\ntwo\\n";
+                  String withBidiIsolate = "one\\n" +
+                          "\\u2066\\ntwo\\n";
+                  String withZeroWidthSpace = "one\\n" +
+                          "\\u200B\\ntwo\\n";
+                  String withLineSeparator = "one\\n" +
+                          "\\u2028\\ntwo\\n";
+                  String withParagraphSeparator = "one\\n" +
+                          "\\u2029\\ntwo\\n";
+                  String withPrivateUse = "one\\n" +
+                          "\\uE000\\ntwo\\n";
+                  String withUnassigned = "one\\n" +
+                          "\\u0378\\ntwo\\n";
                   String withBinaryTail = "one\\n" +
                           "two\\n" +
                           "\\1";
@@ -71,7 +91,13 @@ class UseTextBlocksTest implements RewriteTest {
                   String message = "first\\n" +
                           "second";
               }
-              """, spec -> spec.path("module/src-gen/example/Table.java"))
+              """, spec -> spec.path("module/src-gen/example/Table.java")),
+          java("""
+              class XtendTable {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """, spec -> spec.path("module/xtend-gen/example/XtendTable.java"))
         );
     }
 
@@ -626,25 +652,25 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void indentationsWithTabsOnlyAndReplaceToSpaces() {
+    void preservesLocalTabsWithExplicitSpacesStyle() {
         rewriteRun(
           tabsAndIndents(style -> style.withUseTabCharacter(false), 4),
           //language=java
           java(
             """
               class Test {
-              	String query = "SELECT * FROM\\n" +
-              			"my_table\\n" +
-              			"WHERE something = 1;\\n";
+              \tString query = "SELECT * FROM\\n" +
+              \t\t\t"my_table\\n" +
+              \t\t\t"WHERE something = 1;\\n";
               }
               """,
             """
               class Test {
-              	String query = \"""
-                          SELECT * FROM
-                          my_table
-                          WHERE something = 1;
-                          \""";
+              \tString query = \"""
+              \t\t\tSELECT * FROM
+              \t\t\tmy_table
+              \t\t\tWHERE something = 1;
+              \t\t\t\""";
               }
               """
           )

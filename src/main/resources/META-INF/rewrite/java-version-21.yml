@@ -29,24 +29,54 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UpgradeBuildToJava21
-  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
+  - org.openrewrite.java.migrate.RemoveExtraSemicolonsFromHandwrittenJava
   - org.openrewrite.java.migrate.lang.ThreadStopUnsupported
   - org.openrewrite.java.migrate.net.URLConstructorToURICreate
   # Fails to introduce new exception handling https://github.com/openrewrite/rewrite-migrate-java/issues/467
   #- org.openrewrite.java.migrate.net.URLConstructorsToNewURI
-  - org.openrewrite.java.migrate.util.SequencedCollection
+  - org.openrewrite.java.migrate.HandwrittenSequencedCollection
   - org.openrewrite.java.migrate.util.UseLocaleOf
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
   - org.openrewrite.java.migrate.DeleteDeprecatedFinalize
   - org.openrewrite.java.migrate.RemovedSubjectMethods
+  - org.openrewrite.java.migrate.HandwrittenSwitchCleanups
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenSwitchCleanups
+displayName: Adopt modern switch features in handwritten Java
+description: Use switch expressions and pattern matching in handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
   - org.openrewrite.java.migrate.lang.IfElseIfConstructToSwitch
   - org.openrewrite.java.migrate.lang.NullCheckAsSwitchCase
   - org.openrewrite.java.migrate.lang.SwitchCaseAssignmentsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchCaseReturnsToSwitchExpression
   - org.openrewrite.java.migrate.lang.SwitchExpressionYieldToArrow
   - org.openrewrite.java.migrate.SwitchPatternMatching
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenSequencedCollection
+displayName: Adopt sequenced collections in handwritten Java
+description: Use the Java 21 sequenced collection API in handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.java.migrate.util.SequencedCollection
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.RemoveExtraSemicolonsFromHandwrittenJava
+displayName: Remove extra semicolons from handwritten Java
+description: Clean up redundant semicolons in handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
