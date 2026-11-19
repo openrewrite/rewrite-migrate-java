@@ -34,8 +34,7 @@ recipeList:
   - org.openrewrite.java.migrate.net.URLConstructorToURICreate
   # Fails to introduce new exception handling https://github.com/openrewrite/rewrite-migrate-java/issues/467
   #- org.openrewrite.java.migrate.net.URLConstructorsToNewURI
-  - org.openrewrite.java.migrate.HandwrittenSequencedCollection
-  - org.openrewrite.java.migrate.util.UseLocaleOf
+  - org.openrewrite.java.migrate.HandwrittenJava21UtilCleanups
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion
   - org.openrewrite.java.migrate.UpgradePluginsForJava21
@@ -60,13 +59,14 @@ recipeList:
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.HandwrittenSequencedCollection
-displayName: Adopt sequenced collections in handwritten Java
-description: Use the Java 21 sequenced collection API in handwritten Java files.
+name: org.openrewrite.java.migrate.HandwrittenJava21UtilCleanups
+displayName: Adopt Java 21 utility APIs in handwritten Java
+description: Use sequenced collections and locale factories in handwritten Java files.
 preconditions:
   - org.openrewrite.java.migrate.search.IsHandwrittenJava
 recipeList:
   - org.openrewrite.java.migrate.util.SequencedCollection
+  - org.openrewrite.java.migrate.util.UseLocaleOf
 
 ---
 type: specs.openrewrite.org/v1beta/recipe

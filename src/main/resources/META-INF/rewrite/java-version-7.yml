@@ -29,8 +29,18 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava6
   - org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods
   - org.openrewrite.java.migrate.JREThrowableFinalMethods
-  - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
+  - org.openrewrite.java.migrate.HandwrittenJava7RandomCleanup
   - org.openrewrite.java.migrate.BouncyCastleFromJdk15OnToJdk15to18
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.HandwrittenJava7RandomCleanup
+displayName: Adopt thread-local random numbers in handwritten Java
+description: Reduce random number generator contention in handwritten Java files.
+preconditions:
+  - org.openrewrite.java.migrate.search.IsHandwrittenJava
+recipeList:
+  - org.openrewrite.java.migrate.util.ReplaceMathRandomWithThreadLocalRandomRecipe
+
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.JREJdbcInterfaceNewMethods

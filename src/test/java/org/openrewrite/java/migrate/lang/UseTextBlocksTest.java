@@ -126,19 +126,13 @@ class UseTextBlocksTest implements RewriteTest {
     }
 
     @Test
-    void skipsAnnotatedDeclarationsAndKeepsVisitingSiblings() {
+    void skipsEntireFileContainingGeneratedDeclarations() {
         rewriteRun(
           //language=java
           java(
             """
               import javax.annotation.processing.Generated;
 
-              @Generated("example")
-              class GeneratedTable {
-                  String message = "first\\n" +
-                          "second";
-              }
-
               class Mixed {
                   @Generated("example")
                   String generated() {
@@ -149,29 +143,6 @@ class UseTextBlocksTest implements RewriteTest {
                   String handwritten() {
                       return "first\\n" +
                               "second";
-                  }
-              }
-              """,
-            """
-              import javax.annotation.processing.Generated;
-
-              @Generated("example")
-              class GeneratedTable {
-                  String message = "first\\n" +
-                          "second";
-              }
-
-              class Mixed {
-                  @Generated("example")
-                  String generated() {
-                      return "first\\n" +
-                              "second";
-                  }
-
-                  String handwritten() {
-                      return \"""
-                              first
-                              second\""";
                   }
               }
               """

@@ -23,6 +23,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.migrate.search.IsHandwrittenJava;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
@@ -50,7 +51,8 @@ public class ReplaceSystemOutWithIOPrint extends Recipe {
                         Preconditions.or(
                                 new UsesMethod<>(SYSTEM_OUT_PRINT),
                                 new UsesMethod<>(SYSTEM_OUT_PRINTLN)
-                        )
+                        ),
+                        new IsHandwrittenJava().getVisitor()
                 ),
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override

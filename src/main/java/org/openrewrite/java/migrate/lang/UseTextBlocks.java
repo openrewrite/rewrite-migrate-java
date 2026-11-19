@@ -42,7 +42,6 @@ import org.openrewrite.style.Style;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.openrewrite.Tree.randomId;
-import static org.openrewrite.java.migrate.internal.GeneratedJavaSource.isGeneratedDeclaration;
 import static org.openrewrite.java.migrate.internal.GeneratedJavaSource.isGeneratedSource;
 
 @EqualsAndHashCode(callSuper = false)
@@ -99,21 +98,6 @@ public class UseTextBlocks extends Recipe {
                     return cu;
                 }
                 return super.visitCompilationUnit(cu, ctx);
-            }
-
-            @Override
-            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                return isGeneratedDeclaration(classDecl.getLeadingAnnotations()) ? classDecl : super.visitClassDeclaration(classDecl, ctx);
-            }
-
-            @Override
-            public J visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
-                return isGeneratedDeclaration(method.getLeadingAnnotations()) ? method : super.visitMethodDeclaration(method, ctx);
-            }
-
-            @Override
-            public J visitVariableDeclarations(J.VariableDeclarations variables, ExecutionContext ctx) {
-                return isGeneratedDeclaration(variables.getLeadingAnnotations()) ? variables : super.visitVariableDeclarations(variables, ctx);
             }
 
             @Override

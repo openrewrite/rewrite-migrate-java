@@ -15,19 +15,29 @@
  */
 package org.openrewrite.java.migrate.internal;
 
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Generated;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 public final class GeneratedJavaSource {
     private static final Pattern ANTLR_HEADER = Pattern.compile(
             "\\s*(?:\\$ANTLR\\s+\\d|Generated (?:from .+ )?by ANTLR(?:\\s|$))");
+
+    private static final String[] GENERATED_ANNOTATIONS = {
+            "javax.annotation.processing.Generated",
+            "javax.annotation.Generated",
+            "jakarta.annotation.Generated",
+            "lombok.Generated"
+    };
 
     private GeneratedJavaSource() {
     }
@@ -42,10 +52,10 @@ public final class GeneratedJavaSource {
                 return true;
             }
         }
-        if (!cu.getClasses().isEmpty() && cu.getClasses().stream()
-                .allMatch(type -> isGeneratedDeclaration(type.getLeadingAnnotations()))) {
-            return true;
-        }
+        return hasAntlrHeader(cu) || hasGeneratedMember(cu);
+    }
+
+    private static boolean hasAntlrHeader(J.CompilationUnit cu) {
         if (hasAntlrHeader(cu.getPrefix())) {
             return true;
         }
@@ -65,11 +75,40 @@ public final class GeneratedJavaSource {
                 comment instanceof TextComment && ANTLR_HEADER.matcher(((TextComment) comment).getText()).lookingAt());
     }
 
-    public static boolean isGeneratedDeclaration(List<J.Annotation> annotations) {
-        return annotations.stream().anyMatch(annotation ->
-                TypeUtils.isOfClassType(annotation.getType(), "javax.annotation.processing.Generated") ||
-                TypeUtils.isOfClassType(annotation.getType(), "javax.annotation.Generated") ||
-                TypeUtils.isOfClassType(annotation.getType(), "jakarta.annotation.Generated") ||
-                TypeUtils.isOfClassType(annotation.getType(), "lombok.Generated"));
+    private static boolean hasGeneratedMember(J.CompilationUnit cu) {
+        AtomicBoolean found = new AtomicBoolean();
+        new JavaIsoVisitor<AtomicBoolean>() {
+            @Override
+            public J preVisit(J tree, AtomicBoolean generated) {
+                if (generated.get()) {
+                    stopAfterPreVisit();
+                }
+                return tree;
+            }
+
+            @Override
+            public <M extends Marker> M visitMarker(Marker marker, AtomicBoolean generated) {
+                if (marker instanceof Generated) {
+                    generated.set(true);
+                }
+                return super.visitMarker(marker, generated);
+            }
+
+            @Override
+            public J.Annotation visitAnnotation(J.Annotation annotation, AtomicBoolean generated) {
+                for (String type : GENERATED_ANNOTATIONS) {
+                    if (TypeUtils.isOfClassType(annotation.getType(), type) ||
+                            type.equals(annotation.getAnnotationType().printTrimmed(getCursor())) ||
+                            ((annotation.getType() == null || annotation.getType() instanceof JavaType.Unknown) &&
+                                    "Generated".equals(annotation.getSimpleName()) &&
+                                    cu.getImports().stream().anyMatch(i -> !i.isStatic() && type.equals(i.getTypeName())))) {
+                        generated.set(true);
+                        break;
+                    }
+                }
+                return super.visitAnnotation(annotation, generated);
+            }
+        }.visit(cu, found);
+        return found.get();
     }
 }

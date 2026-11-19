@@ -37,12 +37,17 @@ class UpgradeToJava21Test implements RewriteTest {
             """
               import java.net.URL;
               import java.util.List;
+              import java.util.Locale;
 
               class Generated {
                   Generated() {;}
 
                   String first(List<String> items) {
                       return items.iterator().next();
+                  }
+
+                  Locale locale() {
+                      return new Locale("en", "US");
                   }
 
                   URL url() throws Exception {
@@ -54,12 +59,17 @@ class UpgradeToJava21Test implements RewriteTest {
               import java.net.URI;
               import java.net.URL;
               import java.util.List;
+              import java.util.Locale;
 
               class Generated {
                   Generated() {;}
 
                   String first(List<String> items) {
                       return items.iterator().next();
+                  }
+
+                  Locale locale() {
+                      return new Locale("en", "US");
                   }
 
                   URL url() throws Exception {
