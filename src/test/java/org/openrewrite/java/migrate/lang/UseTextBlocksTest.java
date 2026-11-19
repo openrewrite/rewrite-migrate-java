@@ -200,7 +200,7 @@ class UseTextBlocksTest implements RewriteTest {
               class A {
                   void welcome() {
                       log(\"""
-
+                         \s
                           =========================================================
                                                                                   \\s
                                     Welcome to Spring Integration!                \\s
@@ -777,10 +777,10 @@ class UseTextBlocksTest implements RewriteTest {
               class Test {
                   String s1 = \"""
                               line1
-
+                             \s
                               line3
-
-
+                             \s
+                             \s
                               line6
                               \""";
               }

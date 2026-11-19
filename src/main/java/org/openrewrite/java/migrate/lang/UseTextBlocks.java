@@ -193,13 +193,13 @@ public class UseTextBlocks extends Recipe {
                 if (endsWithTrailingSpace) {
                     content = content.substring(0, content.length() - 1) + "\\s";
                 }
-                // Indent content and the closing delimiter without adding whitespace to empty lines.
-                content = content.replaceAll("\n(?!\n)", "\n" + indentation);
+                // handle preceding indentation
+                content = content.replace("\n", "\n" + indentation);
                 // handle line continuations
                 content = content.replace(passPhrase, "\\\n" + indentation);
 
                 // add first line
-                content = "\n" + (content.startsWith("\n") ? "" : indentation) + content;
+                content = "\n" + indentation + content;
 
                 // add last line to ensure the closing delimiter is in a new line to manage indentation & remove the
                 // need to escape ending quote in the content. A trailing space additionally requires a line
