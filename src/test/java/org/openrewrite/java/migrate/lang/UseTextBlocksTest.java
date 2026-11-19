@@ -604,14 +604,14 @@ class UseTextBlocksTest implements RewriteTest {
           java(
             """
               class Test {
-              \tString query = "SELECT * FROM\\n" +
-              \t\t\t"my_table\\n" +
-              \t\t\t"WHERE something = 1;\\n";
+              	String query = "SELECT * FROM\\n" +
+              			"my_table\\n" +
+              			"WHERE something = 1;\\n";
               }
               """,
             """
               class Test {
-              \tString query = \"""
+              	String query = \"""
                           SELECT * FROM
                           my_table
                           WHERE something = 1;
