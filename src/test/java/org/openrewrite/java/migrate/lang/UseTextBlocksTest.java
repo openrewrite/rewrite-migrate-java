@@ -62,6 +62,97 @@ class UseTextBlocksTest implements RewriteTest {
         );
     }
 
+    @Test
+    void skipsGeneratedSourceDirectory() {
+        rewriteRun(
+          //language=java
+          java("""
+              class Table {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """, spec -> spec.path("module/src-gen/example/Table.java"))
+        );
+    }
+
+    @Test
+    void skipsAntlrHeaders() {
+        rewriteRun(
+          //language=java
+          java("""
+              // $ANTLR 3.5 Example.g 2020-01-01
+              class OldParser {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """),
+          //language=java
+          java("""
+              // Generated from Example.g4 by ANTLR 4.13.2
+              package example;
+
+              class NewParser {
+                  String message = "first\\n" +
+                          "second";
+              }
+              """)
+        );
+    }
+
+    @Test
+    void skipsAnnotatedDeclarationsAndKeepsVisitingSiblings() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.annotation.processing.Generated;
+
+              @Generated("example")
+              class GeneratedTable {
+                  String message = "first\\n" +
+                          "second";
+              }
+
+              class Mixed {
+                  @Generated("example")
+                  String generated() {
+                      return "first\\n" +
+                              "second";
+                  }
+
+                  String handwritten() {
+                      return "first\\n" +
+                              "second";
+                  }
+              }
+              """,
+            """
+              import javax.annotation.processing.Generated;
+
+              @Generated("example")
+              class GeneratedTable {
+                  String message = "first\\n" +
+                          "second";
+              }
+
+              class Mixed {
+                  @Generated("example")
+                  String generated() {
+                      return "first\\n" +
+                              "second";
+                  }
+
+                  String handwritten() {
+                      return \"""
+                              first
+                              second\""";
+                  }
+              }
+              """
+          )
+        );
+    }
+
     @DocumentExample
     @Test
     void regular() {

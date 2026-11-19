@@ -15,12 +15,14 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -32,7 +34,10 @@ import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Generated;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
 import org.openrewrite.style.Style;
@@ -44,6 +49,9 @@ import static org.openrewrite.Tree.randomId;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class UseTextBlocks extends Recipe {
+    private static final Pattern ANTLR_HEADER = Pattern.compile(
+            "\\s*(?:\\$ANTLR\\s+\\d|Generated (?:from .+ )?by ANTLR(?:\\s|$))");
+
     @Option(displayName = "Convert strings without newlines",
             description = "Whether strings without newlines should be converted to text blocks. " +
                           "The default value is true.",
@@ -87,6 +95,29 @@ public class UseTextBlocks extends Recipe {
                 new UsesJavaVersion<>(17)
         );
         return Preconditions.check(preconditions, new JavaVisitor<ExecutionContext>() {
+            @Override
+            public J visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
+                if (isGeneratedSource(cu)) {
+                    return cu;
+                }
+                return super.visitCompilationUnit(cu, ctx);
+            }
+
+            @Override
+            public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                return isGenerated(classDecl.getLeadingAnnotations()) ? classDecl : super.visitClassDeclaration(classDecl, ctx);
+            }
+
+            @Override
+            public J visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
+                return isGenerated(method.getLeadingAnnotations()) ? method : super.visitMethodDeclaration(method, ctx);
+            }
+
+            @Override
+            public J visitVariableDeclarations(J.VariableDeclarations variables, ExecutionContext ctx) {
+                return isGenerated(variables.getLeadingAnnotations()) ? variables : super.visitVariableDeclarations(variables, ctx);
+            }
+
             @Override
             public J visitBinary(J.Binary binary, ExecutionContext ctx) {
                 List<J.Literal> stringLiterals = new ArrayList<>();
@@ -209,6 +240,43 @@ public class UseTextBlocks extends Recipe {
                        content.endsWith(";");
             }
         });
+    }
+
+    private static boolean isGeneratedSource(J.CompilationUnit cu) {
+        if (cu.getMarkers().findFirst(Generated.class).isPresent()) {
+            return true;
+        }
+        for (Path segment : cu.getSourcePath()) {
+            String name = segment.toString();
+            if ("src-gen".equals(name) || "generated-sources".equals(name) || "generated-test-sources".equals(name)) {
+                return true;
+            }
+        }
+        if (hasAntlrHeader(cu.getPrefix())) {
+            return true;
+        }
+        // The parser can attach the file header to the first declaration's prefix.
+        J.Package pkg = cu.getPackageDeclaration();
+        if (pkg != null) {
+            return hasAntlrHeader(pkg.getPrefix());
+        }
+        if (!cu.getImports().isEmpty()) {
+            return hasAntlrHeader(cu.getImports().get(0).getPrefix());
+        }
+        return !cu.getClasses().isEmpty() && hasAntlrHeader(cu.getClasses().get(0).getPrefix());
+    }
+
+    private static boolean hasAntlrHeader(Space prefix) {
+        return prefix.getComments().stream().anyMatch(comment ->
+                comment instanceof TextComment && ANTLR_HEADER.matcher(((TextComment) comment).getText()).lookingAt());
+    }
+
+    private static boolean isGenerated(List<J.Annotation> annotations) {
+        return annotations.stream().anyMatch(annotation ->
+                TypeUtils.isOfClassType(annotation.getType(), "javax.annotation.processing.Generated") ||
+                TypeUtils.isOfClassType(annotation.getType(), "javax.annotation.Generated") ||
+                TypeUtils.isOfClassType(annotation.getType(), "jakarta.annotation.Generated") ||
+                TypeUtils.isOfClassType(annotation.getType(), "lombok.Generated"));
     }
 
     private static boolean containsNonTextCharacters(String content) {
