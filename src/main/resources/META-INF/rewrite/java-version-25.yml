@@ -49,6 +49,7 @@ recipeList:
   # Detach plugin versions such as ${lombok.version}.0 before the Lombok dependency upgrade changes that property.
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.java.migrate.UpgradeGmavenGroovyForJava25
+  - org.openrewrite.java.migrate.UpgradeIanalGroovyForJava25
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.UpgradeKotlinForJava25
   - org.openrewrite.java.migrate.UpgradeBuildToJava24ForKotlin1x
