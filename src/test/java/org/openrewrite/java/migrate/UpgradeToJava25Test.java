@@ -1072,6 +1072,38 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradesTransitiveAspectJWeaverForJava25() {
+        rewriteRun(
+          mavenProject("project",
+            pomXml(
+              //language=xml
+              """
+                <project>
+                    <groupId>example</groupId>
+                    <artifactId>weaving-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework</groupId>
+                            <artifactId>spring-aspects</artifactId>
+                            <version>4.3.6.RELEASE</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(actual -> assertThat(actual)
+                .contains("<maven.compiler.release>25</maven.compiler.release>")
+                .containsPattern("<artifactId>aspectjweaver</artifactId>\\s*<version>1\\.9\\.(2[5-9]|[3-9]\\d)(\\.\\d+)?</version>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void upgradesAspectJMavenPluginForJava25() {
         // Only AspectJ 1.9.25 and later can read Java 25 bytecode, and neither plugin distribution bundles a compiler
         // that new, so aspectjtools is pinned on the plugin itself.
