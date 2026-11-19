@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -60,6 +61,24 @@ class AddLombokMapstructBindingMavenDependencyOnlyTest implements RewriteTest {
         spec.recipe(new AddLombokMapstructBindingMavenDependencyOnly());
     }
 
+    @DocumentExample
+    @Test
+    void existingDependencyKeepsScopeAndVersion() {
+        String dependencies = DEPENDENCIES.replace("</dependencies>", """
+                <dependency>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok-mapstruct-binding</artifactId>
+                    <version>${binding.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>""");
+        rewriteRun(pomXml(pom(dependencies, "").replace("<dependencies>", """
+            <properties>
+                <binding.version>0.2.0</binding.version>
+            </properties>
+            <dependencies>""")));
+    }
+
     @Test
     void legacyConfigurationAndIdempotency() {
         rewriteRun(
@@ -92,25 +111,8 @@ class AddLombokMapstructBindingMavenDependencyOnlyTest implements RewriteTest {
     }
 
     @Test
-    void existingDependencyKeepsScopeAndVersion() {
-        String dependencies = DEPENDENCIES.replace("</dependencies>", """
-                <dependency>
-                    <groupId>org.projectlombok</groupId>
-                    <artifactId>lombok-mapstruct-binding</artifactId>
-                    <version>${binding.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>""");
-        rewriteRun(pomXml(pom(dependencies, "").replace("<dependencies>", """
-            <properties>
-                <binding.version>0.2.0</binding.version>
-            </properties>
-            <dependencies>""")));
-    }
-
-    @Test
     void unrelatedModuleDoesNotReceiveDependency() {
-        String unrelated = """
+        var unrelated = """
           <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>com.example</groupId>

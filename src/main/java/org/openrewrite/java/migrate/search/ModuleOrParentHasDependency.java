@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -31,11 +35,6 @@ import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
-
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

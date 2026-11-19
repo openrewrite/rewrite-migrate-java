@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -32,10 +35,6 @@ import org.openrewrite.maven.tree.ResolvedManagedDependency;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.xml.RemoveContentVisitor;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -28,8 +29,6 @@ import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.*;
 
 import static java.util.Collections.emptyList;
 

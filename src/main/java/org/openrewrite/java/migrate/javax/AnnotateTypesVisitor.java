@@ -15,14 +15,13 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.Comparator;
+import java.util.Set;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
-
-import java.util.Comparator;
-import java.util.Set;
 
 public class AnnotateTypesVisitor extends JavaIsoVisitor<Set<String>> {
     private final String annotationToBeAdded;

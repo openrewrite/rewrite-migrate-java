@@ -210,6 +210,53 @@ class UpgradeLegacyMockitoForJava25Test implements RewriteTest {
     }
 
     @Test
+    void raiseMockitoAllVersionPropertyInParent() {
+        rewriteRun(
+          pomXml(
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.example</groupId>
+                  <artifactId>parent</artifactId>
+                  <version>1</version>
+                  <properties>
+                      <version.mockito>1.10.19</version.mockito>
+                  </properties>
+              </project>
+              """,
+            spec -> spec.after(pom -> assertThat(pom)
+              .containsPattern("<version.mockito>5\\.(2\\d|[3-9]\\d)\\.\\d+</version.mockito>").actual())
+          ),
+          mavenProject("child",
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.example</groupId>
+                        <artifactId>parent</artifactId>
+                        <version>1</version>
+                    </parent>
+                    <artifactId>child</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.mockito</groupId>
+                            <artifactId>mockito-all</artifactId>
+                            <version>${version.mockito}</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<artifactId>mockito-core</artifactId>")
+                .contains("<version>${version.mockito}</version>").actual())
+            )
+          )
+        );
+    }
+
+    @Test
     void migrateRemovedMatcherApiWhenUpgradingMockito2() {
         rewriteRun(
           mavenProject("example",

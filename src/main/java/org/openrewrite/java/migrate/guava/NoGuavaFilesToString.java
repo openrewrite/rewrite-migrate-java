@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -27,9 +29,6 @@ import org.openrewrite.java.ShortenFullyQualifiedTypeReferences;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.List;
-import java.util.Set;
 
 import static java.util.Collections.singleton;
 
@@ -66,9 +65,7 @@ public class NoGuavaFilesToString extends Recipe {
                             return m;
                         }
                         maybeRemoveImport("com.google.common.io.Files");
-                        J readAllBytes = JavaTemplate.builder("new String(java.nio.file.Files.readAllBytes(#{any(java.io.File)}.toPath()), #{any(java.nio.charset.Charset)})")
-                                .build()
-                                .apply(getCursor(), m.getCoordinates().replace(), fileAndCharset.get(0), fileAndCharset.get(1));
+                        J readAllBytes = JavaTemplate.apply("new String(java.nio.file.Files.readAllBytes(#{any(java.io.File)}.toPath()), #{any(java.nio.charset.Charset)})", getCursor(), m.getCoordinates().replace(), fileAndCharset.get(0), fileAndCharset.get(1));
                         doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(readAllBytes));
                         return readAllBytes;
                     }

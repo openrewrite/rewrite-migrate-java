@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -28,10 +31,6 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

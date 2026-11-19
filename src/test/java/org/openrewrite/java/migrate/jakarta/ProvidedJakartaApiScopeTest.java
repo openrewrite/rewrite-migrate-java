@@ -30,7 +30,7 @@ class ProvidedJakartaApiScopeTest implements RewriteTest {
       "JavaxElToJakartaEl,javax.el,el-api,2.2,el,ExpressionFactory",
       "JavaxEjbToJakartaEjb,javax.ejb,ejb-api,3.0,ejb,EJB",
       "JavaxEjbToJakartaEjb,org.jboss.spec.javax.ejb,jboss-ejb-api_3.1_spec,1.0.2.Final,ejb,EJB",
-      "JavaxMailToJakartaMail,javax.mail,mail,1.4.7,mail,Session"
+      "JavaxMailToJakartaMail,javax.mail,javax.mail-api,1.6.2,mail,Session"
     })
     @ParameterizedTest
     void migratesLegacyApiAndPreservesProvidedScope(String recipe, String group, String artifact,
@@ -64,8 +64,16 @@ class ProvidedJakartaApiScopeTest implements RewriteTest {
             ),
             srcMainJava(
               java(
-                "class A { javax." + namespace + "." + type + " api; }",
-                "class A { jakarta." + namespace + "." + type + " api; }"
+                """
+                  import javax.%s.%s;
+
+                  class A { %2$s api; }
+                  """.formatted(namespace, type),
+                """
+                  import jakarta.%s.%s;
+
+                  class A { %2$s api; }
+                  """.formatted(namespace, type)
               )
             )
           )

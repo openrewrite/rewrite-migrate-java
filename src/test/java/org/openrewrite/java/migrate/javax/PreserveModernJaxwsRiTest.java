@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 package org.openrewrite.java.migrate.javax;
-
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.maven.tree.Dependency;
@@ -26,8 +28,6 @@ import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.ResolvedGroupArtifactVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
@@ -40,41 +40,11 @@ class PreserveModernJaxwsRiTest implements RewriteTest {
           "org.openrewrite.java.migrate.javax.AddJaxwsDependencies");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"2.3.2", "3.0.0", "4.0.5"})
-    void removeOnlyLegacyGradleDeclarations(String version) {
-        ResolvedDependency dependency = ResolvedDependency.builder()
-          .gav(new ResolvedGroupArtifactVersion(null, "com.sun.xml.ws", "jaxws-ri", version, null))
-          .requested(Dependency.builder().gav(new GroupArtifactVersion("com.sun.xml.ws", "jaxws-ri", version)).build())
-          .type("pom").build();
-        GradleDependencyConfiguration configuration = new GradleDependencyConfiguration("implementation", null,
-          true, true, false, false, Collections.emptyList(), Collections.singletonList(dependency.getRequested()),
-          Collections.singletonList(dependency), null, null);
-        String script = """
-          plugins { id 'java' }
-          repositories { mavenCentral() }
-          dependencies {
-              implementation 'com.sun.xml.ws:jaxws-ri:%s'
-          }
-          """.formatted(version);
-        rewriteRun(
-          spec -> spec.recipe(new RemoveLegacyJaxwsRi()),
-          buildGradle(script, spec -> {
-              spec.markers(GradleProject.builder().name("sample").path(":sample")
-                .nameToConfiguration(Collections.singletonMap("implementation", configuration)).build());
-              if (version.startsWith("2.")) {
-                  spec.after(after -> {
-                      assertThat(after).doesNotContain("jaxws-ri");
-                      return after;
-                  });
-              }
-          })
-        );
-    }
-
+    @DocumentExample
     @Test
     void stillRemoveLegacyManagedPom() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>org.sample</groupId>
@@ -92,7 +62,8 @@ class PreserveModernJaxwsRiTest implements RewriteTest {
               </dependencies>
             </dependencyManagement>
           </project>
-          """, """
+          """,
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>org.sample</groupId>
@@ -101,6 +72,35 @@ class PreserveModernJaxwsRiTest implements RewriteTest {
             <properties><metro.version>2.3.2</metro.version></properties>
           </project>
           """));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"2.3.2", "3.0.0", "4.0.5"})
+    void removeOnlyLegacyGradleDeclarations(String version) {
+        ResolvedDependency dependency = ResolvedDependency.builder()
+          .gav(new ResolvedGroupArtifactVersion(null, "com.sun.xml.ws", "jaxws-ri", version, null))
+          .requested(Dependency.builder().gav(new GroupArtifactVersion("com.sun.xml.ws", "jaxws-ri", version)).build())
+          .type("pom").build();
+        var configuration = new GradleDependencyConfiguration("implementation", null,
+          true, true, false, false, List.of(), List.of(dependency.getRequested()),
+          List.of(dependency), null, null);
+        String script = """
+          plugins { id 'java' }
+          repositories { mavenCentral() }
+          dependencies {
+              implementation 'com.sun.xml.ws:jaxws-ri:%s'
+          }
+          """.formatted(version);
+        rewriteRun(
+          spec -> spec.recipe(new RemoveLegacyJaxwsRi()),
+          buildGradle(script, spec -> {
+              spec.markers(GradleProject.builder().name("sample").path(":sample")
+                .nameToConfiguration(Map.of("implementation", configuration)).build());
+              if (version.startsWith("2.")) {
+                  spec.after(after -> assertThat(after).doesNotContain("jaxws-ri").actual());
+              }
+          })
+        );
     }
 
     @ParameterizedTest

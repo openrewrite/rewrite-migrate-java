@@ -15,13 +15,12 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
@@ -116,13 +115,11 @@ class UpgradeToJava17Test implements RewriteTest {
                 </dependencies>
               </project>
               """,
-            spec -> spec.after(actual -> {
-                return assertThat( actual )
+            spec -> spec.after(actual -> assertThat( actual )
                         .doesNotContain( "<artifactId>mapstruct-jdk8</artifactId>" )
                         .contains( "<artifactId>mapstruct</artifactId>" )
                         .contains( "<artifactId>mapstruct-processor</artifactId>" )
-                        .contains( "<mapstruct.version>1.6.3</mapstruct.version>" ).actual();
-            })
+                        .contains( "<mapstruct.version>1.6.3</mapstruct.version>" ).actual())
           )
         );
     }

@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
@@ -52,7 +51,6 @@ class MigrateFastjsonForJakarta10Test implements RewriteTest {
             """
               import com.alibaba.fastjson2.JSON;
               import com.alibaba.fastjson2.JSONWriter;
-              import com.alibaba.fastjson2.JSONWriter.Feature;
 
               class A {
                   String toJson(Object o) {
@@ -82,7 +80,6 @@ class MigrateFastjsonForJakarta10Test implements RewriteTest {
             """
               import com.alibaba.fastjson2.JSON;
               import com.alibaba.fastjson2.JSONReader;
-              import com.alibaba.fastjson2.JSONReader.Feature;
 
               class A {
                   <T> T fromJson(String json, Class<T> type) {
@@ -94,7 +91,6 @@ class MigrateFastjsonForJakarta10Test implements RewriteTest {
         );
     }
 
-    @ExpectedToFail("`ChangeType` to a nested type also adds an unused `import JSONReader.Feature`, which clashes with `JSONWriter.Feature`")
     @Test
     void readerAndWriterFeatureInOneFile() {
         rewriteRun(

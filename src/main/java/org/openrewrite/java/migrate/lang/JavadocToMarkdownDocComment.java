@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -33,10 +36,6 @@ import org.openrewrite.java.marker.Varargs;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;

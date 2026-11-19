@@ -171,12 +171,12 @@ tags:
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  - org.openrewrite.java.ChangeMethodInvocationReturnType:
+      methodPattern: java.util.logging.LogRecord getThreadID()
+      newReturnType: long
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord getThreadID()
       newMethodName: getLongThreadID
-  - org.openrewrite.java.ChangeMethodInvocationReturnType:
-      methodPattern: java.util.logging.LogRecord getLongThreadID()
-      newReturnType: long
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: java.util.logging.LogRecord setThreadID(int)
       newMethodName: setLongThreadID

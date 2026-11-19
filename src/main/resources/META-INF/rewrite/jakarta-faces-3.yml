@@ -90,11 +90,16 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.xml.search.FindTags:
+      xPath: /faces-config
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: faces-config
+      oldValue: ^[12]\.\d+$
       newValue: 3.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: faces-config
@@ -102,11 +107,14 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: faces-config
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_3_0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/faces-config.xml'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxFacesTagLibraryXmlToJakartaFacesTagLibraryXml
@@ -116,11 +124,16 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.xml.search.FindTags:
+      xPath: /facelet-taglib
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: facelet-taglib
+      oldValue: ^[12]\.\d+$
       newValue: 3.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: facelet-taglib
@@ -128,11 +141,14 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: facelet-taglib
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_3_0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: javax.
-      replace: jakarta.
-      filePattern: '**/*taglib*.xml'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml
@@ -142,11 +158,16 @@ tags:
   - jakarta
   - faces
   - jsf
+preconditions:
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/web-fragment.xml'
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: version
       elementName: web-fragment
+      oldValue: ^[1234]\.\d+$
       newValue: 5.0
+      regex: true
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xmlns
       elementName: web-fragment
@@ -154,15 +175,19 @@ recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
       attributeName: xsi:schemaLocation
       elementName: web-fragment
+      oldValue: (?s).*xml/ns/(j2ee|javaee).*
       newValue: https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_5_0.xsd
-  - org.openrewrite.text.FindAndReplace:
-      find: "javax."
-      replace: "jakarta."
-      filePattern: '**/web-fragment.xml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "jakarta.sql."
-      replace: "javax.sql."
-      filePattern: '**/web-fragment.xml'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "javax\\."
+      newValue: "jakarta."
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: //*
+      oldValue: "jakarta\\.sql\\."
+      newValue: "javax.sql."
+      regex: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxWebXmlToJakartaWebXml
@@ -260,9 +285,11 @@ recipeList:
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.RemovedStateManagerMethods
-displayName: Use `StateManagementStrategy`
+displayName: Replace deprecated `StateManager` methods
 description: >-
-  Faces 3.0 introduced using `StateManagementStrategy` in favor of `StateManager`, which was later removed in Faces 4.0.
+  Replace deprecated `StateManager` methods with `saveView` and `restoreView`. Faces 4.0 removed those from
+  `StateManager` as well, so code that saves or restores views through it still needs a manual move to
+  `StateManagementStrategy`.
 recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager getComponentStateToSave(*.faces.context.FacesContext)"
@@ -283,14 +310,6 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: "*.faces.application.StateManager saveSerializedView(*.faces.context.FacesContext)"
       newMethodName: saveView
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: javax.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
-      ignoreDefinition: true
-  - org.openrewrite.java.ChangeType:
-      oldFullyQualifiedTypeName: jakarta.faces.application.StateManager
-      newFullyQualifiedTypeName: jakarta.faces.view.StateManagementStrategy
       ignoreDefinition: true
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -379,20 +398,12 @@ tags:
   - omnifaces
   - primefaces
 recipeList:
-  - org.openrewrite.maven.ChangeDependencyClassifier:
-      groupId: org.primefaces
-      artifactId: primefaces
-      newClassifier: jakarta
-      changeManagedDependency: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFaces
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces
       artifactId: primefaces
       newVersion: 14.0.x
-  - org.openrewrite.maven.ChangeDependencyClassifier:
-      groupId: org.primefaces.extensions
-      artifactId: primefaces-extensions
-      newClassifier: jakarta
-      changeManagedDependency: true
+  - org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFacesExtensions
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.primefaces.extensions
       artifactId: primefaces-extensions
@@ -409,3 +420,42 @@ recipeList:
       groupId: org.apache.myfaces.core
       artifactId: myfaces-impl
       newVersion: 4.0.x
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFaces
+displayName: Add the `jakarta` classifier to PrimeFaces
+description: >-
+  Select the Jakarta build of PrimeFaces in Maven builds through its `jakarta` classifier. PrimeFaces 16 and later
+  only publish Jakarta builds, without a classifier, so modules already on those versions are left unchanged.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.primefaces
+      artifactIdPattern: primefaces
+      version: "[16,)"
+      invertMarking: true
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces
+      artifactId: primefaces
+      newClassifier: jakarta
+      changeManagedDependency: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.AddJakartaClassifierToPrimeFacesExtensions
+displayName: Add the `jakarta` classifier to PrimeFaces Extensions
+description: >-
+  Select the Jakarta build of PrimeFaces Extensions in Maven builds through its `jakarta` classifier. PrimeFaces
+  Extensions 16 and later only publish Jakarta builds, without a classifier, so modules already on those versions
+  are left unchanged.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.primefaces.extensions
+      artifactIdPattern: primefaces-extensions
+      version: "[16,)"
+      invertMarking: true
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyClassifier:
+      groupId: org.primefaces.extensions
+      artifactId: primefaces-extensions
+      newClassifier: jakarta
+      changeManagedDependency: true

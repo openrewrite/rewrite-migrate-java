@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.net;
 
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
@@ -34,9 +36,6 @@ import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class URLConstructorToURICreate extends Recipe {
 

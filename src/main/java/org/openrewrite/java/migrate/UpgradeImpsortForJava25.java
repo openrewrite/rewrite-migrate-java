@@ -15,22 +15,19 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.migrate.internal.MavenPluginDependencyCompatibility;
 
 public class UpgradeImpsortForJava25 extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use a Java 25 compatible parser for Impsort 1.13";
-    }
+    @Getter
+    final String displayName = "Use a Java 25 compatible parser for Impsort 1.13";
 
-    @Override
-    public String getDescription() {
-        return "Use JavaParser 3.28.2 with Impsort 1.13.0 to parse Java 25 yield statements. " +
-               "Preserve newer parser versions, other Impsort versions, and unresolved declarations.";
-    }
+    @Getter
+    final String description = "Use JavaParser 3.28.2 with Impsort 1.13.0 to parse Java 25 yield statements. " +
+            "Preserve newer parser versions, other Impsort versions, and unresolved declarations.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

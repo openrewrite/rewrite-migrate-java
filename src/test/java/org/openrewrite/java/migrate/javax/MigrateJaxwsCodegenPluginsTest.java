@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -66,6 +67,7 @@ class MigrateJaxwsCodegenPluginsTest implements RewriteTest {
           """.formatted(group, artifact, version, "jaxws-maven-plugin".equals(artifact) ? "wsimport" : "generate");
     }
 
+    @DocumentExample
     @Test
     void upgradeMojoHausPreservingConfiguration() {
         rewriteRun(pomXml(
@@ -94,7 +96,7 @@ class MigrateJaxwsCodegenPluginsTest implements RewriteTest {
 
     @Test
     void preservePropertyAndPluginManagement() {
-        String before = """
+        var before = """
           <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>com.example</groupId>
@@ -128,7 +130,8 @@ class MigrateJaxwsCodegenPluginsTest implements RewriteTest {
 
     @Test
     void doNotAddUnusedPlugins() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>com.example</groupId>

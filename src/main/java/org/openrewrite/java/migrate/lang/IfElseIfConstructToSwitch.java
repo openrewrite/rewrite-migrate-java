@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -28,8 +30,8 @@ import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
@@ -38,9 +40,6 @@ import org.openrewrite.java.tree.TypedTree;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -382,7 +381,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return Space.SINGLE_SPACE;
         }
 
-        @SuppressWarnings("deprecation")
         private J.VariableDeclarations buildVariableDeclarations(J.InstanceOf instanceOf, Space prefix) {
             J.Identifier pattern = (J.Identifier) instanceOf.getPattern();
             J.VariableDeclarations.NamedVariable namedVar = new J.VariableDeclarations.NamedVariable(
@@ -401,7 +399,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     emptyList(),
                     emptyList(),
                     instanceOf.getClazz().withPrefix(Space.EMPTY),
-                    null,
                     null,
                     singletonList(JRightPadded.build(namedVar))
             );

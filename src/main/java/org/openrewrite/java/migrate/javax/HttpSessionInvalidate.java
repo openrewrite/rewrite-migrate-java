@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -26,10 +29,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.*;
-
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

@@ -99,14 +99,16 @@ class UpgradeLombokMavenPluginForJava25Test implements RewriteTest {
     void doesNotAddPluginWhenAbsent() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25"),
-          pomXml("""
+          pomXml(
+            """
             <project>
                 <modelVersion>4.0.0</modelVersion>
                 <groupId>com.example</groupId>
                 <artifactId>without-delombok</artifactId>
                 <version>1</version>
             </project>
-            """)
+            """
+          )
         );
     }
 

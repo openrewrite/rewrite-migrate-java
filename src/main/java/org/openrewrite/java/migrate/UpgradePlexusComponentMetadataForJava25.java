@@ -15,22 +15,19 @@
  */
 package org.openrewrite.java.migrate;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.migrate.internal.MavenPluginDependencyCompatibility;
 
 public class UpgradePlexusComponentMetadataForJava25 extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Use a Java 25 compatible bytecode reader for Plexus metadata";
-    }
+    @Getter
+    final String displayName = "Use a Java 25 compatible bytecode reader for Plexus metadata";
 
-    @Override
-    public String getDescription() {
-        return "Use ASM 9.8 with Plexus component metadata 2.2.0, including declarations managed by an external parent. " +
-               "Preserve newer ASM versions, other plugin versions, and unresolved declarations.";
-    }
+    @Getter
+    final String description = "Use ASM 9.8 with Plexus component metadata 2.2.0, including declarations managed by an external parent. " +
+            "Preserve newer ASM versions, other plugin versions, and unresolved declarations.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

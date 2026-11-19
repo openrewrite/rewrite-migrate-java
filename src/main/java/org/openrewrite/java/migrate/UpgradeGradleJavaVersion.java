@@ -15,11 +15,17 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.Cursor;
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
@@ -28,27 +34,21 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.UpdateJavaCompatibility;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.trait.GradlePlugin;
-import org.openrewrite.groovy.tree.G;
 import org.openrewrite.groovy.GroovyIsoVisitor;
+import org.openrewrite.groovy.tree.G;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.kotlin.tree.K;
 import org.openrewrite.kotlin.KotlinIsoVisitor;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.openrewrite.kotlin.tree.K;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class UpgradeGradleJavaVersion extends Recipe {
     @Option(displayName = "Java version", description = "The requested Java version, bounded by the Kotlin compiler's supported target.", example = "25")
     Integer version;
+
     String displayName = "Align Gradle Java and Kotlin bytecode targets";
     String description = "Upgrade Java and Kotlin together using the actual Kotlin Gradle plugin version, preserving Kotlin 1.x and unmodeled nested build boundaries.";
 
@@ -152,7 +152,9 @@ public class UpgradeGradleJavaVersion extends Recipe {
         Map<String, String> literals = new HashMap<>();
         Map<String, Integer> declarations = new HashMap<>();
         Set<String> writes = new HashSet<>();
-        if (!(source instanceof K.CompilationUnit)) return literals;
+        if (!(source instanceof K.CompilationUnit)) {
+            return literals;
+        }
         new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.VariableDeclarations.NamedVariable visitVariable(J.VariableDeclarations.NamedVariable variable, ExecutionContext ctx) {
@@ -248,10 +250,18 @@ public class UpgradeGradleJavaVersion extends Recipe {
         int major = Integer.parseInt(match.group(1));
         int minor = Integer.parseInt(match.group(2));
         int patch = match.group(3) == null ? 0 : Integer.parseInt(match.group(3));
-        if (major > 2 || major == 2 && minor >= 3) return 25;
-        if (major == 2) return minor == 2 ? 24 : minor == 1 ? 23 : 22;
-        if (major == 1 && minor >= 9) return patch >= 20 ? 21 : 20;
-        if (major == 1 && minor == 8) return 19;
+        if (major > 2 || major == 2 && minor >= 3) {
+            return 25;
+        }
+        if (major == 2) {
+            return minor == 2 ? 24 : minor == 1 ? 23 : 22;
+        }
+        if (major == 1 && minor >= 9) {
+            return patch >= 20 ? 21 : 20;
+        }
+        if (major == 1 && minor == 8) {
+            return 19;
+        }
         return 8;
     }
 }

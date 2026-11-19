@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -29,10 +32,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

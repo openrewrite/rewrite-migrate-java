@@ -51,6 +51,38 @@ class UpgradeToJava25Test implements RewriteTest {
         spec.recipeFromResources("org.openrewrite.java.migrate.UpgradeToJava25");
     }
 
+    @DocumentExample
+    @Test
+    void updateCompilerVersion() {
+        rewriteRun(
+          mavenProject("project",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>17</maven.compiler.release>
+                    </properties>
+                </project>
+                """,
+              """
+                <project>
+                    <groupId>com.mycompany.app</groupId>
+                    <artifactId>my-app</artifactId>
+                    <version>1</version>
+                    <properties>
+                        <maven.compiler.release>25</maven.compiler.release>
+                    </properties>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
     @Test
     void upgradeNebulaNetflixOssForGradle9() {
         rewriteRun(
@@ -100,38 +132,6 @@ class UpgradeToJava25Test implements RewriteTest {
                   id 'com.netflix.nebula.netflixoss' version '13.0.0'
               }
               """
-          )
-        );
-    }
-
-    @DocumentExample
-    @Test
-    void updateCompilerVersion() {
-        rewriteRun(
-          mavenProject("project",
-            //language=xml
-            pomXml(
-              """
-                <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                        <maven.compiler.release>17</maven.compiler.release>
-                    </properties>
-                </project>
-                """,
-              """
-                <project>
-                    <groupId>com.mycompany.app</groupId>
-                    <artifactId>my-app</artifactId>
-                    <version>1</version>
-                    <properties>
-                        <maven.compiler.release>25</maven.compiler.release>
-                    </properties>
-                </project>
-                """
-            )
           )
         );
     }
@@ -282,9 +282,7 @@ class UpgradeToJava25Test implements RewriteTest {
               zipStorePath=wrapper/dists
               """,
             spec -> spec.path("gradle/wrapper/gradle-wrapper.properties")
-              .after(actual -> {
-                  return assertThat(actual).containsPattern("gradle-9\\.[1-9]\\d*\\.\\d+-bin\\.zip").actual();
-              })
+              .after(actual -> assertThat(actual).containsPattern("gradle-9\\.[1-9]\\d*\\.\\d+-bin\\.zip").actual())
           ),
           text("", spec -> spec.path("gradlew").after(a -> {
               assertThat(a).isNotEmpty();

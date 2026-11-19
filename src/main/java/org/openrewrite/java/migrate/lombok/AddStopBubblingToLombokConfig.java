@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.nio.file.Path;
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -25,9 +27,6 @@ import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
-
-import java.nio.file.Path;
-import java.util.*;
 
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;

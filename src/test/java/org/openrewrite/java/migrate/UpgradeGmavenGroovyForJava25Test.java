@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -50,36 +51,10 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
           """.formatted(version);
     }
 
-    @Test
-    void upgradeExplicitCompilerInPluginManagement() {
-        rewriteRun(pomXml(pluginPom("3.0.23"), pluginPom("3.0.25")));
-    }
-
-    @Test
-    void retainCompatibleCompiler() {
-        rewriteRun(pomXml(pluginPom("3.0.25")));
-    }
-
-    @Test
-    void leaveUnrelatedGroovyDependencyAlone() {
-        rewriteRun(pomXml("""
-          <project>
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.acme</groupId>
-            <artifactId>example</artifactId>
-            <version>1.0</version>
-            <dependencies><dependency>
-              <groupId>org.codehaus.groovy</groupId>
-              <artifactId>groovy</artifactId>
-              <version>3.0.23</version>
-            </dependency></dependencies>
-          </project>
-          """));
-    }
-
+    @DocumentExample
     @Test
     void upgradeCompilerVersionInheritedFromParent() {
-        String parent = """
+        var parent = """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>com.acme</groupId>
@@ -90,7 +65,7 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             <modules><module>child</module></modules>
           </project>
           """;
-        String child = """
+        var child = """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <parent>
@@ -118,12 +93,40 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
     }
 
     @Test
+    void upgradeExplicitCompilerInPluginManagement() {
+        rewriteRun(pomXml(pluginPom("3.0.23"), pluginPom("3.0.25")));
+    }
+
+    @Test
+    void retainCompatibleCompiler() {
+        rewriteRun(pomXml(pluginPom("3.0.25")));
+    }
+
+    @Test
+    void leaveUnrelatedGroovyDependencyAlone() {
+        rewriteRun(pomXml(
+          """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.acme</groupId>
+            <artifactId>example</artifactId>
+            <version>1.0</version>
+            <dependencies><dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy</artifactId>
+              <version>3.0.23</version>
+            </dependency></dependencies>
+          </project>
+          """));
+    }
+
+    @Test
     void preserveOtherCompilerLinesAndNewerPatches() {
         rewriteRun(pomXml(pluginPom("2.4.20")), pomXml(pluginPom("3.0.25"), spec -> spec.path("other/pom.xml")));
     }
     @Test
     void preserveNewerProfileProperty() {
-        String before = """
+        var before = """
           <project>
             <modelVersion>4.0.0</modelVersion><groupId>example</groupId><artifactId>compiler</artifactId><version>1</version>
             <properties><groovy.version>3.0.23</groovy.version></properties>
@@ -138,12 +141,12 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             </profile></profiles>
           </project>
           """;
-        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+        rewriteRun(
           pomXml(before, before.replace("3.0.23", "3.0.25")));
     }
     @Test
     void preserveOtherLineProfileProperty() {
-        String before = """
+        var before = """
           <project>
             <modelVersion>4.0.0</modelVersion><groupId>example</groupId><artifactId>compiler</artifactId><version>1</version>
             <properties><groovy.version>3.0.23</groovy.version></properties>
@@ -158,7 +161,7 @@ class UpgradeGmavenGroovyForJava25Test implements RewriteTest {
             </profile></profiles>
           </project>
           """;
-        rewriteRun(s -> s.recipe(new UpgradeGmavenGroovyForJava25()),
+        rewriteRun(
           pomXml(before, before.replace("3.0.23", "3.0.25")));
     }
 }

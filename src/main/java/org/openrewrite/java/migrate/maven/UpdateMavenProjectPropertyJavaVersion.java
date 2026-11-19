@@ -15,12 +15,11 @@
  */
 package org.openrewrite.java.migrate.maven;
 
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-
-import java.util.List;
 
 import static java.util.Collections.singletonList;
 

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -22,8 +23,6 @@ import org.openrewrite.xml.ChangeTagAttribute;
 import org.openrewrite.xml.XPathMatcher;
 import org.openrewrite.xml.XmlVisitor;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
 

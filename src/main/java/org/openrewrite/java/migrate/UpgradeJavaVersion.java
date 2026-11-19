@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.time.Duration;
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -26,9 +28,6 @@ import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.maven.UpdateMavenProjectPropertyJavaVersion;
 import org.openrewrite.maven.UseMavenCompilerPluginReleaseConfiguration;
-
-import java.time.Duration;
-import java.util.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -56,7 +55,8 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpgradeGradleJavaVersion(version),
                 new UpgradeJavaGradleReleaseVersion(version),
                 new UpdateSdkMan(String.valueOf(version), null),
-                new UpgradeJavaCiContainerImage(version),
+                new UpgradeJavaContainerImages(version),
+                new org.openrewrite.gitlab.UpgradeJavaVersion(version),
                 new UpgradeDockerImageVersion(version),
                 new UpgradeKotlinJvmTargetVersion(version)
         );

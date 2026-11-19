@@ -17,11 +17,17 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.xml.Assertions.xml;
 
 class JakartaEE10Test implements RewriteTest {
 
@@ -56,6 +62,254 @@ class JakartaEE10Test implements RewriteTest {
                 .as("EE9 dependencies").doesNotContain("org.eclipse.jetty.ee9.websocket", "jetty-ee9-websocket-jetty-server")
                 .as("EE10 dependencies").contains("org.eclipse.jetty.ee10.websocket", "jetty-ee10-websocket-jetty-server")
                 .actual())
+          )
+        );
+    }
+
+    @Test
+    void keepJakartaEE11Descriptors() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_1.xsd"
+                            version="4.1">
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="4.1"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_1.xsd">
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/app.taglib.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+                       version="6.1">
+              </web-app>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/web.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            version="6.1"
+                            xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_1.xsd">
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateJavaEEDescriptors() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
+                            version="2.3">
+                  <application>
+                      <el-resolver>javax.faces.el.CustomResolver</el-resolver>
+                  </application>
+              </faces-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd"
+                            version="4.0">
+                  <application>
+                      <el-resolver>jakarta.faces.el.CustomResolver</el-resolver>
+                  </application>
+              </faces-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/faces-config.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="2.3"
+                              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_3.xsd">
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>javax.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
+              </facelet-taglib>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <facelet-taglib version="4.0"
+                              xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facelettaglibrary_4_0.xsd">
+                  <tag>
+                      <tag-name>panel</tag-name>
+                      <handler-class>jakarta.faces.view.facelets.ComponentHandler</handler-class>
+                  </tag>
+              </facelet-taglib>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/app.taglib.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-fragment_4_0.xsd"
+                            version="4.0">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
+              </web-fragment>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <web-fragment xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_0.xsd"
+                            version="6.0">
+                  <servlet>
+                      <servlet-name>Faces Servlet</servlet-name>
+                      <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+                  </servlet>
+              </web-fragment>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/web-fragment.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateFileuploadWhenServletClassesAreUsed() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "commons-fileupload-1.5")),
+          //language=java
+          java(
+            """
+              import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+              class Upload {
+                  ServletFileUpload upload;
+              }
+              """,
+            """
+              import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+
+              class Upload {
+                  JakartaServletFileUpload upload;
+              }
+              """
+          ),
+          pomXml(
+            //language=xml
+            """
+              <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>com.example</groupId>
+                  <artifactId>demo</artifactId>
+                  <version>1.0</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>commons-fileupload</groupId>
+                          <artifactId>commons-fileupload</artifactId>
+                          <version>1.5</version>
+                      </dependency>
+                  </dependencies>
+              </project>
+              """,
+            spec -> spec.after(pom ->
+              assertThat(pom)
+                .doesNotContain("<artifactId>commons-fileupload</artifactId>")
+                .contains("<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>")
+                .actual())
+          )
+        );
+    }
+
+    @Test
+    void migrateMailImplementationToAngusMail() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "mail-1.4.7")),
+          mavenProject("app",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import com.sun.mail.smtp.SMTPTransport;
+                  import javax.mail.Session;
+
+                  class Mailer {
+                      SMTPTransport transport(Session session) throws Exception {
+                          return (SMTPTransport) session.getTransport("smtp");
+                      }
+                  }
+                  """,
+                """
+                  import com.sun.mail.smtp.SMTPTransport;
+                  import jakarta.mail.Session;
+
+                  class Mailer {
+                      SMTPTransport transport(Session session) throws Exception {
+                          return (SMTPTransport) session.getTransport("smtp");
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>javax.mail</artifactId>
+                            <version>1.6.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>org.eclipse.angus</groupId>", "<artifactId>jakarta.mail</artifactId>")
+                .containsPattern("<version>1\\.\\d+\\.\\d+</version>")
+                .doesNotContain("<groupId>com.sun.mail</groupId>", "<artifactId>jakarta.mail-api</artifactId>")
+                .actual())
+            )
           )
         );
     }

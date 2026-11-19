@@ -15,15 +15,15 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
-import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.gradle.marker.GradlePluginDescriptor;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.Collections;
 
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
@@ -37,10 +37,11 @@ class AddNebulaJavaToolchainTest implements RewriteTest {
 
     private static GradleProject nebula(String id) {
         return GradleProject.builder().id(Tree.randomId())
-          .plugins(Collections.singletonList(new GradlePluginDescriptor("nebula.plugin.netflixossproject.NetflixOssProjectPlugin", id)))
+          .plugins(List.of(new GradlePluginDescriptor("nebula.plugin.netflixossproject.NetflixOssProjectPlugin", id)))
           .build();
     }
 
+    @DocumentExample
     @Test
     void overrideImplicitJava8() {
         rewriteRun(
@@ -185,7 +186,7 @@ class AddNebulaJavaToolchainTest implements RewriteTest {
 
     @Test
     void leaveKotlinModulesToTheirVersionGatedMigration() {
-        JavaProject module = new JavaProject(Tree.randomId(), "kotlin-module", null);
+        var module = new JavaProject(Tree.randomId(), "kotlin-module", null);
         rewriteRun(
           buildGradle(
             "plugins { id 'java' }",
@@ -202,7 +203,7 @@ class AddNebulaJavaToolchainTest implements RewriteTest {
           buildGradle(
             "plugins { id 'base' }",
             spec -> spec.path("base/build.gradle").markers(GradleProject.builder().id(Tree.randomId())
-              .plugins(Collections.singletonList(new GradlePluginDescriptor("org.gradle.api.plugins.BasePlugin", "base"))).build())
+              .plugins(List.of(new GradlePluginDescriptor("org.gradle.api.plugins.BasePlugin", "base"))).build())
           )
         );
     }

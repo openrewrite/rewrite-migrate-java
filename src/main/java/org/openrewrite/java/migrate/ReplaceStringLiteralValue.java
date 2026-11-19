@@ -17,13 +17,12 @@ package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.NonNull;
 import org.openrewrite.Option;
 import org.openrewrite.Recipe;
-
-import java.util.List;
 
 import static java.util.Collections.singletonList;
 

@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,8 +26,7 @@ import static org.openrewrite.xml.Assertions.xml;
 class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxFacesConfigXmlToJakartaFacesConfigXml");
     }
 
     @DocumentExample
@@ -107,7 +105,7 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
                   </render-kit>
               </faces-config>
               """,
-            sourceSpecs -> sourceSpecs.path("faces-config.xml")
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/mylib.faces-config.xml")
           )
         );
     }
@@ -115,17 +113,39 @@ class JavaxFacesConfigXmlToJakartaFacesConfigXmlTest implements RewriteTest {
     @Nested
     class NoChanges {
         @Test
+        void facesConfigAlreadyOnJakartaFaces() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <faces-config xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_1.xsd"
+                                version="4.1">
+                  </faces-config>
+                  """,
+                sourceSpecs -> sourceSpecs.path("faces-config.xml")
+              )
+            );
+        }
+
+        @Test
         void fileNotFacesConfigXml() {
             rewriteRun(
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-faces-config.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

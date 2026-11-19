@@ -148,7 +148,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.RemoveSecurityManager
 displayName: Remove `SecurityManager` permission checks
-description: The Security Manager API is unsupported in Java 24. This recipe removes calls to the `java.lang.SecurityManager#check*(..)` methods.
+description: >-
+  The Security Manager API is unsupported in Java 24. This recipe removes calls to the `java.lang.SecurityManager#check*(..)` methods
+  on the system `SecurityManager`, and keeps checks on other `SecurityManager` instances, which still enforce their own policy.
 tags:
   - java25
   - security
@@ -160,8 +162,7 @@ preconditions:
       methodPattern: java.lang.SecurityManager#check*(..)
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.RemoveMethodInvocations:
-      methodPattern: java.lang.SecurityManager#check*(..)
+  - org.openrewrite.java.migrate.RemoveSystemSecurityManagerChecks
   - org.openrewrite.staticanalysis.UnnecessaryCatch
   - org.openrewrite.staticanalysis.UnnecessaryThrows
 
@@ -248,7 +249,7 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeLombokMavenPluginForJava25
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
-  - org.openrewrite.gradle.MigrateToGradle9
+  - org.openrewrite.gradle.migrate.MigrateToGradle9
   # Older resolvers reference JvmVendorSpec.IBM_SEMERU, removed in Gradle 9.
   - org.openrewrite.gradle.plugins.UpgradePluginVersion:
       pluginIdPattern: org.gradle.toolchains.foojay-resolver*
@@ -332,6 +333,11 @@ recipeList:
       artifactId: aspectj*
       newVersion: 1.9.x
   - org.openrewrite.java.migrate.UpgradeMockito1ForJava25
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: org.mockito
+      oldArtifactId: mockito-all
+      newArtifactId: mockito-core
+      newVersion: 5.x
   # mockito-inline was last published as 5.2.0 and inline mocking is the default in mockito-core 5.x, so fold it in
   # before the bump below rather than leaving a coordinate that no longer resolves.
   - org.openrewrite.java.dependencies.ChangeDependency:
@@ -342,7 +348,7 @@ recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.mockito
       artifactId: mockito-*
-      newVersion: 5.20.x
+      newVersion: 5.x
   - org.openrewrite.java.migrate.AddMockitoJavaAgentToMavenSurefirePlugin
   # The agent recipe can introduce Surefire; upgrade after it, including versions inherited from old parents.
   - org.openrewrite.maven.UpgradePluginVersion:

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.util.Arrays;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -26,9 +28,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @see <a href="https://bugs.openjdk.org/browse/JDK-8324308">JDK-8324308</a>

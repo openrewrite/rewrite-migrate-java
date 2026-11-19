@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 package org.openrewrite.java.migrate.javax;
-
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
-import java.util.Collections;
+import org.openrewrite.DocumentExample;
+import org.openrewrite.Issue;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.maven.tree.Dependency;
 import org.openrewrite.maven.tree.GroupArtifactVersion;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.ResolvedGroupArtifactVersion;
-
-import org.openrewrite.DocumentExample;
-import org.openrewrite.Issue;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.gradle.Assertions.buildGradle;
+import static org.openrewrite.java.Assertions.*;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class AddCommonAnnotationsDependenciesTest implements RewriteTest {
@@ -44,9 +43,59 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
           .allSources(src -> src.markers(javaVersion(8)));
     }
 
+    @DocumentExample
+    @Test
+    void addDependencyIfAnnotationJsr250Present() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("package javax.annotation; public @interface Generated {}")),
+          mavenProject("my-project",
+            //language=java
+            srcMainJava(
+              java(
+                """
+                  import javax.annotation.Generated;
+
+                  @Generated("Hello")
+                  class A {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                </project>
+                """,
+              """
+                <project>
+                  <modelVersion>4.0.0</modelVersion>
+                  <groupId>org.sample</groupId>
+                  <artifactId>sample</artifactId>
+                  <version>1.0.0</version>
+                  <dependencies>
+                    <dependency>
+                      <groupId>jakarta.annotation</groupId>
+                      <artifactId>jakarta.annotation-api</artifactId>
+                      <version>1.3.5</version>
+                      <scope>provided</scope>
+                    </dependency>
+                  </dependencies>
+                </project>
+                """
+            )
+          )
+        );
+    }
+
     @Test
     void preserveJavaxAlongsideModernTransitiveAnnotations() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>org.sample</groupId>
@@ -71,7 +120,8 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
 
     @Test
     void preserveJavaxAlongsidePropertyBasedModernAnnotations() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>org.sample</groupId>
@@ -156,7 +206,8 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
 
     @Test
     void preserveManagedModernAnnotations() {
-        rewriteRun(pomXml("""
+        rewriteRun(pomXml(
+          """
           <project>
             <modelVersion>4.0.0</modelVersion>
             <groupId>org.sample</groupId>
@@ -190,67 +241,20 @@ class AddCommonAnnotationsDependenciesTest implements RewriteTest {
           .requested(Dependency.builder()
             .gav(new GroupArtifactVersion("jakarta.annotation", "jakarta.annotation-api", "3.0.0")).build())
           .depth(1).type("jar").build();
-        GradleDependencyConfiguration configuration =
+        var configuration =
           new GradleDependencyConfiguration("compileClasspath", null, true, true, false, false,
-            Collections.emptyList(), Collections.emptyList(), Collections.singletonList(modern), null, null);
-        rewriteRun(buildGradle("""
+                  List.of(), List.of(), List.of(modern), null, null);
+        rewriteRun(buildGradle(
+          """
           plugins { id 'java' }
           repositories { mavenCentral() }
           dependencies {
               implementation 'javax.annotation:javax.annotation-api:1.3.2'
           }
-          """, spec -> spec.markers(GradleProject.builder()
-            .name("sample").path(":sample")
-            .nameToConfiguration(Collections.singletonMap("compileClasspath", configuration)).build())));
-    }
-
-    @DocumentExample
-    @Test
-    void addDependencyIfAnnotationJsr250Present() {
-        rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().dependsOn("package javax.annotation; public @interface Generated {}")),
-          mavenProject("my-project",
-            //language=java
-            srcMainJava(
-              java(
-                """
-                  import javax.annotation.Generated;
-
-                  @Generated("Hello")
-                  class A {
-                  }
-                  """
-              )
-            ),
-            //language=xml
-            pomXml(
-              """
-                <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>org.sample</groupId>
-                  <artifactId>sample</artifactId>
-                  <version>1.0.0</version>
-                </project>
-                """,
-              """
-                <project>
-                  <modelVersion>4.0.0</modelVersion>
-                  <groupId>org.sample</groupId>
-                  <artifactId>sample</artifactId>
-                  <version>1.0.0</version>
-                  <dependencies>
-                    <dependency>
-                      <groupId>jakarta.annotation</groupId>
-                      <artifactId>jakarta.annotation-api</artifactId>
-                      <version>1.3.5</version>
-                      <scope>provided</scope>
-                    </dependency>
-                  </dependencies>
-                </project>
-                """
-            )
-          )
-        );
+          """,
+                spec -> spec.markers(GradleProject.builder()
+                        .name("sample").path(":sample")
+                        .nameToConfiguration(Map.of("compileClasspath", configuration)).build())));
     }
 
     @Test

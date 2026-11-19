@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
@@ -24,17 +25,13 @@ import org.openrewrite.maven.tree.MavenResolutionResult;
 
 /** The external Karaf harness looks up the Maven coordinate, not just javax annotation classes. */
 public class CommonAnnotationsCoordinateCanMigrate extends Recipe {
-    @Override
-    public String getDisplayName() {
-        return "Check whether the Common Annotations coordinate can migrate";
-    }
+    @Getter
+    final String displayName = "Check whether the Common Annotations coordinate can migrate";
 
-    @Override
-    public String getDescription() {
-        return "Preserve an existing javax.annotation API coordinate in Maven modules resolving the external " +
-               "Karaf 4.4.11 test harness, whose versionAsInProject lookup requires that coordinate. " +
-               "Other modules continue migrating to the equivalent Jakarta EE 8 API.";
-    }
+    @Getter
+    final String description = "Preserve an existing javax.annotation API coordinate in Maven modules resolving the external " +
+            "Karaf 4.4.11 test harness, whose versionAsInProject lookup requires that coordinate. " +
+            "Other modules continue migrating to the equivalent Jakarta EE 8 API.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {

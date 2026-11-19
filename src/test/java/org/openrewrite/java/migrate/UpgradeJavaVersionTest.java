@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -24,9 +26,6 @@ import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.List;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
@@ -34,6 +33,7 @@ import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
+import static org.openrewrite.yaml.Assertions.yaml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
 
@@ -685,4 +685,83 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
+    @Test
+    void upgradesGitLabCiImages() {
+        rewriteRun(
+          yaml(
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-17
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:21-jdk
+              package:
+                image: gradle:8-jdk17
+              """,
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-25
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:25-jdk
+              package:
+                image: gradle:9-jdk25
+              """,
+            spec -> spec.path(".gitlab-ci.yml")
+          )
+        );
+    }
+
+    @Test
+    void upgradesBitbucketPipelinesImagesAlongsidePom() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>17</maven.compiler.release>
+                </properties>
+              </project>
+              """,
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>25</maven.compiler.release>
+                </properties>
+              </project>
+              """
+          ),
+          yaml(
+            """
+              image: maven:3.9-eclipse-temurin-17
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            """
+              image: maven:3.9-eclipse-temurin-25
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            spec -> spec.path("bitbucket-pipelines.yml")
+          )
+        );
+    }
 }

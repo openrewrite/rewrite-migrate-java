@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import java.time.Duration;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -28,8 +29,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.time.Duration;
 
 public class UsePredicateNot extends Recipe {
 

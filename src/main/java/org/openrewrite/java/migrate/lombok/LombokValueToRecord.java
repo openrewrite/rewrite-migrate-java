@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -28,11 +32,6 @@ import org.openrewrite.java.RemoveAnnotationVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;

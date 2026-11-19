@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate.javax;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -74,6 +75,7 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
           """.indent(4) + "    <build>");
     }
 
+    @DocumentExample
     @Test
     void siblingDoesNotReceiveDependencies() {
         String client = pom("org.codehaus.mojo", "2.6", "");
@@ -206,8 +208,9 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void codecentricInheritedExecutionExecutableIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
-          pomXml("""
+        rewriteRun(
+          pomXml(
+            """
             <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
@@ -219,7 +222,8 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
                 </execution></executions>
               </plugin></plugins></build>
             </project>
-            """),
+            """
+          ),
           dir("child", pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -235,8 +239,9 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void inheritedExecutionExecutableIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
-          pomXml("""
+        rewriteRun(
+          pomXml(
+            """
             <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
@@ -248,7 +253,8 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
                 </execution></executions>
               </plugin></plugins></build>
             </project>
-            """),
+            """
+          ),
           dir("child", pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>
@@ -264,8 +270,9 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
 
     @Test
     void inheritedExecutionToolchainIsExcluded() {
-        rewriteRun(s -> s.recipe(new AddApisForJaxwsCodegen()),
-          pomXml("""
+        rewriteRun(
+          pomXml(
+            """
             <project>
               <modelVersion>4.0.0</modelVersion>
               <groupId>example</groupId><artifactId>parent</artifactId><version>1</version>
@@ -277,7 +284,8 @@ class AddApisForJaxwsCodegenTest implements RewriteTest {
                 </execution></executions>
               </plugin></plugins></build>
             </project>
-            """),
+            """
+          ),
           dir("child", pomXml("""
             <project>
               <modelVersion>4.0.0</modelVersion>

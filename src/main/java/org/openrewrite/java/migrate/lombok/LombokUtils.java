@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.lombok;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
@@ -22,10 +25,6 @@ import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.tree.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import static lombok.AccessLevel.*;
 import static org.openrewrite.java.tree.J.Modifier.Type.*;
