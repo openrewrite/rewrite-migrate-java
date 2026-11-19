@@ -15,10 +15,12 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
@@ -27,17 +29,20 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.xml.tree.Xml;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.openrewrite.maven.Assertions.pomXml;
-import static org.openrewrite.java.Assertions.mavenProject;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openrewrite.java.Assertions.mavenProject;
+import static org.openrewrite.maven.Assertions.pomXml;
 
 class AddJaxwsRuntimeMavenTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new AddJaxwsRuntime());
+    }
+
+    @DocumentExample
+    @Test
+    void transitiveCxfProvider() {
+        rewriteRun(pomXml(pom(dependency("org.apache.cxf", "cxf-spring-boot-starter-jaxws", "3.5.5", "compile"))));
     }
 
     @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1314")
@@ -66,19 +71,14 @@ class AddJaxwsRuntimeMavenTest implements RewriteTest {
         );
     }
 
-    @Test
-    void transitiveCxfProvider() {
-        rewriteRun(pomXml(pom(dependency("org.apache.cxf", "cxf-spring-boot-starter-jaxws", "3.5.5", "compile"))));
-    }
-
-    @ParameterizedTest
     @CsvSource({"compile,compile", "provided,provided", "runtime,runtime", "test,compile", "test,test"})
+    @ParameterizedTest
     void providerAvailableToApi(String apiScope, String providerScope) {
         rewriteRun(pomXml(pom(api(apiScope) + cxf(providerScope, "3.5.5"))));
     }
 
     @Test
-    void testOnlyProviderDoesNotSatisfyMainApi() {
+    void onlyProviderDoesNotSatisfyMainApi() {
         rewriteRun(pomXml(pom(api("compile") + cxf("test", "3.5.5")), spec -> spec.after(after -> metro(after, "provided"))));
     }
 
@@ -113,13 +113,13 @@ class AddJaxwsRuntimeMavenTest implements RewriteTest {
     }
 
     @Test
-    void testOnlyMetroDoesNotSatisfyMainApi() {
+    void onlyMetroDoesNotSatisfyMainApi() {
         rewriteRun(pomXml(pom(api("compile") + dependency("com.sun.xml.ws", "jaxws-rt", "2.3.7", "test")),
           spec -> spec.after(after -> metro(after, "provided"))));
     }
 
-    @ParameterizedTest
     @CsvSource({"org.apache.cxf,cxf-rt-transports-http,3.5.5", "org.springframework.ws,spring-ws-core,3.1.3"})
+    @ParameterizedTest
     void unrelatedLibrariesAreNotProviders(String group, String artifact, String version) {
         rewriteRun(pomXml(pom(api("compile") + dependency(group, artifact, version, "compile")),
           spec -> spec.after(after -> metro(after, "provided"))));
@@ -243,10 +243,10 @@ class AddJaxwsRuntimeMavenTest implements RewriteTest {
         List<Xml.Tag> dependencies = Xml.Tag.build(after).getChild("dependencies").orElseThrow().getChildren("dependency").stream()
           .filter(d -> "com.sun.xml.ws".equals(d.getChildValue("groupId").orElse("")) &&
                        "jaxws-rt".equals(d.getChildValue("artifactId").orElse("")))
-          .collect(Collectors.toList());
+          .toList();
         assertThat(dependencies).hasSize(1);
-        assertThat(dependencies.get(0).getChildValue("scope")).contains(scope);
-        assertThat(dependencies.get(0).getChildValue("version").orElseThrow()).startsWith("2.3.");
+        assertThat(dependencies.getFirst().getChildValue("scope")).hasValue(scope);
+        assertThat(dependencies.getFirst().getChildValue("version").orElseThrow()).startsWith("2.3.");
         return after;
     }
 

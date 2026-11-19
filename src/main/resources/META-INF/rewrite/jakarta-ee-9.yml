@@ -115,7 +115,9 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxAnnotationMigrationToJakartaAnnotation
 displayName: Migrate deprecated `javax.annotation` to `jakarta.annotation`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+description: >-
+  Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+  JSR-305 annotations such as `javax.annotation.Nonnull`, which share the `javax.annotation` package, are left unchanged.
 tags:
   - annotation
   - javax
@@ -151,10 +153,28 @@ recipeList:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.0.x
-  - org.openrewrite.java.ChangePackage:
-      oldPackageName: javax.annotation
-      newPackageName: jakarta.annotation
-      # Avoid changing javax.annotation.concurrent and javax.annotation.processing
+  # Only the JSR-250 types; other javax.annotation types come from JSR-305 or the JDK
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Generated
+      newFullyQualifiedTypeName: jakarta.annotation.Generated
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.ManagedBean
+      newFullyQualifiedTypeName: jakarta.annotation.ManagedBean
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PostConstruct
+      newFullyQualifiedTypeName: jakarta.annotation.PostConstruct
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.PreDestroy
+      newFullyQualifiedTypeName: jakarta.annotation.PreDestroy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Priority
+      newFullyQualifiedTypeName: jakarta.annotation.Priority
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resource
+      newFullyQualifiedTypeName: jakarta.annotation.Resource
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.annotation.Resources
+      newFullyQualifiedTypeName: jakarta.annotation.Resources
   - org.openrewrite.java.ChangePackage:
       oldPackageName: javax.annotation.security
       newPackageName: jakarta.annotation.security
@@ -435,16 +455,10 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name:  org.openrewrite.java.migrate.jakarta.FileuploadToFileUpload2
 displayName: Migrate `commons-fileupload` to `commons-fileupload2-jakarta-servlet5`
-description: Migrate Apache Commons FileUpload 1.x and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
+description: Migrate Apache Commons FileUpload 1.x servlet users and the `commons-fileupload2-jakarta` milestone to `commons-fileupload2-jakarta-servlet5`, moving `org.apache.commons.fileupload` packages and servlet types to their FileUpload 2 equivalents.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: commons-fileupload
-      oldArtifactId: commons-fileupload
-      newGroupId: org.apache.commons
-      newArtifactId: commons-fileupload2-jakarta-servlet5
-      newVersion: 2.0.0-M5
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-fileupload2-jakarta
@@ -453,6 +467,27 @@ recipeList:
   - org.openrewrite.java.ChangePackage:
       oldPackageName: org.apache.commons.fileupload2.jakarta
       newPackageName: org.apache.commons.fileupload2.jakarta.servlet5
+  - org.openrewrite.java.migrate.jakarta.FileuploadServletToFileUpload2
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jakarta.FileuploadServletToFileUpload2
+displayName: Migrate `commons-fileupload` servlet users to `commons-fileupload2-jakarta-servlet5`
+description: >-
+  Migrate repositories that use the `org.apache.commons.fileupload.servlet` classes of Apache Commons FileUpload 1.x,
+  which are built on `javax.servlet`, to `commons-fileupload2-jakarta-servlet5`. Other repositories keep FileUpload 1.x,
+  as FileUpload 2 replaced some of its other classes, such as `MultipartStream`, with APIs this recipe does not migrate to.
+preconditions:
+  # Repository wide rather than per module: the parent pom managing the version, and sibling modules exchanging
+  # FileUpload types with the module using the servlet classes, have to move to FileUpload 2 together with it.
+  - org.openrewrite.java.migrate.search.RepositoryUsesType:
+      fullyQualifiedTypeName: org.apache.commons.fileupload.servlet.*
+recipeList:
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: commons-fileupload
+      oldArtifactId: commons-fileupload
+      newGroupId: org.apache.commons
+      newArtifactId: commons-fileupload2-jakarta-servlet5
+      newVersion: 2.0.0-M5
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.commons.fileupload.servlet.ServletFileUpload
       newFullyQualifiedTypeName: org.apache.commons.fileupload2.jakarta.servlet5.JakartaServletFileUpload
@@ -703,28 +738,32 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail
 displayName: Migrate deprecated `javax.mail` packages to `jakarta.mail`
-description: Java EE has been rebranded to Jakarta EE, necessitating a package relocation.
+description: >-
+  Java EE has been rebranded to Jakarta EE, necessitating a package relocation. The `javax.mail` API moves to
+  `jakarta.mail:jakarta.mail-api`, and the artifacts that also bundle the mail implementation move to
+  `com.sun.mail:jakarta.mail`, so the implementation stays on the classpath.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.mail
       oldArtifactId: javax.mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
+      newGroupId: com.sun.mail
+      newArtifactId: jakarta.mail
       newVersion: 2.0.x
-  - org.openrewrite.java.dependencies.ChangeDependency:
-      oldGroupId: com.sun.mail
-      oldArtifactId: jakarta.mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
-      newVersion: 2.0.x
+      overrideManagedVersion: true
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: mail
-      newGroupId: jakarta.mail
-      newArtifactId: jakarta.mail-api
+      newGroupId: com.sun.mail
+      newArtifactId: jakarta.mail
       newVersion: 2.0.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.sun.mail
+      artifactId: jakarta.mail
+      newVersion: 2.0.x
+      overrideManagedVersion: true
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: javax.mail
       oldArtifactId: javax.mail-api
@@ -1204,6 +1243,8 @@ tags:
 preconditions:
   - org.openrewrite.FindSourceFiles:
       filePattern: '**/*orm.xml'
+  - org.openrewrite.xml.search.FindTags:
+      xPath: "/entity-mappings[@xmlns='http://java.sun.com/xml/ns/persistence/orm' or @xmlns='http://xmlns.jcp.org/xml/ns/persistence/orm']"
   - org.openrewrite.Singleton
 recipeList:
   - org.openrewrite.xml.ChangeTagAttribute:
@@ -1797,11 +1838,60 @@ preconditions:
         - org.glassfish.main:javax.annotation
         - jakarta.annotation:jakarta.annotation-api
 recipeList:
+  # Only the JSR-250 types; other javax.annotation types come from JSR-305 or the JDK
   - org.openrewrite.java.dependencies.AddDependency:
       groupId: jakarta.annotation
       artifactId: jakarta.annotation-api
       version: 2.0.x
-      onlyIfUsing: javax.annotation..*
+      onlyIfUsing: javax.annotation.Generated
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.ManagedBean
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.PostConstruct
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.PreDestroy
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Priority
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Resource
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.Resources
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.security.*
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: jakarta.annotation
+      artifactId: jakarta.annotation-api
+      version: 2.0.x
+      onlyIfUsing: javax.annotation.sql.*
       acceptTransitive: true
 
 ---
@@ -1850,8 +1940,16 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.AddJakartaMailDependency
 displayName: Add the Jakarta Mail API when needed
-description: Add the migrated API without promoting an explicitly provided or compile-only dependency.
+description: >-
+  Add the migrated API without promoting an explicitly provided or compile-only dependency, nor duplicating the API
+  that a compile dependency on the mail implementation already bundles.
 preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: com.sun.mail
+      artifactId: jakarta.mail
+      onlyDirect: true
+      scope: compile
+      configuration: compileClasspath
   - org.openrewrite.java.migrate.jakarta.DoesNotHaveProvidedApiDependency:
       coordinates:
         - com.sun.mail:javax.mail

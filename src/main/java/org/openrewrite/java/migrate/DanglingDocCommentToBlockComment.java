@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -26,8 +27,6 @@ import org.openrewrite.java.tree.Comment;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.TextComment;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
-
-import java.util.regex.Pattern;
 
 public class DanglingDocCommentToBlockComment extends Recipe {
 

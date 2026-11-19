@@ -15,13 +15,12 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.concurrent.atomic.AtomicReference;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

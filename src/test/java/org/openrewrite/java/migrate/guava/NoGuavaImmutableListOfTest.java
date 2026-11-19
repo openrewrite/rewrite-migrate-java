@@ -664,4 +664,146 @@ class NoGuavaImmutableListOfTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void varargsArgument() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+
+                class A {
+                    String test() {
+                        return String.format("%s %s", "a", ImmutableList.of("b"));
+                    }
+                }
+                """,
+              """
+                import java.util.List;
+
+                class A {
+                    String test() {
+                        return String.format("%s %s", "a", List.of("b"));
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void doNotChangeReturnInsideLambda() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+                import java.util.function.Supplier;
+
+                class A {
+                    List<String> test() {
+                        Supplier<ImmutableList<String>> supplier = () -> {
+                            return ImmutableList.of("a");
+                        };
+                        return supplier.get();
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void singleArrayElementConvertsOnlyForPrimitiveArrays() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    List<String[]> strings(String[] array) {
+                        return ImmutableList.of(array);
+                    }
+
+                    List<int[]> ints(int[] array) {
+                        return ImmutableList.of(array);
+                    }
+                }
+                """,
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    List<String[]> strings(String[] array) {
+                        return ImmutableList.of(array);
+                    }
+
+                    List<int[]> ints(int[] array) {
+                        return List.of(array);
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
+
+    @Test
+    void constructorArguments() {
+        rewriteRun(
+          version(
+            //language=java
+            java(
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    A(List<String> list, ImmutableList<String> immutable) {
+                    }
+
+                    A(String format, Object... args) {
+                    }
+
+                    void test() {
+                        new A(ImmutableList.of("a"), ImmutableList.of("b"));
+                        new A("%s %s", "a", ImmutableList.of("b"));
+                    }
+                }
+                """,
+              """
+                import com.google.common.collect.ImmutableList;
+                import java.util.List;
+
+                class A {
+                    A(List<String> list, ImmutableList<String> immutable) {
+                    }
+
+                    A(String format, Object... args) {
+                    }
+
+                    void test() {
+                        new A(List.of("a"), ImmutableList.of("b"));
+                        new A("%s %s", "a", List.of("b"));
+                    }
+                }
+                """
+            ),
+            11
+          )
+        );
+    }
 }

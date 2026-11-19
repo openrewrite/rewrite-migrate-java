@@ -18,7 +18,6 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -27,8 +26,7 @@ import static org.openrewrite.xml.Assertions.xml;
 class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxWebFragmentXmlToJakartaWebFragmentXml");
     }
 
     @DocumentExample
@@ -135,17 +133,39 @@ class JavaxWebFragmentXmlToJakartaWebFragmentXmlTest implements RewriteTest {
     @Nested
     class NoChanges {
         @Test
+        void webFragmentAlreadyOnJakartaServlet() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                version="6.1"
+                                xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                                xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-fragment_6_1.xsd">
+                  </web-fragment>
+                  """,
+                sourceSpecs -> sourceSpecs.path("web-fragment.xml")
+              )
+            );
+        }
+
+        @Test
         void fileNotWebFragmentXml() {
             rewriteRun(
               //language=xml
               xml(
                 """
-                  <beans xmlns="http://java.sun.com/xml/ns/javaee"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
-                  </beans>
+                  <project>
+                      <dependencies>
+                          <dependency>
+                              <groupId>javax.servlet</groupId>
+                              <artifactId>javax.servlet-api</artifactId>
+                          </dependency>
+                      </dependencies>
+                  </project>
                   """,
-                sourceSpecs -> sourceSpecs.path("not-web-fragment.xml")
+                sourceSpecs -> sourceSpecs.path("pom.xml")
               )
             );
         }

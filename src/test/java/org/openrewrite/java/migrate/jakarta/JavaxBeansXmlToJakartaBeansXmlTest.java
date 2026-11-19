@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -45,7 +46,7 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd">
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd" bean-discovery-mode="all" version="4.0">
               </beans>
               """,
             sourceSpecs -> sourceSpecs.path("beans.xml")
@@ -69,11 +70,145 @@ class JavaxBeansXmlToJakartaBeansXmlTest implements RewriteTest {
               <?xml version="1.0" encoding="UTF-8"?>
               <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd">
+                 xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd" bean-discovery-mode="all" version="4.0">
               </beans>
               """,
             sourceSpecs -> sourceSpecs.path("beans.xml")
           )
         );
+    }
+
+    @Test
+    void migrateJakartaEE9() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
+                     version="3.0" bean-discovery-mode="annotated">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                     version="4.0" bean-discovery-mode="annotated">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("beans.xml")
+          )
+        );
+    }
+
+    @Test
+    void migrateJavaEE8AsPartOfJakartaEE10() {
+        rewriteRun(
+          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                     version="1.1" bean-discovery-mode="annotated">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                     version="4.0" bean-discovery-mode="annotated">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                     bean-discovery-mode="annotated">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                     bean-discovery-mode="annotated" version="4.0">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/webapp/WEB-INF/beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                     version="1.1">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                     version="4.0" bean-discovery-mode="all">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("module/src/main/resources/META-INF/beans.xml")
+          )
+        );
+    }
+
+    @Nested
+    class NoChanges {
+        @Test
+        void springBeansXmlAsPartOfJakartaEE10() {
+            rewriteRun(
+              spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="http://www.springframework.org/schema/beans"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+                      <bean id="greeter" class="com.example.Greeter"/>
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("src/main/resources/beans.xml")
+              )
+            );
+        }
+
+        @Test
+        void keepJakartaEE11AsPartOfJakartaEE10() {
+            rewriteRun(
+              spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_1.xsd"
+                         version="4.1" bean-discovery-mode="annotated">
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/beans.xml")
+              )
+            );
+        }
     }
 }

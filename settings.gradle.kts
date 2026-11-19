@@ -13,6 +13,7 @@ pluginManagement {
             content {
                 includeGroupAndSubgroups("org.openrewrite")
                 includeGroupAndSubgroups("io.moderne")
+                includeVersionByRegex(".*", ".*", ".*-backpatch-.*")
             }
         }
         gradlePluginPortal()

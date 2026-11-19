@@ -47,7 +47,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -59,7 +59,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
@@ -113,7 +113,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment>
+              </web-app>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -130,7 +130,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                      <res-type>javax.sql.DataSource</res-type>
                      <res-auth>CONTAINER</res-auth>
                   </resource-ref>
-              </web-fragment>
+              </web-app>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
@@ -152,7 +152,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -164,7 +164,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
@@ -187,7 +187,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>javax.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             """
               <?xml version="1.0" encoding="UTF-8"?>
@@ -199,7 +199,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                       <param-name>jakarta.faces.PROJECT_STAGE</param-name>
                       <param-value>Production</param-value>
                   </context-param>
-              </web-fragment>
+              </web-app>
               """,
             sourceSpecs -> sourceSpecs.path("web.xml")
           )
@@ -274,7 +274,7 @@ class JavaxWebXmlToJakartaWebXmlTest implements RewriteTest {
                             https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
                            version="5.0">
                       <display-name>Unit testing</display-name>
-                  </web-fragment>
+                  </web-app>
                   """,
                 sourceSpecs -> sourceSpecs.path("web.xml")
               )

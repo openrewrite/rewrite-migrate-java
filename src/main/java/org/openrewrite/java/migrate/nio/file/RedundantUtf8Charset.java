@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.nio.file;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -27,9 +29,6 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RedundantUtf8Charset extends Recipe {
 

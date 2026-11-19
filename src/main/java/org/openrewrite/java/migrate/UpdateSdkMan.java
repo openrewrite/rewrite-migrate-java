@@ -15,6 +15,14 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -25,15 +33,6 @@ import org.openrewrite.remote.Remote;
 import org.openrewrite.semver.LatestRelease;
 import org.openrewrite.text.PlainText;
 import org.openrewrite.text.PlainTextParser;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;

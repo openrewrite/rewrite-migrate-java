@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -24,9 +26,6 @@ import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class AddScopeToInjectedClass extends ScanningRecipe<Set<String>> {
     private static final String JAVAX_INJECT_INJECT = "javax.inject.Inject";

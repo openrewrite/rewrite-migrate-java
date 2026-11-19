@@ -17,6 +17,8 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
@@ -45,25 +47,56 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
     void migratesExplicitDependency() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
-            .dependsOn("package javax.annotation; public @interface Nonnull {}")),
+            .classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "javax.annotation-api"),
+              JavaParser.dependenciesFromClasspath("jsr305")))),
           mavenProject("my-project",
             srcMainJava(
               //language=java
               java(
                 """
+                  import javax.annotation.CheckForNull;
+                  import javax.annotation.Nonnegative;
+                  import javax.annotation.Nonnull;
+                  import javax.annotation.PostConstruct;
+
+                  class A {
+                      @Nonnull
+                      String name;
+                      @Nonnegative
+                      int size;
+
+                      @PostConstruct
+                      void init() {
+                      }
+
+                      @CheckForNull
+                      String find() {
+                          return null;
+                      }
+                  }
+                  """,
+                """
+                  import jakarta.annotation.PostConstruct;
+
+                  import javax.annotation.CheckForNull;
+                  import javax.annotation.Nonnegative;
                   import javax.annotation.Nonnull;
 
                   class A {
                       @Nonnull
                       String name;
-                  }
-                  """,
-                """
-                  import jakarta.annotation.Nonnull;
+                      @Nonnegative
+                      int size;
 
-                  class A {
-                      @Nonnull
-                      String name;
+                      @PostConstruct
+                      void init() {
+                      }
+
+                      @CheckForNull
+                      String find() {
+                          return null;
+                      }
                   }
                   """
               )
@@ -99,25 +132,27 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
     void addsDependencyWhenNoExplicitAnnotationDependency() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion()
-            .dependsOn("package javax.annotation; public @interface Nonnull {}")),
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.annotation-api")),
           mavenProject("my-project",
             srcMainJava(
               //language=java
               java(
                 """
-                  import javax.annotation.Nonnull;
+                  import javax.annotation.PostConstruct;
 
                   class A {
-                      @Nonnull
-                      String name;
+                      @PostConstruct
+                      void init() {
+                      }
                   }
                   """,
                 """
-                  import jakarta.annotation.Nonnull;
+                  import jakarta.annotation.PostConstruct;
 
                   class A {
-                      @Nonnull
-                      String name;
+                      @PostConstruct
+                      void init() {
+                      }
                   }
                   """
               )
@@ -139,6 +174,58 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
                       <artifactId>jakarta\\.annotation-api</artifactId>\\s*\
                       <version>2\\.0\\.\\d+</version>""")
                     .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void keepsJsr305AnnotationsAndAddsNoDependency() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jsr305")),
+          mavenProject("my-project",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.annotation.CheckForNull;
+                  import javax.annotation.Nonnegative;
+                  import javax.annotation.Nonnull;
+                  import javax.annotation.Nullable;
+
+                  class A {
+                      @Nonnull
+                      String name;
+                      @Nullable
+                      String nickname;
+                      @Nonnegative
+                      int size;
+
+                      @CheckForNull
+                      String find() {
+                          return null;
+                      }
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>demo</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.google.code.findbugs</groupId>
+                            <artifactId>jsr305</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
             )
           )
         );
@@ -197,6 +284,49 @@ class JavaxAnnotationMigrationToJakartaAnnotationTest implements RewriteTest {
                 .doesNotContain("<scope>test</scope>")
                 .actual())
             )
+          )
+        );
+    }
+
+    @Test
+    void wildcardImportKeepsJsr305Types() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "javax.annotation-api"),
+              JavaParser.dependenciesFromClasspath("jsr305")))),
+          java(
+            """
+              import javax.annotation.*;
+
+              class A {
+                  @Nonnegative
+                  int size;
+                  @Resource(authenticationType = Resource.AuthenticationType.APPLICATION)
+                  Object ds;
+
+                  @PostConstruct
+                  void init() {
+                  }
+              }
+              """,
+            """
+              import jakarta.annotation.PostConstruct;
+              import jakarta.annotation.Resource;
+
+              import javax.annotation.Nonnegative;
+
+              class A {
+                  @Nonnegative
+                  int size;
+                  @Resource(authenticationType = Resource.AuthenticationType.APPLICATION)
+                  Object ds;
+
+                  @PostConstruct
+                  void init() {
+                  }
+              }
+              """
           )
         );
     }

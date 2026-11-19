@@ -56,7 +56,7 @@ class BeanDiscoveryTest implements RewriteTest {
     }
 
     @Test
-    void noVersionDifferentMode() {
+    void noVersionKeepsDeclaredMode() {
         rewriteRun(
           //language=xml
           xml(
@@ -73,16 +73,138 @@ class BeanDiscoveryTest implements RewriteTest {
               <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
-                  bean-discovery-mode="all" version="4.0">
+                  bean-discovery-mode="none" version="4.0">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("none/beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_1.xsd"
+                  bean-discovery-mode="annotated">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_1.xsd"
+                  bean-discovery-mode="annotated" version="4.1">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("annotated/beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                  bean-discovery-mode="all">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                  bean-discovery-mode="all" version="1.1">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("all/beans.xml")
+          )
+        );
+    }
+
+    @Test
+    void versionBeforeCdi4WithoutMode() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                  version="1.1">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
+                  version="1.1" bean-discovery-mode="all">
               </beans>
               """,
             sourceSpecs -> sourceSpecs.path("beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
+                  version="3.0">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_3_0.xsd"
+                  version="3.0" bean-discovery-mode="all">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("cdi3/beans.xml")
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  version="${cdi.version}">
+              </beans>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  version="${cdi.version}" bean-discovery-mode="all">
+              </beans>
+              """,
+            sourceSpecs -> sourceSpecs.path("filtered/beans.xml")
           )
         );
     }
 
     @Nested
     class NoChanges {
+        @Test
+        void springBeansXml() {
+            rewriteRun(
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="http://www.springframework.org/schema/beans"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+                      <bean id="greeter" class="com.example.Greeter"/>
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("src/main/resources/beans.xml")
+              )
+            );
+        }
+
         @Test
         void fileNotNamedBeansXml() {
             rewriteRun(
@@ -115,6 +237,18 @@ class BeanDiscoveryTest implements RewriteTest {
                   </beans>
                   """,
                 sourceSpecs -> sourceSpecs.path("beans.xml")
+              ),
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/beans_4_0.xsd"
+                      version="4.0">
+                  </beans>
+                  """,
+                sourceSpecs -> sourceSpecs.path("cdi4/beans.xml")
               )
             );
         }

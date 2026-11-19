@@ -140,6 +140,88 @@ class NoGuavaPredicatesAndOrTest implements RewriteTest {
     }
 
     @Test
+    void castWritesTypeArgumentsAsSource() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              import java.util.List;
+
+              class Test {
+                  Predicate<List<? extends Number>> nonEmpty(Predicate<List<? extends Number>> other) {
+                      return Predicates.and(l -> !l.isEmpty(), other);
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              import java.util.List;
+
+              class Test {
+                  Predicate<List<? extends Number>> nonEmpty(Predicate<List<? extends Number>> other) {
+                      return ((Predicate<List<? extends Number>>) l -> !l.isEmpty()).and(other);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void doNotReplaceWhenCastNeedsTypeVariable() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicate;
+              import com.google.common.base.Predicates;
+
+              class Test {
+                  <T> Predicate<T> nonNull(Predicate<T> other) {
+                      return Predicates.and(t -> t != null, other);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void castImportsFunctionalType() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.base.Predicates;
+
+              import java.util.stream.Stream;
+
+              class Test {
+                  long count(Stream<String> strings) {
+                      return strings.filter(Predicates.and(s -> s != null, s -> !s.isEmpty())).count();
+                  }
+              }
+              """,
+            """
+              import com.google.common.base.Predicate;
+
+              import java.util.stream.Stream;
+
+              class Test {
+                  long count(Stream<String> strings) {
+                      return strings.filter(((Predicate<String>) s -> s != null).and(s -> !s.isEmpty())).count();
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void replacePredicatesAndWithMethodReference() {
         //language=java
         rewriteRun(

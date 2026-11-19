@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import java.util.StringJoiner;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -26,8 +27,6 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
-
-import java.util.StringJoiner;
 
 public class UseLocaleOf extends Recipe {
     private static final MethodMatcher NEW_LOCALE = new MethodMatcher("java.util.Locale <constructor>(..)", false);

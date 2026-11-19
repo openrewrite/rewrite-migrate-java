@@ -175,8 +175,7 @@ class UseSlf4jTest implements RewriteTest {
     })
     void shouldNotReplaceWhenNotPrivateStaticFinal(String modifiers) {
         rewriteRun(
-          spec -> spec.recipe(new UseSlf4j(null))
-            .parser(JavaParser.fromJavaVersion()
+          spec -> spec.parser(JavaParser.fromJavaVersion()
               .classpath("slf4j-api")),
 
           // language=java

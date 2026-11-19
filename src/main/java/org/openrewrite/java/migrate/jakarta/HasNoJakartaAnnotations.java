@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -25,9 +27,6 @@ import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

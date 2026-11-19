@@ -17,8 +17,10 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
 import org.openrewrite.config.Environment;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -382,10 +384,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void changeJsonpModuleType() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-datatype-jsr353",
-            "jackson-core",
-            "jackson-databind")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-core", "jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-datatype-jsr353")))),
           //language=java
           java(
             """
@@ -424,10 +425,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void thatJaxbAnnotationModuleIsRewritten() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-core",
-            "jackson-databind",
-            "jackson-module-jaxb-annotations")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-core", "jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-module-jaxb-annotations")))),
           //language=java
           java(
             """
@@ -460,9 +460,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void thatJaxbJsonProviderIsRewritten() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-              "jackson-databind",
-              "jackson-jaxrs-json-provider")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-jaxrs-json-provider")))),
           //language=java
           java(
             """
@@ -482,7 +482,7 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void rewriteJaxbAnnotationIntrospectorToJakartaXmlBindAnnotationIntrospector() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath("jackson-module-jaxb-annotations")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "jackson-module-jaxb-annotations")),
           //language=java
           java(
             """
@@ -502,9 +502,9 @@ class JacksonJavaxtoJakartaTest implements RewriteTest {
     @Test
     void rewriteJacksonJsonProviderToJacksonJsonProvider() {
         rewriteRun(
-          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(
-            "jackson-databind",
-            "jackson-jaxrs-json-provider")),
+          spec -> spec.parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath("jackson-databind"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "jackson-jaxrs-json-provider")))),
           //language=java
           java(
             """

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.util.HashSet;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -28,9 +30,6 @@ import org.openrewrite.java.migrate.table.JavaVersionRow;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Value

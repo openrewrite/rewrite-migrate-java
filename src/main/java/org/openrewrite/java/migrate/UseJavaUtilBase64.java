@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Base64;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -30,8 +31,6 @@ import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Markup;
 import org.openrewrite.staticanalysis.UnnecessaryCatch;
-
-import java.util.Base64;
 
 public class UseJavaUtilBase64 extends Recipe {
     @Getter

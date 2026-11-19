@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Issue;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -33,14 +34,16 @@ class JSpecifyBestPracticesTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec
           .recipeFromResource("/META-INF/rewrite/jspecify.yml", "org.openrewrite.java.jspecify.JSpecifyBestPractices")
-          .parser(JavaParser.fromJavaVersion().classpath(
-            "jsr305",
-            "jspecify",
-            "jakarta.annotation-api",
-            "annotations",
-            "spring-core",
-            "micronaut-core",
-            "spotbugs-annotations"));
+          .parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+            JavaParser.dependenciesFromClasspath(
+              "jsr305",
+              "jspecify",
+              "annotations"),
+            JavaParser.dependenciesFromResources(new InMemoryExecutionContext(),
+              "jakarta.annotation-api",
+              "spring-core",
+              "micronaut-core",
+              "spotbugs-annotations"))));
     }
 
     @DocumentExample
@@ -646,9 +649,9 @@ class JSpecifyBestPracticesTest implements RewriteTest {
             .recipeFromResource(
               "/META-INF/rewrite/jspecify.yml",
               "org.openrewrite.java.jspecify.MigrateFromMicrometerAnnotations")
-            .parser(JavaParser.fromJavaVersion()
-              .classpath("jspecify")
-              .classpathFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")),
+            .parser(JavaParser.fromJavaVersion().classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromClasspath("jspecify"),
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(), "micrometer-core-1.15")))),
           mavenProject("foo",
             //language=java
             srcMainJava(

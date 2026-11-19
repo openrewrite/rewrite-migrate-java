@@ -18,17 +18,17 @@ package org.openrewrite.java.migrate.jakarta;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
+import static org.openrewrite.test.RewriteTest.fromRuntimeClasspath;
 import static org.openrewrite.xml.Assertions.xml;
 
 class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"));
+        spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml");
     }
 
     @DocumentExample
@@ -103,8 +103,94 @@ class JavaxBeanValidationXmlToJakartaBeanValidationXmlTest implements RewriteTes
         );
     }
 
+    @Test
+    void migrateBeanValidation11() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
+                   version="1.1">
+              </validation-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
+                   version="3.0">
+              </validation-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("validation.xml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApply() {
+        rewriteRun(
+          spec -> spec.recipes(
+            fromRuntimeClasspath("org.openrewrite.java.migrate.jakarta.JavaxBeanValidationXmlToJakartaBeanValidationXml"),
+            new ChangeTagAttribute("//*[local-name()='executable-validation']", "enabled", "false", "true", null)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="http://xmlns.jcp.org/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/validation/configuration http://xmlns.jcp.org/xml/ns/validation/configuration/validation-configuration-2.0.xsd"
+                   version="2.0">
+                  <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
+                  <executable-validation enabled="true"/>
+                  <property name="javax.validator.fail_fast">true</property>
+              </validation-config>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <validation-config
+                   xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.0.xsd"
+                   version="3.0">
+                  <default-provider>org.hibernate.validator.HibernateValidator</default-provider>
+                  <executable-validation enabled="false"/>
+                  <property name="jakarta.validator.fail_fast">true</property>
+              </validation-config>
+              """,
+            sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/validation.xml")
+          )
+        );
+    }
+
     @Nested
     class NoChanges {
+        @Test
+        void keepJakartaEE11AsPartOfJakartaEE10() {
+            rewriteRun(
+              spec -> spec.recipeFromResources("org.openrewrite.java.migrate.jakarta.JakartaEE10"),
+              //language=xml
+              xml(
+                """
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <validation-config
+                       xmlns="https://jakarta.ee/xml/ns/validation/configuration"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="https://jakarta.ee/xml/ns/validation/configuration https://jakarta.ee/xml/ns/validation/validation-configuration-3.1.xsd"
+                       version="3.1">
+                  </validation-config>
+                  """,
+                sourceSpecs -> sourceSpecs.path("src/main/resources/META-INF/validation.xml")
+              )
+            );
+        }
+
         @Test
         void fileNotWebXml() {
             rewriteRun(

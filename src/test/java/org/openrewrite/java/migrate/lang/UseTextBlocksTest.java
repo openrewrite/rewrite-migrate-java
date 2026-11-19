@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
@@ -23,11 +27,6 @@ import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
@@ -1035,7 +1034,6 @@ class UseTextBlocksTest implements RewriteTest {
         // supplementary characters encoded as surrogate pairs. Until that is fixed upstream, the recipe
         // must bail out rather than emit a broken text block that drops or re-escapes content.
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks()),
           java(
             """
              class Test {
@@ -1053,7 +1051,6 @@ class UseTextBlocksTest implements RewriteTest {
     @Test
     void textBlockTrailingEscape() {
         rewriteRun(
-          spec -> spec.recipe(new UseTextBlocks()),
           java(
             """
              package com.helloworld;

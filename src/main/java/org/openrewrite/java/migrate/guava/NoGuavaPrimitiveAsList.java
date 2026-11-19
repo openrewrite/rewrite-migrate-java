@@ -24,7 +24,10 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.Collections.nCopies;
 
@@ -36,7 +39,8 @@ public class NoGuavaPrimitiveAsList extends Recipe {
     final String displayName = "Prefer `Arrays.asList(..)` over Guava primitives";
 
     @Getter
-    final String description = "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)`.";
+    final String description = "Migrate from Guava `com.google.common.primitives.* asList(..)` to `Arrays.asList(..)` " +
+            "where each argument is an element of the primitive type or its box, so the list keeps its element type.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -45,7 +49,7 @@ public class NoGuavaPrimitiveAsList extends Recipe {
                 new JavaIsoVisitor<ExecutionContext>() {
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation elem, ExecutionContext ctx) {
-                        if (METHOD_MATCHER.matches(elem)) {
+                        if (METHOD_MATCHER.matches(elem) && argumentsAreElements(elem)) {
                             maybeRemoveImport("com.google.common.primitives.Booleans");
                             maybeRemoveImport("com.google.common.primitives.Chars");
                             maybeRemoveImport("com.google.common.primitives.Doubles");
@@ -67,5 +71,29 @@ public class NoGuavaPrimitiveAsList extends Recipe {
                     }
                 }
         );
+    }
+
+    /**
+     * {@code Arrays.asList} takes each argument as an element of the argument's own type,
+     * so an array or a widened argument would change the element type of the list.
+     */
+    private static boolean argumentsAreElements(J.MethodInvocation asList) {
+        JavaType.Method method = asList.getMethodType();
+        if (method == null || method.getParameterTypes().size() != 1 ||
+            !(method.getParameterTypes().get(0) instanceof JavaType.Array)) {
+            return false;
+        }
+        JavaType elementType = ((JavaType.Array) method.getParameterTypes().get(0)).getElemType();
+        if (!(elementType instanceof JavaType.Primitive)) {
+            return false;
+        }
+        String boxedType = ((JavaType.Primitive) elementType).getClassName();
+        for (Expression argument : asList.getArguments()) {
+            if (!(argument instanceof J.Empty) && argument.getType() != elementType &&
+                !TypeUtils.isOfClassType(argument.getType(), boxedType)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

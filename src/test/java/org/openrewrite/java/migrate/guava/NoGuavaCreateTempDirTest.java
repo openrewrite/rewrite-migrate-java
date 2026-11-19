@@ -165,6 +165,161 @@ class NoGuavaCreateTempDirTest implements RewriteTest {
     }
 
     @Test
+    void leftAloneInLambdaAndAnonymousClass() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.io.Files;
+              import java.io.File;
+              import java.io.IOException;
+              import java.util.function.Supplier;
+
+              class A {
+                  Supplier<File> tempDirs() throws IOException {
+                      return () -> Files.createTempDir();
+                  }
+                  Object holder() throws IOException {
+                      return new Object() {
+                          final File dir = Files.createTempDir();
+                      };
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leftAloneInCatchAndFinally() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.io.Files;
+              import java.io.File;
+              import java.io.IOException;
+
+              class A {
+                  File inCatch(File f) {
+                      try {
+                          return f.getCanonicalFile();
+                      } catch (IOException e) {
+                          return Files.createTempDir();
+                      }
+                  }
+                  void inFinally(File f) {
+                      try {
+                          f.getCanonicalFile();
+                      } catch (IOException e) {
+                          throw new RuntimeException(e);
+                      } finally {
+                          Files.createTempDir();
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertedWhereAnEnclosingHandlerCoversIOException() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.io.Files;
+              import java.io.File;
+              import java.io.IOException;
+
+              class A {
+                  File pastATryCatchingSomethingElse() throws Throwable {
+                      try {
+                          return Files.createTempDir();
+                      } catch (IllegalStateException e) {
+                          return null;
+                      }
+                  }
+                  File inMultiCatch(File f) {
+                      try {
+                          f.getCanonicalFile();
+                          return Files.createTempDir();
+                      } catch (IllegalStateException | IOException e) {
+                          return null;
+                      }
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.IOException;
+              import java.nio.file.Files;
+
+              class A {
+                  File pastATryCatchingSomethingElse() throws Throwable {
+                      try {
+                          return Files.createTempDirectory(null).toFile();
+                      } catch (IllegalStateException e) {
+                          return null;
+                      }
+                  }
+                  File inMultiCatch(File f) {
+                      try {
+                          f.getCanonicalFile();
+                          return Files.createTempDirectory(null).toFile();
+                      } catch (IllegalStateException | IOException e) {
+                          return null;
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void convertedInResourceOfTryCatchingIOException() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import com.google.common.io.Files;
+              import java.io.File;
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.io.InputStream;
+
+              class A {
+                  void read() {
+                      try (InputStream in = new FileInputStream(new File(Files.createTempDir(), "a"))) {
+                          in.read();
+                      } catch (IOException e) {
+                      }
+                  }
+              }
+              """,
+            """
+              import java.io.File;
+              import java.io.FileInputStream;
+              import java.io.IOException;
+              import java.io.InputStream;
+              import java.nio.file.Files;
+
+              class A {
+                  void read() {
+                      try (InputStream in = new FileInputStream(new File(Files.createTempDirectory(null).toFile(), "a"))) {
+                          in.read();
+                      } catch (IOException e) {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void guavaCreateTempDirIsMethodArgument() {
         //language=java
         rewriteRun(

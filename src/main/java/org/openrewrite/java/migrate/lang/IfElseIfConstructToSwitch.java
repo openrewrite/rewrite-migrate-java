@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -28,8 +30,8 @@ import org.openrewrite.java.search.SemanticallyEqual;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JRightPadded;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
@@ -38,9 +40,6 @@ import org.openrewrite.java.tree.TypedTree;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -185,7 +184,8 @@ public class IfElseIfConstructToSwitch extends Recipe {
             // Do no harm -> If we do not know how to replace(yet), do not replace
             if (patternMatchers.keySet().stream().anyMatch(instanceOf -> {
                 J clazz = instanceOf.getClazz();
-                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType);
+                return !(clazz instanceof J.Identifier || clazz instanceof J.FieldAccess || clazz instanceof J.ArrayType || clazz instanceof J.ParameterizedType) ||
+                       hasParameterizedArrayPattern(clazz);
             })) {
                 return false;
             }
@@ -199,6 +199,21 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return 3 <= patternMatchers.size() +
                     (nullCaseInSwitch ? 1 : 0) +
                     (hasLastElseBlock ? 1 : 0);
+        }
+
+        private boolean hasParameterizedArrayPattern(J clazz) {
+            if (!(clazz instanceof J.ArrayType)) {
+                return false;
+            }
+            // JavaTemplate cannot reliably parse these case labels and substitute their
+            // bodies. Keep the if chain intact rather than emitting placeholder nodes.
+            return new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.ParameterizedType visitParameterizedType(J.ParameterizedType type, AtomicBoolean found) {
+                    found.set(true);
+                    return type;
+                }
+            }.reduce(clazz, new AtomicBoolean()).get();
         }
 
         private boolean hasDominatedPattern() {
@@ -366,7 +381,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
             return Space.SINGLE_SPACE;
         }
 
-        @SuppressWarnings("deprecation")
         private J.VariableDeclarations buildVariableDeclarations(J.InstanceOf instanceOf, Space prefix) {
             J.Identifier pattern = (J.Identifier) instanceOf.getPattern();
             J.VariableDeclarations.NamedVariable namedVar = new J.VariableDeclarations.NamedVariable(
@@ -385,7 +399,6 @@ public class IfElseIfConstructToSwitch extends Recipe {
                     emptyList(),
                     emptyList(),
                     instanceOf.getClazz().withPrefix(Space.EMPTY),
-                    null,
                     null,
                     singletonList(JRightPadded.build(namedVar))
             );

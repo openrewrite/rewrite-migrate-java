@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.search;
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -24,10 +27,6 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import static java.util.Collections.emptySet;
 import static org.openrewrite.internal.StringUtils.uncapitalize;

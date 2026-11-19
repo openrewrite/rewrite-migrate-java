@@ -17,6 +17,8 @@ package org.openrewrite.java.migrate.lombok.log;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,11 +31,12 @@ class UseLombokLogAnnotationsTest implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.lombok.log.UseLombokLogAnnotations")
           .parser(JavaParser.fromJavaVersion()
-            .classpath(
-              "slf4j-api",
-              "log4j-api",
-              "jboss-logging",
-              "commons-logging"));
+            .classpath(ListUtils.concatAll(
+              JavaParser.dependenciesFromClasspath("slf4j-api"),
+              JavaParser.dependenciesFromResources(new InMemoryExecutionContext(),
+                "log4j-api",
+                "jboss-logging",
+                "commons-logging"))));
     }
 
     @DocumentExample

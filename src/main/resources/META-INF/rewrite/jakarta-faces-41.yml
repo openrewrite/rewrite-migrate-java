@@ -53,16 +53,15 @@ tags:
   - jsf
   - omnifaces
 preconditions:
-  - org.openrewrite.Singleton
+  - org.openrewrite.FindSourceFiles:
+      filePattern: '**/*.xhtml'
 recipeList:
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://omnifaces.org/ui"
-      replace: "omnifaces"
-      filePattern: '**/*.xhtml'
-  - org.openrewrite.text.FindAndReplace:
-      find: "http://omnifaces.org/functions"
-      replace: "omnifaces"
-      filePattern: '**/*.xhtml'
+  - org.openrewrite.xml.ChangeNamespaceValue:
+      oldValue: "http://omnifaces.org/ui"
+      newValue: "omnifaces"
+  - org.openrewrite.xml.ChangeNamespaceValue:
+      oldValue: "http://omnifaces.org/functions"
+      newValue: "omnifaces"
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpgradeFaces41OpenSourceLibraries

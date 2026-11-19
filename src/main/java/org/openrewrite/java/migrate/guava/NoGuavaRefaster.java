@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -35,10 +36,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -325,6 +329,22 @@ public class NoGuavaRefaster {
     }
 
     @RecipeDescriptor(
+            name = "Prefer `new ConcurrentHashMap<>()`",
+            description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this."
+    )
+    public static class MapsNewConcurrentMap<K, V> {
+        @BeforeTemplate
+        ConcurrentMap<K, V> before() {
+            return Maps.newConcurrentMap();
+        }
+
+        @AfterTemplate
+        ConcurrentMap<K, V> after() {
+            return new ConcurrentHashMap<>();
+        }
+    }
+
+    @RecipeDescriptor(
             name = "Prefer `Collections.newSetFromMap(new ConcurrentHashMap<>())`",
             description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this."
     )
@@ -385,6 +405,56 @@ public class NoGuavaRefaster {
         @AfterTemplate
         LinkedHashSet<T> after(int expectedSize) {
             return new LinkedHashSet<>(expectedSize);
+        }
+    }
+
+    @RecipeDescriptor(
+            name = "Prefer `new TreeSet<>()`",
+            description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this."
+    )
+    public static class SetsNewTreeSet<T extends Comparable<?>> {
+        @BeforeTemplate
+        TreeSet<T> before() {
+            return Sets.newTreeSet();
+        }
+
+        @AfterTemplate
+        TreeSet<T> after() {
+            return new TreeSet<>();
+        }
+    }
+
+    // `Sets.newTreeSet(Iterable)` has no template. Given a `SortedSet`, `new TreeSet<>(..)` keeps that set's
+    // comparator, where Guava sorts by natural order.
+    @RecipeDescriptor(
+            name = "Prefer `new TreeSet<>(Comparator)`",
+            description = "Prefer the Java standard library over third-party usage of Guava in simple cases like this."
+    )
+    public static class SetsNewTreeSetWithComparator<T> {
+        @BeforeTemplate
+        TreeSet<T> before(Comparator<? super T> comparator) {
+            return Sets.newTreeSet(comparator);
+        }
+
+        @AfterTemplate
+        TreeSet<T> after(Comparator<? super T> comparator) {
+            return new TreeSet<>(comparator);
+        }
+    }
+
+    @RecipeDescriptor(
+            name = "Prefer `Objects.toString(String, \"\")`",
+            description = "Prefer `java.util.Objects.toString(string, \"\")` over Guava's `Strings.nullToEmpty(string)`."
+    )
+    public static class StringsNullToEmpty {
+        @BeforeTemplate
+        String before(String string) {
+            return Strings.nullToEmpty(string);
+        }
+
+        @AfterTemplate
+        String after(String string) {
+            return Objects.toString(string, "");
         }
     }
 

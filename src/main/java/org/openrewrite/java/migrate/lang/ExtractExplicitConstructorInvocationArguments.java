@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.*;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -35,8 +36,6 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
-
-import java.util.*;
 
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;

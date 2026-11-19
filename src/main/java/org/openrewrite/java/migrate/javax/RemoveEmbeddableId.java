@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -27,10 +30,7 @@ import org.openrewrite.java.search.FindAnnotations;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
+import org.openrewrite.java.tree.TypeUtils;
 
 public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumulator> {
 
@@ -112,7 +112,7 @@ public class RemoveEmbeddableId extends ScanningRecipe<RemoveEmbeddableId.Accumu
 
         public boolean isEmbeddableClass(@Nullable JavaType type) {
             return definedEmbeddableClasses.stream()
-                    .anyMatch(emb -> type.equals(emb) ||
+                    .anyMatch(emb -> TypeUtils.isOfType(type, emb) ||
                                type.isAssignableFrom(Pattern.compile(((JavaType.Class) emb).getFullyQualifiedName())));
         }
     }

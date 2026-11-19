@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
@@ -27,11 +31,6 @@ import org.openrewrite.java.tree.Space;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;

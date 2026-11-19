@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate.guava;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
@@ -27,10 +30,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Space;
 import org.openrewrite.marker.Markers;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static org.openrewrite.Tree.randomId;

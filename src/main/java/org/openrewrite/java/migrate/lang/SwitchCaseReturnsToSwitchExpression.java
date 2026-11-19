@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.lang;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -29,9 +31,6 @@ import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.staticanalysis.groovy.GroovyFileChecker;
 import org.openrewrite.staticanalysis.kotlin.KotlinFileChecker;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.openrewrite.Tree.randomId;
 

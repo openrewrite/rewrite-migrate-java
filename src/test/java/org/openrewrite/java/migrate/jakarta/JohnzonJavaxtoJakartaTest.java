@@ -15,14 +15,14 @@
  */
 package org.openrewrite.java.migrate.jakarta;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.*;
@@ -37,7 +37,7 @@ class JohnzonJavaxtoJakartaTest implements RewriteTest {
             .scanRuntimeClasspath("org.openrewrite.java.migrate")
             .build()
             .activateRecipes("org.openrewrite.java.migrate.jakarta.JohnzonJavaxToJakarta")
-        ).parser(JavaParser.fromJavaVersion().classpath("johnzon-core"));
+        ).parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "johnzon-core"));
     }
 
     @Test

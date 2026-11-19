@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -29,8 +30,7 @@ import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-
-import java.util.*;
+import org.openrewrite.java.tree.TypeUtils;
 
 import static java.util.stream.Collectors.toList;
 
@@ -113,7 +113,7 @@ public class AddTransientAnnotationToPrivateAccessor extends Recipe {
                         returnValueCollector.visit( method.getBody(), returns, getCursor().getParentTreeCursor() );
 
                         // Check if any return values are a class field
-                        return returns.stream().anyMatch(classVars::contains);
+                        return returns.stream().anyMatch(r -> classVars.stream().anyMatch(v -> TypeUtils.isOfType(v, r)));
                     }
                 }
         );

@@ -647,7 +647,6 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void codeTagConverted() {
         rewriteRun(
-          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
             """
               class Test {
@@ -681,7 +680,6 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void codeTagWithEmptyLanguageConverted() {
         rewriteRun(
-          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
             """
               class Test {
@@ -715,7 +713,6 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void codeTagLanguageNotConverted() {
         rewriteRun(
-          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
             """
               class Test {
@@ -749,7 +746,6 @@ class JavadocToMarkdownDocCommentTest implements RewriteTest {
     @Test
     void codeTagClosedInline() {
         rewriteRun(
-          spec -> spec.recipe(new JavadocToMarkdownDocComment()),
           java(
             """
               class Test {

@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.Iterator;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -27,8 +28,6 @@ import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.Iterator;
 
 import static org.openrewrite.java.tree.J.ClassDeclaration.Kind.Type.Interface;
 

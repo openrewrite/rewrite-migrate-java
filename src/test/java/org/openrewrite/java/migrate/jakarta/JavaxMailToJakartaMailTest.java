@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,7 +30,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("mail-1.4.7", "javax.mail-api-1.6.2"))
+            .classpathFromResources(new InMemoryExecutionContext(), "mail-1.4.7", "javax.mail-api-1.6.2"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxMailToJakartaMail");
@@ -86,7 +87,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void preserveProvidedMailApiForMainSource() {
+    void preserveProvidedMailImplementationForMainSource() {
         rewriteRun(
           mavenProject("app",
             srcMainJava(
@@ -120,8 +121,8 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                     <version>1</version>
                     <dependencies>
                         <dependency>
-                            <groupId>jakarta.mail</groupId>
-                            <artifactId>jakarta.mail-api</artifactId>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>jakarta.mail</artifactId>
                             <version>2.0.2</version>
                             <scope>provided</scope>
                         </dependency>
@@ -134,7 +135,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void promoteRuntimeMailApiForMainSource() {
+    void addCompileMailApiBesideRuntimeImplementation() {
         rewriteRun(
           mavenProject("app",
             srcMainJava(
@@ -171,7 +172,12 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                             <groupId>jakarta.mail</groupId>
                             <artifactId>jakarta.mail-api</artifactId>
                             <version>2.0.2</version>
-                            <scope>compile</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>jakarta.mail</artifactId>
+                            <version>2.0.2</version>
+                            <scope>runtime</scope>
                         </dependency>
                     </dependencies>
                 </project>
@@ -182,7 +188,7 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
     }
 
     @Test
-    void switchesJavaxMailDependencyToJakartaMailApiDependency() {
+    void switchesJavaxMailDependencyToJakartaMailImplementation() {
         rewriteRun(
           mavenProject(
             "Sample",
@@ -204,27 +210,122 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                 </project>
                 """,
               spec -> spec.after(pom -> assertThat(pom)
-                .contains("<groupId>jakarta.mail</groupId>")
-                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .contains("<groupId>com.sun.mail</groupId>")
+                .contains("<artifactId>jakarta.mail</artifactId>")
                 .containsPattern("<version>2.0.\\d+</version>")
                 .doesNotContain("<groupId>javax.mail</groupId>")
                 .doesNotContain("<artifactId>mail</artifactId>")
+                .doesNotContain("<artifactId>jakarta.mail-api</artifactId>")
+                .actual())
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.Session;
+                  public class TestApplication {
+                  }
+                  """,
+                """
+                  import jakarta.mail.Session;
+                  public class TestApplication {
+                  }
+                  """
+              )
+            )
+          ),
+          mavenProject(
+            "SunMail",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>sun-mail</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>javax.mail</artifactId>
+                            <version>1.6.2</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<groupId>com.sun.mail</groupId>")
+                .contains("<artifactId>jakarta.mail</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<artifactId>javax.mail</artifactId>")
+                .doesNotContain("<artifactId>jakarta.mail-api</artifactId>")
                 .actual())
             )
           ),
-          srcMainJava(
-            //language=java
-            java(
+          mavenProject(
+            "JakartaNamedMail",
+            //language=xml
+            pomXml(
               """
-                import javax.mail.Session;
-                public class TestApplication {
-                }
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>jakarta-named-mail</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>jakarta.mail</artifactId>
+                            <version>1.6.7</version>
+                        </dependency>
+                    </dependencies>
+                </project>
                 """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .contains("<artifactId>jakarta.mail</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .doesNotContain("<artifactId>jakarta.mail-api</artifactId>")
+                .actual())
+            )
+          )
+        );
+    }
+
+    @Test
+    void overrideImplementationVersionManagedByParent() {
+        rewriteRun(
+          mavenProject("app",
+            srcMainJava(
+              java(
+                "import javax.mail.Session; class A { Session session; }",
+                "import jakarta.mail.Session; class A { Session session; }"
+              )
+            ),
+            //language=xml
+            pomXml(
               """
-                import jakarta.mail.Session;
-                public class TestApplication {
-                }
-                """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <parent>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-parent</artifactId>
+                        <version>2.2.6.RELEASE</version>
+                    </parent>
+                    <groupId>com.example</groupId>
+                    <artifactId>app</artifactId>
+                    <version>1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.mail</groupId>
+                            <artifactId>jakarta.mail</artifactId>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
+                .containsPattern("<sun-mail.version>2.0.\\d+</sun-mail.version>")
+                .doesNotContain("<artifactId>jakarta.mail-api</artifactId>")
+                .actual())
             )
           )
         );
@@ -269,6 +370,46 @@ class JavaxMailToJakartaMailTest implements RewriteTest {
                 """,
               spec -> spec.after(pom -> assertThat(pom)
                 .contains("<groupId>jakarta.mail</groupId>")
+                .contains("<artifactId>jakarta.mail-api</artifactId>")
+                .containsPattern("<version>2.0.\\d+</version>")
+                .actual())
+            )
+          ),
+          mavenProject(
+            "SpringBootMail",
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.mail.Session;
+                  public class Mailer {
+                  }
+                  """,
+                """
+                  import jakarta.mail.Session;
+                  public class Mailer {
+                  }
+                  """
+              )
+            ),
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>boot-mail</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-mail</artifactId>
+                            <version>2.7.18</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> assertThat(pom)
                 .contains("<artifactId>jakarta.mail-api</artifactId>")
                 .containsPattern("<version>2.0.\\d+</version>")
                 .actual())

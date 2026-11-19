@@ -227,13 +227,7 @@ class JavaxToJakartaTest implements RewriteTest {
     @Test
     void classDecl() {
         rewriteRun(
-          spec -> spec
-            .recipe(Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-            )
-            .parser(JavaParser.fromJavaVersion()
+          spec -> spec.parser(JavaParser.fromJavaVersion()
               //language=java
               .dependsOn(
                 javax,
@@ -254,13 +248,7 @@ class JavaxToJakartaTest implements RewriteTest {
     @Test
     void method() {
         rewriteRun(
-          spec -> spec
-            .recipe(Environment.builder()
-              .scanRuntimeClasspath("org.openrewrite.java.migrate")
-              .build()
-              .activateRecipes("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
-            )
-            .parser(
+          spec -> spec.parser(
               //language=java
               JavaParser.fromJavaVersion().dependsOn(
                 javax,

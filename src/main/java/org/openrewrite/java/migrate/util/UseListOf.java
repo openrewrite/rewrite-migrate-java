@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.util;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -33,9 +35,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singletonList;
 

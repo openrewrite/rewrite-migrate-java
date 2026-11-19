@@ -280,6 +280,52 @@ class IfElseIfConstructToSwitchTest implements RewriteTest {
     }
 
     @Test
+    void parameterizedArrayPatternsPreserveBodies() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  void accept(Object value) {
+                      if (value instanceof Class<?>[] classes) {
+                          consume(classes);
+                      } else if (value instanceof Enum<?>[] enums) {
+                          consume(enums);
+                      } else if (value instanceof String text) {
+                          consume(text);
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void nestedAndQualifiedParameterizedArrayPatterns() {
+        rewriteRun(
+          java(
+            """
+              class Test {
+                  void accept(Object value) {
+                      if (value instanceof Class<?>[][] classes) {
+                          // Keep both statements and the comment.
+                          consume(classes);
+                          consume(classes.length);
+                      } else if (value instanceof java.util.Map.Entry<?, ?>[] entries) {
+                          consume(entries);
+                      } else if (value instanceof int[] integers) {
+                          consume(integers);
+                      }
+                  }
+                  void consume(Object value) {}
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void worksWithGenericsAndArrays() {
         rewriteRun(
           //language=java

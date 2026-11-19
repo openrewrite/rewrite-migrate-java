@@ -16,6 +16,7 @@
 package org.openrewrite.java.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -27,8 +28,6 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.maven.tree.ResolvedPom;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -61,7 +60,7 @@ public class AddLombokMapstructBindingMavenDependencyOnly extends Recipe {
             }
 
             private List<Plugin> nonInheritedPlugins(List<Plugin> plugins) {
-                return ListUtils.map(plugins, plugin -> "false".equals(plugin.getInherited()) ? plugin : null);
+                return ListUtils.filter(plugins, plugin -> "false".equals(plugin.getInherited()));
             }
 
             private boolean overridesManagedProcessorPaths(List<Plugin> plugins) {

@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate.javax;
 
+import java.time.Duration;
+import java.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
@@ -25,6 +27,7 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
 import org.openrewrite.groovy.GroovyIsoVisitor;
 import org.openrewrite.groovy.tree.G;
+import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.Markers;
@@ -37,9 +40,6 @@ import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
 import org.openrewrite.xml.tree.Xml;
-
-import java.time.Duration;
-import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -345,7 +345,7 @@ public class AddJaxwsRuntime extends Recipe {
     }
 
     private static boolean isJavaxProvider(@Nullable ResolvedDependency dependency) {
-        if (dependency == null || dependency.getClassifier() != null && !dependency.getClassifier().isEmpty() ||
+        if (dependency == null || StringUtils.isNotEmpty(dependency.getClassifier()) ||
             dependency.getType() != null && !"jar".equals(dependency.getType()) && !"bundle".equals(dependency.getType())) {
             return false;
         }

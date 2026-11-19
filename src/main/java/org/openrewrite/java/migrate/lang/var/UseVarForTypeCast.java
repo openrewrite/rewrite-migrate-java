@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import java.util.List;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
@@ -23,8 +24,6 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
-
-import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
@@ -89,13 +88,8 @@ public class UseVarForTypeCast extends Recipe {
             }
 
             private J.VariableDeclarations transformToVar(J.VariableDeclarations vd, J.TypeCast typeCast) {
-                List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> {
-                    JavaType.Variable variableType = it.getVariableType() == null ?
-                            null : it.getVariableType().withOwner(null);
-                    return it
-                            .withName(it.getName().withType(typeCast.getType()).withFieldType(variableType))
-                            .withVariableType(variableType);
-                });
+                List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it ->
+                        it.withName(it.getName().withType(typeCast.getType())));
                 J.Identifier typeExpression = new J.Identifier(
                         randomId(),
                         vd.getTypeExpression() == null ? EMPTY : vd.getTypeExpression().getPrefix(),

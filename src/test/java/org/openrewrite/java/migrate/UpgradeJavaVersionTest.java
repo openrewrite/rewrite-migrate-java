@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
@@ -24,14 +26,14 @@ import org.openrewrite.java.migrate.search.AboutJavaVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
-import java.util.List;
-import java.util.UUID;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.xml.Assertions.xml;
+import static org.openrewrite.yaml.Assertions.yaml;
 
 class UpgradeJavaVersionTest implements RewriteTest {
 
@@ -201,6 +203,242 @@ class UpgradeJavaVersionTest implements RewriteTest {
                   </project>
                   """,
                 spec -> spec.markers(new JavaVersion(UUID.randomUUID(), "", "", "11.0.15+10", "11.0.15+10"))
+              )
+            );
+        }
+
+        @Test
+        void mavenReleaseThroughCustomPropertyInParentPluginManagement() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(25)),
+              mavenProject("parent",
+                pomXml(
+                  //language=xml
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>parent</artifactId>
+                      <version>1</version>
+                      <packaging>pom</packaging>
+                      <properties>
+                        <project.build.release.version>8</project.build.release.version>
+                      </properties>
+                      <modules>
+                        <module>child</module>
+                      </modules>
+                      <build>
+                        <pluginManagement>
+                          <plugins>
+                            <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.11.0</version>
+                              <configuration>
+                                <release>${project.build.release.version}</release>
+                              </configuration>
+                            </plugin>
+                          </plugins>
+                        </pluginManagement>
+                      </build>
+                    </project>
+                    """,
+                  //language=xml
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>parent</artifactId>
+                      <version>1</version>
+                      <packaging>pom</packaging>
+                      <properties>
+                        <project.build.release.version>25</project.build.release.version>
+                      </properties>
+                      <modules>
+                        <module>child</module>
+                      </modules>
+                      <build>
+                        <pluginManagement>
+                          <plugins>
+                            <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.11.0</version>
+                              <configuration>
+                                <release>${project.build.release.version}</release>
+                              </configuration>
+                            </plugin>
+                          </plugins>
+                        </pluginManagement>
+                      </build>
+                    </project>
+                    """
+                ),
+                mavenProject("child",
+                  pomXml(
+                    //language=xml
+                    """
+                      <project>
+                        <modelVersion>4.0.0</modelVersion>
+                        <parent>
+                          <groupId>com.mycompany.app</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                        </parent>
+                        <artifactId>child</artifactId>
+                      </project>
+                      """
+                  )
+                )
+              )
+            );
+        }
+
+        @Test
+        void mavenSourceTargetInParentPluginManagement() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(25)),
+              mavenProject("parent",
+                pomXml(
+                  //language=xml
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>parent</artifactId>
+                      <version>1</version>
+                      <packaging>pom</packaging>
+                      <modules>
+                        <module>child</module>
+                      </modules>
+                      <build>
+                        <pluginManagement>
+                          <plugins>
+                            <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.1</version>
+                              <configuration>
+                                <source>1.6</source>
+                                <target>1.6</target>
+                              </configuration>
+                            </plugin>
+                          </plugins>
+                        </pluginManagement>
+                      </build>
+                    </project>
+                    """,
+                  //language=xml
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>parent</artifactId>
+                      <version>1</version>
+                      <packaging>pom</packaging>
+                      <modules>
+                        <module>child</module>
+                      </modules>
+                      <build>
+                        <pluginManagement>
+                          <plugins>
+                            <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.1</version>
+                              <configuration>
+                                <release>25</release>
+                              </configuration>
+                            </plugin>
+                          </plugins>
+                        </pluginManagement>
+                      </build>
+                    </project>
+                    """
+                ),
+                mavenProject("child",
+                  pomXml(
+                    //language=xml
+                    """
+                      <project>
+                        <modelVersion>4.0.0</modelVersion>
+                        <parent>
+                          <groupId>com.mycompany.app</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                        </parent>
+                        <artifactId>child</artifactId>
+                      </project>
+                      """
+                  )
+                )
+              )
+            );
+        }
+
+        @Test
+        void mavenCompilerPropertiesInParentWithTestSourceTarget() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(25)),
+              mavenProject("parent",
+                pomXml(
+                  //language=xml
+                  """
+                    <project>
+                      <modelVersion>4.0.0</modelVersion>
+                      <groupId>com.mycompany.app</groupId>
+                      <artifactId>parent</artifactId>
+                      <version>1</version>
+                      <packaging>pom</packaging>
+                      <properties>
+                        <maven.compiler.target>1.8</maven.compiler.target>
+                        <maven.compiler.source>1.8</maven.compiler.source>
+                        <maven.compiler.testTarget>1.8</maven.compiler.testTarget>
+                        <maven.compiler.testSource>1.8</maven.compiler.testSource>
+                      </properties>
+                      <modules>
+                        <module>child</module>
+                      </modules>
+                      <build>
+                        <pluginManagement>
+                          <plugins>
+                            <plugin>
+                              <groupId>org.apache.maven.plugins</groupId>
+                              <artifactId>maven-compiler-plugin</artifactId>
+                              <version>3.11.0</version>
+                              <configuration>
+                                <source>${maven.compiler.source}</source>
+                                <target>${maven.compiler.target}</target>
+                                <testSource>${maven.compiler.testSource}</testSource>
+                                <testTarget>${maven.compiler.testTarget}</testTarget>
+                              </configuration>
+                            </plugin>
+                          </plugins>
+                        </pluginManagement>
+                      </build>
+                    </project>
+                    """,
+                  spec -> spec.after(actual -> assertThat(actual)
+                    .doesNotContain("1.8")
+                    .contains("25")
+                    .actual())
+                ),
+                mavenProject("child",
+                  pomXml(
+                    //language=xml
+                    """
+                      <project>
+                        <modelVersion>4.0.0</modelVersion>
+                        <parent>
+                          <groupId>com.mycompany.app</groupId>
+                          <artifactId>parent</artifactId>
+                          <version>1</version>
+                        </parent>
+                        <artifactId>child</artifactId>
+                      </project>
+                      """
+                  )
+                )
               )
             );
         }
@@ -447,4 +685,83 @@ class UpgradeJavaVersionTest implements RewriteTest {
         }
     }
 
+    @Test
+    void upgradesGitLabCiImages() {
+        rewriteRun(
+          yaml(
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-17
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:21-jdk
+              package:
+                image: gradle:8-jdk17
+              """,
+            """
+              build:
+                image: maven:3.9-eclipse-temurin-25
+                services:
+                  - postgres:16
+              test:
+                image: eclipse-temurin:25-jdk
+              package:
+                image: gradle:9-jdk25
+              """,
+            spec -> spec.path(".gitlab-ci.yml")
+          )
+        );
+    }
+
+    @Test
+    void upgradesBitbucketPipelinesImagesAlongsidePom() {
+        rewriteRun(
+          pomXml(
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>17</maven.compiler.release>
+                </properties>
+              </project>
+              """,
+            //language=xml
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>com.mycompany.app</groupId>
+                <artifactId>my-app</artifactId>
+                <version>1</version>
+                <properties>
+                  <maven.compiler.release>25</maven.compiler.release>
+                </properties>
+              </project>
+              """
+          ),
+          yaml(
+            """
+              image: maven:3.9-eclipse-temurin-17
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            """
+              image: maven:3.9-eclipse-temurin-25
+              pipelines:
+                default:
+                  - step:
+                      script:
+                        - mvn verify
+              """,
+            spec -> spec.path("bitbucket-pipelines.yml")
+          )
+        );
+    }
 }

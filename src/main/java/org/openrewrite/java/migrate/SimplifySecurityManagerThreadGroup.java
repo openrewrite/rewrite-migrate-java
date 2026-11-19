@@ -15,6 +15,10 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -24,11 +28,6 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.search.UsesJavaVersion;
 import org.openrewrite.java.tree.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -107,7 +106,7 @@ public class SimplifySecurityManagerThreadGroup extends Recipe {
             }
 
             private boolean sameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {
-                return expression instanceof J.Identifier && variable.getVariableType().equals(((J.Identifier) expression).getFieldType());
+                return expression instanceof J.Identifier && TypeUtils.isOfType(variable.getVariableType(), ((J.Identifier) expression).getFieldType());
             }
         });
     }

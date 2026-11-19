@@ -17,17 +17,16 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
-import org.openrewrite.config.Environment;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.xml.ChangeTagAttribute;
 
 import static org.openrewrite.xml.Assertions.xml;
 
 class JakartaFacesXhtmlEE9Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(Environment.builder().scanRuntimeClasspath("org.openrewrite.java.migrate.jakarta").build()
-          .activateRecipes("org.openrewrite.java.migrate.jakarta.JakartaFacesXhtmlEE9"));
+        spec.recipe(new JakartaFacesXhtmlEE9());
     }
 
     @DocumentExample
@@ -165,6 +164,71 @@ class JakartaFacesXhtmlEE9Test implements RewriteTest {
               </ui:composition>
               """,
             sourceSpecs -> sourceSpecs.path("gchart-jcp.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void replaceInTextCdataAndComments() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:h="jakarta.faces.html">
+                  <!-- converts with javax.faces.Integer -->
+                  <h:outputText value="#{requestScope['javax.servlet.error.message']}"/>
+                  <h:outputScript>document.getElementsByName('javax.faces.ViewState')</h:outputScript>
+                  <h:outputScript><![CDATA[if (a && b) { faces.ajax.request('javax.faces.ViewState'); }]]></h:outputScript>
+              </ui:composition>
+              """,
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:h="jakarta.faces.html">
+                  <!-- converts with jakarta.faces.Integer -->
+                  <h:outputText value="#{requestScope['jakarta.servlet.error.message']}"/>
+                  <h:outputScript>document.getElementsByName('jakarta.faces.ViewState')</h:outputScript>
+                  <h:outputScript><![CDATA[if (a && b) { faces.ajax.request('jakarta.faces.ViewState'); }]]></h:outputScript>
+              </ui:composition>
+              """,
+            spec -> spec.path("src/main/webapp/index.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void laterXmlRecipesStillApply() {
+        rewriteRun(
+          spec -> spec.recipes(
+            new JakartaFacesXhtmlEE9(),
+            new ChangeTagAttribute("//*[local-name()='converter']", "converterId", "jakarta.faces.Long", "jakarta.faces.Integer", null)
+          ),
+          //language=xml
+          xml(
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+                  <f:converter converterId="javax.faces.Integer"/>
+              </ui:composition>
+              """,
+            """
+              <ui:composition xmlns:ui="jakarta.faces.facelets" xmlns:f="jakarta.faces.core">
+                  <f:converter converterId="jakarta.faces.Long"/>
+              </ui:composition>
+              """,
+            spec -> spec.path("src/main/webapp/index.xhtml")
+          )
+        );
+    }
+
+    @Test
+    void leaveOtherXmlFiles() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <beans>
+                  <bean class="javax.sql.DataSource"/>
+              </beans>
+              """,
+            spec -> spec.path("src/main/resources/beans.xml")
           )
         );
     }

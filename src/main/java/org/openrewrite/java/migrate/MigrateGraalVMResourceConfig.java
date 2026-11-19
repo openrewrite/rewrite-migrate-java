@@ -15,6 +15,8 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +31,6 @@ import org.openrewrite.json.tree.JsonRightPadded;
 import org.openrewrite.json.tree.JsonValue;
 import org.openrewrite.marker.Markers;
 import org.openrewrite.marker.SearchResult;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

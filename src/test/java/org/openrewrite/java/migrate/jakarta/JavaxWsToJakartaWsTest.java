@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate.jakarta;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -29,7 +30,7 @@ class JavaxWsToJakartaWsTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.parser(JavaParser.fromJavaVersion()
-            .classpath("javax.ws.rs-api"))
+            .classpathFromResources(new InMemoryExecutionContext(), "javax.ws.rs-api"))
           .recipeFromResource(
             "/META-INF/rewrite/jakarta-ee-9.yml",
             "org.openrewrite.java.migrate.jakarta.JavaxWsToJakartaWs");

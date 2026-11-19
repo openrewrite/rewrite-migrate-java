@@ -15,6 +15,11 @@
  */
 package org.openrewrite.java.migrate.lang.var;
 
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.UnaryOperator;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
@@ -22,12 +27,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.*;
 import org.openrewrite.marker.Markers;
-
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.UnaryOperator;
 
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
@@ -130,7 +129,7 @@ final class DeclarationCheck {
      */
     public static boolean declarationHasType(J.VariableDeclarations vd, JavaType type) {
         TypeTree typeExpression = vd.getTypeExpression();
-        return typeExpression != null && type.equals(typeExpression.getType());
+        return typeExpression != null && TypeUtils.isOfType(type, typeExpression.getType());
     }
 
     /**
@@ -387,7 +386,7 @@ final class DeclarationCheck {
                     return assignment;
                 }
                 if (assignment.getVariable() instanceof J.Identifier &&
-                        variableType.equals(((J.Identifier) assignment.getVariable()).getFieldType())) {
+                        TypeUtils.isOfType(variableType, ((J.Identifier) assignment.getVariable()).getFieldType())) {
                     found.set(true);
                     return assignment;
                 }
@@ -453,13 +452,9 @@ final class DeclarationCheck {
 
         Expression transformedInitializer = transformerInitializer.apply(initializer);
 
-        List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> {
-            JavaType.Variable variableType = it.getVariableType() == null ? null : it.getVariableType().withOwner(null);
-            return it
-                    .withName(it.getName().withType(transformedInitializer.getType()).withFieldType(variableType))
-                    .withInitializer(transformedInitializer)
-                    .withVariableType(variableType);
-        });
+        List<J.VariableDeclarations.NamedVariable> variables = ListUtils.mapFirst(vd.getVariables(), it -> it
+                .withName(it.getName().withType(transformedInitializer.getType()))
+                .withInitializer(transformedInitializer));
         J.Identifier typeExpression = new J.Identifier(randomId(), vd.getTypeExpression() == null ? EMPTY : vd.getTypeExpression().getPrefix(),
                 Markers.build(singleton(JavaVarKeyword.build())), emptyList(), "var", transformedInitializer.getType(), null);
 

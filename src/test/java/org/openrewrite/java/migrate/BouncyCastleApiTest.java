@@ -17,6 +17,7 @@ package org.openrewrite.java.migrate;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -27,7 +28,7 @@ class BouncyCastleApiTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.parser(JavaParser.fromJavaVersion().classpath("bcprov-jdk15on"));
+        spec.parser(JavaParser.fromJavaVersion().classpathFromResources(new InMemoryExecutionContext(), "bcprov-jdk15on"));
     }
 
     private static RecipeSpec derStringRecipe(RecipeSpec spec) {
@@ -182,7 +183,7 @@ class BouncyCastleApiTest implements RewriteTest {
 
               class A {
                   SPHINCSPlusSigner signer = new SPHINCSPlusSigner();
-                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha2_128f;
+                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha256_128f;
               }
               """,
             """
@@ -191,7 +192,7 @@ class BouncyCastleApiTest implements RewriteTest {
 
               class A {
                   SPHINCSPlusSigner signer = new SPHINCSPlusSigner();
-                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha2_128f;
+                  SPHINCSPlusParameters parameters = SPHINCSPlusParameters.sha256_128f;
               }
               """
           )

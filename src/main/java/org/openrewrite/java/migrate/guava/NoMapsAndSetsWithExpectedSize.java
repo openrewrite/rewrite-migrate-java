@@ -40,8 +40,9 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
 
     @Getter
     final String description = "Replace Guava's `Maps.newHashMapWithExpectedSize(int)`, `Maps.newLinkedHashMapWithExpectedSize(int)`, " +
-            "`Sets.newHashSetWithExpectedSize(int)` and `Sets.newLinkedHashSetWithExpectedSize(int)` with the JDK " +
-            "`HashMap`, `LinkedHashMap`, `HashSet` and `LinkedHashSet` constructors.";
+            "`Sets.newHashSetWithExpectedSize(int)` and `Sets.newLinkedHashSetWithExpectedSize(int)` with the Java 19 " +
+            "`HashMap.newHashMap(int)`, `LinkedHashMap.newLinkedHashMap(int)`, `HashSet.newHashSet(int)` and " +
+            "`LinkedHashSet.newLinkedHashSet(int)`, which size the collection for the expected number of elements as Guava does.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
@@ -63,7 +64,7 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                             maybeRemoveImport("com.google.common.collect.Maps");
                             maybeAddImport("java.util.HashMap");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
-                            return JavaTemplate.builder("new HashMap<>(#{any()})")
+                            return JavaTemplate.builder("HashMap.newHashMap(#{any(int)})")
                                     .imports("java.util.HashMap")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
@@ -72,7 +73,7 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                             maybeRemoveImport("com.google.common.collect.Maps");
                             maybeAddImport("java.util.LinkedHashMap");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
-                            return JavaTemplate.builder("new LinkedHashMap<>(#{any()})")
+                            return JavaTemplate.builder("LinkedHashMap.newLinkedHashMap(#{any(int)})")
                                     .imports("java.util.LinkedHashMap")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
@@ -81,7 +82,7 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                             maybeRemoveImport("com.google.common.collect.Sets");
                             maybeAddImport("java.util.HashSet");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
-                            return JavaTemplate.builder("new HashSet<>(#{any()})")
+                            return JavaTemplate.builder("HashSet.newHashSet(#{any(int)})")
                                     .imports("java.util.HashSet")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());
@@ -90,7 +91,7 @@ public class NoMapsAndSetsWithExpectedSize extends Recipe {
                             maybeRemoveImport("com.google.common.collect.Sets");
                             maybeAddImport("java.util.LinkedHashSet");
                             JavaCoordinates coordinates = j.getCoordinates().replace();
-                            return JavaTemplate.builder("new LinkedHashSet<>(#{any()})")
+                            return JavaTemplate.builder("LinkedHashSet.newLinkedHashSet(#{any(int)})")
                                     .imports("java.util.LinkedHashSet")
                                     .build()
                                     .apply(getCursor(), coordinates, j.getArguments().toArray());

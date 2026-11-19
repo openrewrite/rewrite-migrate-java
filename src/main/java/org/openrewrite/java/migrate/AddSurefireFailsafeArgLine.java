@@ -15,6 +15,9 @@
  */
 package org.openrewrite.java.migrate;
 
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -25,10 +28,6 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 @Value

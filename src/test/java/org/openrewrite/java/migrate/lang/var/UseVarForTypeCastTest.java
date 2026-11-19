@@ -18,6 +18,7 @@ package org.openrewrite.java.migrate.lang.var;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.staticanalysis.RemoveUnusedLocalVariables;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -140,6 +141,37 @@ class UseVarForTypeCastTest implements RewriteTest {
               class A {
                   void m() {
                       var s = (String) null;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void keepVariableTypeOwnerSoReadsStillMatchDeclaration() {
+        rewriteRun(
+          spec -> spec.recipes(new UseVarForTypeCast(), new RemoveUnusedLocalVariables(null, null, null)),
+          java(
+            """
+              class A {
+                  int m(Object obj) {
+                      if (!(obj instanceof CharSequence)) {
+                          return 0;
+                      }
+                      CharSequence cs = (CharSequence) obj;
+                      return cs.length();
+                  }
+              }
+              """,
+            """
+              class A {
+                  int m(Object obj) {
+                      if (!(obj instanceof CharSequence)) {
+                          return 0;
+                      }
+                      var cs = (CharSequence) obj;
+                      return cs.length();
                   }
               }
               """

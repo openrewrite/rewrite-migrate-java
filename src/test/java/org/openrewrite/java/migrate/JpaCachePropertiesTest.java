@@ -832,8 +832,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_notset_set1">
-                      <!-- flag -->
+                  <persistence-unit name="notset_notset_set1"><!-- flag -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -868,8 +867,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_notset_set2">
-                      <!-- flag -->
+                  <persistence-unit name="notset_notset_set2"><!-- flag -->
                       <shared-cache-mode>ALL</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -904,8 +902,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_notset_set3">
-                      <!-- flag --> <!-- add shared-cache-mode ENABLE_SELECTIVE -->
+                  <persistence-unit name="notset_notset_set3"><!-- flag --> <!-- add shared-cache-mode ENABLE_SELECTIVE -->
                       <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -940,8 +937,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_notset_set4">
-                      <!-- flag --> <!-- add shared-cache-mode DISABLE_SELECTIVE -->
+                  <persistence-unit name="notset_notset_set4"><!-- flag --> <!-- add shared-cache-mode DISABLE_SELECTIVE -->
                       <shared-cache-mode>DISABLE_SELECTIVE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -976,14 +972,13 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="notset_notset_notset1">
-                      <!-- flag, insert shared-cache-mode NONE -->
+                  <persistence-unit name="notset_notset_notset1"><!-- flag, insert shared-cache-mode NONE -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
                           <!-- Connection properties -->
                           <property name="somethingelese" value="junk"></property>
-                      </properties>
+                         </properties>
                   </persistence-unit>
               </persistence>
               """,
@@ -1130,8 +1125,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache3_flagged">
-                      <!-- flag --><!-- create shared-cache-mode NONE -->
+                  <persistence-unit name="openjpa_cache3_flagged"><!-- flag --><!-- create shared-cache-mode NONE -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -1342,8 +1336,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache10_flagged">
-                      <!-- flag and insert shared-cache-mode NONE -->
+                  <persistence-unit name="openjpa_cache10_flagged"> <!-- flag and insert shared-cache-mode NONE -->
                       <shared-cache-mode>NONE</shared-cache-mode>
                       <validation-mode>NONE</validation-mode>
                       <properties>
@@ -1375,8 +1368,7 @@ class JpaCachePropertiesTest implements RewriteTest {
             """
               <?xml version="1.0" encoding="UTF-8"?>
               <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-                  <persistence-unit name="openjpa_cache11_flagged">
-                      <!-- flag and insert shared-cache-mode ALL-->
+                  <persistence-unit name="openjpa_cache11_flagged"><!-- flag and insert shared-cache-mode ALL-->
                       <shared-cache-mode>ALL</shared-cache-mode>
                       <properties>
                           <!-- delete -->
@@ -1426,4 +1418,54 @@ class JpaCachePropertiesTest implements RewriteTest {
         );
     }
 
+    @Test
+    void onlyOpenJPAUnits() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+                  <persistence-unit name="hibernate">
+                      <provider> org.hibernate.jpa.HibernatePersistenceProvider </provider>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="hibernate.show_sql" value="true"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+                  <persistence-unit name="hibernate">
+                      <provider> org.hibernate.jpa.HibernatePersistenceProvider </provider>
+                  </persistence-unit>
+                  <persistence-unit name="openjpa-properties">
+                      <shared-cache-mode>NONE</shared-cache-mode>
+                      <properties>
+                          <property name="openjpa.Log" value="SQL=TRACE"/>
+                          <property name="hibernate.show_sql" value="true"/>
+                      </properties>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path(PERSISTENCE_FILENAME)
+          ),
+          //language=xml
+          xml(
+            """
+              <?xml version="1.0" encoding="UTF-8"?>
+              <persistence version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+                  <persistence-unit name="default-provider">
+                      <class>my.jpa.Account</class>
+                  </persistence-unit>
+              </persistence>
+              """,
+            sourceSpecs -> sourceSpecs.path("jpa22/" + PERSISTENCE_FILENAME)
+          )
+        );
+    }
 }
