@@ -1156,6 +1156,7 @@ class UpgradeToJava25Test implements RewriteTest {
           )
         );
     }
+
     @Test
     void upgradesLegacyTomcatOnJava25() {
         rewriteRun(
@@ -1199,5 +1200,4 @@ class UpgradeToJava25Test implements RewriteTest {
           )
         );
     }
-
 }
