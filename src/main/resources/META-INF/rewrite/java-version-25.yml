@@ -586,3 +586,25 @@ preconditions:
 recipeList:
   - org.openrewrite.java.migrate.UpgradeGradleJavaVersion:
       version: 25
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.UpgradeTomcatForJava25
+displayName: Upgrade standalone embedded Tomcat 8.0 for Java 25
+description: Upgrade standalone embedded Tomcat 8.0 Maven modules to Tomcat 9.0 to avoid reflective teardown failures while retaining the javax.servlet API.
+preconditions:
+  - org.openrewrite.java.migrate.search.HasStandaloneTomcat8
+recipeList:
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.tomcat
+      artifactId: tomcat-catalina
+      newVersion: 9.0.x
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.tomcat
+      artifactId: tomcat-util
+      newVersion: 9.0.x
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.tomcat.embed
+      artifactId: tomcat-embed-core
+      newVersion: 9.0.x
+  - org.openrewrite.java.migrate.MigrateTomcatServletMapping
