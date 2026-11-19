@@ -64,6 +64,41 @@ class UpgradeEclipseJavaVersionTest implements RewriteTest {
     }
 
     @Test
+    void updatesOnlyManifestsInProjectsWithRaisedEclipseLevels() {
+        String manifest = "Manifest-Version: 1.0\r\n" +
+                "Bundle-RequiredExecutionEnvironment: J2SE-1.5,\r\n JavaSE-26, OSGi/Minimum-1.2, Team JavaSE-21\r\n" +
+                "Require-Capability: osgi.extender;filter:=\"(version>=1.5)\",\r\n" +
+                " osgi.ee;filter:=\"(&(osgi.ee=JavaSE)\r\n (version=1.5))\",\r\n" +
+                " osgi.ee;filter:=\"(&(version>=26)(osgi.ee=JavaSE))\"\r\n" +
+                "Bundle-Name: J2SE-1.5\r\n\r\n";
+        String upgraded = manifest.replace("Environment: J2SE-1.5,", "Environment: JavaSE-25,")
+                .replace(" (version=1.5))", " (version=25))");
+        rewriteRun(
+          text("org.eclipse.jdt.core.compiler.source=1.5",
+            "org.eclipse.jdt.core.compiler.source=25", spec -> spec.path(PREFS)),
+          text(manifest, upgraded, spec -> spec.path("project/META-INF/MANIFEST.MF").noTrim()),
+          text(manifest, spec -> spec.path("unrelated/META-INF/MANIFEST.MF").noTrim()),
+          text("org.eclipse.jdt.core.compiler.source=26",
+            spec -> spec.path("already-new/.settings/org.eclipse.jdt.core.prefs")),
+          text(manifest, spec -> spec.path("already-new/META-INF/MANIFEST.MF").noTrim())
+        );
+    }
+
+    @Test
+    void preservesFoldingInsideVersionTokensAndNamedSections() {
+        String manifest = "Manifest-Version: 1.0\n" +
+                "Bundle-RequiredExecutionEnvironment: J2SE-\n 1.5\n" +
+                "Require-Capability: osgi.ee;filter:=\"(&(version>=17.0.0)(osgi.ee=JavaSE))\"\n\n" +
+                "Name: other\nBundle-RequiredExecutionEnvironment: J2SE-1.5\n";
+        rewriteRun(
+          text("org.eclipse.jdt.core.compiler.source=1.5", "org.eclipse.jdt.core.compiler.source=25",
+            spec -> spec.path(".settings/org.eclipse.jdt.core.prefs")),
+          text(manifest, manifest.replace("J2SE-\n 1.5", "JavaS\n E-25").replace("17.0.0", "25.0.0"),
+            spec -> spec.path("META-INF/MANIFEST.MF").noTrim())
+        );
+    }
+
+    @Test
     void leavesOtherFilesAndUnknownValuesAlone() {
         String oldSetting = "org.eclipse.jdt.core.compiler.source=1.5";
         rewriteRun(

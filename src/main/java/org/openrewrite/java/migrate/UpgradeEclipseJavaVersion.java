@@ -20,7 +20,7 @@ import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
 import org.openrewrite.Parser;
-import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
@@ -35,13 +35,16 @@ import org.openrewrite.xml.tree.Xml;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class UpgradeEclipseJavaVersion extends Recipe {
+public class UpgradeEclipseJavaVersion extends ScanningRecipe<Set<Path>> {
+    private static final Path MANIFEST = Paths.get("META-INF", "MANIFEST.MF");
     private static final Path JDT_PREFS = Paths.get(".settings", "org.eclipse.jdt.core.prefs");
     private static final String JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER/" +
             "org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/";
@@ -61,10 +64,34 @@ public class UpgradeEclipseJavaVersion extends Recipe {
     String displayName = "Upgrade the Eclipse project Java version";
 
     String description = "Upgrade existing Java execution environments in Eclipse `.classpath` files and the Java compiler " +
-            "levels in JDT preferences. Preserve newer versions, custom VM names, and other project settings.";
+            "levels in JDT preferences. Preserve newer versions, custom VM names, and other project settings. Align existing PDE runtime requirements in projects whose Java levels change.";
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public Set<Path> getInitialValue(ExecutionContext ctx) {
+        return new HashSet<>();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Set<Path> upgradedProjects) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
+            @Override
+            public Tree preVisit(Tree tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
+                if (tree instanceof SourceFile) {
+                    SourceFile source = (SourceFile) tree;
+                    Path path = source.getSourcePath();
+                    boolean classpath = ".classpath".equals(path.getFileName().toString());
+                    if ((classpath || path.endsWith(JDT_PREFS)) && upgradeMetadata(source, classpath) != source) {
+                        upgradedProjects.add(projectDirectory(path, classpath));
+                    }
+                }
+                return tree;
+            }
+        };
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(Set<Path> upgradedProjects) {
         return new TreeVisitor<Tree, ExecutionContext>() {
             @Override
             public Tree preVisit(Tree tree, ExecutionContext ctx) {
@@ -75,22 +102,36 @@ public class UpgradeEclipseJavaVersion extends Recipe {
                 SourceFile source = (SourceFile) tree;
                 Path path = source.getSourcePath();
                 boolean classpath = ".classpath".equals(path.getFileName().toString());
-                if (!classpath && !path.endsWith(JDT_PREFS)) {
-                    return source;
+                if (classpath || path.endsWith(JDT_PREFS)) {
+                    return upgradeMetadata(source, classpath);
                 }
-
-                if (source instanceof PlainText) {
-                    // Hidden Eclipse files can enter the LST as text. Keep the original source type and metadata.
-                    PlainText text = (PlainText) source;
-                    Parser parser = classpath ? XmlParser.builder().build() : PropertiesParser.builder().build();
-                    return parser.parse(text.getText()).findFirst()
-                            .filter(parsed -> parsed.printAll().equals(text.getText()))
-                            .map(parsed -> text.withText(upgrade(parsed, classpath).printAll()))
-                            .orElse(text);
+                if (source instanceof PlainText && path.endsWith(MANIFEST) &&
+                        upgradedProjects.contains(projectDirectory(path, false))) {
+                    PlainText manifest = (PlainText) source;
+                    return manifest.withText(EclipseManifestJavaVersion.upgrade(manifest.getText(),
+                            UpgradeEclipseJavaVersion.this::upgradeEnvironment, UpgradeEclipseJavaVersion.this::upgradeCompilerLevel));
                 }
-                return upgrade(source, classpath);
+                return source;
             }
         };
+    }
+
+    private static Path projectDirectory(Path path, boolean classpath) {
+        Path directory = classpath ? path.getParent() : path.getParent().getParent();
+        return directory == null ? Paths.get("") : directory;
+    }
+
+    private SourceFile upgradeMetadata(SourceFile source, boolean classpath) {
+        if (source instanceof PlainText) {
+            // Hidden Eclipse files can enter the LST as text. Keep the original source type and metadata.
+            PlainText text = (PlainText) source;
+            Parser parser = classpath ? XmlParser.builder().build() : PropertiesParser.builder().build();
+            return parser.parse(text.getText()).findFirst()
+                    .filter(parsed -> parsed.printAll().equals(text.getText()))
+                    .map(parsed -> text.withText(upgrade(parsed, classpath).printAll()))
+                    .orElse(text);
+        }
+        return upgrade(source, classpath);
     }
 
     @SuppressWarnings("unchecked")
@@ -121,16 +162,9 @@ public class UpgradeEclipseJavaVersion extends Recipe {
             if (!"path".equals(attr.getKeyAsString()) || !path.startsWith(JRE_CONTAINER)) {
                 return attr;
             }
-            Matcher environment = EXECUTION_ENVIRONMENT.matcher(path.substring(JRE_CONTAINER.length()));
-            if (!environment.matches()) {
-                return attr;
-            }
-            String current = environment.group(1);
-            if (majorVersion(current.substring(current.indexOf('-') + 1)) >= version) {
-                return attr;
-            }
-            String label = (version <= 5 ? "J2SE-" : "JavaSE-") + compilerLevel();
-            return attr.withValue(attr.getValue().withValue(JRE_CONTAINER + label + environment.group(2)));
+            String current = path.substring(JRE_CONTAINER.length());
+            String updated = upgradeEnvironment(current);
+            return current.equals(updated) ? attr : attr.withValue(attr.getValue().withValue(JRE_CONTAINER + updated));
         }));
     }
 
@@ -139,9 +173,27 @@ public class UpgradeEclipseJavaVersion extends Recipe {
             return entry;
         }
         Properties.Value value = entry.getValue();
-        Matcher level = COMPILER_LEVEL.matcher(value.getSource());
+        String current = value.getSource();
+        String updated = upgradeCompilerLevel(current);
+        return current.equals(updated) ? entry : entry.withValue(value.withText(updated));
+    }
+
+    private String upgradeEnvironment(String current) {
+        Matcher environment = EXECUTION_ENVIRONMENT.matcher(current);
+        if (!environment.matches()) {
+            return current;
+        }
+        String label = environment.group(1);
+        if (majorVersion(label.substring(label.indexOf('-') + 1)) >= version) {
+            return current;
+        }
+        return (version <= 5 ? "J2SE-" : "JavaSE-") + compilerLevel() + environment.group(2);
+    }
+
+    private String upgradeCompilerLevel(String current) {
+        Matcher level = COMPILER_LEVEL.matcher(current);
         return level.matches() && majorVersion(level.group(2)) < version ?
-                entry.withValue(value.withText(level.group(1) + compilerLevel() + level.group(3))) : entry;
+                level.group(1) + compilerLevel() + level.group(3) : current;
     }
 
     private static int majorVersion(String level) {
