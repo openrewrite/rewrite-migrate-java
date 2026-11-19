@@ -521,49 +521,49 @@ class UseLombokSetterTest implements RewriteTest {
     }
 
     @Test
-void replacePrimitiveBooleanSetterWithIsPrefix() {
-    rewriteRun(// language=java
-      java(
-        """
-          class A {
+    void replacePrimitiveBooleanSetterWithIsPrefix() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
 
-              boolean isFoo;
+                  boolean isFoo;
 
-              public void setFoo(boolean isFoo) {
-                  this.isFoo = isFoo;
+                  public void setFoo(boolean isFoo) {
+                      this.isFoo = isFoo;
+                  }
               }
-          }
-          """,
-        """
-          import lombok.Setter;
+              """,
+            """
+              import lombok.Setter;
 
-          class A {
+              class A {
 
-              @Setter
-              boolean isFoo;
-          }
-          """
-      )
-    );
-}
-
-@Test
-void doesNotReplacePrimitiveBooleanSetterWithWrongLombokName() {
-    rewriteRun(// language=java
-      java(
-        """
-          class A {
-
-              boolean isFoo;
-
-              public void setIsFoo(boolean isFoo) {
-                  this.isFoo = isFoo;
+                  @Setter
+                  boolean isFoo;
               }
-          }
-          """
-      )
-    );
-}
+              """
+          )
+        );
+    }
+
+    @Test
+    void doesNotReplacePrimitiveBooleanSetterWithWrongLombokName() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  boolean isFoo;
+
+                  public void setIsFoo(boolean isFoo) {
+                      this.isFoo = isFoo;
+                  }
+              }
+              """
+          )
+        );
+    }
 
     @Test
     void replaceBoolean() {
