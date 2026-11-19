@@ -32,6 +32,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.version;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.text;
 import static org.openrewrite.xml.Assertions.xml;
 import static org.openrewrite.yaml.Assertions.yaml;
 
@@ -106,6 +107,26 @@ class UpgradeJavaVersionTest implements RewriteTest {
               </plugin></plugins></build></project>
               """,
             spec -> spec.path("pom.xml")
+          )
+        );
+    }
+
+    @Test
+    void upgradesEclipseMetadataInPlainTextInputs() {
+        rewriteRun(
+          text(
+            "<classpath>\r\n\t<classpathentry kind='con' path='org.eclipse.jdt.launching.JRE_CONTAINER/" +
+            "org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5'/>\r\n</classpath>\r\n",
+            "<classpath>\r\n\t<classpathentry kind='con' path='org.eclipse.jdt.launching.JRE_CONTAINER/" +
+            "org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25'/>\r\n</classpath>\r\n",
+            spec -> spec.path("ui/.classpath").noTrim()
+          ),
+          text(
+            "# Local settings\r\norg.eclipse.jdt.core.compiler.source = 1.5  \r\n" +
+            "org.eclipse.jdt.core.compiler.compliance:1.5\r\norg.eclipse.jdt.core.compiler.codegen.targetPlatform=1.5",
+            "# Local settings\r\norg.eclipse.jdt.core.compiler.source = 25  \r\n" +
+            "org.eclipse.jdt.core.compiler.compliance:25\r\norg.eclipse.jdt.core.compiler.codegen.targetPlatform=25",
+            spec -> spec.path("ui/.settings/org.eclipse.jdt.core.prefs").noTrim()
           )
         );
     }
