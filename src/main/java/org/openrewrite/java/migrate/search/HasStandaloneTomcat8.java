@@ -100,8 +100,8 @@ public class HasStandaloneTomcat8 extends ScanningRecipe<Map<Path, Boolean>> {
             }
         }
         if (pom.getRequestedDependencies().stream().anyMatch(dep -> BOOT.equals(pom.getValue(dep.getGroupId()))) ||
-                pom.getDependencyManagement().stream().anyMatch(dep -> dep.getBomGav() != null &&
-                        BOOT.equals(dep.getBomGav().getGroupId()))) {
+                pom.getDependencyManagement().stream().anyMatch(dep -> BOOT.equals(dep.getGroupId()) ||
+                        (dep.getBomGav() != null && BOOT.equals(dep.getBomGav().getGroupId())))) {
             return false;
         }
 

@@ -77,6 +77,22 @@ class UpgradeTomcatForJava25Test implements RewriteTest {
     }
 
     @Test
+    void preservesTomcatWhenEffectiveManagementContainsBootDependencies() {
+        rewriteRun(pomXml(project("8.0.36",
+          """
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot</artifactId>
+                        <version>1.5.1.RELEASE</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            """, "")));
+    }
+
+    @Test
     void leavesStandaloneJdbcAtItsExplicitVersion() {
         rewriteRun(pomXml(project("8.0.36", "",
           """
