@@ -76,6 +76,38 @@ class UpgradeIanalGroovyForJava25Test implements RewriteTest {
     }
 
     @Test
+    void leavesExecutionWithoutGoalsAlone() {
+        rewriteRun(
+          spec -> spec.recipe(new UpgradeIanalGroovyForJava25()),
+          pomXml(
+            """
+              <project>
+                <modelVersion>4.0.0</modelVersion>
+                <groupId>example</groupId>
+                <artifactId>no-goals</artifactId>
+                <version>1</version>
+                <build>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.codehaus.mojo</groupId>
+                      <artifactId>ianal-maven-plugin</artifactId>
+                      <version>1.0-alpha-1</version>
+                      <executions>
+                        <execution>
+                          <id>no-goals</id>
+                          <phase>verify</phase>
+                        </execution>
+                      </executions>
+                    </plugin>
+                  </plugins>
+                </build>
+              </project>
+              """
+          )
+        );
+    }
+
+    @Test
     void leaveCustomPluginDependenciesAlone() {
         rewriteRun(
           spec -> spec.recipe(new UpgradeIanalGroovyForJava25()),

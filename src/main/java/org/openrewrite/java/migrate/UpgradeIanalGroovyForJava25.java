@@ -70,7 +70,7 @@ public class UpgradeIanalGroovyForJava25 extends Recipe {
                 ResolvedPom pom = getResolutionResult().getPom();
                 Optional<Plugin> active = pom.getPlugins().stream().filter(p -> isIanal(p, pom)).findFirst();
                 if (!active.isPresent() || !active.get().getDependencies().isEmpty() ||
-                    active.get().getExecutions().stream().noneMatch(e -> e.getGoals().contains("verify-legal-files"))) {
+                    active.get().getExecutions().stream().noneMatch(e -> e.getGoals() != null && e.getGoals().contains("verify-legal-files"))) {
                     return d;
                 }
                 Optional<Plugin> managed = pom.getPluginManagement().stream().filter(p -> isIanal(p, pom)).findFirst();
