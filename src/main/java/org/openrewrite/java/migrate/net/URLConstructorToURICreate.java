@@ -19,7 +19,6 @@ import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
-import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
@@ -30,11 +29,12 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.trait.Scope;
+import org.openrewrite.java.trait.VariableAccess;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 
 public class URLConstructorToURICreate extends Recipe {
@@ -89,62 +89,38 @@ public class URLConstructorToURICreate extends Recipe {
                     }
 
                     private @Nullable String findLiteralInitializer(J.Identifier identifier) {
-                        for (Cursor c = getCursor(); c != null; c = c.getParent()) {
-                            if (c.getValue() instanceof J.Block) {
-                                for (Statement statement : ((J.Block) c.getValue()).getStatements()) {
-                                    if (statement instanceof J.VariableDeclarations) {
-                                        for (J.VariableDeclarations.NamedVariable variable : ((J.VariableDeclarations) statement).getVariables()) {
-                                            if (isSameVariable(identifier, variable)) {
-                                                Expression initializer = variable.getInitializer();
-                                                if (initializer instanceof J.Literal &&
-                                                        ((J.Literal) initializer).getValue() instanceof String &&
-                                                        !isReassigned(variable)) {
-                                                    return (String) ((J.Literal) initializer).getValue();
-                                                }
-                                                return null;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        return null;
+                        return Scope.at(Scope.cursorTo(getCursor(), identifier)).lookup(identifier.getSimpleName())
+                                .filter(binding -> !isAssigned(binding))
+                                .map(binding -> binding.getCursor().getParentTreeCursor().getValue())
+                                .filter(J.VariableDeclarations.NamedVariable.class::isInstance)
+                                .map(variable -> ((J.VariableDeclarations.NamedVariable) variable).getInitializer())
+                                .filter(initializer -> initializer instanceof J.Literal && ((J.Literal) initializer).getValue() instanceof String)
+                                .map(initializer -> (String) ((J.Literal) initializer).getValue())
+                                .orElse(null);
                     }
 
-                    private boolean isSameVariable(Expression expression, J.VariableDeclarations.NamedVariable variable) {
-                        if (expression instanceof J.FieldAccess) {
-                            return isSameVariable(((J.FieldAccess) expression).getName(), variable);
-                        }
-                        if (!(expression instanceof J.Identifier)) {
-                            return false;
-                        }
-                        JavaType.Variable fieldType = ((J.Identifier) expression).getFieldType();
-                        if (fieldType != null && variable.getVariableType() != null) {
-                            return TypeUtils.isOfType(fieldType, variable.getVariableType());
-                        }
-                        return variable.getSimpleName().equals(((J.Identifier) expression).getSimpleName());
-                    }
-
-                    private boolean isReassigned(J.VariableDeclarations.NamedVariable variable) {
-                        JavaSourceFile sourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
-                        if (sourceFile == null) {
+                    /**
+                     * Whether code of the source file writes to the variable. Another class may write to a field by a
+                     * qualified name, outside the field's scope. {@link Scope.Binding#isEffectivelyFinal()} would
+                     * also count every non-final field as assigned.
+                     */
+                    private boolean isAssigned(Scope.Binding binding) {
+                        if (binding.references().anyMatch(reference -> new VariableAccess(reference).isWriteAccess())) {
                             return true;
+                        }
+                        JavaType field = binding.getType();
+                        JavaSourceFile sourceFile = getCursor().firstEnclosing(JavaSourceFile.class);
+                        if (binding.isLocal() || !(field instanceof JavaType.Variable) || sourceFile == null) {
+                            return false;
                         }
                         return new JavaIsoVisitor<AtomicBoolean>() {
                             @Override
-                            public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean reassigned) {
-                                if (isSameVariable(assignment.getVariable(), variable)) {
-                                    reassigned.set(true);
+                            public J.Identifier visitIdentifier(J.Identifier identifier, AtomicBoolean written) {
+                                if (TypeUtils.isOfType(identifier.getFieldType(), field) &&
+                                    new VariableAccess(getCursor()).isWriteAccess()) {
+                                    written.set(true);
                                 }
-                                return super.visitAssignment(assignment, reassigned);
-                            }
-
-                            @Override
-                            public J.AssignmentOperation visitAssignmentOperation(J.AssignmentOperation assignOp, AtomicBoolean reassigned) {
-                                if (isSameVariable(assignOp.getVariable(), variable)) {
-                                    reassigned.set(true);
-                                }
-                                return super.visitAssignmentOperation(assignOp, reassigned);
+                                return identifier;
                             }
                         }.reduce(sourceFile, new AtomicBoolean()).get();
                     }

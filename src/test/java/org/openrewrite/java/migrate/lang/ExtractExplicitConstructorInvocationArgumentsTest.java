@@ -508,6 +508,41 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
     }
 
     @Test
+    void countOnFromTheTrailingNumberOfATakenName() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(String e1, String e2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String e1, String e2) {
+                      super(e1.trim(), e2.trim());
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(String e1, String e2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child(String e1, String e2) {
+                      String e3 = e1.trim();
+                      String e4 = e2.trim();
+                      super(e3, e4);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void extractWithSourcePathParameterType() {
         rewriteRun(
           //language=java

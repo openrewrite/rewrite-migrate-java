@@ -26,12 +26,14 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
+import org.openrewrite.java.trait.Scope;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import static java.util.Collections.nCopies;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
 
 public class NoGuavaPreconditionsCheckNotNullFormat extends Recipe {
     private static final MethodMatcher CHECK_NOT_NULL_FORMAT = new MethodMatcher("com.google.common.base.Preconditions checkNotNull(*, java.lang.String, ..)");
@@ -58,7 +60,7 @@ public class NoGuavaPreconditionsCheckNotNullFormat extends Recipe {
                     return mi;
                 }
                 List<Expression> message = mi.getArguments().subList(1, mi.getArguments().size());
-                if (!isLenientFormatOnlyTemplate(message) || !message.stream().allMatch(this::canDefer)) {
+                if (!isLenientFormatOnlyTemplate(message) || !canDefer(message)) {
                     return mi;
                 }
                 maybeRemoveImport("com.google.common.base.Preconditions");
@@ -75,8 +77,9 @@ public class NoGuavaPreconditionsCheckNotNullFormat extends Recipe {
              * The lambda evaluates the arguments only when the reference is null, so method calls in them are assumed
              * to have no side effects. An array argument would spread into as many arguments as it has elements.
              */
-            private boolean canDefer(Expression argument) {
-                return !(argument.getType() instanceof JavaType.Array) && LambdaCapture.canCapture(getCursor(), argument);
+            private boolean canDefer(List<Expression> message) {
+                return message.stream().noneMatch(argument -> argument.getType() instanceof JavaType.Array) &&
+                       Scope.lambdaCanCapture(message.stream().map(argument -> Scope.cursorTo(getCursor(), argument)).collect(toList()));
             }
         });
     }

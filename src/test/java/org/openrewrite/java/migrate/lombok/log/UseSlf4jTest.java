@@ -211,4 +211,104 @@ class UseSlf4jTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void leaveLoggerWhoseUseSitesHaveAnotherLog() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.slf4j.Logger;
+              import org.slf4j.LoggerFactory;
+
+              class A {
+                  private static final Logger LOGGER = LoggerFactory.getLogger(A.class);
+                  void m(String log) {
+                      LOGGER.info(log);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void renameLoggerWhereAnOuterLogIsNotRead() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.slf4j.Logger;
+              import org.slf4j.LoggerFactory;
+
+              class A {
+                  private static final Logger log = LoggerFactory.getLogger(A.class);
+
+                  static class B {
+                      private static final Logger LOGGER = LoggerFactory.getLogger(B.class);
+                      void m() {
+                          LOGGER.info("m");
+                      }
+                  }
+              }
+              """,
+            """
+              import lombok.extern.slf4j.Slf4j;
+
+              @Slf4j
+              class A {
+
+                  @Slf4j
+                  static class B {
+                      void m() {
+                          log.info("m");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveNestedLoggerWhoseLogWouldHideTheOuterRenamedLogger() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              import org.slf4j.Logger;
+              import org.slf4j.LoggerFactory;
+
+              class A {
+                  private static final Logger LOGGER = LoggerFactory.getLogger(A.class);
+
+                  static class B {
+                      private static final Logger BLOG = LoggerFactory.getLogger(B.class);
+                      void m() {
+                          LOGGER.info("a");
+                          BLOG.info("b");
+                      }
+                  }
+              }
+              """,
+            """
+              import lombok.extern.slf4j.Slf4j;
+              import org.slf4j.Logger;
+              import org.slf4j.LoggerFactory;
+
+              @Slf4j
+              class A {
+
+                  static class B {
+                      private static final Logger BLOG = LoggerFactory.getLogger(B.class);
+                      void m() {
+                          log.info("a");
+                          BLOG.info("b");
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }

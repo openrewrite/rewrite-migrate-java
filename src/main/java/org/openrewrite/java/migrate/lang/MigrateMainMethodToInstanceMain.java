@@ -29,10 +29,10 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.DeclaresMethod;
 import org.openrewrite.java.search.UsesJavaVersion;
+import org.openrewrite.java.trait.Scope;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-import org.openrewrite.staticanalysis.VariableReferences;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -113,8 +113,10 @@ public class MigrateMainMethodToInstanceMain extends ScanningRecipe<Set<JavaType
                     return md;
                 }
 
-                J.Identifier variableName = param.getVariables().get(0).getName();
-                if (VariableReferences.findRhsReferences(md.getBody(), variableName).isEmpty()) {
+                boolean unused = Scope.bindingOf(getCursor(), param.getVariables().get(0))
+                        .map(binding -> !binding.references().findAny().isPresent())
+                        .orElse(false);
+                if (unused) {
                     md = md.withParameters(emptyList());
                 }
                 return md.withReturnTypeExpression(md.getReturnTypeExpression().withPrefix(md.getModifiers().get(0).getPrefix()))

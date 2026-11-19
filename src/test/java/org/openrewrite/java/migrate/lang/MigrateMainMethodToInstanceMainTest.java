@@ -85,6 +85,29 @@ class MigrateMainMethodToInstanceMainTest implements RewriteTest {
     }
 
     @Test
+    void retainArgsWhenOnlyAssigned() {
+        //language=java
+        rewriteRun(
+          java(
+            """
+              class Application {
+                  public static void main(String[] args) {
+                      args = new String[0];
+                  }
+              }
+              """,
+            """
+              class Application {
+                  void main(String[] args) {
+                      args = new String[0];
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void retainArgsWhenUsedInMethodCall() {
         //language=java
         rewriteRun(
