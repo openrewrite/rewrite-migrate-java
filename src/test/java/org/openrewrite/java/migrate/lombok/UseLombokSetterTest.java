@@ -232,22 +232,22 @@ class UseLombokSetterTest implements RewriteTest {
         );
     }
 
-	@Test
-	void replacePrivateSetterAnnotated() {
-		rewriteRun(// language=java
-		  java(
-			"""
-			  class A {
+    @Test
+    void replacePrivateSetterAnnotated() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
 
-				  int foo = 9;
+                  int foo = 9;
 
-				  @Deprecated
-				  private void setFoo(int foo) {
-					  this.foo = foo;
-				  }
-			  }
-			  """,
-			"""
+                  @Deprecated
+                  private void setFoo(int foo) {
+                      this.foo = foo;
+                  }
+              }
+              """,
+            """
               import lombok.AccessLevel;
               import lombok.Setter;
 
@@ -257,9 +257,9 @@ class UseLombokSetterTest implements RewriteTest {
                   int foo = 9;
               }
               """
-		  )
-		);
-	}
+          )
+        );
+    }
 
     @Test
     void replaceJustTheMatchingSetter() {

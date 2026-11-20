@@ -69,7 +69,7 @@ class MigrateCollectionsUnmodifiableSetTest implements RewriteTest {
                 import java.time.LocalDate;
 
                 class Test {
-                    Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010,1,1),LocalDate.now())));
+                    Set<LocalDate> s = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(LocalDate.of(2010, 1, 1), LocalDate.now())));
                 }
                 """,
               """
