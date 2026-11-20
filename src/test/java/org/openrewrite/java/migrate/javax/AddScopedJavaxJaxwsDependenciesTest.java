@@ -20,9 +20,24 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.Tree;
+import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
+import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.marker.JavaProject;
+import org.openrewrite.java.marker.JavaSourceSet;
+import org.openrewrite.maven.tree.Dependency;
+import org.openrewrite.maven.tree.GroupArtifactVersion;
+import org.openrewrite.maven.tree.MavenRepository;
+import org.openrewrite.maven.tree.ResolvedDependency;
+import org.openrewrite.maven.tree.ResolvedGroupArtifactVersion;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.test.SourceSpecs;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
@@ -123,14 +138,14 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void customSourceSetSuppliesExistingAliasOnlyToItsOwnCompileConfiguration() {
         var model = gradleModel("runtimeOnly", false);
-        var configurations = new java.util.LinkedHashMap<>(model.getNameToConfiguration());
-        configurations.put("integrationTestImplementation", configuration("integrationTestImplementation", java.util.List.of()));
+        var configurations = new LinkedHashMap<>(model.getNameToConfiguration());
+        configurations.put("integrationTestImplementation", configuration("integrationTestImplementation", List.of()));
         configurations.put("integrationTestCompileClasspath", configuration("integrationTestCompileClasspath",
-          java.util.List.of(dependency("jakarta.jws", "jakarta.jws-api", "3.0.0"))));
+          List.of(dependency("jakarta.jws", "jakarta.jws-api", "3.0.0"))));
         var custom = model.withNameToConfiguration(configurations);
         rewriteRun(java("class Integration { javax.xml.ws.http.HTTPException error; }", spec ->
-            spec.path("src/integrationTest/java/Integration.java").markers(new org.openrewrite.java.marker.JavaSourceSet(
-              org.openrewrite.Tree.randomId(), "integrationTest", java.util.List.of(), java.util.Map.of()))),
+            spec.path("src/integrationTest/java/Integration.java").markers(new JavaSourceSet(
+              Tree.randomId(), "integrationTest", List.of(), Map.of()))),
           buildGradle(gradle("runtimeOnly"), spec -> spec.markers(custom).after(after -> assertThat(after)
                       .contains("runtimeOnly 'jakarta.xml.ws:jakarta.xml.ws-api:2.3.3'")
                       .contains("integrationTestImplementation")
@@ -140,7 +155,7 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void toolConfigurationDoesNotSupplyAnApplicationCompileApi() {
         var base = gradleModel("classpath", false);
-        var configurations = new java.util.LinkedHashMap<>(base.getNameToConfiguration());
+        var configurations = new LinkedHashMap<>(base.getNameToConfiguration());
         configurations.remove("testCompileClasspath");
         var model = base.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
@@ -215,11 +230,11 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void gradleTransitiveRuntimeAliasIsAddedToMainCompileWithoutMovingWrapper() {
         var model = gradleModel("runtimeOnly", false);
-        var configurations = new java.util.LinkedHashMap<>(model.getNameToConfiguration());
-        var wrapper = dependency("example", "wrapper", "1").withDependencies(java.util.List.of(
+        var configurations = new LinkedHashMap<>(model.getNameToConfiguration());
+        var wrapper = dependency("example", "wrapper", "1").withDependencies(List.of(
           dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3")));
-        configurations.put("runtimeOnly", configuration("runtimeOnly", java.util.List.of(wrapper)));
-        configurations.put("runtimeClasspath", configuration("runtimeClasspath", java.util.List.of(wrapper)));
+        configurations.put("runtimeOnly", configuration("runtimeOnly", List.of(wrapper)));
+        configurations.put("runtimeClasspath", configuration("runtimeClasspath", List.of(wrapper)));
         var runtime = model.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
           buildGradle(
@@ -237,8 +252,8 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void neverPromoteAnAliasThatWouldDowngradeModernMainApi() {
         var model = gradleModel("testImplementation", false);
-        var configurations = new java.util.LinkedHashMap<>(model.getNameToConfiguration());
-        configurations.put("compileClasspath", configuration("compileClasspath", java.util.List.of(
+        var configurations = new LinkedHashMap<>(model.getNameToConfiguration());
+        configurations.put("compileClasspath", configuration("compileClasspath", List.of(
           dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "4.0.2"))));
         var mixed = model.withNameToConfiguration(configurations);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }")),
@@ -272,8 +287,8 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
 
     @Test
     void sourceProjectIdentityPreventsWrongBuildAssociation() {
-        var sourceProject = new org.openrewrite.java.marker.JavaProject(org.openrewrite.Tree.randomId(), "source", null);
-        var otherProject = new org.openrewrite.java.marker.JavaProject(org.openrewrite.Tree.randomId(), "other", null);
+        var sourceProject = new JavaProject(Tree.randomId(), "source", null);
+        var otherProject = new JavaProject(Tree.randomId(), "other", null);
         rewriteRun(srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }", spec -> spec.markers(sourceProject))),
           buildGradle(gradle("runtimeOnly"),
             spec -> spec.markers(gradleModel("runtimeOnly", false), otherProject)));
@@ -282,8 +297,8 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
     @Test
     void unmodelledChildBuildStillSeparatesItsSourcesFromParent() {
         rewriteRun(pomXml(pom("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3", "test")),
-          org.openrewrite.test.SourceSpecs.dir("child",
-            org.openrewrite.test.SourceSpecs.text("unmodelled child", spec -> spec.path("pom.xml")),
+          SourceSpecs.dir("child",
+            SourceSpecs.text("unmodelled child", spec -> spec.path("pom.xml")),
             srcMainJava(java("class Example { javax.xml.ws.http.HTTPException error; }"))));
     }
 
@@ -340,28 +355,28 @@ class AddScopedJavaxJaxwsDependenciesTest implements RewriteTest {
           """.formatted(configuration);
     }
 
-    static org.openrewrite.gradle.marker.GradleProject gradleModel(String configuration, boolean mainAvailable) {
+    static GradleProject gradleModel(String configuration, boolean mainAvailable) {
         var legacy = dependency("jakarta.xml.ws", "jakarta.xml.ws-api", "2.3.3");
         var modern = dependency("jakarta.jws", "jakarta.jws-api", "3.0.0");
-        var configurations = new java.util.LinkedHashMap<String, org.openrewrite.gradle.marker.GradleDependencyConfiguration>();
-        configurations.put("compileClasspath", configuration("compileClasspath", mainAvailable ? java.util.List.of(modern, legacy) : java.util.List.of(modern)));
-        configurations.put("implementation", configuration("implementation", java.util.List.of()));
-        configurations.put(configuration, configuration(configuration, java.util.List.of(legacy)));
-        configurations.put("testCompileClasspath", configuration("testCompileClasspath", java.util.List.of(modern, legacy)));
-        return org.openrewrite.gradle.marker.GradleProject.builder().name("app").path(":")
-          .mavenRepositories(java.util.List.of(org.openrewrite.maven.tree.MavenRepository.MAVEN_CENTRAL))
+        var configurations = new LinkedHashMap<String, GradleDependencyConfiguration>();
+        configurations.put("compileClasspath", configuration("compileClasspath", mainAvailable ? List.of(modern, legacy) : List.of(modern)));
+        configurations.put("implementation", configuration("implementation", List.of()));
+        configurations.put(configuration, configuration(configuration, List.of(legacy)));
+        configurations.put("testCompileClasspath", configuration("testCompileClasspath", List.of(modern, legacy)));
+        return GradleProject.builder().name("app").path(":")
+          .mavenRepositories(List.of(MavenRepository.MAVEN_CENTRAL))
           .nameToConfiguration(configurations).build();
     }
 
-    static org.openrewrite.gradle.marker.GradleDependencyConfiguration configuration(String name, java.util.List<org.openrewrite.maven.tree.ResolvedDependency> dependencies) {
-        return new org.openrewrite.gradle.marker.GradleDependencyConfiguration(name, null, true, true, false, true,
-          java.util.List.of(), dependencies.stream().map(org.openrewrite.maven.tree.ResolvedDependency::getRequested).toList(), dependencies, null, null);
+    static GradleDependencyConfiguration configuration(String name, List<ResolvedDependency> dependencies) {
+        return new GradleDependencyConfiguration(name, null, true, true, false, true,
+          List.of(), dependencies.stream().map(ResolvedDependency::getRequested).toList(), dependencies, null, null);
     }
 
-    static org.openrewrite.maven.tree.ResolvedDependency dependency(String group, String artifact, String version) {
-        return org.openrewrite.maven.tree.ResolvedDependency.builder()
-          .gav(new org.openrewrite.maven.tree.ResolvedGroupArtifactVersion(null, group, artifact, version, null))
-          .requested(org.openrewrite.maven.tree.Dependency.builder().gav(new org.openrewrite.maven.tree.GroupArtifactVersion(group, artifact, version)).build())
+    static ResolvedDependency dependency(String group, String artifact, String version) {
+        return ResolvedDependency.builder()
+          .gav(new ResolvedGroupArtifactVersion(null, group, artifact, version, null))
+          .requested(Dependency.builder().gav(new GroupArtifactVersion(group, artifact, version)).build())
           .type("jar").build();
     }
 

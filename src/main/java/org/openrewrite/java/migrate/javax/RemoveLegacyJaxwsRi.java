@@ -25,6 +25,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.gradle.RemoveDependency;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.maven.MavenIsoVisitor;
@@ -110,7 +111,7 @@ public class RemoveLegacyJaxwsRi extends Recipe {
                             }
                         }
                         if (!preserve && (resolved || isLegacy(requested.getVersion()))) {
-                            tree = new org.openrewrite.gradle.RemoveDependency("com.sun.xml.ws", "jaxws-ri", configuration.getName())
+                            tree = new RemoveDependency("com.sun.xml.ws", "jaxws-ri", configuration.getName())
                                     .getVisitor().visit(tree, ctx);
                         }
                     }

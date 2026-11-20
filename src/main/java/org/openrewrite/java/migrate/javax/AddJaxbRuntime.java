@@ -21,8 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.*;
+import org.openrewrite.gradle.AddDependencyVisitor;
 import org.openrewrite.gradle.ChangeDependency;
 import org.openrewrite.gradle.IsBuildGradle;
+import org.openrewrite.gradle.UpgradeDependencyVersion;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.search.FindGradleProject;
@@ -75,7 +77,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
     public static class Accumulator {
         final AtomicBoolean usesJaxb = new AtomicBoolean(false);
         final ChangeDependency.Accumulator gradleChangeDependency;
-        final org.openrewrite.gradle.UpgradeDependencyVersion.DependencyVersionState gradleUpgradeDependencyVersion;
+        final UpgradeDependencyVersion.DependencyVersionState gradleUpgradeDependencyVersion;
         final ChangeDependencyGroupIdAndArtifactId.Accumulator mavenChangeDependency;
         final org.openrewrite.maven.UpgradeDependencyVersion.Accumulator mavenUpgradeDependencyVersion;
 
@@ -146,7 +148,7 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
                 }
 
                 if (rc.findResolvedDependency(runtimeGroupId(), runtimeArtifactId()) == null) {
-                    g = (G.CompilationUnit) new org.openrewrite.gradle.AddDependencyVisitor(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null, "runtimeOnly", null, null, null, this::isTopLevel, null)
+                    g = (G.CompilationUnit) new AddDependencyVisitor(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null, "runtimeOnly", null, null, null, this::isTopLevel, null)
                             .visitNonNull(g, ctx);
                 }
                 return g;
@@ -233,8 +235,8 @@ public class AddJaxbRuntime extends ScanningRecipe<AddJaxbRuntime.Accumulator> {
         return new ChangeDependency(otherRuntimeGroupId(), otherRuntimeArtifactId(), runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null, null, true);
     }
 
-    private org.openrewrite.gradle.UpgradeDependencyVersion gradleUpgradeDependencyVersion() {
-        return new org.openrewrite.gradle.UpgradeDependencyVersion(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null);
+    private UpgradeDependencyVersion gradleUpgradeDependencyVersion() {
+        return new UpgradeDependencyVersion(runtimeGroupId(), runtimeArtifactId(), RUNTIME_VERSION, null);
     }
 
     private ChangeDependencyGroupIdAndArtifactId mavenChangeDependency() {
