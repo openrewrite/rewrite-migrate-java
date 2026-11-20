@@ -93,11 +93,8 @@ class UpgradeToJava25Test implements RewriteTest {
                   id 'nebula.netflixoss' version '11.6.0'
               }
               """,
-            """
-              plugins {
-                  id 'nebula.netflixoss' version '12.0.0'
-              }
-              """
+            spec -> spec.markers(GradlePluginPortal.project())
+              .after(actual -> assertThat(actual).containsPattern("id 'nebula\\.netflixoss' version '12\\.0\\.\\d+'").actual())
           )
         );
     }
@@ -112,11 +109,8 @@ class UpgradeToJava25Test implements RewriteTest {
                   id 'com.netflix.nebula.netflixoss' version '11.6.0'
               }
               """,
-            """
-              plugins {
-                  id 'com.netflix.nebula.netflixoss' version '12.0.0'
-              }
-              """
+            spec -> spec.markers(GradlePluginPortal.project())
+              .after(actual -> assertThat(actual).containsPattern("id 'com\\.netflix\\.nebula\\.netflixoss' version '12\\.0\\.\\d+'").actual())
           )
         );
     }
@@ -131,7 +125,8 @@ class UpgradeToJava25Test implements RewriteTest {
                   id 'nebula.netflixoss' version '13.0.0'
                   id 'com.netflix.nebula.netflixoss' version '13.0.0'
               }
-              """
+              """,
+            spec -> spec.markers(GradlePluginPortal.project())
           )
         );
     }

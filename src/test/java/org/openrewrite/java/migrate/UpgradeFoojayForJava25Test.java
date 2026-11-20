@@ -20,13 +20,15 @@ import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.settingsGradle;
 import static org.openrewrite.gradle.Assertions.settingsGradleKts;
 
 class UpgradeFoojayForJava25Test implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25");
+        spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25")
+          .allSources(source -> source.markers(GradlePluginPortal.settings()));
     }
 
     @DocumentExample
@@ -35,7 +37,8 @@ class UpgradeFoojayForJava25Test implements RewriteTest {
         rewriteRun(
           settingsGradle(
             "plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0' }",
-            "plugins { id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' }"
+            spec -> spec.after(actual -> assertThat(actual)
+              .matches("plugins \\{ id 'org.gradle.toolchains.foojay-resolver-convention' version '1\\.0\\.\\d+' }").actual())
           )
         );
     }
@@ -45,7 +48,8 @@ class UpgradeFoojayForJava25Test implements RewriteTest {
         rewriteRun(
           settingsGradleKts(
             "plugins { id(\"org.gradle.toolchains.foojay-resolver-convention\") version(\"0.5.0\") }",
-            "plugins { id(\"org.gradle.toolchains.foojay-resolver-convention\") version(\"1.0.0\") }"
+            spec -> spec.after(actual -> assertThat(actual)
+              .matches("plugins \\{ id\\(\"org.gradle.toolchains.foojay-resolver-convention\"\\) version\\(\"1\\.0\\.\\d+\"\\) }").actual())
           )
         );
     }
@@ -55,7 +59,8 @@ class UpgradeFoojayForJava25Test implements RewriteTest {
         rewriteRun(
           settingsGradleKts(
             "plugins { id(\"org.gradle.toolchains.foojay-resolver\") version(\"0.9.0\") }",
-            "plugins { id(\"org.gradle.toolchains.foojay-resolver\") version(\"1.0.0\") }"
+            spec -> spec.after(actual -> assertThat(actual)
+              .matches("plugins \\{ id\\(\"org.gradle.toolchains.foojay-resolver\"\\) version\\(\"1\\.0\\.\\d+\"\\) }").actual())
           )
         );
     }
