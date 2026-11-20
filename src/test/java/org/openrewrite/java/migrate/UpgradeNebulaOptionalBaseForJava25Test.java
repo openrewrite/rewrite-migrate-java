@@ -19,12 +19,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Tree;
-import org.openrewrite.gradle.marker.GradleBuildscript;
 import org.openrewrite.gradle.marker.GradlePluginDescriptor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
 
@@ -40,10 +40,10 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
         rewriteRun(
           buildGradle(
             "plugins { id 'nebula.optional-base' version '7.0.0' }",
-            "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }",
             spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
               .plugins(List.of(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
-              .buildscript(GradleBuildscript.builder().build()).build())
+              .buildscript(GradlePluginPortal.buildscript()).build())
+              .after(actual -> assertThat(actual).matches("plugins \\{ id 'com.netflix.nebula.optional-base' version '9\\.0\\.\\d+' }").actual())
           )
         );
     }
@@ -55,12 +55,10 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
             """
               plugins { id("nebula.optional-base") version "7.0.0" }
               """,
-            """
-              plugins { id("com.netflix.nebula.optional-base") version "9.0.0" }
-              """,
             spec -> spec.markers(GradleProject.builder().id(Tree.randomId())
               .plugins(List.of(new GradlePluginDescriptor("nebula.plugin.extraconfigurations.OptionalBasePlugin", "nebula.optional-base")))
-              .buildscript(GradleBuildscript.builder().build()).build())
+              .buildscript(GradlePluginPortal.buildscript()).build())
+              .after(actual -> assertThat(actual).containsPattern("id\\(\"com.netflix.nebula.optional-base\"\\) version \"9\\.0\\.\\d+\"").actual())
           )
         );
     }
@@ -70,15 +68,19 @@ class UpgradeNebulaOptionalBaseForJava25Test implements RewriteTest {
         rewriteRun(
           buildGradle(
             "plugins { id 'com.netflix.nebula.optional-base' version '8.0.0' }",
-            "plugins { id 'com.netflix.nebula.optional-base' version '9.0.0' }"
+            spec -> spec.markers(GradlePluginPortal.project())
+              .after(actual -> assertThat(actual).matches("plugins \\{ id 'com.netflix.nebula.optional-base' version '9\\.0\\.\\d+' }").actual())
           )
         );
     }
 
     @Test
     void preserveNewerOptionalBase() {
-        rewriteRun(buildGradle("plugins { id 'com.netflix.nebula.optional-base' version '10.0.1' }"));
+        rewriteRun(
+          buildGradle(
+            "plugins { id 'com.netflix.nebula.optional-base' version '10.0.1' }",
+            spec -> spec.markers(GradlePluginPortal.project())
+          )
+        );
     }
-
-
 }
