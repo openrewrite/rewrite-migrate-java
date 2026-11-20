@@ -90,3 +90,8 @@ type: specs.openrewrite.org/v1beta/category
 name: DataNucleus
 packageName: org.openrewrite.java.migrate.datanucleus
 description: Recipes for migrating [DataNucleus](https://www.datanucleus.org/) JDO/JPA persistence applications.
+---
+type: specs.openrewrite.org/v1beta/category
+name: Twilio
+packageName: org.openrewrite.java.migrate.twilio
+description: Recipes for migrating applications that use the [Twilio Java SDK](https://github.com/twilio/twilio-java).
