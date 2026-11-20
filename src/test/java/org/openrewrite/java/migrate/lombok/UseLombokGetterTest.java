@@ -197,22 +197,22 @@ class UseLombokGetterTest implements RewriteTest {
         );
     }
 
-	@Test
-	void replacePrivateGetterAnnotated() {
-		rewriteRun(// language=java
-		  java(
-			"""
-			  class A {
+    @Test
+    void replacePrivateGetterAnnotated() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
 
-				  int foo = 9;
+                  int foo = 9;
 
-				  @Deprecated
-				  private int getFoo() {
-					  return foo;
-				  }
-			  }
-			  """,
-			"""
+                  @Deprecated
+                  private int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
               import lombok.AccessLevel;
               import lombok.Getter;
 
@@ -223,9 +223,9 @@ class UseLombokGetterTest implements RewriteTest {
               }
               """
 
-		  )
-		);
-	}
+          )
+        );
+    }
 
     @Test
     void replaceJustTheMatchingGetter() {
