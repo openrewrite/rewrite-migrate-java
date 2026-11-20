@@ -172,4 +172,207 @@ class ThreadStopUnsupportedTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void onlyCommentWhenStatementsFollow() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      t.stop();
+                      System.out.println("stopped");
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      /*
+                       * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                       * For detailed migration instructions see the migration guide available at
+                       * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                       */
+                      t.stop();
+                      System.out.println("stopped");
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    void leaveExpressionLambdaUnchanged() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  Runnable bar(Thread t) {
+                      return () -> t.stop();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    void onlyCommentWhenCodeFollowsEnclosingTry() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      try {
+                          t.stop();
+                      } finally {
+                          System.out.println("finally");
+                      }
+                      System.out.println("after");
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      try {
+                          /*
+                           * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                           * For detailed migration instructions see the migration guide available at
+                           * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                           */
+                          t.stop();
+                      } finally {
+                          System.out.println("finally");
+                      }
+                      System.out.println("after");
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    void onlyCommentAtEndOfIfBlock() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar(Thread t, boolean force) {
+                      if (force) {
+                          t.stop();
+                      } else {
+                          t.stop();
+                      }
+                      System.out.println("after");
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar(Thread t, boolean force) {
+                      if (force) {
+                          /*
+                           * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                           * For detailed migration instructions see the migration guide available at
+                           * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                           */
+                          t.stop();
+                      } else {
+                          /*
+                           * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                           * For detailed migration instructions see the migration guide available at
+                           * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                           */
+                          t.stop();
+                      }
+                      System.out.println("after");
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    void replaceAtEndOfMethodWithEarlierStatements() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      System.out.println("stopping");
+                      t.stop();
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar(Thread t) {
+                      System.out.println("stopping");
+                      /*
+                       * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                       * For detailed migration instructions see the migration guide available at
+                       * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                       */
+                      throw new UnsupportedOperationException();
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
+
+    @Test
+    void onlyCommentInSwitchCase() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Foo {
+                  void bar(Thread t, int mode) {
+                      switch (mode) {
+                          case 1:
+                              t.stop();
+                              break;
+                          default:
+                              System.out.println("running");
+                      }
+                  }
+              }
+              """,
+            """
+              class Foo {
+                  void bar(Thread t, int mode) {
+                      switch (mode) {
+                          case 1:
+                              /*
+                               * `Thread.stop()` always throws a `new UnsupportedOperationException()` in Java 21+.
+                               * For detailed migration instructions see the migration guide available at
+                               * https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/doc-files/threadPrimitiveDeprecation.html
+                               */
+                              t.stop();
+                              break;
+                          default:
+                              System.out.println("running");
+                      }
+                  }
+              }
+              """,
+            src -> src.markers(javaVersion(21))
+          )
+        );
+    }
 }
