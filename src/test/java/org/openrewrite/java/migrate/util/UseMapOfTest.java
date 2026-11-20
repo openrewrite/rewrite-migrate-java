@@ -328,9 +328,9 @@ class UseMapOfTest implements RewriteTest {
               private static final String BLAH ="ss";
               
               void foo() {
-                        new HashMap<>() {{
-                          put(BLAH, "foo");
-                      }};
+                  new HashMap<>() {{
+                      put(BLAH, "foo");
+                  }};
                   }
               }
               """,
