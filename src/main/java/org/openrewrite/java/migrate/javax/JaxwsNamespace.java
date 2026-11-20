@@ -29,6 +29,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.MavenResolutionResult;
+import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.semver.Semver;
 import org.openrewrite.semver.VersionComparator;
@@ -116,7 +117,7 @@ public class JaxwsNamespace extends Recipe {
                                        isLegacy(api, d.getGroupId(), d.getArtifactId(), d.getVersion())))).orElse(false);
     }
 
-    private static Scope declaredScope(MavenResolutionResult model, org.openrewrite.maven.tree.ResolvedDependency dependency) {
+    private static Scope declaredScope(MavenResolutionResult model, ResolvedDependency dependency) {
         String scope = dependency.getRequested() == null ? null : model.getPom().getValue(dependency.getRequested().getScope());
         return scope == null ? model.getPom().getManagedScope(dependency.getGroupId(), dependency.getArtifactId(),
                 dependency.getType(), dependency.getClassifier()) : Scope.fromName(scope);

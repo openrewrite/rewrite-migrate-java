@@ -24,6 +24,8 @@ import org.openrewrite.maven.MavenIsoVisitor;
 import org.openrewrite.maven.tree.Plugin;
 import org.openrewrite.xml.tree.Xml;
 
+import java.util.Collection;
+
 public class AddApisForJaxwsCodegen extends Recipe {
     @Getter
     final String displayName = "Add APIs for javax JAX-WS generated sources";
@@ -38,7 +40,7 @@ public class AddApisForJaxwsCodegen extends Recipe {
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 // A modern project API is evidence that this module needs a namespace migration instead.
-                if (getResolutionResult().getDependencies().values().stream().flatMap(java.util.Collection::stream)
+                if (getResolutionResult().getDependencies().values().stream().flatMap(Collection::stream)
                         .anyMatch(d -> modernApi(d.getGroupId(), d.getVersion())) ||
                     getResolutionResult().getPom().getDependencyManagement().stream()
                         .anyMatch(d -> modernApi(d.getGroupId(), d.getVersion()))) {

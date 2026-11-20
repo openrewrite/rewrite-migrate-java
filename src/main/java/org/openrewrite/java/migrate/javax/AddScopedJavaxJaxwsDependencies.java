@@ -23,10 +23,17 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.gradle.trait.GradleDependency;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.search.UsesType;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.maven.AddDependencyVisitor;
+import org.openrewrite.maven.ChangeDependencyScope;
+import org.openrewrite.maven.UpdateMavenModel;
+import org.openrewrite.maven.tree.Dependency;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
@@ -213,17 +220,17 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
         String scope = "main".equals(sourceSet) ? "compile" : "test";
         if (existing != null) {
             final ResolvedDependency direct = existing;
-            org.openrewrite.maven.tree.Dependency requested = model.getPom().getRequested().getDependencies().stream()
+            Dependency requested = model.getPom().getRequested().getDependencies().stream()
                     .filter(d -> direct.getGroupId().equals(model.getPom().getValue(d.getGroupId())) &&
                             direct.getArtifactId().equals(model.getPom().getValue(d.getArtifactId())))
                     .findFirst().get();
-            SourceFile promoted = (SourceFile) new org.openrewrite.maven.ChangeDependencyScope(
+            SourceFile promoted = (SourceFile) new ChangeDependencyScope(
                     requested.getGroupId(), requested.getArtifactId(), scope).getVisitor().visitNonNull(file, ctx);
-            return promoted == file ? file : (SourceFile) new org.openrewrite.maven.UpdateMavenModel<ExecutionContext>()
+            return promoted == file ? file : (SourceFile) new UpdateMavenModel<ExecutionContext>()
                     .visitNonNull(promoted, ctx);
         }
         existing = candidates.stream().filter(d -> usableLegacy(d, candidates)).findFirst().orElse(null);
-        return (SourceFile) new org.openrewrite.maven.AddDependencyVisitor(
+        return (SourceFile) new AddDependencyVisitor(
                 existing == null ? fallbackGroup() : existing.getGroupId(),
                 existing == null ? fallbackArtifact() : existing.getArtifactId(),
                 existing == null ? fallbackVersion() : existing.getVersion(), null, scope, null, null, null, null, null)
@@ -284,25 +291,25 @@ public class AddScopedJavaxJaxwsDependencies extends ScanningRecipe<AddScopedJav
                 existing == null ? fallbackGroup() : existing.getGroupId(),
                 existing == null ? fallbackArtifact() : existing.getArtifactId(),
                 existing == null ? fallbackVersion() : existing.getVersion(), null, target, null, null, null,
-                cursor -> cursor.getParentOrThrow().firstEnclosing(org.openrewrite.java.tree.J.MethodInvocation.class) == null, null)
+                cursor -> cursor.getParentOrThrow().firstEnclosing(J.MethodInvocation.class) == null, null)
                 .visitNonNull(file, ctx);
     }
 
     private SourceFile promoteGradle(SourceFile file, ResolvedDependency dependency, String oldConfiguration,
                                      String target, ExecutionContext ctx) {
-        return (SourceFile) new org.openrewrite.java.JavaIsoVisitor<ExecutionContext>() {
+        return (SourceFile) new JavaIsoVisitor<ExecutionContext>() {
             @Override
-            public org.openrewrite.java.tree.J.MethodInvocation visitMethodInvocation(
-                    org.openrewrite.java.tree.J.MethodInvocation method, ExecutionContext context) {
-                org.openrewrite.java.tree.J.MethodInvocation m = super.visitMethodInvocation(method, context);
-                if (!new org.openrewrite.gradle.trait.GradleDependency.Matcher().configuration(oldConfiguration)
+            public J.MethodInvocation visitMethodInvocation(
+                    J.MethodInvocation method, ExecutionContext context) {
+                J.MethodInvocation m = super.visitMethodInvocation(method, context);
+                if (!new GradleDependency.Matcher().configuration(oldConfiguration)
                         .groupId(dependency.getGroupId()).artifactId(dependency.getArtifactId()).get(getCursor()).isPresent()) {
                     return m;
                 }
                 boolean dependencies = false;
                 for (Cursor parent = getCursor().getParent(); parent != null; parent = parent.getParent()) {
-                    if (parent.getValue() instanceof org.openrewrite.java.tree.J.MethodInvocation) {
-                        org.openrewrite.java.tree.J.MethodInvocation enclosing = parent.getValue();
+                    if (parent.getValue() instanceof J.MethodInvocation) {
+                        J.MethodInvocation enclosing = parent.getValue();
                         if (dependencies || !"dependencies".equals(enclosing.getSimpleName()) || enclosing.getSelect() != null) {
                             return m;
                         }
