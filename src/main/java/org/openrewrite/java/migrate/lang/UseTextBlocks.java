@@ -127,7 +127,8 @@ public class UseTextBlocks extends Recipe {
                 }
 
                 String content = contentSb.toString();
-                if (containsNonTextCharacters(content) || stringLiterals.stream().anyMatch(UseTextBlocks::hasOctalEscape)) {
+                if (containsNonTextCharacters(content) || endsLineWithStrippedWhitespace(content) ||
+                    stringLiterals.stream().anyMatch(UseTextBlocks::hasOctalEscape)) {
                     // A decoded octal newline can occur inside an encoded table. Keep the entire
                     // concatenation intact so a nested prefix isn't converted on its own.
                     return binary;
@@ -230,6 +231,20 @@ public class UseTextBlocks extends Recipe {
                    type == Character.PARAGRAPH_SEPARATOR || type == Character.PRIVATE_USE ||
                    type == Character.UNASSIGNED || type == Character.SURROGATE;
         });
+    }
+
+    // A text block strips trailing `Character.isWhitespace` from each line. Spaces, tabs and form feeds are escaped
+    // to survive that, but whitespace such as U+3000 cannot be, as a unicode escape is translated before stripping.
+    private static boolean endsLineWithStrippedWhitespace(String content) {
+        for (String line : content.split("\n", -1)) {
+            if (!line.isEmpty()) {
+                int last = line.codePointBefore(line.length());
+                if (Character.isWhitespace(last) && last != ' ' && last != '\t' && last != '\f') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean hasOctalEscape(J.Literal literal) {
