@@ -1205,4 +1205,38 @@ class UseTextBlocksTest implements RewriteTest {
             }""",
             src -> src.markers(javaVersion(17))));
     }
+
+    @Test
+    void doNotStripTrailingWhitespaceThatCannotBeEscaped() {
+        // A text block strips the U+3000 at the end of the line, so the string would lose it
+        rewriteRun(
+          java(
+            """
+             class Test {
+                 String s = "class A {\\n" +
+                         "\\t\\tfoo\\n" +
+                         "\\t\\tbar\\u3000\\n" +
+                         "}\\n";
+             }""",
+            src -> src.markers(javaVersion(17))));
+    }
+
+    @Test
+    void whitespaceThatCannotBeEscapedWithinALine() {
+        rewriteRun(
+          java(
+            """
+             class Test {
+                 String s = "foo\\u3000bar\\n" +
+                         "baz\\n";
+             }""",
+            """
+             class Test {
+                 String s = \"""
+                         foo\u3000bar
+                         baz
+                         \""";
+             }""",
+            src -> src.markers(javaVersion(17))));
+    }
 }
