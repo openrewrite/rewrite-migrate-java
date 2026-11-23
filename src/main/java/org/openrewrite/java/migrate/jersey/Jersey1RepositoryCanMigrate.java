@@ -25,12 +25,14 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.marker.SearchResult;
+import org.openrewrite.maven.tree.Dependency;
 import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.ResolvedDependency;
 import org.openrewrite.maven.tree.Scope;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import static java.util.Collections.newSetFromMap;
 
@@ -52,35 +54,16 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
             "for which Jersey 2 has no counterpart.";
 
     public static class Accumulator {
-        final Set<String> projectCoordinates = new HashSet<>();
-        final List<ResolvedDependency> directDependencies = new ArrayList<>();
         boolean declaresJersey1;
         boolean blocked;
 
-        @Nullable
-        Boolean canMigrate;
+        /**
+         * The libraries that are not Jersey, nor a module of this repository, through which a module gets Jersey 1.
+         */
+        final Set<String> librariesBringingJersey1 = new TreeSet<>();
 
         boolean canMigrate() {
-            if (canMigrate == null) {
-                canMigrate = declaresJersey1 && !blocked && !reachedThroughAnotherLibrary();
-            }
-            return canMigrate;
-        }
-
-        private boolean reachedThroughAnotherLibrary() {
-            for (ResolvedDependency direct : directDependencies) {
-                if (isJersey1(direct) || isProject(direct)) {
-                    continue;
-                }
-                if (anyTransitive(direct, this)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private boolean isProject(ResolvedDependency dependency) {
-            return projectCoordinates.contains(dependency.getGroupId() + ":" + dependency.getArtifactId());
+            return declaresJersey1 && !blocked && librariesBringingJersey1.isEmpty();
         }
     }
 
@@ -114,53 +97,54 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
     }
 
     private static void scanMaven(MavenResolutionResult maven, Accumulator acc) {
+        Set<String> projects = new HashSet<>();
+        projects.add(maven.getPom().getGroupId() + ":" + maven.getPom().getArtifactId());
         for (Pom pom : maven.getProjectPoms().values()) {
-            acc.projectCoordinates.add(pom.getGroupId() + ":" + pom.getArtifactId());
+            projects.add(pom.getGroupId() + ":" + pom.getArtifactId());
         }
-        acc.projectCoordinates.add(maven.getPom().getGroupId() + ":" + maven.getPom().getArtifactId());
         for (Map.Entry<Scope, List<ResolvedDependency>> byScope : maven.getDependencies().entrySet()) {
             for (ResolvedDependency dependency : byScope.getValue()) {
                 if (dependency.getDepth() != 0) {
                     continue;
                 }
-                acc.directDependencies.add(dependency);
                 if (isJersey1(dependency)) {
                     String scope = maven.getPom().getValue(dependency.getRequested().getScope());
-                    if ("provided".equals(scope) || "system".equals(scope)) {
+                    if ("provided".equals(scope) || "system".equals(scope) || isJersey1Guice(dependency)) {
                         acc.blocked = true;
                     } else {
                         acc.declaresJersey1 = true;
                     }
-                }
-                if (isJersey1Guice(dependency)) {
-                    acc.blocked = true;
+                } else if (!projects.contains(dependency.getGroupId() + ":" + dependency.getArtifactId()) &&
+                        bringsJersey1(dependency, d -> projects.contains(d.getGroupId() + ":" + d.getArtifactId()))) {
+                    acc.librariesBringingJersey1.add(dependency.getGroupId() + ":" + dependency.getArtifactId());
                 }
             }
         }
     }
 
     private static void scanGradle(GradleProject gradle, Accumulator acc) {
-        if (gradle.getGroup() != null) {
-            acc.projectCoordinates.add(gradle.getGroup() + ":" + gradle.getName());
-        }
+        // A dependency on another project of the same build shares its group and version.
+        Predicate<ResolvedDependency> isProject = d -> d.getGroupId().equals(gradle.getGroup()) &&
+                Objects.equals(d.getVersion(), gradle.getVersion());
         for (GradleDependencyConfiguration configuration : gradle.getConfigurations()) {
             String name = configuration.getName();
             boolean compileOnly = name.endsWith("ompileOnly") || "providedCompile".equals(name) ||
                     "providedRuntime".equals(name);
-            for (org.openrewrite.maven.tree.Dependency requested : configuration.getRequested()) {
+            for (Dependency requested : configuration.getRequested()) {
                 if (requested.getGroupId() != null && requested.getGroupId().startsWith("com.sun.jersey")) {
-                    if (compileOnly) {
+                    if (compileOnly || "jersey-guice".equals(requested.getArtifactId())) {
                         acc.blocked = true;
                     } else {
                         acc.declaresJersey1 = true;
                     }
-                    if ("jersey-guice".equals(requested.getArtifactId())) {
-                        acc.blocked = true;
-                    }
                 }
             }
             if (configuration.isCanBeResolved()) {
-                acc.directDependencies.addAll(configuration.getDirectResolved());
+                for (ResolvedDependency dependency : configuration.getDirectResolved()) {
+                    if (!isJersey1(dependency) && !isProject.test(dependency) && bringsJersey1(dependency, isProject)) {
+                        acc.librariesBringingJersey1.add(dependency.getGroupId() + ":" + dependency.getArtifactId());
+                    }
+                }
             }
         }
     }
@@ -174,7 +158,7 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
                 "jersey-guice".equals(dependency.getArtifactId());
     }
 
-    private static boolean anyTransitive(ResolvedDependency root, Accumulator acc) {
+    private static boolean bringsJersey1(ResolvedDependency root, Predicate<ResolvedDependency> isProject) {
         Set<ResolvedDependency> visited = newSetFromMap(new IdentityHashMap<>());
         Deque<ResolvedDependency> pending = new ArrayDeque<>(root.getDependencies());
         while (!pending.isEmpty()) {
@@ -185,8 +169,8 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
             if (isJersey1(dependency)) {
                 return true;
             }
-            if (acc.isProject(dependency)) {
-                // Modules of this repository are checked as modules of their own.
+            if (isProject.test(dependency)) {
+                // Modules of this repository are looked at as modules of their own.
                 continue;
             }
             pending.addAll(dependency.getDependencies());
