@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.openrewrite.java.migrate.jersey.Jersey2Templates.canImport;
 import static org.openrewrite.java.migrate.jersey.Jersey2Templates.registrationTarget;
+import static org.openrewrite.java.migrate.jersey.Jersey2Templates.typeName;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -114,11 +115,11 @@ public class Jersey1ClientFiltersToFeatures extends Recipe {
                 } else if (LOGGING_NEW.matches(filter) || LOGGING_LOGGER_NEW.matches(filter) ||
                            LOGGING_LOGGER_SIZE_NEW.matches(filter)) {
                     replaced = LOGGING;
-                    String level = typeName(cu, "java.util.logging.Level");
+                    String level = typeName(this, cu, "java.util.logging.Level");
                     String logger;
                     if (LOGGING_NEW.matches(filter)) {
                         // the logger that Jersey 1 logs to by default
-                        logger = typeName(cu, "java.util.logging.Logger") + ".getLogger(\"" + LOGGING + "\")";
+                        logger = typeName(this, cu, "java.util.logging.Logger") + ".getLogger(\"" + LOGGING + "\")";
                     } else {
                         logger = "#{any(java.util.logging.Logger)}";
                         parameters.add(args.get(0));
@@ -172,14 +173,6 @@ public class Jersey1ClientFiltersToFeatures extends Recipe {
                     doAfterVisit(ShortenFullyQualifiedTypeReferences.modifyOnly(registration));
                 }
                 return registration;
-            }
-
-            private String typeName(JavaSourceFile cu, String fullyQualifiedName) {
-                if (canImport(cu, fullyQualifiedName)) {
-                    maybeAddImport(fullyQualifiedName);
-                    return fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf('.') + 1);
-                }
-                return fullyQualifiedName;
             }
         });
     }

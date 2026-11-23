@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaSourceFile;
@@ -66,6 +67,18 @@ final class Jersey2Templates {
                 .imports(imports)
                 .javaParser(parser(ctx))
                 .build();
+    }
+
+    /**
+     * @return the simple name of the type, which the visitor then imports, or its fully qualified name when another
+     * type of that simple name is already in the way.
+     */
+    static String typeName(JavaVisitor<?> visitor, JavaSourceFile sourceFile, String fullyQualifiedName) {
+        if (canImport(sourceFile, fullyQualifiedName)) {
+            visitor.maybeAddImport(fullyQualifiedName);
+            return fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf('.') + 1);
+        }
+        return fullyQualifiedName;
     }
 
     /**
