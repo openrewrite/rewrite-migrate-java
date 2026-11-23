@@ -130,10 +130,12 @@ public class MigrateJersey1WebXml extends Recipe {
                                 params.put(name, value(param));
                             }
                         }
+                        // Jersey 1 took the resource configuration class, else the application class, else the packages
                         String resourceConfigClass = params.get(RESOURCE_CONFIG_CLASS);
-                        boolean scansWebApp = (resourceConfigClass == null && !params.containsKey(APPLICATION) &&
-                                !params.containsKey(PACKAGES)) ||
-                                (CLASSPATH_RESOURCE_CONFIG.equals(resourceConfigClass) && !params.containsKey(CLASSPATH));
+                        String configClass = resourceConfigClass != null ? resourceConfigClass : params.get(APPLICATION);
+                        boolean classpathConfigWithPaths = CLASSPATH_RESOURCE_CONFIG.equals(configClass) && params.containsKey(CLASSPATH);
+                        boolean scansWebApp = (configClass == null && !params.containsKey(PACKAGES)) ||
+                                (CLASSPATH_RESOURCE_CONFIG.equals(configClass) && !classpathConfigWithPaths);
                         boolean trace = isTrue(params.get(TRACE));
                         boolean pojoMapping = isTrue(params.get(POJO_MAPPING));
 
@@ -154,18 +156,18 @@ public class MigrateJersey1WebXml extends Recipe {
                                 if (FEATURES.contains(name) && isBoolean(value) && param.getChild("param-value").isPresent()) {
                                     migrated = migrated.withChildValue("param-value", value.toLowerCase(Locale.ROOT));
                                 }
-                            } else if (RESOURCE_CONFIG_CLASS.equals(name)) {
-                                if (PARAMETER_DRIVEN_RESOURCE_CONFIGS.contains(value) ||
-                                        (CLASSPATH_RESOURCE_CONFIG.equals(value) && !params.containsKey(CLASSPATH))) {
+                            } else if (RESOURCE_CONFIG_CLASS.equals(name) || APPLICATION.equals(name)) {
+                                if (classpathConfigWithPaths) {
+                                    // Jersey 2 scans no web application paths but WEB-INF/lib and WEB-INF/classes
+                                    migrated = param;
+                                } else if (APPLICATION.equals(name) && resourceConfigClass != null) {
+                                    // Jersey 1 ignored it, as it took the resource configuration class
                                     migrated = null;
-                                } else if (!CLASSPATH_RESOURCE_CONFIG.equals(value)) {
+                                } else if (PARAMETER_DRIVEN_RESOURCE_CONFIGS.contains(value) || CLASSPATH_RESOURCE_CONFIG.equals(value)) {
+                                    migrated = null;
+                                } else if (RESOURCE_CONFIG_CLASS.equals(name)) {
                                     migrated = param.withChildValue("param-name", APPLICATION);
                                 }
-                            } else if (APPLICATION.equals(name) && resourceConfigClass != null &&
-                                    !PARAMETER_DRIVEN_RESOURCE_CONFIGS.contains(resourceConfigClass) &&
-                                    !CLASSPATH_RESOURCE_CONFIG.equals(resourceConfigClass)) {
-                                // Jersey 1 preferred the resource configuration class, which takes this name now
-                                migrated = null;
                             } else if (TRACE.equals(name) && isBoolean(value)) {
                                 migrated = trace ? param.withChildValue("param-name", TRACING).withChildValue("param-value", "ALL") : null;
                             } else if (TRACE_PER_REQUEST.equals(name) && isBoolean(value)) {

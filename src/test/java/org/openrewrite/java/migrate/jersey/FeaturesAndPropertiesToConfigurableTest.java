@@ -21,7 +21,9 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.java.search.FindMethods;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class FeaturesAndPropertiesToConfigurableTest implements RewriteTest {
@@ -77,7 +79,11 @@ class FeaturesAndPropertiesToConfigurableTest implements RewriteTest {
                   static class Provider {
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> {
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.client.ClientConfig register(..)")).hasSize(3);
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.client.ClientConfig property(String, Object)")).hasSize(1);
+            })
           )
         );
     }
@@ -119,7 +125,12 @@ class FeaturesAndPropertiesToConfigurableTest implements RewriteTest {
                   static class HelloResource {
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> {
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.server.ResourceConfig register(Class)")).hasSize(2);
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.server.ResourceConfig register(Object)")).hasSize(1);
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.server.ResourceConfig property(String, Object)")).hasSize(2);
+            })
           )
         );
     }

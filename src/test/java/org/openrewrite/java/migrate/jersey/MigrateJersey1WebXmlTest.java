@@ -265,6 +265,84 @@ class MigrateJersey1WebXmlTest implements RewriteTest {
     }
 
     @Test
+    void jersey1ResourceConfigClassesAsApplication() {
+        rewriteRun(
+          //language=xml
+          xml(
+            """
+              <web-app>
+                  <servlet>
+                      <servlet-name>packages</servlet-name>
+                      <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>javax.ws.rs.Application</param-name>
+                          <param-value>com.sun.jersey.api.core.PackagesResourceConfig</param-value>
+                      </init-param>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.packages</param-name>
+                          <param-value>com.example</param-value>
+                      </init-param>
+                  </servlet>
+                  <servlet>
+                      <servlet-name>classpath</servlet-name>
+                      <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.resourceConfigClass</param-name>
+                          <param-value>com.sun.jersey.api.core.ClasspathResourceConfig</param-value>
+                      </init-param>
+                  </servlet>
+                  <servlet>
+                      <servlet-name>paths</servlet-name>
+                      <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.resourceConfigClass</param-name>
+                          <param-value>com.sun.jersey.api.core.ClasspathResourceConfig</param-value>
+                      </init-param>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.classpath</param-name>
+                          <param-value>/WEB-INF/classes</param-value>
+                      </init-param>
+                  </servlet>
+              </web-app>
+              """,
+            """
+              <web-app>
+                  <servlet>
+                      <servlet-name>packages</servlet-name>
+                      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>jersey.config.server.provider.packages</param-name>
+                          <param-value>com.example</param-value>
+                      </init-param>
+                  </servlet>
+                  <servlet>
+                      <servlet-name>classpath</servlet-name>
+                      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>jersey.config.servlet.provider.webapp</param-name>
+                          <param-value>true</param-value>
+                      </init-param>
+                  </servlet>
+                  <servlet>
+                      <servlet-name>paths</servlet-name>
+                      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.resourceConfigClass</param-name>
+                          <param-value>com.sun.jersey.api.core.ClasspathResourceConfig</param-value>
+                      </init-param>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.classpath</param-name>
+                          <param-value>/WEB-INF/classes</param-value>
+                      </init-param>
+                  </servlet>
+              </web-app>
+              """,
+            spec -> spec.path("web.xml")
+          )
+        );
+    }
+
+    @Test
     void leavesOtherServletsAndOtherFilesAlone() {
         rewriteRun(
           //language=xml

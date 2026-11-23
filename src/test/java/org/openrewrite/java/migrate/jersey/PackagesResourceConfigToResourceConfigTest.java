@@ -22,7 +22,11 @@ import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class PackagesResourceConfigToResourceConfigTest implements RewriteTest {
@@ -58,7 +62,9 @@ class PackagesResourceConfigToResourceConfigTest implements RewriteTest {
                       return new ResourceConfig().packages("com.example.api", "com.example.providers");
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu ->
+              assertThat(FindMethods.find(cu, "org.glassfish.jersey.server.ResourceConfig packages(String[])")).hasSize(2))
           )
         );
     }
@@ -129,7 +135,13 @@ class PackagesResourceConfigToResourceConfigTest implements RewriteTest {
                       this();
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> {
+                assertThat(FindMethods.find(cu, "org.glassfish.jersey.server.ResourceConfig packages(String[])")).hasSize(1);
+                J.ClassDeclaration appConfig = cu.getClasses().get(0);
+                assertThat(TypeUtils.isOfClassType(appConfig.getExtends().getType(), "org.glassfish.jersey.server.ResourceConfig")).isTrue();
+                assertThat(TypeUtils.isOfClassType(appConfig.getType().getSupertype(), "org.glassfish.jersey.server.ResourceConfig")).isTrue();
+            })
           )
         );
     }

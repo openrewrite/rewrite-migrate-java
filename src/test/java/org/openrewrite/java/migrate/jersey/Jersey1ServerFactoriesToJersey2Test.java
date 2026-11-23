@@ -21,7 +21,11 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.openrewrite.java.search.FindMethods;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.TypeUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 
 class Jersey1ServerFactoriesToJersey2Test implements RewriteTest {
@@ -73,7 +77,10 @@ class Jersey1ServerFactoriesToJersey2Test implements RewriteTest {
                       return other;
                   }
               }
-              """
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu,
+              "org.glassfish.jersey.jdkhttp.JdkHttpServerFactory createHttpServer(java.net.URI, org.glassfish.jersey.server.ResourceConfig, boolean)"))
+              .hasSize(2))
           )
         );
     }
@@ -106,6 +113,74 @@ class Jersey1ServerFactoriesToJersey2Test implements RewriteTest {
               class Main {
                   static HttpServer start(ResourceConfig rc) throws IOException {
                       return GrizzlyHttpServerFactory.createHttpServer(URI.create("http://localhost:9998/"), rc);
+                  }
+              }
+              """,
+            spec -> spec.afterRecipe(cu -> assertThat(FindMethods.find(cu,
+              "org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory createHttpServer(java.net.URI, org.glassfish.jersey.server.ResourceConfig)"))
+              .singleElement()
+              .satisfies(m -> assertThat(TypeUtils.isOfClassType(((J.MethodInvocation) m).getType(), "org.glassfish.grizzly.http.server.HttpServer")).isTrue()))
+          )
+        );
+    }
+
+    @Test
+    void catchOfIOExceptionCatchesProcessingException() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
+              import com.sun.jersey.api.container.httpserver.HttpServerFactory;
+              import com.sun.jersey.api.core.ResourceConfig;
+              import com.sun.net.httpserver.HttpServer;
+
+              import java.io.IOException;
+              import java.io.InputStream;
+              import java.net.URI;
+
+              class Main {
+                  static void start(ResourceConfig rc, URI uri, InputStream in) {
+                      try {
+                          HttpServer server = HttpServerFactory.create(uri, rc);
+                          server.start();
+                      } catch (IOException e) {
+                          throw new IllegalStateException(e);
+                      }
+                      try {
+                          GrizzlyServerFactory.createHttpServer(uri, rc);
+                          in.read();
+                      } catch (IOException e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.core.ResourceConfig;
+              import com.sun.net.httpserver.HttpServer;
+              import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+              import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
+
+              import java.io.IOException;
+
+              import javax.ws.rs.ProcessingException;
+              import java.io.InputStream;
+              import java.net.URI;
+
+              class Main {
+                  static void start(ResourceConfig rc, URI uri, InputStream in) {
+                      try {
+                          HttpServer server = JdkHttpServerFactory.createHttpServer(uri, rc, false);
+                          server.start();
+                      } catch (ProcessingException e) {
+                          throw new IllegalStateException(e);
+                      }
+                      try {
+                          GrizzlyHttpServerFactory.createHttpServer(uri, rc);
+                          in.read();
+                      } catch (IOException e) {
+                          throw new IllegalStateException(e);
+                      }
                   }
               }
               """
