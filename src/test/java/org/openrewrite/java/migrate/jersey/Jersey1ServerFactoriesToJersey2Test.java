@@ -189,6 +189,59 @@ class Jersey1ServerFactoriesToJersey2Test implements RewriteTest {
     }
 
     @Test
+    void ioExceptionInMultiCatch() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
+              import com.sun.jersey.api.core.ResourceConfig;
+
+              import java.io.IOException;
+              import java.net.URI;
+
+              class Main {
+                  static void start(ResourceConfig rc, URI uri) {
+                      try {
+                          GrizzlyServerFactory.createHttpServer(uri, rc);
+                      } catch (IOException | IllegalArgumentException e) {
+                          throw new IllegalStateException(e);
+                      }
+                      try {
+                          GrizzlyServerFactory.createHttpServer(uri, rc);
+                      } catch (IOException | RuntimeException e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.core.ResourceConfig;
+              import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+
+              import java.net.URI;
+
+              import javax.ws.rs.ProcessingException;
+
+              class Main {
+                  static void start(ResourceConfig rc, URI uri) {
+                      try {
+                          GrizzlyHttpServerFactory.createHttpServer(uri, rc);
+                      } catch (ProcessingException | IllegalArgumentException e) {
+                          throw new IllegalStateException(e);
+                      }
+                      try {
+                          GrizzlyHttpServerFactory.createHttpServer(uri, rc);
+                      } catch (RuntimeException e) {
+                          throw new IllegalStateException(e);
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leavesClasspathScanningOverloadsAlone() {
         rewriteRun(
           java(

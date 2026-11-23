@@ -30,7 +30,10 @@ import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.NameTree;
+import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
 
@@ -70,7 +73,8 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
             "`URI.create(..)`. The JDK HTTP server stays unstarted and the Grizzly server is started, as in Jersey 1. " +
             "Jersey 2 throws an unchecked `ProcessingException` where Jersey 1 threw an `IOException`, so a " +
             "`catch (IOException e)` around the call catches `ProcessingException` instead when nothing else in its " +
-            "`try` block throws an `IOException`. Overloads without a `ResourceConfig`, for which Jersey 1 scanned the " +
+            "`try` block throws an `IOException`, and the same goes for `IOException` among the types of a multi-catch, " +
+            "which is dropped there when another of them already catches `ProcessingException`. Overloads without a `ResourceConfig`, for which Jersey 1 scanned the " +
             "class path, and those that take an `IoCComponentProviderFactory` or a handler are left alone.";
 
     @Override
@@ -87,6 +91,9 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
                         }
                         return t.withCatches(ListUtils.map(t.getCatches(), c -> {
                             J.VariableDeclarations parameter = c.getParameter().getTree();
+                            if (parameter.getTypeExpression() instanceof J.MultiCatch) {
+                                return multiCatch(c, (J.MultiCatch) parameter.getTypeExpression(), t.getBody());
+                            }
                             if (!(parameter.getTypeExpression() instanceof J.Identifier || parameter.getTypeExpression() instanceof J.FieldAccess) ||
                                     !TypeUtils.isOfClassType(parameter.getType(), IO_EXCEPTION) ||
                                     mayThrowIOException(t.getBody())) {
@@ -104,6 +111,69 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
                                                     v.getName().getFieldType() == null ? null : v.getName().getFieldType().withType(processingException)))));
                             return c.withParameter(c.getParameter().withTree(migrated));
                         }));
+                    }
+
+                    /**
+                     * {@code IOException} as one alternative of a multi-catch becomes {@code ProcessingException}, or
+                     * is dropped when another alternative already catches it, as those of a multi-catch may not be
+                     * subtypes of each other.
+                     */
+                    private J.Try.Catch multiCatch(J.Try.Catch c, J.MultiCatch multiCatch, J body) {
+                        List<NameTree> alternatives = multiCatch.getAlternatives();
+                        int index = -1;
+                        boolean caughtByAnother = false;
+                        for (int i = 0; i < alternatives.size(); i++) {
+                            NameTree alternative = alternatives.get(i);
+                            if (!(alternative instanceof J.Identifier || alternative instanceof J.FieldAccess)) {
+                                return c;
+                            }
+                            if (TypeUtils.isOfClassType(alternative.getType(), IO_EXCEPTION)) {
+                                index = i;
+                            } else if (TypeUtils.isAssignableTo(alternative.getType(), JavaType.ShallowClass.build(PROCESSING_EXCEPTION)) ||
+                                    TypeUtils.isOfClassType(alternative.getType(), PROCESSING_EXCEPTION) ||
+                                    TypeUtils.isOfClassType(alternative.getType(), "java.lang.RuntimeException") ||
+                                    TypeUtils.isOfClassType(alternative.getType(), "java.lang.Exception") ||
+                                    TypeUtils.isOfClassType(alternative.getType(), "java.lang.Throwable")) {
+                                caughtByAnother = true;
+                            }
+                        }
+                        if (index < 0 || mayThrowIOException(body)) {
+                            return c;
+                        }
+                        maybeRemoveImport(IO_EXCEPTION);
+                        J.MultiCatch.Padding padding = multiCatch.getPadding();
+                        List<JRightPadded<NameTree>> padded = padding.getAlternatives();
+                        int ioException = index;
+                        if (caughtByAnother) {
+                            List<JRightPadded<NameTree>> remaining = ListUtils.map(padded, (i, a) -> i == ioException ? null : a);
+                            if (ioException == 0) {
+                                remaining = ListUtils.mapFirst(remaining, a -> a.withElement(a.getElement().withPrefix(padded.get(0).getElement().getPrefix())));
+                            }
+                            if (ioException == padded.size() - 1) {
+                                remaining = ListUtils.mapLast(remaining, a -> a.withAfter(padded.get(ioException).getAfter()));
+                            }
+                            J.VariableDeclarations parameter = c.getParameter().getTree();
+                            if (remaining.size() == 1) {
+                                // one type left is a catch of that type, not a multi-catch
+                                // the alternatives are all identifiers or field accesses, as checked above
+                                TypeTree single = (TypeTree) remaining.get(0).getElement().withPrefix(multiCatch.getPrefix());
+                                JavaType type = single.getType();
+                                return c.withParameter(c.getParameter().withTree(parameter
+                                        .withTypeExpression(single)
+                                        .withVariables(ListUtils.map(parameter.getVariables(), v -> v
+                                                .withName(v.getName().withType(type).withFieldType(
+                                                        v.getName().getFieldType() == null ? null : v.getName().getFieldType().withType(type)))))));
+                            }
+                            return c.withParameter(c.getParameter().withTree(parameter
+                                    .withTypeExpression(padding.withAlternatives(remaining))));
+                        }
+                        JavaType.FullyQualified processingException = JavaType.ShallowClass.build(PROCESSING_EXCEPTION);
+                        maybeAddImport(PROCESSING_EXCEPTION);
+                        List<JRightPadded<NameTree>> replaced = ListUtils.map(padded, (i, a) -> i != ioException ? a :
+                                a.withElement(new J.Identifier(Tree.randomId(), a.getElement().getPrefix(), Markers.EMPTY,
+                                        emptyList(), "ProcessingException", processingException, null)));
+                        return c.withParameter(c.getParameter().withTree(c.getParameter().getTree()
+                                .withTypeExpression(padding.withAlternatives(replaced))));
                     }
 
                     private boolean createsServer(J body) {
