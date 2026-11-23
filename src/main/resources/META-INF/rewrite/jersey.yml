@@ -28,13 +28,15 @@ description: >-
   Jersey brings Jersey 1 along, such as Dropwizard before 0.8, Eureka 1 or Hadoop, because that library would still
   need Jersey 1, or when Jersey 1 is `provided` or `compileOnly`, or when it uses the Jersey 1 Guice integration, or
   when it extends Jersey 1 itself, with classes in the `com.sun.jersey` packages or Jersey 1 code in Scala, Kotlin or
-  Groovy. Tests on the Jersey 1 test framework move to the Jersey 2 one. Left for the compiler to point out are the
-  Jersey 1 SPIs without a mechanical replacement, such as `InjectableProvider`, client filters that read the response,
-  client handlers of the application's own and `JSONConfiguration`. Some differences only show at run time: `MultiPartFeature` is registered with
-  the Jersey servlets of `web.xml`, but a server configured in code has to register it, and Jettison's `JSONObject`
-  entities need `jersey-media-json-jettison` and `JettisonFeature`, the default Jersey 2 connector does not see an SSL context or hostname verifier set as the JVM
-  default after it is created, and a module that already uses another Jersey 2 version, through a library such as
-  Dropwizard, gets the newest Jersey 2 next to it.
+  Groovy, or when a module already uses Jersey 3. Tests on the Jersey 1 test framework move to the Jersey 2 one. Left
+  for the compiler to point out are the Jersey 1 SPIs without a mechanical replacement, such as `InjectableProvider`,
+  client filters that read the response, client handlers of the application's own and `JSONConfiguration`. Some
+  differences only show at run time: `MultiPartFeature` is registered with the Jersey servlets of `web.xml`, but a
+  server configured in code has to register it; Jettison's `JSONObject` entities need `jersey-media-json-jettison` and
+  `JettisonFeature`; the default Jersey 2 connector does not see an SSL context or hostname verifier set as the JVM
+  default after it is created; a Jersey servlet mapped to `/` rather than `/*` finds no resource, since Jersey 2 takes
+  the whole path for the servlet's; and a module that already uses another Jersey 2 version, through a library such
+  as Dropwizard, gets the newest Jersey 2 next to it.
 tags:
   - jersey
   - jaxrs
@@ -557,10 +559,12 @@ displayName: Use the Jersey 2 dependencies for Jersey 1 dependencies
 description: >-
   Replaces each Jersey 1 dependency with its Jersey 2 counterpart, the JAX-RS 1.1 API with the JAX-RS 2.1 API, and
   `jersey-json` with Jackson 1's JAX-RS provider, which is what Jersey 1's POJO mapping used. Jersey 2.26 and later
-  need an injection manager at runtime, so modules that use Jersey get `jersey-hk2`. Modules that use Jettison or the
-  Jersey 1 view API get the dependency that `jersey-json` or `jersey-server` used to bring along.
+  need an injection manager at runtime, so modules that use Jersey get `jersey-hk2`, and modules that use JAXB get
+  `jersey-media-jaxb`, whose XML providers Jersey 1 had built in. Modules that use Jettison or the Jersey 1 view API
+  get the dependency that `jersey-json` or `jersey-server` used to bring along.
 recipeList:
   - org.openrewrite.java.migrate.jersey.AddJerseyHk2
+  - org.openrewrite.java.migrate.jersey.AddJerseyMediaJaxb
   - org.openrewrite.java.migrate.jersey.AddJackson1XcForJerseyJson
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.jersey
@@ -709,6 +713,30 @@ recipeList:
       groupId: org.glassfish.jersey.inject
       artifactId: jersey-hk2
       version: 2.x
+      scope: runtime
+      configuration: runtimeOnly
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.AddJerseyMediaJaxb
+displayName: Add `jersey-media-jaxb` to modules that use Jersey 1 and JAXB
+description: >-
+  Jersey 1 read and wrote JAXB beans as XML with providers of its own core, where Jersey 2 keeps them in
+  `jersey-media-jaxb`, which `jersey-server` and `jersey-client` don't bring along. Without it a resource that returns
+  an `@XmlRootElement` bean fails with `MessageBodyWriter not found`, so this adds
+  `org.glassfish.jersey.media:jersey-media-jaxb` at runtime to modules that declare a Jersey 1 dependency and use
+  JAXB.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey*
+      artifactIdPattern: "*"
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.media
+      artifactId: jersey-media-jaxb
+      version: 2.x
+      onlyIfUsing: javax.xml.bind..*
       scope: runtime
       configuration: runtimeOnly
 

@@ -28,6 +28,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.VariableNameUtils;
+import org.openrewrite.java.marker.JavaVersion;
 import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.*;
 
@@ -196,19 +197,34 @@ public class Jersey1HttpsPropertiesToClientBuilder extends Recipe {
                 String provider = Jersey2Templates.typeName(this, cu,
                         "org.glassfish.jersey.client.HttpUrlConnectorProvider");
                 String connection = fallback.getConnection();
+                // before Java 8 there are no lambdas, and an anonymous class sees only final variables
+                boolean lambda = cu.getMarkers().findFirst(JavaVersion.class)
+                        .map(version -> version.getMajorVersion() >= 8)
+                        .orElse(true);
+                String modifier = lambda ? "" : "final ";
                 List<Object> parameters = new ArrayList<>();
                 StringBuilder code = new StringBuilder();
                 if (hostnameVerifier != null) {
-                    code.append(verifierType).append(' ').append(fallback.getHostnameVerifier())
+                    code.append(modifier).append(verifierType).append(' ').append(fallback.getHostnameVerifier())
                             .append(" = #{any(javax.net.ssl.HostnameVerifier)};\n");
                     parameters.add(hostnameVerifier);
                 }
-                code.append(contextType).append(' ').append(fallback.getSslContext())
+                code.append(modifier).append(contextType).append(' ').append(fallback.getSslContext())
                         .append(" = #{any(javax.net.ssl.SSLContext)};\n");
                 parameters.add(sslContext);
                 code.append("#{any(org.glassfish.jersey.client.ClientConfig)}.connectorProvider(new ").append(provider)
-                        .append("().connectionFactory(").append(fallback.getUrl()).append(" -> {\n")
-                        .append(http).append(' ').append(connection).append(" = (").append(http).append(") ")
+                        .append("().connectionFactory(");
+                if (lambda) {
+                    code.append(fallback.getUrl()).append(" -> {\n");
+                } else {
+                    code.append("new ").append(provider).append(".ConnectionFactory() {\n")
+                            .append("@Override\n")
+                            .append("public ").append(http).append(" getConnection(")
+                            .append(Jersey2Templates.typeName(this, cu, "java.net.URL")).append(' ')
+                            .append(fallback.getUrl()).append(") throws ")
+                            .append(Jersey2Templates.typeName(this, cu, "java.io.IOException")).append(" {\n");
+                }
+                code.append(http).append(' ').append(connection).append(" = (").append(http).append(") ")
                         .append(fallback.getUrl()).append(".openConnection();\n")
                         .append("if (").append(connection).append(" instanceof ").append(https).append(") {\n");
                 if (hostnameVerifier != null) {
@@ -219,14 +235,15 @@ public class Jersey1HttpsPropertiesToClientBuilder extends Recipe {
                         .append(fallback.getSslContext()).append(".getSocketFactory());\n")
                         .append("}\n")
                         .append("return ").append(connection).append(";\n")
-                        .append("}));");
+                        .append(lambda ? "}));" : "}\n}));");
                 parameters.add(config);
 
                 // a template replacing the put, a call with a value, would be taken as an expression
                 J.Block inserted = Jersey2Templates.template(code.toString(), ctx,
                                 "javax.net.ssl.HostnameVerifier", "javax.net.ssl.SSLContext",
                                 "javax.net.ssl.HttpsURLConnection", "java.net.HttpURLConnection",
-                                "org.glassfish.jersey.client.HttpUrlConnectorProvider")
+                                "org.glassfish.jersey.client.HttpUrlConnectorProvider", "java.net.URL",
+                                "java.io.IOException")
                         .apply(new Cursor(getCursor().getParentOrThrow(), b), put.getCoordinates().before(),
                                 parameters.toArray());
                 int generated = hostnameVerifier == null ? 2 : 3;

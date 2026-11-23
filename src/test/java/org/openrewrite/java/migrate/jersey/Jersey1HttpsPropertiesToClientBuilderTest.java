@@ -23,6 +23,7 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
+import static org.openrewrite.java.Assertions.javaVersion;
 
 class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
 
@@ -750,6 +751,64 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
                   }
               }
               """
+          )
+        );
+    }
+
+    @Test
+    void anonymousConnectionFactoryBeforeJava8() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import com.sun.jersey.client.urlconnection.HTTPSProperties;
+
+              import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.SSLContext;
+
+              class Test {
+                  ClientConfig config(HostnameVerifier hv, SSLContext ctx) {
+                      ClientConfig config = new DefaultClientConfig();
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
+                      return config;
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+
+              import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.HttpsURLConnection;
+              import javax.net.ssl.SSLContext;
+
+              import java.io.IOException;
+              import java.net.HttpURLConnection;
+              import java.net.URL;
+
+              class Test {
+                  ClientConfig config(HostnameVerifier hv, SSLContext ctx) {
+                      ClientConfig config = new DefaultClientConfig();
+                      final HostnameVerifier hostnameVerifier = hv;
+                      final SSLContext sslContext = ctx;
+                      config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(new HttpUrlConnectorProvider.ConnectionFactory() {
+                          @Override
+                          public HttpURLConnection getConnection(URL url) throws IOException {
+                              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                              if (connection instanceof HttpsURLConnection) {
+                                  ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                                  ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+                              }
+                              return connection;
+                          }
+                      }));
+                      return config;
+                  }
+              }
+              """,
+            spec -> spec.markers(javaVersion(7))
           )
         );
     }

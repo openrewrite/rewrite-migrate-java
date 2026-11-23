@@ -424,6 +424,92 @@ class MigrateToJersey2Test implements RewriteTest {
     }
 
     @Test
+    void jaxbBeansGetJerseyMediaJaxb() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "jersey-server-1.19", "jersey-core-1.19",
+              "javax.ws.rs-api-2.1", "jaxb-api-2.3")),
+          mavenProject("server",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>server</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-server</artifactId>
+                            <version>1.19.4</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  Matcher matcher = Pattern.compile("<artifactId>jersey-server</artifactId>\\s*<version>(2\\.\\d+)</version>").matcher(pom);
+                  assertThat(matcher.find()).isTrue();
+                  assertThat(pom).isEqualTo(
+                    //language=xml
+                    """
+                      <project>
+                          <modelVersion>4.0.0</modelVersion>
+                          <groupId>com.example</groupId>
+                          <artifactId>server</artifactId>
+                          <version>1.0.0</version>
+                          <dependencies>
+                              <dependency>
+                                  <groupId>org.glassfish.jersey.core</groupId>
+                                  <artifactId>jersey-server</artifactId>
+                                  <version>%1$s</version>
+                              </dependency>
+                              <dependency>
+                                  <groupId>org.glassfish.jersey.inject</groupId>
+                                  <artifactId>jersey-hk2</artifactId>
+                                  <version>%1$s</version>
+                                  <scope>runtime</scope>
+                              </dependency>
+                              <dependency>
+                                  <groupId>org.glassfish.jersey.media</groupId>
+                                  <artifactId>jersey-media-jaxb</artifactId>
+                                  <version>%1$s</version>
+                                  <scope>runtime</scope>
+                              </dependency>
+                          </dependencies>
+                      </project>""".formatted(matcher.group(1)));
+                  return pom;
+              })
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import javax.ws.rs.GET;
+                  import javax.ws.rs.Path;
+                  import javax.ws.rs.Produces;
+                  import javax.xml.bind.annotation.XmlRootElement;
+
+                  @Path("items")
+                  class Items {
+                      @GET
+                      @Produces("application/xml")
+                      public Item get() {
+                          return new Item();
+                      }
+
+                      @XmlRootElement
+                      public static class Item {
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
     void leaveContainerProvidedJersey1() {
         rewriteRun(
           mavenProject("webapp",
