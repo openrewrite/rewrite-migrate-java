@@ -384,7 +384,102 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
     }
 
     @Test
-    void leavesConfigurationThatIsReturnedAlone() {
+    void factoryMethodReturnsTheConfiguration() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import com.sun.jersey.client.urlconnection.HTTPSProperties;
+
+              import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.SSLContext;
+              import javax.net.ssl.TrustManager;
+              import java.security.KeyManagementException;
+              import java.security.NoSuchAlgorithmException;
+              import java.security.SecureRandom;
+
+              class Test {
+                  Client client(TrustManager[] trustAllCerts) {
+                      ClientConfig config = getClientConfig(trustAllCerts);
+                      return Client.create(config);
+                  }
+
+                  private ClientConfig getClientConfig(TrustManager[] trustAllCerts) {
+                      try {
+                          HostnameVerifier hv = (hostname, session) -> true;
+                          SSLContext sc = SSLContext.getInstance("SSL");
+                          sc.init(null, trustAllCerts, new SecureRandom());
+
+                          HTTPSProperties prop = new HTTPSProperties(hv, sc);
+
+                          ClientConfig config = new DefaultClientConfig();
+                          config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, prop);
+
+                          return config;
+                      } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                          System.err.println(e);
+                      }
+                      return null;
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+
+              import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.HttpsURLConnection;
+              import javax.net.ssl.SSLContext;
+              import javax.net.ssl.TrustManager;
+
+              import java.net.HttpURLConnection;
+              import java.security.KeyManagementException;
+              import java.security.NoSuchAlgorithmException;
+              import java.security.SecureRandom;
+
+              class Test {
+                  Client client(TrustManager[] trustAllCerts) {
+                      ClientConfig config = getClientConfig(trustAllCerts);
+                      return Client.create(config);
+                  }
+
+                  private ClientConfig getClientConfig(TrustManager[] trustAllCerts) {
+                      try {
+                          HostnameVerifier hv = (hostname, session) -> true;
+                          SSLContext sc = SSLContext.getInstance("SSL");
+                          sc.init(null, trustAllCerts, new SecureRandom());
+
+                          HostnameVerifier hostnameVerifier = hv;
+                          SSLContext sslContext = sc;
+
+                          ClientConfig config = new DefaultClientConfig();
+                          config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url -> {
+                              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                              if (connection instanceof HttpsURLConnection) {
+                                  ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                                  ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+                              }
+                              return connection;
+                          }));
+
+                          return config;
+                      } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                          System.err.println(e);
+                      }
+                      return null;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void putInsideTry() {
         rewriteRun(
           java(
             """
@@ -396,10 +491,20 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
               import javax.net.ssl.HostnameVerifier;
               import javax.net.ssl.SSLContext;
               import javax.net.ssl.SSLSession;
+              import javax.net.ssl.TrustManager;
+              import java.security.SecureRandom;
 
               class Test {
-                  static ClientConfig configureClient(SSLContext ctx) {
+                  static ClientConfig configureClient(TrustManager[] certs) {
+                      SSLContext ctx = null;
+                      try {
+                          ctx = SSLContext.getInstance("TLS");
+                          ctx.init(null, certs, new SecureRandom());
+                      } catch (java.security.GeneralSecurityException ex) {
+                          return null;
+                      }
                       ClientConfig config = new DefaultClientConfig();
+                      config.getClasses().add(String.class);
                       try {
                           config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES,
                                   new HTTPSProperties(new HostnameVerifier() {
@@ -414,15 +519,57 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
                       return config;
                   }
 
-                  static ClientConfig localProperties(HostnameVerifier hv, SSLContext sc) {
-                      HTTPSProperties prop = new HTTPSProperties(hv, sc);
+                  static Client createClient(TrustManager[] certs) {
+                      return Client.create(configureClient(certs));
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+
+              import javax.net.ssl.*;
+
+              import java.net.HttpURLConnection;
+              import java.security.SecureRandom;
+
+              class Test {
+                  static ClientConfig configureClient(TrustManager[] certs) {
+                      SSLContext ctx = null;
+                      try {
+                          ctx = SSLContext.getInstance("TLS");
+                          ctx.init(null, certs, new SecureRandom());
+                      } catch (java.security.GeneralSecurityException ex) {
+                          return null;
+                      }
                       ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, prop);
+                      config.getClasses().add(String.class);
+                      try {
+                          HostnameVerifier hostnameVerifier = new HostnameVerifier() {
+                              @Override
+                              public boolean verify(String hostname, SSLSession session) {
+                                  return true;
+                              }
+                          };
+                          SSLContext sslContext = ctx;
+                          config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url -> {
+                              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                              if (connection instanceof HttpsURLConnection) {
+                                  ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                                  ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+                              }
+                              return connection;
+                          }));
+                      } catch (Exception e) {
+                          System.err.println(e.getMessage());
+                      }
                       return config;
                   }
 
-                  static Client createClient(SSLContext ctx) {
-                      return Client.create(configureClient(ctx));
+                  static Client createClient(TrustManager[] certs) {
+                      return Client.create(configureClient(certs));
                   }
               }
               """
@@ -431,7 +578,97 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
     }
 
     @Test
-    void leavesConfigurationUsedElsewhereAlone() {
+    void putInsideIf() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import com.sun.jersey.client.urlconnection.HTTPSProperties;
+
+              import javax.net.ssl.HttpsURLConnection;
+              import javax.net.ssl.SSLContext;
+
+              abstract class Test {
+                  abstract SSLContext trustAll();
+
+                  ClientConfig initSSLConfig(boolean insecure) {
+                      final ClientConfig config = new DefaultClientConfig();
+                      if (insecure) {
+                          SSLContext ctx = trustAll();
+                          config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(HttpsURLConnection.getDefaultHostnameVerifier(), ctx));
+                      }
+                      return config;
+                  }
+
+                  Client create(String endpoint) {
+                      ClientConfig clientConfig = new DefaultClientConfig();
+                      if (endpoint.startsWith("https")) {
+                          clientConfig.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES,
+                              new HTTPSProperties(null, trustAll()));
+                      }
+                      clientConfig.getClasses().add(String.class);
+                      return Client.create(clientConfig);
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import org.glassfish.jersey.client.HttpUrlConnectorProvider;
+
+              import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.HttpsURLConnection;
+              import javax.net.ssl.SSLContext;
+
+              import java.net.HttpURLConnection;
+
+              abstract class Test {
+                  abstract SSLContext trustAll();
+
+                  ClientConfig initSSLConfig(boolean insecure) {
+                      final ClientConfig config = new DefaultClientConfig();
+                      if (insecure) {
+                          SSLContext ctx = trustAll();
+                          HostnameVerifier hostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+                          SSLContext sslContext = ctx;
+                          config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url -> {
+                              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                              if (connection instanceof HttpsURLConnection) {
+                                  ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                                  ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+                              }
+                              return connection;
+                          }));
+                      }
+                      return config;
+                  }
+
+                  Client create(String endpoint) {
+                      ClientConfig clientConfig = new DefaultClientConfig();
+                      if (endpoint.startsWith("https")) {
+                          SSLContext sslContext = trustAll();
+                          clientConfig.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url -> {
+                              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                              if (connection instanceof HttpsURLConnection) {
+                                  ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+                              }
+                              return connection;
+                          }));
+                      }
+                      clientConfig.getClasses().add(String.class);
+                      return Client.create(clientConfig);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void connectorProviderWhereTheClientBuilderWouldNotDo() {
         rewriteRun(
           java(
             """
@@ -444,87 +681,71 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
               import javax.net.ssl.SSLContext;
               import java.util.List;
 
-              class Test {
-                  List<Client> twoClients(HostnameVerifier hv, SSLContext ctx) {
+              abstract class Test {
+                  SSLContext sslContext;
+
+                  abstract SSLContext context();
+
+                  List<Client> twoClients(HostnameVerifier hv, String url) {
                       ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, sslContext));
                       return List.of(Client.create(config), Client.create(config));
                   }
 
-                  Client passedOn(HostnameVerifier hv, SSLContext ctx, List<ClientConfig> configs) {
+                  Client contextReassigned(HostnameVerifier hv, SSLContext ctx) {
                       ClientConfig config = new DefaultClientConfig();
                       config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      configs.add(config);
-                      return Client.create(config);
-                  }
-
-                  Client parameter(ClientConfig config, HostnameVerifier hv, SSLContext ctx) {
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      return Client.create(config);
-                  }
-
-                  Client createdFirst(HostnameVerifier hv, SSLContext ctx) {
-                      ClientConfig config = new DefaultClientConfig();
-                      Client client = Client.create(config);
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      return client;
-                  }
-
-                  Client putTwice(HostnameVerifier hv, SSLContext ctx) {
-                      ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(null, ctx));
+                      ctx = context();
                       return Client.create(config);
                   }
               }
-              """
-          )
-        );
-    }
-
-    @Test
-    void leavesPropertiesThatEscapeOrArePutInANestedBlockAlone() {
-        rewriteRun(
-          java(
+              """,
             """
               import com.sun.jersey.api.client.Client;
               import com.sun.jersey.api.client.config.ClientConfig;
               import com.sun.jersey.api.client.config.DefaultClientConfig;
-              import com.sun.jersey.client.urlconnection.HTTPSProperties;
+              import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 
               import javax.net.ssl.HostnameVerifier;
+              import javax.net.ssl.HttpsURLConnection;
               import javax.net.ssl.SSLContext;
-              import java.util.function.Supplier;
 
-              class Test {
-                  HTTPSProperties last;
+              import java.net.HttpURLConnection;
+              import java.util.List;
 
-                  Client propertiesUsedAgain(HostnameVerifier hv, SSLContext ctx) {
-                      HTTPSProperties prop = new HTTPSProperties(hv, ctx);
+              abstract class Test {
+                  SSLContext sslContext;
+
+                  abstract SSLContext context();
+
+                  List<Client> twoClients(HostnameVerifier hv, String url) {
                       ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, prop);
-                      last = prop;
-                      return Client.create(config);
+                      HostnameVerifier hostnameVerifier = hv;
+                      SSLContext sslContext1 = sslContext;
+                      config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url1 -> {
+                          HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
+                          if (connection instanceof HttpsURLConnection) {
+                              ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                              ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext1.getSocketFactory());
+                          }
+                          return connection;
+                      }));
+                      return List.of(Client.create(config), Client.create(config));
                   }
 
-                  Client conditional(boolean https, HostnameVerifier hv, SSLContext ctx) {
+                  Client contextReassigned(HostnameVerifier hv, SSLContext ctx) {
                       ClientConfig config = new DefaultClientConfig();
-                      if (https) {
-                          config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      }
-                      return Client.create(config);
-                  }
-
-                  Supplier<Client> createdInLambda(HostnameVerifier hv, SSLContext ctx) {
-                      ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      return () -> Client.create(config);
-                  }
-
-                  Client subclassed(HostnameVerifier hv, SSLContext ctx) {
-                      ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx) {
-                      });
+                      HostnameVerifier hostnameVerifier = hv;
+                      SSLContext sslContext1 = ctx;
+                      config.connectorProvider(new HttpUrlConnectorProvider().connectionFactory(url -> {
+                          HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                          if (connection instanceof HttpsURLConnection) {
+                              ((HttpsURLConnection) connection).setHostnameVerifier(hostnameVerifier);
+                              ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext1.getSocketFactory());
+                          }
+                          return connection;
+                      }));
+                      ctx = context();
                       return Client.create(config);
                   }
               }
@@ -534,7 +755,7 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
     }
 
     @Test
-    void leavesWhatWouldChangeMeaningOrStopCompilingAlone() {
+    void leavesWhatItCannotMoveAlone() {
         rewriteRun(
           java(
             """
@@ -547,22 +768,38 @@ class Jersey1HttpsPropertiesToClientBuilderTest implements RewriteTest {
               import javax.net.ssl.SSLContext;
               import java.security.NoSuchAlgorithmException;
 
-              abstract class Test {
-                  abstract SSLContext context();
-                  abstract void initContexts();
+              class Test {
+                  HTTPSProperties last;
 
-                  Client contextChangesInBetween(HostnameVerifier hv) {
+                  Client propertiesUsedAgain(HostnameVerifier hv, SSLContext ctx) {
+                      HTTPSProperties prop = new HTTPSProperties(hv, ctx);
                       ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, context()));
-                      initContexts();
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, prop);
+                      last = prop;
                       return Client.create(config);
                   }
 
-                  Client contextReassigned(HostnameVerifier hv, SSLContext ctx) {
+                  Client subclassed(HostnameVerifier hv, SSLContext ctx) {
                       ClientConfig config = new DefaultClientConfig();
-                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
-                      ctx = context();
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx) {
+                      });
                       return Client.create(config);
+                  }
+
+                  ClientConfig ownContext(HostnameVerifier hv) throws NoSuchAlgorithmException {
+                      ClientConfig config = new DefaultClientConfig();
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv));
+                      return config;
+                  }
+
+                  ClientConfig nullContext(HostnameVerifier hv) {
+                      ClientConfig config = new DefaultClientConfig();
+                      config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, null));
+                      return config;
+                  }
+
+                  void client(Client client, HostnameVerifier hv, SSLContext ctx) {
+                      client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hv, ctx));
                   }
 
                   Client exceptionNoLongerThrown(HostnameVerifier hv) {
