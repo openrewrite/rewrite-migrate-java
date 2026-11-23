@@ -1,0 +1,447 @@
+#
+# Copyright 2026 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonToFastjson2
+displayName: Migrate from Fastjson 1.x to fastjson2
+description: >-
+  Migrate from Fastjson 1.x (`com.alibaba:fastjson`) to fastjson2 (`com.alibaba.fastjson2:fastjson2`), following the
+  [fastjson2 upgrade guide](https://github.com/alibaba/fastjson2/blob/main/docs/fastjson_1_upgrade_en.md).
+  It moves the code to the `com.alibaba.fastjson2` package, maps the classes and features that fastjson2 renamed,
+  rewrites the calls whose signatures changed, and moves the Spring support classes to `fastjson2-extension-spring5`,
+  or `fastjson2-extension-spring6` for modules on Spring Framework 6 or later. Builds on a Java version older than 8,
+  the minimum fastjson2 requires, move to Java 8.
+  Code that extends Fastjson's internals, such as custom `ObjectSerializer` and `ObjectDeserializer` implementations or
+  code using `JSONSerializer`, `SerializeWriter` and `DefaultJSONParser`, has no automatic replacement and is left for a
+  person to port to fastjson2's `ObjectWriter` and `ObjectReader`.
+  fastjson2 also behaves differently in places: it writes dates as `yyyy-MM-dd HH:mm:ss` rather than milliseconds,
+  doesn't detect circular references by default, and doesn't support `autoType` unless enabled.
+tags:
+  - fastjson
+  - json
+preconditions:
+  - org.openrewrite.Singleton
+recipeList:
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonApis
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportOnSpring6
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportToSpring5
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonPackagesAndDependencies
+  - org.openrewrite.java.migrate.fastjson.UpgradeJavaForFastjson2
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonApis
+displayName: Migrate Fastjson 1.x APIs that fastjson2 changed
+description: >-
+  Rewrites the Fastjson 1.x API uses whose fastjson2 counterpart has another name or signature, while they still
+  use the Fastjson 1.x types, so that changing the package afterward leaves code that uses fastjson2.
+tags:
+  - fastjson
+  - json
+recipeList:
+  # Calls whose arguments change, before the calls through `JSONObject` and `JSONArray` are made on `JSON`
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonToJSONStringArguments
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonGlobalConfiguration
+  - org.openrewrite.java.migrate.fastjson.CallFastjsonStaticMethodsOnJSON
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonWriteJSONString
+  - org.openrewrite.java.migrate.fastjson.ReplaceJSONObjectGetInnerMap
+  - org.openrewrite.java.migrate.fastjson.ReplaceFastjsonSqlDateGetters
+  - org.openrewrite.java.migrate.fastjson.RemoveObsoleteFastjsonFeatures
+
+  # Features that fastjson2 renamed
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.serializer.SerializerFeature.WriteEnumUsingName
+      fullyQualifiedConstantName: com.alibaba.fastjson2.JSONWriter.Feature.WriteEnumsUsingName
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.parser.Feature.DisableCircularReferenceDetect
+      fullyQualifiedConstantName: com.alibaba.fastjson2.JSONReader.Feature.DisableReferenceDetect
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.parser.Feature.SupportNonPublicField
+      fullyQualifiedConstantName: com.alibaba.fastjson2.JSONReader.Feature.FieldBased
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.parser.Feature.TrimStringFieldValue
+      fullyQualifiedConstantName: com.alibaba.fastjson2.JSONReader.Feature.TrimString
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.parser.Feature.UseNativeJavaObject
+      fullyQualifiedConstantName: com.alibaba.fastjson2.JSONReader.Feature.UseNativeObject
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.alibaba.fastjson.serializer.ToStringSerializer.instance
+      fullyQualifiedConstantName: com.alibaba.fastjson2.writer.ObjectWriterImplToString.INSTANCE
+
+  # Annotation attributes that fastjson2 renamed
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONField
+      oldAttributeName: serialzeFeatures
+      newAttributeName: serializeFeatures
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONField
+      oldAttributeName: parseFeatures
+      newAttributeName: deserializeFeatures
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONType
+      oldAttributeName: serialzeFeatures
+      newAttributeName: serializeFeatures
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONType
+      oldAttributeName: parseFeatures
+      newAttributeName: deserializeFeatures
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONType
+      oldAttributeName: serialzeFilters
+      newAttributeName: serializeFilters
+  - org.openrewrite.java.ChangeAnnotationAttributeName:
+      annotationType: com.alibaba.fastjson.annotation.JSONType
+      oldAttributeName: serializeEnumAsJavaBean
+      newAttributeName: writeEnumAsJavaBean
+
+  # Methods that fastjson2 renamed or dropped
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.JSON toJSONStringWithDateFormat(..)
+      newMethodName: toJSONString
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.JSONPath read(String, String)
+      newMethodName: extract
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.serializer.ValueFilter process(Object, String, Object)
+      newMethodName: apply
+      matchOverrides: true
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: com.alibaba.fastjson.JSONObject <constructor>(boolean)
+      argumentIndex: 0
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: com.alibaba.fastjson.JSONObject <constructor>(int, boolean)
+      argumentIndex: 1
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig setSerializerFeatures(..)
+      newMethodName: setWriterFeatures
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig getSerializerFeatures()
+      newMethodName: getWriterFeatures
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig setFeatures(..)
+      newMethodName: setReaderFeatures
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig getFeatures()
+      newMethodName: getReaderFeatures
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig setSerializeFilters(..)
+      newMethodName: setWriterFilters
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.support.config.FastJsonConfig getSerializeFilters()
+      newMethodName: getWriterFilters
+
+  # `ParserConfig` and `SerializeConfig` become fastjson2's `ObjectReaderProvider` and `ObjectWriterProvider`
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: com.alibaba.fastjson.parser.ParserConfig setAsmEnable(boolean)
+  - org.openrewrite.java.RemoveMethodInvocations:
+      methodPattern: com.alibaba.fastjson.serializer.SerializeConfig setAsmEnable(boolean)
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.parser.ParserConfig addAccept(String)
+      newMethodName: addAutoTypeAccept
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.parser.ParserConfig addDeny(String)
+      newMethodName: addAutoTypeDeny
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.parser.ParserConfig putDeserializer(java.lang.reflect.Type, com.alibaba.fastjson.parser.deserializer.ObjectDeserializer)
+      newMethodName: register
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson.serializer.SerializeConfig put(java.lang.reflect.Type, com.alibaba.fastjson.serializer.ObjectSerializer)
+      newMethodName: register
+  - org.openrewrite.java.ChangeStaticFieldToMethod:
+      oldClassName: com.alibaba.fastjson.parser.ParserConfig
+      oldFieldName: global
+      newClassName: com.alibaba.fastjson2.JSONFactory
+      newMethodName: getDefaultObjectReaderProvider
+  - org.openrewrite.java.ChangeStaticFieldToMethod:
+      oldClassName: com.alibaba.fastjson.serializer.SerializeConfig
+      oldFieldName: globalInstance
+      newClassName: com.alibaba.fastjson2.JSONFactory
+      newMethodName: getDefaultObjectWriterProvider
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.alibaba.fastjson.parser.ParserConfig getGlobalInstance()
+      fullyQualifiedTargetTypeName: com.alibaba.fastjson2.JSONFactory
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson2.JSONFactory getGlobalInstance()
+      newMethodName: getDefaultObjectReaderProvider
+  - org.openrewrite.java.ChangeMethodTargetToStatic:
+      methodPattern: com.alibaba.fastjson.serializer.SerializeConfig getGlobalInstance()
+      fullyQualifiedTargetTypeName: com.alibaba.fastjson2.JSONFactory
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.alibaba.fastjson2.JSONFactory getGlobalInstance()
+      newMethodName: getDefaultObjectWriterProvider
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonPackagesAndDependencies
+displayName: Move Fastjson 1.x types and dependencies to fastjson2
+description: >-
+  Changes the Fastjson 1.x types that fastjson2 renamed, moves the others from the `com.alibaba.fastjson` package to
+  `com.alibaba.fastjson2`, and replaces the `com.alibaba:fastjson` dependency with `com.alibaba.fastjson2:fastjson2`.
+  Modules that use Fastjson without declaring it get `fastjson2`, and modules that use `FastJsonConfig`, the Retrofit
+  converter or the GeoJSON types also get `fastjson2-extension`.
+tags:
+  - fastjson
+  - json
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.ParserConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReaderProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ExtraProcessor
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ExtraProcessor
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.deserializer.ObjectDeserializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.reader.ObjectReader
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.AfterFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.AfterFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.BeforeFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.BeforeFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ContextValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ContextValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.LabelFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.LabelFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.NameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.NameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PascalNameFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PascalNameFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PropertyFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PropertyFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.PropertyPreFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.PropertyPreFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SimplePropertyPreFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.SimplePropertyPreFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializeFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.Filter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ObjectSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializeConfig
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterProvider
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ToStringSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.writer.ObjectWriterImplToString
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.ValueFilter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.ValueFilter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.SerializerFeature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONWriter$Feature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.parser.Feature
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.JSONReader$Feature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.annotation.JSONPOJOBuilder
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.annotation.JSONBuilder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.BeanContext
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.BeanContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.serializer.Labels
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.filter.Labels
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.alibaba.fastjson
+      newPackageName: com.alibaba.fastjson2
+      recursive: true
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.alibaba
+      oldArtifactId: fastjson
+      newGroupId: com.alibaba.fastjson2
+      newArtifactId: fastjson2
+      newVersion: 2.0.x
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2-extension
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson.support.config.FastJsonConfig
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2-extension
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson.support.retrofit.Retrofit2ConverterFactory
+      acceptTransitive: true
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2-extension
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson.support.geo.*
+      acceptTransitive: true
+  # Modules that use Fastjson without declaring it, as they get it from another dependency
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.UpgradeJavaForFastjson2
+displayName: Use Java 8 for fastjson2
+description: >-
+  Updates the Java version of builds using Fastjson 1.x that compile for a Java version older than 8, the minimum
+  fastjson2 requires, to Java 8. fastjson2's `JSON` is an interface, and code compiled for an older Java version cannot
+  call its static methods. Only versions older than 8 change, in the Maven compiler properties and `maven-compiler-plugin`
+  configuration and in the Gradle Java compatibility.
+tags:
+  - fastjson
+preconditions:
+  - org.openrewrite.java.dependencies.search.RepositoryHasDependency:
+      groupIdPattern: com.alibaba
+      artifactIdPattern: fastjson
+recipeList:
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: "/project/properties/java.version"
+      oldValue: '^(1\.)?[1-7]$'
+      newValue: '1.8'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: "/project/properties/maven.compiler.source"
+      oldValue: '^(1\.)?[1-7]$'
+      newValue: '1.8'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: "/project/properties/maven.compiler.target"
+      oldValue: '^(1\.)?[1-7]$'
+      newValue: '1.8'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: "//plugin[artifactId='maven-compiler-plugin']/configuration/source"
+      oldValue: '^(1\.)?[1-7]$'
+      newValue: '1.8'
+      regex: true
+  - org.openrewrite.xml.ChangeTagValue:
+      elementName: "//plugin[artifactId='maven-compiler-plugin']/configuration/target"
+      oldValue: '^(1\.)?[1-7]$'
+      newValue: '1.8'
+      regex: true
+  - org.openrewrite.gradle.UpdateJavaCompatibility:
+      version: 8
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportOnSpring6
+displayName: Migrate Fastjson Spring support on Spring Framework 6 or later
+description: >-
+  Moves the Fastjson 1.x Spring support classes of modules on Spring Framework 6 or later to `fastjson2-extension-spring6`.
+tags:
+  - fastjson
+  - spring
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.springframework
+      artifactIdPattern: spring-core
+      version: "[6,)"
+recipeList:
+  - org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportToSpring6
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportToSpring6
+displayName: Migrate Fastjson Spring support to `fastjson2-extension-spring6`
+description: >-
+  Moves the Fastjson 1.x Spring support classes, such as `FastJsonHttpMessageConverter` and
+  `GenericFastJsonRedisSerializer`, to their counterparts in `fastjson2-extension-spring6`, for Spring Framework 6 or
+  later, and adds that dependency.
+tags:
+  - fastjson
+  - spring
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter4
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonJsonView
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.webservlet.view.FastJsonJsonView
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonRedisSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.data.redis.FastJsonRedisSerializer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.GenericFastJsonRedisSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.data.redis.GenericFastJsonRedisSerializer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.messaging.MappingFastJsonMessageConverter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.messaging.converter.MappingFastJsonMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastjsonSockJsMessageCodec
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring6.websocket.sockjs.FastjsonSockJsMessageCodec
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2-extension-spring6
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson.support.spring..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.fastjson.MigrateFastjsonSpringSupportToSpring5
+displayName: Migrate Fastjson Spring support to `fastjson2-extension-spring5`
+description: >-
+  Moves the Fastjson 1.x Spring support classes of modules on Spring Framework 5 or earlier, such as
+  `FastJsonHttpMessageConverter` and `GenericFastJsonRedisSerializer`, to their counterparts in
+  `fastjson2-extension-spring5`, and adds that dependency.
+tags:
+  - fastjson
+  - spring
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.springframework
+      artifactIdPattern: spring-core
+      version: "[6,)"
+      invertMarking: true
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.http.converter.FastJsonHttpMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter4
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.http.converter.FastJsonHttpMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonJsonView
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.webservlet.view.FastJsonJsonView
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastJsonRedisSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.data.redis.FastJsonRedisSerializer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.GenericFastJsonRedisSerializer
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.data.redis.GenericFastJsonRedisSerializer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.messaging.MappingFastJsonMessageConverter
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.messaging.converter.MappingFastJsonMessageConverter
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.alibaba.fastjson.support.spring.FastjsonSockJsMessageCodec
+      newFullyQualifiedTypeName: com.alibaba.fastjson2.support.spring.websocket.sockjs.FastjsonSockJsMessageCodec
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.alibaba.fastjson2
+      artifactId: fastjson2-extension-spring5
+      version: 2.0.x
+      onlyIfUsing: com.alibaba.fastjson.support.spring..*
+      acceptTransitive: true
