@@ -26,10 +26,16 @@ description: >-
   counterpart. Jersey 1's POJO mapping used Jackson 1, so Jersey 2 gets Jackson 1's JAX-RS provider, registered where
   POJO mapping was switched on, which keeps the JSON the same. A repository is left alone when a library that is not
   Jersey brings Jersey 1 along, such as Dropwizard before 0.8, Eureka 1 or Hadoop, because that library would still
-  need Jersey 1, or when Jersey 1 is `provided` or `compileOnly`, or when it uses the Jersey 1 Guice integration. Left
-  for the compiler to point out are the Jersey 1 SPIs without a mechanical replacement: container request and
-  response filters, `InjectableProvider`, client filters that read the response, `HTTPSProperties`, the Apache HTTP
-  client connectors and `JSONConfiguration`.
+  need Jersey 1, or when Jersey 1 is `provided` or `compileOnly`, or when it uses the Jersey 1 Guice integration, or
+  when it extends Jersey 1 itself, with classes in the `com.sun.jersey` packages or Jersey 1 code in Scala, Kotlin or
+  Groovy. Tests on the Jersey 1 test framework move to the Jersey 2 one. Left for the compiler to point out are the
+  Jersey 1 SPIs without a mechanical replacement, such as `InjectableProvider`, client filters that read the response,
+  client handlers of the application's own, `HTTPSProperties` set where the client is not created and
+  `JSONConfiguration`. Some differences only show at run time: the providers of `jersey-media-json-jettison` and
+  `jersey-media-multipart` have to be registered with `JettisonFeature` and `MultiPartFeature` on a server that does
+  not scan for them, the default Jersey 2 connector does not see an SSL context or hostname verifier set as the JVM
+  default after it is created, and a module that already uses another Jersey 2 version, through a library such as
+  Dropwizard, gets the newest Jersey 2 next to it.
 tags:
   - jersey
   - jaxrs
@@ -51,13 +57,15 @@ name: org.openrewrite.java.migrate.jersey.Jersey1ClientToJersey2
 displayName: Migrate the Jersey 1 client to the JAX-RS 2 client
 description: >-
   Moves what the Jersey 1 client API offers beyond sending requests to its JAX-RS 2 and Jersey 2 counterparts: clients
-  are created through `ClientBuilder` and configured through `property` and `register`, the built-in client filters
-  become features, client filters that only change the request become `ClientRequestFilter`s, the `ClientResponse`
-  helpers become `Response` calls, `MultivaluedMapImpl` becomes `MultivaluedHashMap` and Jersey 1's `Base64` becomes
-  `java.util.Base64`.
+  are created through `ClientBuilder` and configured through `property` and `register`, a hostname verifier and
+  `SSLContext` given as `HTTPSProperties` go to the `ClientBuilder`, the Apache HTTP clients become clients with the
+  Jersey 2 Apache connector, the built-in client filters become features, client filters that only change the request
+  become `ClientRequestFilter`s, the `ClientResponse` helpers become `Response` calls, `MultivaluedMapImpl` becomes
+  `MultivaluedHashMap` and Jersey 1's `Base64` becomes `java.util.Base64`.
 tags:
   - jersey
 recipeList:
+  - org.openrewrite.java.migrate.jersey.Jersey1HttpsPropertiesToClientBuilder
   - org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ClientToClientBuilder
   - org.openrewrite.java.migrate.jersey.Jersey1ClientFiltersToFeatures
