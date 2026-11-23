@@ -17,6 +17,7 @@ recipeDependencies {
     parserClasspath("com.google.guava:guava:33.7.0-jre")
     parserClasspath("com.google.errorprone:error_prone_core:2.+")
     parserClasspath("javax.ws.rs:javax.ws.rs-api:2.1.1")
+    parserClasspath("org.codehaus.jackson:jackson-jaxrs:1.9.13")
     parserClasspath("org.glassfish.jersey.core:jersey-client:2.48")
     parserClasspath("org.glassfish.jersey.core:jersey-common:2.48")
     parserClasspath("org.glassfish.jersey.core:jersey-server:2.48")
