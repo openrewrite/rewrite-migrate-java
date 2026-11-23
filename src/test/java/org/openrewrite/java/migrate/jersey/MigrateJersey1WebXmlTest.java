@@ -17,9 +17,12 @@ package org.openrewrite.java.migrate.jersey;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.xml.Assertions.xml;
 
 class MigrateJersey1WebXmlTest implements RewriteTest {
@@ -338,6 +341,65 @@ class MigrateJersey1WebXmlTest implements RewriteTest {
               </web-app>
               """,
             spec -> spec.path("web.xml")
+          )
+        );
+    }
+
+    @Test
+    void multiPartFeatureWhereJersey1MultiPartIsUsed() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion()
+            .classpathFromResources(new InMemoryExecutionContext(), "jersey-multipart-1.19", "javax.ws.rs-api-2.1")),
+          //language=java
+          java(
+            """
+              import com.sun.jersey.multipart.FormDataParam;
+
+              import javax.ws.rs.POST;
+              import javax.ws.rs.Path;
+              import java.io.InputStream;
+
+              @Path("upload")
+              public class UploadResource {
+                  @POST
+                  public void upload(@FormDataParam("file") InputStream file) {
+                  }
+              }
+              """
+          ),
+          //language=xml
+          xml(
+            """
+              <web-app>
+                  <servlet>
+                      <servlet-name>jersey</servlet-name>
+                      <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>com.sun.jersey.config.property.packages</param-name>
+                          <param-value>com.example</param-value>
+                      </init-param>
+                      <load-on-startup>1</load-on-startup>
+                  </servlet>
+              </web-app>
+              """,
+            """
+              <web-app>
+                  <servlet>
+                      <servlet-name>jersey</servlet-name>
+                      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+                      <init-param>
+                          <param-name>jersey.config.server.provider.packages</param-name>
+                          <param-value>com.example</param-value>
+                      </init-param>
+                      <init-param>
+                          <param-name>jersey.config.server.provider.classnames</param-name>
+                          <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+                      </init-param>
+                      <load-on-startup>1</load-on-startup>
+                  </servlet>
+              </web-app>
+              """,
+            spec -> spec.path("src/main/webapp/WEB-INF/web.xml")
           )
         );
     }

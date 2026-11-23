@@ -19,6 +19,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
+import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.xml.XmlIsoVisitor;
 import org.openrewrite.xml.tree.Content;
 import org.openrewrite.xml.tree.Xml;
@@ -27,7 +30,7 @@ import java.util.*;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class MigrateJersey1WebXml extends Recipe {
+public class MigrateJersey1WebXml extends ScanningRecipe<MigrateJersey1WebXml.Accumulator> {
 
     private static final String JERSEY1_SERVLET_CONTAINER = "com.sun.jersey.spi.container.servlet.ServletContainer";
     private static final String JERSEY2_SERVLET_CONTAINER = "org.glassfish.jersey.servlet.ServletContainer";
@@ -44,6 +47,7 @@ public class MigrateJersey1WebXml extends Recipe {
     private static final String PROVIDER_WEB_APP = "jersey.config.servlet.provider.webapp";
     private static final String TRACING = "jersey.config.server.tracing.type";
     private static final String JACKSON_PROVIDER = "org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider";
+    private static final String MULTI_PART_FEATURE = "org.glassfish.jersey.media.multipart.MultiPartFeature";
 
     /**
      * Jersey 1 initialization parameters, as {@code ServletContainer}, {@code ResourceConfig} and
@@ -99,13 +103,45 @@ public class MigrateJersey1WebXml extends Recipe {
             "Tracing becomes `jersey.config.server.tracing.type` set to `ALL` or `ON_DEMAND`. POJO mapping switched " +
             "on adds Jackson 1's `JacksonJaxbJsonProvider` to the provider class names. A servlet that Jersey 1 let " +
             "scan `WEB-INF/lib` and `WEB-INF/classes`, because it named no application, resource configuration or " +
-            "packages, gets `jersey.config.servlet.provider.webapp` so that Jersey 2 scans them too. Parameters " +
-            "without a Jersey 2 counterpart, such as resource filter factories, the class path, redirection, URI normalization and implicit viewables, are left alone, as " +
+            "packages, gets `jersey.config.servlet.provider.webapp` so that Jersey 2 scans them too. Where the " +
+            "repository's Java code uses Jersey 1 multipart, whose providers Jersey 1 found by itself, `MultiPartFeature` " +
+            "is added to the provider class names, as Jersey 2 only reads and writes multipart entities once it is " +
+            "registered. Parameters without a Jersey 2 counterpart, such as resource filter factories, the class path, " +
+            "redirection, URI normalization and implicit viewables, are left alone, as " +
             "are Guice's and Spring's Jersey 1 servlets. Container request and response filters are left for " +
             "`MigrateJersey1ContainerFiltersInWebXml`.";
 
+    public static class Accumulator {
+        boolean usesMultiPart;
+    }
+
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
+    public Accumulator getInitialValue(ExecutionContext ctx) {
+        return new Accumulator();
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getScanner(Accumulator acc) {
+        return new TreeVisitor<Tree, ExecutionContext>() {
+            @Override
+            public @Nullable Tree preVisit(Tree tree, ExecutionContext ctx) {
+                stopAfterPreVisit();
+                if (!acc.usesMultiPart && tree instanceof JavaSourceFile) {
+                    for (JavaType type : ((JavaSourceFile) tree).getTypesInUse().getTypesInUse()) {
+                        JavaType.FullyQualified fq = TypeUtils.asFullyQualified(type);
+                        if (fq != null && fq.getFullyQualifiedName().startsWith("com.sun.jersey.multipart.")) {
+                            acc.usesMultiPart = true;
+                            break;
+                        }
+                    }
+                }
+                return tree;
+            }
+        };
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(Accumulator acc) {
         return Preconditions.check(Preconditions.or(
                         new FindSourceFiles("**/web.xml").getVisitor(), new FindSourceFiles("**/web-fragment.xml").getVisitor()),
                 new XmlIsoVisitor<ExecutionContext>() {
@@ -185,7 +221,10 @@ public class MigrateJersey1WebXml extends Recipe {
                         t = t.withContent(content);
 
                         if (pojoMapping) {
-                            t = addProviderClassName(t, classTag, ctx);
+                            t = addProviderClassName(t, classTag, JACKSON_PROVIDER, ctx);
+                        }
+                        if (acc.usesMultiPart) {
+                            t = addProviderClassName(t, classTag, MULTI_PART_FEATURE, ctx);
                         }
                         if (scansWebApp && !t.getChildren("init-param").stream()
                                 .anyMatch(p -> PROVIDER_WEB_APP.equals(name(p)))) {
@@ -194,23 +233,23 @@ public class MigrateJersey1WebXml extends Recipe {
                         return t;
                     }
 
-                    private Xml.Tag addProviderClassName(Xml.Tag t, String classTag, ExecutionContext ctx) {
+                    private Xml.Tag addProviderClassName(Xml.Tag t, String classTag, String provider, ExecutionContext ctx) {
                         for (Xml.Tag param : t.getChildren("init-param")) {
                             if (!PROVIDER_CLASSNAMES.equals(name(param))) {
                                 continue;
                             }
                             String classNames = value(param);
-                            if (Arrays.asList(classNames.split("[\\s,;]+")).contains(JACKSON_PROVIDER)) {
+                            if (Arrays.asList(classNames.split("[\\s,;]+")).contains(provider)) {
                                 return t;
                             }
-                            String merged = classNames.isEmpty() ? JACKSON_PROVIDER :
-                                    classNames + (classNames.contains(";") && !classNames.contains(",") ? ";" : ",") + JACKSON_PROVIDER;
+                            String merged = classNames.isEmpty() ? provider :
+                                    classNames + (classNames.contains(";") && !classNames.contains(",") ? ";" : ",") + provider;
                             Xml.Tag updated = param.withChildValue("param-value", merged);
                             List<Content> content = new ArrayList<>(t.getContent());
                             content.set(content.indexOf(param), updated);
                             return t.withContent(content);
                         }
-                        return addInitParam(t, classTag, PROVIDER_CLASSNAMES, JACKSON_PROVIDER, ctx);
+                        return addInitParam(t, classTag, PROVIDER_CLASSNAMES, provider, ctx);
                     }
 
                     /**
