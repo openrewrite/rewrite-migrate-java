@@ -175,6 +175,77 @@ class Jersey1ClientToClientBuilderTest implements RewriteTest {
     }
 
     @Test
+    void propertyBagAndProviders() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+
+              class Test {
+                  Client client(Object provider) {
+                      ClientConfig cc = new DefaultClientConfig();
+                      cc.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, 5000);
+                      cc.getProperties().put("com.sun.jersey.client.property.readTimeout", 10000);
+                      cc.getProperties().put("custom", "value");
+                      cc.getClasses().add(String.class);
+                      cc.getSingletons().add(provider);
+                      Client client = Client.create(cc);
+                      client.getProperties().put(ClientConfig.PROPERTY_FOLLOW_REDIRECTS, false);
+                      client.getProperties().put(DefaultClientConfig.PROPERTY_CHUNKED_ENCODING_SIZE, 0);
+                      return client;
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+              import com.sun.jersey.api.client.config.DefaultClientConfig;
+              import org.glassfish.jersey.client.ClientProperties;
+              import org.glassfish.jersey.client.RequestEntityProcessing;
+
+              import javax.ws.rs.client.ClientBuilder;
+
+              class Test {
+                  Client client(Object provider) {
+                      ClientConfig cc = new DefaultClientConfig();
+                      cc.property(ClientProperties.CONNECT_TIMEOUT, 5000);
+                      cc.property(ClientProperties.READ_TIMEOUT, 10000);
+                      cc.property("custom", "value");
+                      cc.register(String.class);
+                      cc.register(provider);
+                      Client client = ClientBuilder.newClient(cc);
+                      client.property(ClientProperties.FOLLOW_REDIRECTS, false);
+                      client.property(ClientProperties.CHUNKED_ENCODING_SIZE, 0).property(ClientProperties.REQUEST_ENTITY_PROCESSING, RequestEntityProcessing.CHUNKED);
+                      return client;
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leavesPropertyBagAloneWhereItsResultIsUsedOrJersey2HasNoCounterpart() {
+        rewriteRun(
+          java(
+            """
+              import com.sun.jersey.api.client.Client;
+              import com.sun.jersey.api.client.config.ClientConfig;
+
+              class Test {
+                  Object previous(Client client) {
+                      client.getProperties().put(ClientConfig.PROPERTY_BUFFER_RESPONSE_ENTITY_ON_EXCEPTION, true);
+                      return client.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, 1000);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leavesClientHandlerConstructorsAndProviderFactoryAlone() {
         rewriteRun(
           java(
