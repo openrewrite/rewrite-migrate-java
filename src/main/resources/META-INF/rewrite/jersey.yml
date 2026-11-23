@@ -58,12 +58,72 @@ description: >-
 tags:
   - jersey
 recipeList:
+  - org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ClientToClientBuilder
   - org.openrewrite.java.migrate.jersey.Jersey1ClientFiltersToFeatures
   - org.openrewrite.java.migrate.jersey.Jersey1ClientFilterToClientRequestFilter
   - org.openrewrite.java.migrate.jersey.Jersey1ClientResponseToResponse
   - org.openrewrite.java.migrate.jersey.Jersey1MultivaluedMapImplToMultivaluedHashMap
   - org.openrewrite.java.migrate.jersey.Jersey1Base64ToJavaUtilBase64
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToJersey2
+displayName: Migrate the Jersey 1 Apache HTTP clients to the Jersey 2 Apache connector
+description: >-
+  Moves clients of `jersey-apache-client4` and `jersey-apache-client` to a Jersey 2 client that sends its requests
+  through the `ApacheConnectorProvider` of `jersey-apache-connector`. Their proxy, credentials provider, cookie and
+  preemptive authentication properties become their `ClientProperties` and `ApacheClientProperties` counterparts, and
+  what remains of the Apache clients and their configurations is then the Jersey 1 `Client` and `ClientConfig`, which
+  the rest of the migration moves to Jersey 2. Clients built from a handler that wraps an `HttpClient` of the
+  application's own, the connection manager, HTTP parameters and buffering properties, and the HTTP state of
+  `DefaultApacheHttpClientConfig` are left for the compiler to point out.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_URI
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_URI
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_USERNAME
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_PASSWORD
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.CREDENTIALS_PROVIDER
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.DISABLE_COOKIES
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig.PROPERTY_PROXY_URI
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_URI
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig.PROPERTY_PREEMPTIVE_AUTHENTICATION
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION
+  - org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToApacheConnector
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.ApacheHttpClient4
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.Client
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.ApacheHttpClient
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.Client
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.DefaultClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.DefaultClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.ClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.ClientConfig
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -544,6 +604,18 @@ recipeList:
       oldArtifactId: jersey-multipart
       newGroupId: org.glassfish.jersey.media
       newArtifactId: jersey-media-multipart
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.contribs
+      oldArtifactId: jersey-apache-client4
+      newGroupId: org.glassfish.jersey.connectors
+      newArtifactId: jersey-apache-connector
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.contribs
+      oldArtifactId: jersey-apache-client
+      newGroupId: org.glassfish.jersey.connectors
+      newArtifactId: jersey-apache-connector
       newVersion: 2.x
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.jersey.jersey-test-framework

@@ -29,6 +29,7 @@ recipeDependencies {
     parserClasspath("org.glassfish.jersey.media:jersey-media-json-jackson:2.48")
     parserClasspath("org.glassfish.jersey.test-framework:jersey-test-framework-core:2.48")
     parserClasspath("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:2.48")
+    parserClasspath("org.glassfish.jersey.connectors:jersey-apache-connector:2.48")
 
     testParserClasspath("com.alibaba:fastjson:1.2.83")
     testParserClasspath("com.fasterxml.jackson.datatype:jackson-datatype-jsr353:2.21.7")
@@ -46,6 +47,8 @@ recipeDependencies {
     testParserClasspath("com.sun.jersey:jersey-server:1.19.4")
     testParserClasspath("com.sun.jersey:jersey-servlet:1.19.4")
     testParserClasspath("com.sun.jersey.contribs:jersey-multipart:1.19.4")
+    testParserClasspath("com.sun.jersey.contribs:jersey-apache-client:1.19.4")
+    testParserClasspath("com.sun.jersey.contribs:jersey-apache-client4:1.19.4")
     testParserClasspath("com.sun.jersey.jersey-test-framework:jersey-test-framework-core:1.19.4")
     testParserClasspath("com.sun.jersey.jersey-test-framework:jersey-test-framework-grizzly2:1.19.4")
     testParserClasspath("commons-fileupload:commons-fileupload:1.5")
