@@ -37,12 +37,33 @@ preconditions:
   - org.openrewrite.java.migrate.jersey.Jersey1RepositoryCanMigrate
 recipeList:
   - org.openrewrite.java.migrate.jersey.WebResourceRequestToInvocation
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1TestFrameworkToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ServerToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1PropertiesToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ClientMethodsToJaxRs
   - org.openrewrite.java.migrate.jersey.Jersey1TypesToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1DependenciesToJersey2
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ClientToJersey2
+displayName: Migrate the Jersey 1 client to the JAX-RS 2 client
+description: >-
+  Moves what the Jersey 1 client API offers beyond sending requests to its JAX-RS 2 and Jersey 2 counterparts: clients
+  are created through `ClientBuilder` and configured through `property` and `register`, the built-in client filters
+  become features, client filters that only change the request become `ClientRequestFilter`s, the `ClientResponse`
+  helpers become `Response` calls, `MultivaluedMapImpl` becomes `MultivaluedHashMap` and Jersey 1's `Base64` becomes
+  `java.util.Base64`.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientToClientBuilder
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientFiltersToFeatures
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientFilterToClientRequestFilter
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientResponseToResponse
+  - org.openrewrite.java.migrate.jersey.Jersey1MultivaluedMapImplToMultivaluedHashMap
+  - org.openrewrite.java.migrate.jersey.Jersey1Base64ToJavaUtilBase64
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
