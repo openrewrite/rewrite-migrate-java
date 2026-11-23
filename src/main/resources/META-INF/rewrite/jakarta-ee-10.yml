@@ -559,16 +559,18 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: org.openrewrite.java.migrate.jakarta.UpdateApacheCommonsEmailDependencies
 displayName: Update Apache Commons Email to Email2 for Jakarta
-description: Replace `commons-email` with `commons-email2-jakarta` 2.0.x, and move the `org.apache.commons.mail` types to their Email2 packages.
+description: Replace `commons-email` with `commons-email2-jakarta` 2.0.0-M1, and move the `org.apache.commons.mail` types to their Email2 packages.
 preconditions:
   - org.openrewrite.Singleton
 recipeList:
+  # 2.0.0-M1 is the only release of commons-email2-jakarta so far, which 2.0.x doesn't match, and a version that no
+  # release matches is written to the build as it is
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: org.apache.commons
       oldArtifactId: commons-email
       newGroupId: org.apache.commons
       newArtifactId: commons-email2-jakarta
-      newVersion: 2.0.x
+      newVersion: 2.0.0-M1
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: org.apache.commons.mail.EmailException
       newFullyQualifiedTypeName: org.apache.commons.mail2.core.EmailException
