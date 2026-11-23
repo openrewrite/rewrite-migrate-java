@@ -54,7 +54,8 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
             "Jersey 1 through a library that is not Jersey, such as Dropwizard before 0.8, Eureka 1 or Hadoop, since " +
             "that library keeps using Jersey 1; when a module declares Jersey 1 as `provided` or `compileOnly`, since " +
             "the container or the code being instrumented supplies it; and when it uses the Jersey 1 Guice integration, " +
-            "for which Jersey 2 has no counterpart. Nor does it migrate a repository with classes of its own in a " +
+            "for which Jersey 2 has no counterpart; and when a module that declares Jersey 1 also uses Jersey 3 or " +
+            "later, whose `org.glassfish.jersey` packages are those of Jersey 2. Nor does it migrate a repository with classes of its own in a " +
             "`com.sun.jersey` package, which extend or instrument Jersey 1, or whose Kotlin, Groovy or Scala code uses " +
             "Jersey 1, which these recipes do not change.";
 
@@ -125,12 +126,16 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
         for (Pom pom : maven.getProjectPoms().values()) {
             projects.add(pom.getGroupId() + ":" + pom.getArtifactId());
         }
+        boolean declaresJersey1 = false;
+        boolean usesJersey3 = false;
         for (Map.Entry<Scope, List<ResolvedDependency>> byScope : maven.getDependencies().entrySet()) {
             for (ResolvedDependency dependency : byScope.getValue()) {
+                usesJersey3 |= isJersey3OrLater(dependency);
                 if (dependency.getDepth() != 0) {
                     continue;
                 }
                 if (isJersey1(dependency)) {
+                    declaresJersey1 = true;
                     String scope = maven.getPom().getValue(dependency.getRequested().getScope());
                     if ("provided".equals(scope) || "system".equals(scope) || isJersey1Guice(dependency)) {
                         acc.blocked = true;
@@ -143,18 +148,24 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
                 }
             }
         }
+        if (declaresJersey1 && usesJersey3) {
+            acc.blocked = true;
+        }
     }
 
     private static void scanGradle(GradleProject gradle, Accumulator acc) {
         // A dependency on another project of the same build shares its group and version.
         Predicate<ResolvedDependency> isProject = d -> d.getGroupId().equals(gradle.getGroup()) &&
                 Objects.equals(d.getVersion(), gradle.getVersion());
+        boolean declaresJersey1 = false;
+        boolean usesJersey3 = false;
         for (GradleDependencyConfiguration configuration : gradle.getConfigurations()) {
             String name = configuration.getName();
             boolean compileOnly = name.endsWith("ompileOnly") || "providedCompile".equals(name) ||
                     "providedRuntime".equals(name);
             for (Dependency requested : configuration.getRequested()) {
                 if (requested.getGroupId() != null && requested.getGroupId().startsWith("com.sun.jersey")) {
+                    declaresJersey1 = true;
                     if (compileOnly || "jersey-guice".equals(requested.getArtifactId())) {
                         acc.blocked = true;
                     } else {
@@ -163,6 +174,9 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
                 }
             }
             if (configuration.isCanBeResolved()) {
+                for (ResolvedDependency dependency : configuration.getResolved()) {
+                    usesJersey3 |= isJersey3OrLater(dependency);
+                }
                 for (ResolvedDependency dependency : configuration.getDirectResolved()) {
                     if (!isJersey1(dependency) && !isProject.test(dependency) && bringsJersey1(dependency, isProject)) {
                         acc.librariesBringingJersey1.add(dependency.getGroupId() + ":" + dependency.getArtifactId());
@@ -170,6 +184,24 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
                 }
             }
         }
+        if (declaresJersey1 && usesJersey3) {
+            acc.blocked = true;
+        }
+    }
+
+    /**
+     * Jersey 3 keeps the {@code org.glassfish.jersey} packages of Jersey 2, so the two cannot share a class path.
+     */
+    private static boolean isJersey3OrLater(ResolvedDependency dependency) {
+        if (!dependency.getGroupId().startsWith("org.glassfish.jersey")) {
+            return false;
+        }
+        String version = dependency.getVersion();
+        int end = 0;
+        while (end < version.length() && Character.isDigit(version.charAt(end))) {
+            end++;
+        }
+        return end > 0 && end < 9 && Integer.parseInt(version.substring(0, end)) >= 3;
     }
 
     static boolean isJersey1(ResolvedDependency dependency) {

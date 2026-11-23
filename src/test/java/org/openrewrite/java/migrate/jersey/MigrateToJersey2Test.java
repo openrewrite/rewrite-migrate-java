@@ -379,6 +379,51 @@ class MigrateToJersey2Test implements RewriteTest {
     }
 
     @Test
+    void leaveModuleThatAlsoUsesJersey3() {
+        rewriteRun(
+          mavenProject("clients",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>clients</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-client</artifactId>
+                            <version>1.19.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.glassfish.jersey.core</groupId>
+                            <artifactId>jersey-client</artifactId>
+                            <version>3.1.9</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  import com.sun.jersey.api.client.Client;
+
+                  class Caller {
+                      String call(Client client) {
+                          return client.resource("http://localhost").get(String.class);
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
     void leaveContainerProvidedJersey1() {
         rewriteRun(
           mavenProject("webapp",
