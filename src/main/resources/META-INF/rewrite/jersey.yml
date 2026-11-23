@@ -30,13 +30,14 @@ description: >-
   when it extends Jersey 1 itself, with classes in the `com.sun.jersey` packages or Jersey 1 code in Scala, Kotlin or
   Groovy, or when a module already uses Jersey 3. Tests on the Jersey 1 test framework move to the Jersey 2 one. Left
   for the compiler to point out are the Jersey 1 SPIs without a mechanical replacement, such as `InjectableProvider`,
-  client filters that read the response, client handlers of the application's own and `JSONConfiguration`. Some
-  differences only show at run time: `MultiPartFeature` is registered with the Jersey servlets of `web.xml`, but a
-  server configured in code has to register it; Jettison's `JSONObject` entities need `jersey-media-json-jettison` and
-  `JettisonFeature`; the default Jersey 2 connector does not see an SSL context or hostname verifier set as the JVM
-  default after it is created; a Jersey servlet mapped to `/` rather than `/*` finds no resource, since Jersey 2 takes
-  the whole path for the servlet's; and a module that already uses another Jersey 2 version, through a library such
-  as Dropwizard, gets the newest Jersey 2 next to it.
+  client filters that read the response, client handlers of the application's own, anonymous configurations that
+  override `getClasses()` or `getSingletons()` and `JSONConfiguration`. Unused imports of Jersey 1 types are removed.
+  Some differences only show at run time: `MultiPartFeature` is registered with the Jersey servlets of `web.xml`, but
+  a server configured in code has to register it; Jettison's `JSONObject` entities need `jersey-media-json-jettison`
+  and `JettisonFeature`; the default Jersey 2 connector does not see an SSL context or hostname verifier set as the
+  JVM default after it is created; a Jersey servlet mapped to `/` rather than `/*` finds no resource, since Jersey 2
+  takes the whole path for the servlet's; and a module that already uses another Jersey 2 version, through a library
+  such as Dropwizard, gets the newest Jersey 2 next to it.
 tags:
   - jersey
   - jaxrs
@@ -50,6 +51,7 @@ recipeList:
   - org.openrewrite.java.migrate.jersey.Jersey1PropertiesToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ClientMethodsToJaxRs
   - org.openrewrite.java.migrate.jersey.Jersey1TypesToJersey2
+  - org.openrewrite.java.migrate.jersey.RemoveUnusedJersey1Imports
   - org.openrewrite.java.migrate.jersey.Jersey1DependenciesToJersey2
 
 ---
