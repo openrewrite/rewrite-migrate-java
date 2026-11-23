@@ -277,6 +277,89 @@ class WebResourceRequestToInvocationTest implements RewriteTest {
     }
 
     @Test
+    void builderVariableKeepsItsMediaType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.sun.jersey.api.client.ClientResponse;
+              import com.sun.jersey.api.client.WebResource;
+
+              class A {
+                  ClientResponse send(WebResource resource, String method, String body) {
+                      WebResource.Builder builder = resource.header("Authorization", "Basic x").type("application/json").accept("application/json");
+                      builder = builder.header("X-Request", "1");
+                      if ("GET".equals(method)) {
+                          return builder.get(ClientResponse.class);
+                      }
+                      return builder.post(ClientResponse.class, body);
+                  }
+
+                  void discarded(WebResource resource) {
+                      resource.type("application/json");
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.ClientResponse;
+              import com.sun.jersey.api.client.WebResource;
+
+              import javax.ws.rs.client.Entity;
+
+              class A {
+                  ClientResponse send(WebResource resource, String method, String body) {
+                      WebResource.Builder builder = resource.request().header("Authorization", "Basic x").accept("application/json");
+                      builder = builder.header("X-Request", "1");
+                      if ("GET".equals(method)) {
+                          return builder.get(ClientResponse.class);
+                      }
+                      return builder.post(Entity.entity(body, "application/json"), ClientResponse.class);
+                  }
+
+                  void discarded(WebResource resource) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void leaveBuilderVariableGivenAnotherMediaType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import com.sun.jersey.api.client.ClientResponse;
+              import com.sun.jersey.api.client.WebResource;
+
+              class A {
+                  ClientResponse send(WebResource resource, WebResource other, String body) {
+                      WebResource.Builder builder = resource.type("application/json");
+                      builder = other.type("application/xml");
+                      return builder.post(ClientResponse.class, body);
+                  }
+              }
+              """,
+            """
+              import com.sun.jersey.api.client.ClientResponse;
+              import com.sun.jersey.api.client.WebResource;
+
+              import javax.ws.rs.client.Entity;
+
+              class A {
+                  ClientResponse send(WebResource resource, WebResource other, String body) {
+                      WebResource.Builder builder = resource.type("application/json");
+                      builder = other.type("application/xml");
+                      return builder.post(Entity.text(body), ClientResponse.class);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void leaveWhatJerseyTwoCannotExpress() {
         rewriteRun(
           //language=java

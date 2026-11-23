@@ -22,7 +22,9 @@ import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
+import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
@@ -33,6 +35,8 @@ import org.openrewrite.java.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A Jersey 1 {@code WebResource} is both the target of a request and, through {@code accept}, {@code type} and
@@ -74,7 +78,18 @@ public class WebResourceRequestToInvocation extends Recipe {
                         new UsesMethod<>("com.sun.jersey.api.client.RequestBuilder *(..)", true)),
                 new JavaVisitor<ExecutionContext>() {
                     @Override
-                    public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
+                    public J visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
+                        BuilderContentType known = BuilderContentType.of(multiVariable, getCursor());
+                        if (known != null) {
+                            // The request is sent elsewhere, so its media type goes to where it is sent.
+                            getCursor().getParentTreeCursor().putMessage(known.key(), known);
+                            getCursor().putMessage(DROP_TYPE, known.initializer);
+                        }
+                        return super.visitVariableDeclarations(multiVariable, ctx);
+                    }
+
+                    @Override
+                    public @Nullable J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                         boolean terminal = matchesAny(UNIFORM_INTERFACE_METHODS, method);
                         if (!terminal && !matchesAny(REQUEST_BUILDER_METHODS, method)) {
                             return super.visitMethodInvocation(method, ctx);
@@ -84,11 +99,123 @@ public class WebResourceRequestToInvocation extends Recipe {
                         if (chain == null) {
                             return method;
                         }
+                        if (!terminal && chain.isDiscarded(getCursor())) {
+                            // A Jersey 1 resource makes a new builder for each step, so one nobody sends does nothing.
+                            return null;
+                        }
                         Chain visited = chain.map(e -> (Expression) visitNonNull(e, ctx, getCursor()));
-                        J rewritten = visited.rewrite(this, getCursor(), method, ctx);
+                        boolean dropsType = method.getId().equals(getCursor().getNearestMessage(DROP_TYPE));
+                        Expression knownContentType = null;
+                        if (terminal && chain.base instanceof J.Identifier) {
+                            BuilderContentType known = getCursor().getNearestMessage(
+                                    BuilderContentType.key(((J.Identifier) chain.base).getSimpleName()));
+                            if (known != null && known.variable.equals(((J.Identifier) chain.base).getFieldType())) {
+                                knownContentType = known.copyOfContentType();
+                            }
+                        }
+                        J rewritten = visited.rewrite(this, getCursor(), method, dropsType, knownContentType, ctx);
                         return rewritten == null ? visited.unchanged() : rewritten;
                     }
                 });
+    }
+
+    private static final String DROP_TYPE = "jersey.dropContentType";
+
+    /**
+     * The media type that a {@code WebResource.Builder} variable was given with {@code type(..)} where it was declared,
+     * when the variable keeps that builder, so that the requests sent with it can carry the media type on their
+     * entity, which is where JAX-RS 2 takes it from.
+     */
+    private static class BuilderContentType {
+        final JavaType.Variable variable;
+        final Expression contentType;
+        final UUID initializer;
+
+        BuilderContentType(JavaType.Variable variable, Expression contentType, UUID initializer) {
+            this.variable = variable;
+            this.contentType = contentType;
+            this.initializer = initializer;
+        }
+
+        static String key(String variableName) {
+            return "jersey.builderContentType." + variableName;
+        }
+
+        String key() {
+            return key(variable.getName());
+        }
+
+        Expression copyOfContentType() {
+            return (Expression) new JavaIsoVisitor<Integer>() {
+                @Override
+                public @Nullable J preVisit(J tree, Integer p) {
+                    return tree.withId(Tree.randomId());
+                }
+            }.visitNonNull(contentType, 0);
+        }
+
+        static @Nullable BuilderContentType of(J.VariableDeclarations declarations, Cursor cursor) {
+            if (declarations.getVariables().size() != 1 || !(cursor.getParentTreeCursor().getValue() instanceof J.Block) ||
+                    !TypeUtils.isOfClassType(declarations.getType(), WEB_RESOURCE_BUILDER)) {
+                return null;
+            }
+            J.VariableDeclarations.NamedVariable variable = declarations.getVariables().get(0);
+            if (!(variable.getInitializer() instanceof J.MethodInvocation) || variable.getVariableType() == null) {
+                return null;
+            }
+            Chain chain = Chain.of((J.MethodInvocation) variable.getInitializer(), false);
+            if (chain == null || !chain.fromResource) {
+                return null;
+            }
+            Expression contentType = null;
+            for (J.MethodInvocation step : chain.steps) {
+                if ("entity".equals(step.getSimpleName())) {
+                    return null;
+                }
+                if ("type".equals(step.getSimpleName())) {
+                    contentType = step.getArguments().get(0);
+                }
+            }
+            if (contentType == null || !isConstant(contentType) ||
+                    changesContentType(cursor.getParentTreeCursor().getValue(), variable.getVariableType())) {
+                return null;
+            }
+            return new BuilderContentType(variable.getVariableType(), contentType, variable.getInitializer().getId());
+        }
+
+        private static boolean isConstant(Expression e) {
+            if (e instanceof J.Literal) {
+                return true;
+            }
+            JavaType.Variable field = e instanceof J.Identifier ? ((J.Identifier) e).getFieldType() :
+                    e instanceof J.FieldAccess ? ((J.FieldAccess) e).getName().getFieldType() : null;
+            return field != null && field.hasFlags(Flag.Static, Flag.Final);
+        }
+
+        /**
+         * Whether the variable is given another builder, other than the same one with more headers.
+         */
+        private static boolean changesContentType(J scope, JavaType.Variable variable) {
+            AtomicBoolean changes = new AtomicBoolean();
+            new JavaIsoVisitor<AtomicBoolean>() {
+                @Override
+                public J.Assignment visitAssignment(J.Assignment assignment, AtomicBoolean found) {
+                    if (assignment.getVariable() instanceof J.Identifier &&
+                            variable.equals(((J.Identifier) assignment.getVariable()).getFieldType())) {
+                        Chain chain = assignment.getAssignment() instanceof J.MethodInvocation ?
+                                Chain.of((J.MethodInvocation) assignment.getAssignment(), false) : null;
+                        if (chain == null || !(chain.base instanceof J.Identifier) ||
+                                !variable.equals(((J.Identifier) chain.base).getFieldType()) ||
+                                chain.steps.stream().anyMatch(step -> "type".equals(step.getSimpleName()) ||
+                                        "entity".equals(step.getSimpleName()))) {
+                            found.set(true);
+                        }
+                    }
+                    return super.visitAssignment(assignment, found);
+                }
+            }.visit(scope, changes);
+            return changes.get();
+        }
     }
 
     private static MethodMatcher[] matchers(String type, String... names) {
@@ -156,6 +283,24 @@ public class WebResourceRequestToInvocation extends Recipe {
         /**
          * The chain as it was, with its arguments and the expression it starts from visited.
          */
+        /**
+         * Whether the chain is a statement of its own, of a resource, with arguments that cannot do anything either.
+         */
+        boolean isDiscarded(Cursor cursor) {
+            if (!fromResource || !(cursor.getParentTreeCursor().getValue() instanceof J.Block)) {
+                return false;
+            }
+            for (J.MethodInvocation step : steps) {
+                for (Expression arg : step.getArguments()) {
+                    if (!(arg instanceof J.Literal || arg instanceof J.Identifier || arg instanceof J.FieldAccess ||
+                            arg instanceof J.Empty)) {
+                        return false;
+                    }
+                }
+            }
+            return base instanceof J.Identifier || base instanceof J.FieldAccess;
+        }
+
         J unchanged() {
             Expression select = base;
             for (J.MethodInvocation step : steps) {
@@ -165,7 +310,8 @@ public class WebResourceRequestToInvocation extends Recipe {
         }
 
         @Nullable
-        J rewrite(JavaVisitor<ExecutionContext> visitor, Cursor cursor, J.MethodInvocation original, ExecutionContext ctx) {
+        J rewrite(JavaVisitor<ExecutionContext> visitor, Cursor cursor, J.MethodInvocation original, boolean dropsType,
+                  @Nullable Expression knownContentType, ExecutionContext ctx) {
             StringBuilder code = new StringBuilder();
             List<Object> parameters = new ArrayList<>();
             // The whitespace before the '.' of each method in the new chain, from the outermost one in.
@@ -198,7 +344,11 @@ public class WebResourceRequestToInvocation extends Recipe {
                 switch (step.getSimpleName()) {
                     case "type":
                         if (terminal == null) {
-                            return null;
+                            if (!dropsType) {
+                                return null;
+                            }
+                            changed = true;
+                            continue;
                         }
                         contentType = args.get(0);
                         changed = true;
@@ -227,6 +377,9 @@ public class WebResourceRequestToInvocation extends Recipe {
                 }
             }
 
+            if (contentType == null) {
+                contentType = knownContentType;
+            }
             boolean usesEntity = false;
             if (terminal != null) {
                 Request request = Request.of(terminal, stepEntity);

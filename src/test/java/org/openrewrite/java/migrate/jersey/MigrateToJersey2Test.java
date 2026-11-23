@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.srcMainJava;
+import static org.openrewrite.java.Assertions.srcTestJava;
 import static org.openrewrite.maven.Assertions.pomXml;
 import static org.openrewrite.test.SourceSpecs.text;
 
@@ -38,7 +39,8 @@ class MigrateToJersey2Test implements RewriteTest {
     public void defaults(RecipeSpec spec) {
         spec.recipeFromResources("org.openrewrite.java.migrate.jersey.MigrateToJersey2")
           .parser(JavaParser.fromJavaVersion()
-            .classpathFromResources(new InMemoryExecutionContext(), "jersey-client-1.19", "jersey-core-1.19", "javax.ws.rs-api-2.1"));
+            .classpathFromResources(new InMemoryExecutionContext(), "jersey-client-1.19", "jersey-core-1.19",
+              "jersey-test-framework-core-1.19", "javax.ws.rs-api-2.1"));
     }
 
     private static String jersey2Version(String pom) {
@@ -220,6 +222,77 @@ class MigrateToJersey2Test implements RewriteTest {
                   class Caller {
                       String call(Client client) {
                           return client.resource("http://localhost").get(String.class);
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void servletTestContainerIsDeclaredOnce() {
+        rewriteRun(
+          mavenProject("service",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>service</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-client</artifactId>
+                            <version>1.19.4</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.sun.jersey.jersey-test-framework</groupId>
+                            <artifactId>jersey-test-framework-grizzly2</artifactId>
+                            <version>1.19.4</version>
+                            <scope>test</scope>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """,
+              spec -> spec.after(pom -> {
+                  assertThat(pom.split("<artifactId>jersey-test-framework-provider-grizzly2</artifactId>", -1)).hasSize(2);
+                  assertThat(pom).doesNotContain("com.sun.jersey");
+                  return pom;
+              })
+            ),
+            srcTestJava(
+              //language=java
+              java(
+                """
+                  import com.sun.jersey.test.framework.JerseyTest;
+                  import com.sun.jersey.test.framework.WebAppDescriptor;
+
+                  public class ItemsTest extends JerseyTest {
+                      public ItemsTest() {
+                          super(new WebAppDescriptor.Builder("com.example").build());
+                      }
+                  }
+                  """,
+                """
+                  import org.glassfish.jersey.test.DeploymentContext;
+                  import org.glassfish.jersey.test.JerseyTest;
+                  import org.glassfish.jersey.test.ServletDeploymentContext;
+                  import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
+                  import org.glassfish.jersey.test.spi.TestContainerFactory;
+
+                  public class ItemsTest extends JerseyTest {
+                      @Override
+                      protected DeploymentContext configureDeployment() {
+                          return ServletDeploymentContext.forPackages("com.example").build();
+                      }
+
+                      @Override
+                      protected TestContainerFactory getTestContainerFactory() {
+                          return new GrizzlyWebTestContainerFactory();
                       }
                   }
                   """

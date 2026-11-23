@@ -172,6 +172,29 @@ recipeList:
   - org.openrewrite.java.migrate.jersey.PackagesResourceConfigToResourceConfig
   - org.openrewrite.java.migrate.jersey.Jersey1ServerFactoriesToJersey2
   - org.openrewrite.java.migrate.jersey.MigrateJersey1WebXml
+  - org.openrewrite.java.migrate.jersey.Jersey1GrizzlyToJersey2Grizzly
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1GrizzlyToJersey2Grizzly
+displayName: Move Grizzly 2.2 code to the Grizzly that Jersey 2 uses
+description: >-
+  Jersey 1's `jersey-grizzly2` brings Grizzly 2.2, and Jersey 2's Grizzly container brings Grizzly 2.4, which renamed
+  `NetworkListener.setMaxPostSize` to `setMaxFormPostSize`. This only changes modules that depend on `jersey-grizzly2`.
+tags:
+  - jersey
+  - grizzly
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey
+      artifactIdPattern: jersey-grizzly2
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: org.glassfish.grizzly.http.server.NetworkListener setMaxPostSize(int)
+      newMethodName: setMaxFormPostSize
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: org.glassfish.grizzly.http.server.NetworkListener getMaxPostSize()
+      newMethodName: getMaxFormPostSize
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -365,6 +388,15 @@ description: >-
   multipart API.
 recipeList:
   - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartWriter
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartReaderClientSide
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartReaderServerSide
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: com.sun.jersey.api.client.Client
       newFullyQualifiedTypeName: javax.ws.rs.client.Client
   - org.openrewrite.java.ChangeType:
@@ -459,23 +491,6 @@ description: >-
 recipeList:
   - org.openrewrite.java.migrate.jersey.AddJerseyHk2
   - org.openrewrite.java.migrate.jersey.AddJackson1XcForJerseyJson
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: org.codehaus.jettison
-      artifactId: jettison
-      version: 1.5.x
-      onlyIfUsing: org.codehaus.jettison..*
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: org.glassfish.jersey.ext
-      artifactId: jersey-mvc
-      version: 2.x
-      onlyIfUsing: com.sun.jersey.api.view.Viewable
-  - org.openrewrite.java.dependencies.AddDependency:
-      groupId: org.glassfish.jersey.test-framework.providers
-      artifactId: jersey-test-framework-provider-grizzly2
-      version: 2.x
-      onlyIfUsing: com.sun.jersey.test.framework.WebAppDescriptor
-      scope: test
-      configuration: testImplementation
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.jersey
       oldArtifactId: jersey-client
@@ -571,6 +586,28 @@ recipeList:
       oldArtifactId: jsr311-api
       newArtifactId: javax.ws.rs-api
       newVersion: 2.1.1
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.codehaus.jettison
+      artifactId: jettison
+      version: 1.5.x
+      onlyIfUsing: org.codehaus.jettison..*
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.ext
+      artifactId: jersey-mvc
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.api.view.Viewable
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.test-framework.providers
+      artifactId: jersey-test-framework-provider-grizzly2
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.test.framework.WebAppDescriptor
+      scope: test
+      configuration: testImplementation
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.containers
+      artifactId: jersey-container-servlet
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.spi.container.servlet.*
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
