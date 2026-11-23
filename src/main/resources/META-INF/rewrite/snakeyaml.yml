@@ -23,7 +23,10 @@ description: >-
   version, passes a `LoaderOptions` or `DumperOptions` to the constructors that now need one, and upgrades a
   `maven-plugin-plugin` too old to read the SnakeYAML 2 jar. A version that a BOM such as Spring Boot's manages is left
   alone, since the framework has to work with SnakeYAML 2 as well: Spring Boot manages 2.x from 3.1, while 2.7.9, for
-  one, calls a `Representer` constructor that 2.0 removed. No compiler reports two changes in how documents load.
+  one, calls a `Representer` constructor that 2.0 removed. The same holds for every library that uses SnakeYAML. One
+  built against 1.x that calls a constructor 2.0 removed fails with a `NoSuchMethodError` once the version is raised, as
+  `jackson-dataformat-yaml` before 2.14 does when it parses a document, so upgrade such libraries along with SnakeYAML.
+  No compiler reports two changes in how documents load.
   SnakeYAML 2 refuses global tags such as `!!com.example.Config` unless `LoaderOptions.setTagInspector(..)` allows them,
   so a document that names the classes to create, as `Yaml.dump(..)` writes them, needs a `TagInspector` that allows
   those classes. And code that comes from an older 1.x meets the limits that later releases set by default: at most 50
