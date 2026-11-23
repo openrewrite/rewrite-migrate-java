@@ -2456,4 +2456,342 @@ class AddMockitoJavaAgentToMavenSurefirePluginTest implements RewriteTest {
       )
     );
   }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void makesNoChangesWhenParentLoadsAgentFromExplicitJarPath() {
+    rewriteRun(
+      mavenProject("parent",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>parent</artifactId>
+              <version>1.0</version>
+              <packaging>pom</packaging>
+
+              <modules>
+                <module>child</module>
+              </modules>
+
+              <properties>
+                <argLine/>
+                <mockito.version>5.17.0</mockito.version>
+              </properties>
+
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                      <argLine>
+                        @{argLine}
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                      </argLine>
+                    </configuration>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("pom.xml")
+        ),
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>child</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.sample</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0</version>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>${mockito.version}</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+            </project>
+            """,
+          spec -> spec.path("child/pom.xml")
+        )
+      )
+    );
+  }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void makesNoChangesWhenParentManagesSurefireWithAgentFromExplicitJarPath() {
+    rewriteRun(
+      mavenProject("parent",
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>parent</artifactId>
+              <version>1.0</version>
+              <packaging>pom</packaging>
+
+              <modules>
+                <module>child</module>
+              </modules>
+
+              <build>
+                <pluginManagement>
+                  <plugins>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-surefire-plugin</artifactId>
+                      <configuration>
+                        <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/5.17.0/mockito-core-5.17.0.jar</argLine>
+                      </configuration>
+                    </plugin>
+                  </plugins>
+                </pluginManagement>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("pom.xml")
+        ),
+        pomXml(
+          """
+            <project>
+              <modelVersion>4.0.0</modelVersion>
+              <groupId>org.sample</groupId>
+              <artifactId>child</artifactId>
+              <version>1.0</version>
+
+              <parent>
+                <groupId>org.sample</groupId>
+                <artifactId>parent</artifactId>
+                <version>1.0</version>
+              </parent>
+
+              <dependencies>
+                <dependency>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <version>5.17.0</version>
+                  <scope>test</scope>
+                </dependency>
+              </dependencies>
+              <build>
+                <plugins>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                  </plugin>
+                </plugins>
+              </build>
+            </project>
+            """,
+          spec -> spec.path("child/pom.xml")
+        )
+      )
+    );
+  }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void makesNoChangeWhenModuleLoadsAgentFromExplicitJarPath() {
+    rewriteRun(
+      pomXml(
+        """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0</version>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.17.0</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                    <argLine>-Xmx512m -javaagent:"${user.home}/.m2/repository/org/mockito/mockito-core/5.17.0/mockito-core-5.17.0.jar"</argLine>
+                  </configuration>
+                </plugin>
+              </plugins>
+            </build>
+          </project>
+          """
+      )
+    );
+  }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void makesNoChangeWhenByteBuddyAgentLoadedFromExplicitJarPath() {
+    rewriteRun(
+      pomXml(
+        """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0</version>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>4.11.0</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/1.12.19/byte-buddy-agent-1.12.19.jar</argLine>
+                  </configuration>
+                </plugin>
+              </plugins>
+            </build>
+          </project>
+          """
+      )
+    );
+  }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void stillAddsMockitoAgentWhenExplicitJarPathIsAnotherAgent() {
+    rewriteRun(
+      pomXml(
+        """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0</version>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.17.0</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito-core-tools/agents/other-agent-1.0.jar</argLine>
+                  </configuration>
+                </plugin>
+              </plugins>
+            </build>
+          </project>
+          """,
+        """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0</version>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.17.0</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                    <!--suppress MavenModelInspection -->
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito-core-tools/agents/other-agent-1.0.jar -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                  </configuration>
+                </plugin>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <executions>
+                    <execution>
+                      <id>get-mockito-agent-path</id>
+                      <goals>
+                        <goal>properties</goal>
+                      </goals>
+                    </execution>
+                  </executions>
+                </plugin>
+              </plugins>
+            </build>
+          </project>
+          """
+      )
+    );
+  }
+
+  @Issue("https://github.com/openrewrite/rewrite-migrate-java/issues/1383")
+  @Test
+  void makesNoChangeWhenAgentJarPathComesFromProperty() {
+    rewriteRun(
+      pomXml(
+        """
+          <project>
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>org.sample</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0</version>
+
+            <properties>
+              <mockito.agent>-javaagent:${settings.localRepository}/org/mockito/mockito-core/5.17.0/mockito-core-5.17.0.jar</mockito.agent>
+            </properties>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>5.17.0</version>
+                <scope>test</scope>
+              </dependency>
+            </dependencies>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <configuration>
+                    <argLine>-Xmx512m ${mockito.agent}</argLine>
+                  </configuration>
+                </plugin>
+              </plugins>
+            </build>
+          </project>
+          """
+      )
+    );
+  }
 }
