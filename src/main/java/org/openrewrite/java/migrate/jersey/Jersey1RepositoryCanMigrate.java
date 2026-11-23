@@ -20,10 +20,13 @@ import lombok.Value;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.ScanningRecipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.gradle.marker.GradleDependencyConfiguration;
 import org.openrewrite.gradle.marker.GradleProject;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.marker.SearchResult;
 import org.openrewrite.maven.tree.Dependency;
 import org.openrewrite.maven.tree.MavenResolutionResult;
@@ -51,7 +54,9 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
             "Jersey 1 through a library that is not Jersey, such as Dropwizard before 0.8, Eureka 1 or Hadoop, since " +
             "that library keeps using Jersey 1; when a module declares Jersey 1 as `provided` or `compileOnly`, since " +
             "the container or the code being instrumented supplies it; and when it uses the Jersey 1 Guice integration, " +
-            "for which Jersey 2 has no counterpart.";
+            "for which Jersey 2 has no counterpart. Nor does it migrate a repository with classes of its own in a " +
+            "`com.sun.jersey` package, which extend or instrument Jersey 1, or whose Kotlin, Groovy or Scala code uses " +
+            "Jersey 1, which these recipes do not change.";
 
     public static class Accumulator {
         boolean declaresJersey1;
@@ -78,6 +83,9 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
             @Override
             public @Nullable Tree preVisit(Tree tree, ExecutionContext ctx) {
                 stopAfterPreVisit();
+                if (extendsJersey1(tree)) {
+                    acc.blocked = true;
+                }
                 tree.getMarkers().findFirst(MavenResolutionResult.class).ifPresent(maven -> scanMaven(maven, acc));
                 tree.getMarkers().findFirst(GradleProject.class).ifPresent(gradle -> scanGradle(gradle, acc));
                 return tree;
@@ -94,6 +102,21 @@ public class Jersey1RepositoryCanMigrate extends ScanningRecipe<Jersey1Repositor
                 return acc.canMigrate() ? SearchResult.found(tree) : tree;
             }
         };
+    }
+
+    private static boolean extendsJersey1(Tree tree) {
+        if (tree instanceof JavaSourceFile) {
+            J.Package pkg = ((JavaSourceFile) tree).getPackageDeclaration();
+            if (pkg != null && pkg.getPackageName().startsWith("com.sun.jersey")) {
+                return true;
+            }
+        }
+        if (tree instanceof SourceFile) {
+            String path = ((SourceFile) tree).getSourcePath().toString();
+            return (path.endsWith(".kt") || path.endsWith(".groovy") || path.endsWith(".scala")) &&
+                    ((SourceFile) tree).printAll().contains("com.sun.jersey");
+        }
+        return false;
     }
 
     private static void scanMaven(MavenResolutionResult maven, Accumulator acc) {

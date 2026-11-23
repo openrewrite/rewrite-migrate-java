@@ -37,9 +37,101 @@ preconditions:
   - org.openrewrite.java.migrate.jersey.Jersey1RepositoryCanMigrate
 recipeList:
   - org.openrewrite.java.migrate.jersey.WebResourceRequestToInvocation
+  - org.openrewrite.java.migrate.jersey.Jersey1TestFrameworkToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1ClientMethodsToJaxRs
   - org.openrewrite.java.migrate.jersey.Jersey1TypesToJersey2
   - org.openrewrite.java.migrate.jersey.Jersey1DependenciesToJersey2
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1TestFrameworkToJersey2
+displayName: Migrate tests on the Jersey 1 test framework to Jersey 2
+description: >-
+  Moves tests that extend the Jersey 1 `JerseyTest` to the Jersey 2 test framework: the application under test is
+  described by a `DeploymentContext` or a `ResourceConfig`, `resource()` becomes `target()`, `getBaseURI()` becomes
+  `getBaseUri()`, and the test container factories move to their Jersey 2 providers.
+tags:
+  - jersey
+  - testing
+recipeList:
+  - org.openrewrite.java.migrate.jersey.JerseyTestToJersey2
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.JerseyTest resource()
+      newMethodName: target
+      matchOverrides: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.JerseyTest getBaseURI()
+      newMethodName: getBaseUri
+      matchOverrides: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder contextListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder contextAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder requestListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder requestAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionActivationListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.JerseyTest
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.JerseyTest
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.WebAppDescriptor$Builder
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.ServletDeploymentContext$Builder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.WebAppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.ServletDeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.LowLevelAppDescriptor$Builder
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext$Builder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.LowLevelAppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.AppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainerException
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainerException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainer
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly2.web.GrizzlyWebTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly.web.GrizzlyWebTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly2.GrizzlyTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly.GrizzlyTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.inmemory.InMemoryTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.http.HTTPContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.jdkhttp.JdkHttpServerTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.external.ExternalTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.external.ExternalTestContainerFactory
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
@@ -199,6 +291,13 @@ recipeList:
       artifactId: jersey-mvc
       version: 2.x
       onlyIfUsing: com.sun.jersey.api.view.Viewable
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.test-framework.providers
+      artifactId: jersey-test-framework-provider-grizzly2
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.test.framework.WebAppDescriptor
+      scope: test
+      configuration: testImplementation
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.jersey
       oldArtifactId: jersey-client
@@ -262,6 +361,12 @@ recipeList:
   - org.openrewrite.java.dependencies.ChangeDependency:
       oldGroupId: com.sun.jersey.jersey-test-framework
       oldArtifactId: jersey-test-framework-grizzly2
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-grizzly2
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-grizzly
       newGroupId: org.glassfish.jersey.test-framework.providers
       newArtifactId: jersey-test-framework-provider-grizzly2
       newVersion: 2.x

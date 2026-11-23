@@ -30,6 +30,7 @@ import static org.openrewrite.java.Assertions.java;
 import static org.openrewrite.java.Assertions.mavenProject;
 import static org.openrewrite.java.Assertions.srcMainJava;
 import static org.openrewrite.maven.Assertions.pomXml;
+import static org.openrewrite.test.SourceSpecs.text;
 
 class MigrateToJersey2Test implements RewriteTest {
 
@@ -223,6 +224,82 @@ class MigrateToJersey2Test implements RewriteTest {
                   }
                   """
               )
+            )
+          )
+        );
+    }
+
+    @Test
+    void leaveRepositoryThatExtendsJersey1() {
+        rewriteRun(
+          mavenProject("instrumentation",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>instrumentation</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-client</artifactId>
+                            <version>1.19.4</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            srcMainJava(
+              //language=java
+              java(
+                """
+                  package com.sun.jersey.api.client;
+
+                  class TracingHandler {
+                      String call(Client client) {
+                          return client.resource("http://localhost").get(String.class);
+                      }
+                  }
+                  """
+              )
+            )
+          )
+        );
+    }
+
+    @Test
+    void leaveRepositoryWithScalaClients() {
+        rewriteRun(
+          mavenProject("scala-client",
+            //language=xml
+            pomXml(
+              """
+                <project>
+                    <modelVersion>4.0.0</modelVersion>
+                    <groupId>com.example</groupId>
+                    <artifactId>scala-client</artifactId>
+                    <version>1.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-client</artifactId>
+                            <version>1.19.4</version>
+                        </dependency>
+                    </dependencies>
+                </project>
+                """
+            ),
+            text(
+              """
+                import com.sun.jersey.api.client.Client
+
+                object Clients {
+                  val client = Client.create()
+                }
+                """,
+              spec -> spec.path("src/main/scala/Clients.scala")
             )
           )
         );
