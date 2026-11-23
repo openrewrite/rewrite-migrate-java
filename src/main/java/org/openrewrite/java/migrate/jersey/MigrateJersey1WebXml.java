@@ -150,8 +150,10 @@ public class MigrateJersey1WebXml extends Recipe {
                             String value = value(param);
                             Xml.Tag migrated = param;
                             if (name == null) {
-                                migrated = param;
-                            } else if (RENAMED_PARAMETERS.containsKey(name)) {
+                                content.add(param);
+                                continue;
+                            }
+                            if (RENAMED_PARAMETERS.containsKey(name)) {
                                 migrated = param.withChildValue("param-name", RENAMED_PARAMETERS.get(name));
                                 if (FEATURES.contains(name) && isBoolean(value) && param.getChild("param-value").isPresent()) {
                                     migrated = migrated.withChildValue("param-value", value.toLowerCase(Locale.ROOT));

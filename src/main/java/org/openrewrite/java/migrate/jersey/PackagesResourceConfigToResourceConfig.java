@@ -30,6 +30,7 @@ import org.openrewrite.marker.Markers;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static java.util.Collections.emptyList;
 
@@ -58,7 +59,7 @@ public class PackagesResourceConfigToResourceConfig extends Recipe {
             /**
              * Classes that extend {@code PackagesResourceConfig} and are migrated, by id.
              */
-            private final Set<java.util.UUID> migratedClasses = new HashSet<>();
+            private final Set<UUID> migratedClasses = new HashSet<>();
 
             @Override
             public J visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
