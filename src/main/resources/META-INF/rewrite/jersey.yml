@@ -22,8 +22,8 @@ description: >-
   Migrate applications from Jersey 1 (`com.sun.jersey`, JAX-RS 1.1) to Jersey 2 (`org.glassfish.jersey`, JAX-RS 2.1),
   which keeps the `javax.ws.rs` packages and needs Java 8 or later. This changes the Jersey dependencies, moves the
   client code to the JAX-RS 2 client API (`ClientBuilder`, `WebTarget`, `Invocation.Builder`, `Entity`, `Response`),
-  and moves the server configuration, `web.xml` included, multipart and the other APIs that have a Jersey 2
-  counterpart. Jersey 1's POJO mapping used Jackson 1, so Jersey 2 gets Jackson 1's JAX-RS provider, registered where
+  and moves the server configuration, `web.xml` included, container filters, multipart and the other APIs that have a
+  Jersey 2 counterpart. Jersey 1's POJO mapping used Jackson 1, so Jersey 2 gets Jackson 1's JAX-RS provider, registered where
   POJO mapping was switched on, which keeps the JSON the same. A repository is left alone when a library that is not
   Jersey brings Jersey 1 along, such as Dropwizard before 0.8, Eureka 1 or Hadoop, because that library would still
   need Jersey 1, or when Jersey 1 is `provided` or `compileOnly`, or when it uses the Jersey 1 Guice integration, or
@@ -232,7 +232,9 @@ description: >-
   Moves what configures a Jersey 1 application to Jersey 2: features, properties, classes and singletons added to a
   `ResourceConfig`, `ClientConfig` or `Client` are registered through the JAX-RS 2 `Configurable` methods, a
   `PackagesResourceConfig` becomes a `ResourceConfig` scanning the same packages, the Jersey 1 HTTP server factories
-  become their Jersey 2 counterparts, and the Jersey 1 servlets and filters in `web.xml` become Jersey 2's.
+  become their Jersey 2 counterparts, the Jersey 1 servlets and filters in `web.xml` become Jersey 2's, and container
+  request and response filters become JAX-RS 2 `ContainerRequestFilter`s and `ContainerResponseFilter`s, registered
+  where Jersey 1 listed them.
 tags:
   - jersey
 recipeList:
@@ -240,6 +242,8 @@ recipeList:
   - org.openrewrite.java.migrate.jersey.PackagesResourceConfigToResourceConfig
   - org.openrewrite.java.migrate.jersey.Jersey1ServerFactoriesToJersey2
   - org.openrewrite.java.migrate.jersey.MigrateJersey1WebXml
+  - org.openrewrite.java.migrate.jersey.MigrateJersey1ContainerFiltersInWebXml
+  - org.openrewrite.java.migrate.jersey.Jersey1ContainerFilterToJaxRsFilter
   - org.openrewrite.java.migrate.jersey.Jersey1GrizzlyToJersey2Grizzly
 
 ---

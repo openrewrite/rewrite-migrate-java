@@ -100,9 +100,9 @@ public class MigrateJersey1WebXml extends Recipe {
             "on adds Jackson 1's `JacksonJaxbJsonProvider` to the provider class names. A servlet that Jersey 1 let " +
             "scan `WEB-INF/lib` and `WEB-INF/classes`, because it named no application, resource configuration or " +
             "packages, gets `jersey.config.servlet.provider.webapp` so that Jersey 2 scans them too. Parameters " +
-            "without a Jersey 2 counterpart, such as container request and response filters, resource filter " +
-            "factories, the class path, redirection, URI normalization and implicit viewables, are left alone, as " +
-            "are Guice's and Spring's Jersey 1 servlets.";
+            "without a Jersey 2 counterpart, such as resource filter factories, the class path, redirection, URI normalization and implicit viewables, are left alone, as " +
+            "are Guice's and Spring's Jersey 1 servlets. Container request and response filters are left for " +
+            "`MigrateJersey1ContainerFiltersInWebXml`.";
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
