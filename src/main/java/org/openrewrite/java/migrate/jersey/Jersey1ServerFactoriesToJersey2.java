@@ -60,14 +60,6 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
     private static final MethodMatcher GRIZZLY_SERVER_CREATE = new MethodMatcher(
             GRIZZLY_SERVER_FACTORY + " createHttpServer(*, " + JERSEY1_RESOURCE_CONFIG + ")");
 
-    /**
-     * Jersey 2's Grizzly container refers to Grizzly types that the type table does not hold.
-     */
-    static final String[] GRIZZLY_STUBS = {
-            "package org.glassfish.grizzly.http.server; public class HttpServer { public void start() throws java.io.IOException {} public void shutdownNow() {} }",
-            "package org.glassfish.grizzly.http.server; public abstract class HttpHandler {}",
-            "package org.glassfish.grizzly.ssl; public class SSLEngineConfigurator {}"
-    };
 
     String displayName = "Replace Jersey 1 server factories with their Jersey 2 counterparts";
 
@@ -192,7 +184,8 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
                         String configTemplate = "#{any(org.glassfish.jersey.server.ResourceConfig)}";
                         JavaParser.Builder<?, ?> parser = JavaParser.fromJavaVersion().classpathFromResources(ctx,
                                 "javax.ws.rs-api-2", "jersey-common-2", "jersey-server-2",
-                                "jersey-container-jdk-http-2", "jersey-container-grizzly2-http-2");
+                                "jersey-container-jdk-http-2", "jersey-container-grizzly2-http-2",
+                                "grizzly-framework-2.4", "grizzly-http-server-2.4");
                         JavaTemplate template;
                         if (jdk) {
                             template = JavaTemplate.builder("JdkHttpServerFactory.createHttpServer(" + uriTemplate + ", " + configTemplate + ", false)")
@@ -204,7 +197,7 @@ public class Jersey1ServerFactoriesToJersey2 extends Recipe {
                         } else {
                             template = JavaTemplate.builder("GrizzlyHttpServerFactory.createHttpServer(" + uriTemplate + ", " + configTemplate + ")")
                                     .imports(GRIZZLY_HTTP_SERVER_FACTORY, "java.net.URI")
-                                    .javaParser(parser.dependsOn(GRIZZLY_STUBS))
+                                    .javaParser(parser)
                                     .build();
                             maybeAddImport(GRIZZLY_HTTP_SERVER_FACTORY);
                             maybeRemoveImport(GRIZZLY_SERVER_FACTORY);

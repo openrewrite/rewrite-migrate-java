@@ -35,8 +35,8 @@ class Jersey1ServerFactoriesToJersey2Test implements RewriteTest {
         spec.recipe(new Jersey1ServerFactoriesToJersey2())
           .parser(JavaParser.fromJavaVersion()
             .classpathFromResources(new InMemoryExecutionContext(),
-              "jersey-core-1", "jersey-server-1", "jersey-grizzly2-1", "javax.ws.rs-api-2")
-            .dependsOn(Jersey1ServerFactoriesToJersey2.GRIZZLY_STUBS));
+              "jersey-core-1", "jersey-server-1", "jersey-grizzly2-1", "javax.ws.rs-api-2",
+              "grizzly-framework-2.2", "grizzly-http-server-2.2"));
     }
 
     @DocumentExample
