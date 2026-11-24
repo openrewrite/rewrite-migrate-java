@@ -261,7 +261,7 @@ recipeList:
   - org.openrewrite.github.SetupJavaUpgradeJavaVersion:
       minimumJavaMajorVersion: 25
   - org.openrewrite.gradle.migrate.MigrateToGradle9
-  - org.openrewrite.java.migrate.UpgradeThirdPartyGradlePluginsForJava25
+  - org.openrewrite.gradle.migrate.plugins.UpgradePluginsForJava25
   - org.openrewrite.maven.UpgradePluginVersion:
       groupId: org.apache.maven.plugins
       artifactId: maven-compiler-plugin
@@ -355,32 +355,6 @@ recipeList:
       artifactId: maven-surefire-*
       newVersion: 3.5.x
       addVersionIfMissing: true
-
----
-type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.migrate.UpgradeThirdPartyGradlePluginsForJava25
-displayName: Upgrade third-party Gradle plugins and tools for Java 25
-description: >-
-  Upgrade third-party Gradle plugins and the tools they run whose older versions fail on Java 25,
-  staying on the earliest version line that works and preserving newer versions.
-  Plugins that break on Gradle 9 itself are upgraded by `org.openrewrite.gradle.migrate.MigrateToGradle9`.
-tags:
-  - java25
-  - gradle
-recipeList:
-  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
-      pluginIdPattern: net.ltgt.errorprone
-      newVersion: 4.1.x
-  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
-      pluginIdPattern: org.gradle.test-retry
-      newVersion: 1.6.x
-  - org.openrewrite.gradle.plugins.UpgradePluginVersion:
-      pluginIdPattern: com.bmuschko.docker-*-application
-      newVersion: 10.0.x
-  - org.openrewrite.gradle.migrate.quality.UpgradeSpotBugsToolVersion:
-      newVersion: 4.9.x
-  - org.openrewrite.gradle.migrate.quality.UpgradeSpotlessGoogleJavaFormat:
-      newVersion: 1.27.x
 
 ---
 type: specs.openrewrite.org/v1beta/recipe
