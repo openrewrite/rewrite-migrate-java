@@ -80,6 +80,12 @@ class UpgradeDockerImageVersionTest implements RewriteTest {
       "openjdk, 17-alpine, eclipse-temurin, 25-alpine, 25",
       "eclipse-temurin, 17-jre-focal, eclipse-temurin, 25-jre, 25",
       "eclipse-temurin, 11-jre-focal, eclipse-temurin, 17-jre-focal, 17",
+      // The adoptopenjdk/openjdkN images carry their Java version in the name rather than the tag
+      "adoptopenjdk/openjdk11, alpine-jre, eclipse-temurin, 25-jre-alpine, 25",
+      "adoptopenjdk/openjdk11, alpine-slim, eclipse-temurin, 25-alpine, 25",
+      "adoptopenjdk/openjdk8, alpine, eclipse-temurin, 25-alpine, 25",
+      "adoptopenjdk/openjdk11, jre, eclipse-temurin, 25-jre, 25",
+      "adoptopenjdk/openjdk8, latest, eclipse-temurin, 25, 25",
       // A pinned patch or update version is dropped, as it is not published for the new version
       "eclipse-temurin, 17.0.9_9-jdk, eclipse-temurin, 25-jdk, 25",
       "eclipse-temurin, 17.0.20.1_1-jre-alpine, eclipse-temurin, 25-jre-alpine, 25",
