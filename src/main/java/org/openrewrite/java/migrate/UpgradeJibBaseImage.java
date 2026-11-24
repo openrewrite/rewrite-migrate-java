@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Option;
-import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
@@ -82,7 +81,8 @@ public class UpgradeJibBaseImage extends Recipe {
                 if (maven.isAcceptable(sourceFile, ctx)) {
                     return maven.visit(tree, ctx);
                 }
-                return gradle.isAcceptable(sourceFile, ctx) ? gradle.visit(tree, ctx) : tree;
+                return IsBuildGradle.matches(sourceFile.getSourcePath()) && gradle.isAcceptable(sourceFile, ctx) ?
+                        gradle.visit(tree, ctx) : tree;
             }
         };
     }
@@ -129,8 +129,8 @@ public class UpgradeJibBaseImage extends Recipe {
         };
     }
 
-    private TreeVisitor<?, ExecutionContext> gradleVisitor() {
-        return Preconditions.check(new IsBuildGradle<>(), new JavaIsoVisitor<ExecutionContext>() {
+    private JavaIsoVisitor<ExecutionContext> gradleVisitor() {
+        return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext ctx) {
                 J.Assignment a = super.visitAssignment(assignment, ctx);
@@ -157,7 +157,7 @@ public class UpgradeJibBaseImage extends Recipe {
                 Expression upgraded = upgraded(image);
                 return upgraded == image ? m : m.withArguments(singletonList(upgraded));
             }
-        });
+        };
     }
 
     private Expression upgraded(Expression image) {

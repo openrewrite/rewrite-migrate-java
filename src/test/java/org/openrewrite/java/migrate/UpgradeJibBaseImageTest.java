@@ -25,6 +25,7 @@ import org.openrewrite.test.RewriteTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
+import static org.openrewrite.groovy.Assertions.groovy;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 class UpgradeJibBaseImageTest implements RewriteTest {
@@ -491,6 +492,17 @@ class UpgradeJibBaseImageTest implements RewriteTest {
                           image = 'eclipse-temurin:25-jre'
                       }
                   }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void groovySourceOutsideBuildScripts() {
+            rewriteRun(
+              groovy(
+                """
+                  jib.from.image = 'eclipse-temurin:17-jre'
                   """
               )
             );
