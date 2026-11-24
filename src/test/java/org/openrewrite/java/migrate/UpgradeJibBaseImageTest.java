@@ -32,400 +32,223 @@ class UpgradeJibBaseImageTest implements RewriteTest {
         spec.recipe(new UpgradeJibBaseImage(25));
     }
 
-    @DocumentExample
-    @Test
-    void mavenPluginBaseImage() {
-        rewriteRun(
-          pomXml(
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <build>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <version>3.4.6</version>
-                              <configuration>
-                                  <from>
-                                      <image>eclipse-temurin:17-jre-alpine</image>
-                                  </from>
-                                  <to>
-                                      <image>gcr.io/my-project/demo</image>
-                                  </to>
-                              </configuration>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """,
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <build>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <version>3.4.6</version>
-                              <configuration>
-                                  <from>
-                                      <image>eclipse-temurin:25-jre-alpine</image>
-                                  </from>
-                                  <to>
-                                      <image>gcr.io/my-project/demo</image>
-                                  </to>
-                              </configuration>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """
-          )
-        );
-    }
-
-    @Test
-    void mavenExecutionAndPluginManagementBaseImages() {
-        rewriteRun(
-          pomXml(
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <build>
-                      <pluginManagement>
-                          <plugins>
-                              <plugin>
-                                  <groupId>com.google.cloud.tools</groupId>
-                                  <artifactId>jib-maven-plugin</artifactId>
-                                  <version>3.4.6</version>
-                                  <configuration>
-                                      <from>
-                                          <image>docker://openjdk:11-jre-slim</image>
-                                      </from>
-                                  </configuration>
-                              </plugin>
-                          </plugins>
-                      </pluginManagement>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <executions>
-                                  <execution>
-                                      <phase>package</phase>
-                                      <goals>
-                                          <goal>build</goal>
-                                      </goals>
-                                      <configuration>
-                                          <from>
-                                              <image>amazoncorretto:21@sha256:0123456789abcdef</image>
-                                          </from>
-                                      </configuration>
-                                  </execution>
-                              </executions>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """,
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <build>
-                      <pluginManagement>
-                          <plugins>
-                              <plugin>
-                                  <groupId>com.google.cloud.tools</groupId>
-                                  <artifactId>jib-maven-plugin</artifactId>
-                                  <version>3.4.6</version>
-                                  <configuration>
-                                      <from>
-                                          <image>docker://eclipse-temurin:25-jre-slim</image>
-                                      </from>
-                                  </configuration>
-                              </plugin>
-                          </plugins>
-                      </pluginManagement>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <executions>
-                                  <execution>
-                                      <phase>package</phase>
-                                      <goals>
-                                          <goal>build</goal>
-                                      </goals>
-                                      <configuration>
-                                          <from>
-                                              <image>amazoncorretto:25</image>
-                                          </from>
-                                      </configuration>
-                                  </execution>
-                              </executions>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """
-          )
-        );
-    }
-
-    @Test
-    void mavenPropertiesHoldingBaseImage() {
-        rewriteRun(
-          pomXml(
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <properties>
-                      <jib.from.image>eclipse-temurin:17-jre</jib.from.image>
-                      <base.image>eclipse-temurin:21-jdk</base.image>
-                      <unrelated.image>eclipse-temurin:17-jdk</unrelated.image>
-                  </properties>
-                  <build>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <version>3.4.6</version>
-                              <configuration>
-                                  <from>
-                                      <image>${base.image}</image>
-                                  </from>
-                              </configuration>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """,
-            //language=xml
-            """
-              <project>
-                  <groupId>org.example</groupId>
-                  <artifactId>demo</artifactId>
-                  <version>1.0.0</version>
-                  <properties>
-                      <jib.from.image>eclipse-temurin:25-jre</jib.from.image>
-                      <base.image>eclipse-temurin:25-jdk</base.image>
-                      <unrelated.image>eclipse-temurin:17-jdk</unrelated.image>
-                  </properties>
-                  <build>
-                      <plugins>
-                          <plugin>
-                              <groupId>com.google.cloud.tools</groupId>
-                              <artifactId>jib-maven-plugin</artifactId>
-                              <version>3.4.6</version>
-                              <configuration>
-                                  <from>
-                                      <image>${base.image}</image>
-                                  </from>
-                              </configuration>
-                          </plugin>
-                      </plugins>
-                  </build>
-              </project>
-              """
-          )
-        );
-    }
-
-    @Test
-    void gradleGroovyBaseImage() {
-        rewriteRun(
-          buildGradle(
-            """
-              plugins {
-                  id 'java'
-                  id 'com.google.cloud.tools.jib' version '3.4.5'
-              }
-
-              jib {
-                  from {
-                      image = 'eclipse-temurin:17-jre-alpine'
-                  }
-                  to {
-                      image = 'us-central1-docker.pkg.dev/my-project/my-repo/my-java-app'
-                  }
-              }
-              """,
-            """
-              plugins {
-                  id 'java'
-                  id 'com.google.cloud.tools.jib' version '3.4.5'
-              }
-
-              jib {
-                  from {
-                      image = 'eclipse-temurin:25-jre-alpine'
-                  }
-                  to {
-                      image = 'us-central1-docker.pkg.dev/my-project/my-repo/my-java-app'
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void gradleGroovyDottedAndMethodBaseImages() {
-        rewriteRun(
-          buildGradle(
-            """
-              jib.from.image = "openjdk:11-jdk"
-
-              subprojects {
-                  jib {
-                      from.image = 'eclipse-temurin:17'
-                  }
-              }
-
-              project(':app') {
-                  jib.from {
-                      image 'amazoncorretto:17-al2023'
-                  }
-              }
-              """,
-            """
-              jib.from.image = "eclipse-temurin:25-jdk"
-
-              subprojects {
-                  jib {
-                      from.image = 'eclipse-temurin:25'
-                  }
-              }
-
-              project(':app') {
-                  jib.from {
-                      image 'amazoncorretto:25-al2023'
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void gradleKotlinDslBaseImage() {
-        rewriteRun(
-          buildGradleKts(
-            """
-              plugins {
-                  java
-                  id("com.google.cloud.tools.jib") version "3.4.5"
-              }
-
-              jib {
-                  from {
-                      image = "eclipse-temurin:17-jre-alpine"
-                  }
-                  to {
-                      image = "gcr.io/my-project/demo"
-                  }
-              }
-              """,
-            """
-              plugins {
-                  java
-                  id("com.google.cloud.tools.jib") version "3.4.5"
-              }
-
-              jib {
-                  from {
-                      image = "eclipse-temurin:25-jre-alpine"
-                  }
-                  to {
-                      image = "gcr.io/my-project/demo"
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void gradleKotlinDslConfigureJibExtension() {
-        rewriteRun(
-          buildGradleKts(
-            """
-              import com.google.cloud.tools.jib.gradle.JibExtension
-
-              configure<JibExtension> {
-                  from {
-                      image = "eclipse-temurin:17-jre-alpine"
-                  }
-              }
-              """,
-            """
-              import com.google.cloud.tools.jib.gradle.JibExtension
-
-              configure<JibExtension> {
-                  from {
-                      image = "eclipse-temurin:25-jre-alpine"
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void gradleKotlinDslDottedBaseImage() {
-        rewriteRun(
-          buildGradleKts(
-            """
-              jib.from.image = "eclipse-temurin:17-jre"
-              """,
-            """
-              jib.from.image = "eclipse-temurin:25-jre"
-              """
-          )
-        );
-    }
-
-    @Test
-    void asPartOfUpgradeJavaVersion() {
-        rewriteRun(
-          spec -> spec.recipe(new UpgradeJavaVersion(25)),
-          buildGradle(
-            """
-              jib {
-                  from {
-                      image = 'eclipse-temurin:21-jre'
-                  }
-              }
-              """,
-            """
-              jib {
-                  from {
-                      image = 'eclipse-temurin:25-jre'
-                  }
-              }
-              """
-          )
-        );
-    }
-
     @Nested
-    class NoChange {
+    class Maven {
+        @DocumentExample
+        @Test
+        void pluginBaseImage() {
+            rewriteRun(
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <version>3.4.6</version>
+                                  <configuration>
+                                      <from>
+                                          <image>eclipse-temurin:17-jre-alpine</image>
+                                      </from>
+                                      <to>
+                                          <image>gcr.io/my-project/demo</image>
+                                      </to>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <version>3.4.6</version>
+                                  <configuration>
+                                      <from>
+                                          <image>eclipse-temurin:25-jre-alpine</image>
+                                      </from>
+                                      <to>
+                                          <image>gcr.io/my-project/demo</image>
+                                      </to>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """
+              )
+            );
+        }
+
+        @Test
+        void executionAndPluginManagementBaseImages() {
+            rewriteRun(
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <build>
+                          <pluginManagement>
+                              <plugins>
+                                  <plugin>
+                                      <groupId>com.google.cloud.tools</groupId>
+                                      <artifactId>jib-maven-plugin</artifactId>
+                                      <version>3.4.6</version>
+                                      <configuration>
+                                          <from>
+                                              <image>docker://openjdk:11-jre-slim</image>
+                                          </from>
+                                      </configuration>
+                                  </plugin>
+                              </plugins>
+                          </pluginManagement>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <executions>
+                                      <execution>
+                                          <phase>package</phase>
+                                          <goals>
+                                              <goal>build</goal>
+                                          </goals>
+                                          <configuration>
+                                              <from>
+                                                  <image>amazoncorretto:21@sha256:0123456789abcdef</image>
+                                              </from>
+                                          </configuration>
+                                      </execution>
+                                  </executions>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <build>
+                          <pluginManagement>
+                              <plugins>
+                                  <plugin>
+                                      <groupId>com.google.cloud.tools</groupId>
+                                      <artifactId>jib-maven-plugin</artifactId>
+                                      <version>3.4.6</version>
+                                      <configuration>
+                                          <from>
+                                              <image>docker://eclipse-temurin:25-jre-slim</image>
+                                          </from>
+                                      </configuration>
+                                  </plugin>
+                              </plugins>
+                          </pluginManagement>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <executions>
+                                      <execution>
+                                          <phase>package</phase>
+                                          <goals>
+                                              <goal>build</goal>
+                                          </goals>
+                                          <configuration>
+                                              <from>
+                                                  <image>amazoncorretto:25</image>
+                                              </from>
+                                          </configuration>
+                                      </execution>
+                                  </executions>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """
+              )
+            );
+        }
+
+        @Test
+        void propertiesHoldingBaseImage() {
+            rewriteRun(
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <jib.from.image>eclipse-temurin:17-jre</jib.from.image>
+                          <base.image>eclipse-temurin:21-jdk</base.image>
+                          <unrelated.image>eclipse-temurin:17-jdk</unrelated.image>
+                      </properties>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <version>3.4.6</version>
+                                  <configuration>
+                                      <from>
+                                          <image>${base.image}</image>
+                                      </from>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <jib.from.image>eclipse-temurin:25-jre</jib.from.image>
+                          <base.image>eclipse-temurin:25-jdk</base.image>
+                          <unrelated.image>eclipse-temurin:17-jdk</unrelated.image>
+                      </properties>
+                      <build>
+                          <plugins>
+                              <plugin>
+                                  <groupId>com.google.cloud.tools</groupId>
+                                  <artifactId>jib-maven-plugin</artifactId>
+                                  <version>3.4.6</version>
+                                  <configuration>
+                                      <from>
+                                          <image>${base.image}</image>
+                                      </from>
+                                  </configuration>
+                              </plugin>
+                          </plugins>
+                      </build>
+                  </project>
+                  """
+              )
+            );
+        }
+
         @Test
         void otherPluginsAndNonJavaImages() {
             rewriteRun(
@@ -467,7 +290,128 @@ class UpgradeJibBaseImageTest implements RewriteTest {
         }
 
         @Test
-        void gradleImagesOutsideJibFrom() {
+        void propertyOutsideJibConfiguration() {
+            rewriteRun(
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <base.image>eclipse-temurin:17-jdk</base.image>
+                      </properties>
+                  </project>
+                  """
+              )
+            );
+        }
+    }
+
+    @Nested
+    class Gradle {
+        @Test
+        void baseImage() {
+            rewriteRun(
+              buildGradle(
+                """
+                  plugins {
+                      id 'java'
+                      id 'com.google.cloud.tools.jib' version '3.4.5'
+                  }
+
+                  jib {
+                      from {
+                          image = 'eclipse-temurin:17-jre-alpine'
+                      }
+                      to {
+                          image = 'us-central1-docker.pkg.dev/my-project/my-repo/my-java-app'
+                      }
+                  }
+                  """,
+                """
+                  plugins {
+                      id 'java'
+                      id 'com.google.cloud.tools.jib' version '3.4.5'
+                  }
+
+                  jib {
+                      from {
+                          image = 'eclipse-temurin:25-jre-alpine'
+                      }
+                      to {
+                          image = 'us-central1-docker.pkg.dev/my-project/my-repo/my-java-app'
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void dottedAndMethodBaseImages() {
+            rewriteRun(
+              buildGradle(
+                """
+                  jib.from.image = "openjdk:11-jdk"
+
+                  subprojects {
+                      jib {
+                          from.image = 'eclipse-temurin:17'
+                      }
+                  }
+
+                  project(':app') {
+                      jib.from {
+                          image 'amazoncorretto:17-al2023'
+                      }
+                  }
+                  """,
+                """
+                  jib.from.image = "eclipse-temurin:25-jdk"
+
+                  subprojects {
+                      jib {
+                          from.image = 'eclipse-temurin:25'
+                      }
+                  }
+
+                  project(':app') {
+                      jib.from {
+                          image 'amazoncorretto:25-al2023'
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void asPartOfUpgradeJavaVersion() {
+            rewriteRun(
+              spec -> spec.recipe(new UpgradeJavaVersion(25)),
+              buildGradle(
+                """
+                  jib {
+                      from {
+                          image = 'eclipse-temurin:21-jre'
+                      }
+                  }
+                  """,
+                """
+                  jib {
+                      from {
+                          image = 'eclipse-temurin:25-jre'
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void imagesOutsideJibFrom() {
             rewriteRun(
               buildGradle(
                 """
@@ -479,21 +423,6 @@ class UpgradeJibBaseImageTest implements RewriteTest {
                       }
                       to {
                           image = 'eclipse-temurin:17-jre'
-                      }
-                  }
-                  """
-              )
-            );
-        }
-
-        @Test
-        void otherKotlinExtension() {
-            rewriteRun(
-              buildGradleKts(
-                """
-                  configure<OtherExtension> {
-                      from {
-                          image = "eclipse-temurin:17-jre"
                       }
                   }
                   """
@@ -526,21 +455,98 @@ class UpgradeJibBaseImageTest implements RewriteTest {
               )
             );
         }
+    }
+
+    @Nested
+    class GradleKts {
+        @Test
+        void baseImage() {
+            rewriteRun(
+              buildGradleKts(
+                """
+                  plugins {
+                      java
+                      id("com.google.cloud.tools.jib") version "3.4.5"
+                  }
+
+                  jib {
+                      from {
+                          image = "eclipse-temurin:17-jre-alpine"
+                      }
+                      to {
+                          image = "gcr.io/my-project/demo"
+                      }
+                  }
+                  """,
+                """
+                  plugins {
+                      java
+                      id("com.google.cloud.tools.jib") version "3.4.5"
+                  }
+
+                  jib {
+                      from {
+                          image = "eclipse-temurin:25-jre-alpine"
+                      }
+                      to {
+                          image = "gcr.io/my-project/demo"
+                      }
+                  }
+                  """
+              )
+            );
+        }
 
         @Test
-        void propertyOutsideJibConfiguration() {
+        void configureJibExtension() {
             rewriteRun(
-              pomXml(
-                //language=xml
+              buildGradleKts(
                 """
-                  <project>
-                      <groupId>org.example</groupId>
-                      <artifactId>demo</artifactId>
-                      <version>1.0.0</version>
-                      <properties>
-                          <base.image>eclipse-temurin:17-jdk</base.image>
-                      </properties>
-                  </project>
+                  import com.google.cloud.tools.jib.gradle.JibExtension
+
+                  configure<JibExtension> {
+                      from {
+                          image = "eclipse-temurin:17-jre-alpine"
+                      }
+                  }
+                  """,
+                """
+                  import com.google.cloud.tools.jib.gradle.JibExtension
+
+                  configure<JibExtension> {
+                      from {
+                          image = "eclipse-temurin:25-jre-alpine"
+                      }
+                  }
+                  """
+              )
+            );
+        }
+
+        @Test
+        void dottedBaseImage() {
+            rewriteRun(
+              buildGradleKts(
+                """
+                  jib.from.image = "eclipse-temurin:17-jre"
+                  """,
+                """
+                  jib.from.image = "eclipse-temurin:25-jre"
+                  """
+              )
+            );
+        }
+
+        @Test
+        void otherExtension() {
+            rewriteRun(
+              buildGradleKts(
+                """
+                  configure<OtherExtension> {
+                      from {
+                          image = "eclipse-temurin:17-jre"
+                      }
+                  }
                   """
               )
             );
