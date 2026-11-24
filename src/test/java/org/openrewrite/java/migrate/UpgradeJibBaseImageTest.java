@@ -18,9 +18,11 @@ package org.openrewrite.java.migrate;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
+import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.openrewrite.gradle.Assertions.buildGradle;
 import static org.openrewrite.gradle.Assertions.buildGradleKts;
 import static org.openrewrite.maven.Assertions.pomXml;
@@ -245,6 +247,55 @@ class UpgradeJibBaseImageTest implements RewriteTest {
                       </build>
                   </project>
                   """
+              )
+            );
+        }
+
+        @Test
+        void profilePropertiesKeepTheirOwnVariant() {
+            rewriteRun(
+              pomXml(
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <jib.from.image>eclipse-temurin:17-jre</jib.from.image>
+                      </properties>
+                      <profiles>
+                          <profile>
+                              <id>alpine</id>
+                              <properties>
+                                  <jib.from.image>eclipse-temurin:17-jre-alpine</jib.from.image>
+                              </properties>
+                          </profile>
+                      </profiles>
+                  </project>
+                  """,
+                //language=xml
+                """
+                  <project>
+                      <groupId>org.example</groupId>
+                      <artifactId>demo</artifactId>
+                      <version>1.0.0</version>
+                      <properties>
+                          <jib.from.image>eclipse-temurin:25-jre</jib.from.image>
+                      </properties>
+                      <profiles>
+                          <profile>
+                              <id>alpine</id>
+                              <properties>
+                                  <jib.from.image>eclipse-temurin:25-jre-alpine</jib.from.image>
+                              </properties>
+                          </profile>
+                      </profiles>
+                  </project>
+                  """,
+                spec -> spec.afterRecipe(pom -> assertThat(pom.getMarkers().findFirst(MavenResolutionResult.class)
+                  .map(result -> result.getPom().getProperties().get("jib.from.image")))
+                  .contains("eclipse-temurin:25-jre"))
               )
             );
         }

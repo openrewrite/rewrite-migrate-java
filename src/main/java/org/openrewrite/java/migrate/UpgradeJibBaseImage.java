@@ -52,7 +52,6 @@ public class UpgradeJibBaseImage extends Recipe {
             new XPathMatcher("//plugin[artifactId='jib-maven-plugin']/configuration/from/image");
     private static final XPathMatcher EXECUTION_FROM_IMAGE =
             new XPathMatcher("//plugin[artifactId='jib-maven-plugin']/executions/execution/configuration/from/image");
-    private static final XPathMatcher PROPERTY = new XPathMatcher("//properties/*");
     private static final String IMAGE_PROPERTIES = "IMAGE_PROPERTIES";
     private static final Pattern PROPERTY_REFERENCE = Pattern.compile("\\$\\{([^}]+)}");
     /// Jib reads a base image from a registry by default, or from the local Docker daemon or a tarball
@@ -116,11 +115,17 @@ public class UpgradeJibBaseImage extends Recipe {
                     return t;
                 }
                 String upgraded = t.getValue().map(value -> upgrade(value.trim(), version)).orElse(null);
-                return upgraded == null ? t : t.withValue(upgraded);
+                if (upgraded == null) {
+                    return t;
+                }
+                if (isImageProperty(t)) {
+                    maybeUpdateModel();
+                }
+                return t.withValue(upgraded);
             }
 
             private boolean isImageProperty(Xml.Tag tag) {
-                return PROPERTY.matches(getCursor()) &&
+                return (isPropertyTag() || isProfilePropertyTag()) &&
                        getCursor().<Set<String>>getNearestMessage(IMAGE_PROPERTIES, emptySet()).contains(tag.getName());
             }
         };
