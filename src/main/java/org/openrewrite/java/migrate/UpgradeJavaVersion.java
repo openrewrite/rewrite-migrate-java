@@ -58,6 +58,7 @@ public class UpgradeJavaVersion extends Recipe {
                 new UpgradeJavaContainerImages(version),
                 new org.openrewrite.gitlab.UpgradeJavaVersion(version),
                 new UpgradeDockerImageVersion(version),
+                new UpgradeJibBaseImage(version),
                 new UpgradeKotlinJvmTargetVersion(version),
                 new UpgradeEclipseJavaVersion(version)
         );
