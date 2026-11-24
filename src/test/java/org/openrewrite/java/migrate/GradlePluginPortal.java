@@ -23,8 +23,8 @@ import org.openrewrite.maven.tree.MavenRepository;
 
 import java.util.List;
 
-/// Markers whose buildscript resolves plugins from the Gradle Plugin Portal, as a real Gradle build's would,
-/// so that plugin version selectors such as `1.0.x` can be resolved without running the Tooling API.
+/// Markers that resolve plugins from the Gradle Plugin Portal and dependencies from Maven Central, as a real
+/// Gradle build would, so that version selectors such as `1.0.x` can be resolved without running the Tooling API.
 final class GradlePluginPortal {
     private static final MavenRepository REPOSITORY = new MavenRepository(
       "Gradle Central Plugin Repository", "https://plugins.gradle.org/m2", "true", "false", true, null, null, null, null);
@@ -37,7 +37,11 @@ final class GradlePluginPortal {
     }
 
     static GradleProject project() {
-        return GradleProject.builder().id(Tree.randomId()).buildscript(buildscript()).build();
+        return GradleProject.builder()
+          .id(Tree.randomId())
+          .buildscript(buildscript())
+          .mavenRepositories(List.of(MavenRepository.MAVEN_CENTRAL))
+          .build();
     }
 
     static GradleSettings settings() {
