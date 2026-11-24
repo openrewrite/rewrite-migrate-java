@@ -242,4 +242,61 @@ class UseAllArgsConstructorTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void keepConstructorWithParameterAnnotation() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            @interface Qualifier {
+                String value();
+            }
+
+            class A {
+                private String name;
+
+                A(@Qualifier("primary") String name) {
+                    this.name = name;
+                }
+            }
+            """
+        )
+        );
+    }
+
+    @Test
+    void keepConstructorWithThrowsClause() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            class A {
+                private String name;
+
+                A(String name) throws Exception {
+                    this.name = name;
+                }
+            }
+            """
+        )
+        );
+    }
+
+    @Test
+    void keepConstructorWithVarargsParameter() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            class A {
+                private String[] names;
+
+                A(String... names) {
+                    this.names = names;
+                }
+            }
+            """
+        )
+        );
+    }
 }

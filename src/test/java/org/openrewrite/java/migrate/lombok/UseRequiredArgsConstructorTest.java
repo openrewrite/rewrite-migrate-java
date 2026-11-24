@@ -408,4 +408,83 @@ class UseRequiredArgsConstructorTest implements RewriteTest {
           )
         );
     }
+    @Test
+    void keepConstructorWithParameterAnnotation() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            @interface Qualifier {
+                String value();
+            }
+
+            class A {
+                private final String name;
+
+                A(@Qualifier("primary") String name) {
+                    this.name = name;
+                }
+            }
+            """
+        )
+        );
+    }
+
+    @Test
+    void keepConstructorWithThrowsClause() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            class A {
+                private final String name;
+
+                A(String name) throws Exception {
+                    this.name = name;
+                }
+            }
+            """
+        )
+        );
+    }
+
+    @Test
+    void keepConstructorWithVarargsParameter() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            class A {
+                private final String[] names;
+
+                A(String... names) {
+                    this.names = names;
+                }
+            }
+            """
+        )
+        );
+    }
+
+    @Test
+    void keepConstructorForNonLombokNonNullField() {
+        rewriteRun(
+        //language=java
+        java(
+            """
+            @interface NonNull {
+            }
+
+            class A {
+                @NonNull
+                private String name;
+
+                A(String name) {
+                    this.name = name;
+                }
+            }
+            """
+        )
+        );
+    }
 }
