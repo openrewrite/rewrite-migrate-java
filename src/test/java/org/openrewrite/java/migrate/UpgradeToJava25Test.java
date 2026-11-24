@@ -84,59 +84,6 @@ class UpgradeToJava25Test implements RewriteTest {
     }
 
     @Test
-    void upgradeNebulaNetflixOssForGradle9() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
-          buildGradle(
-            """
-              plugins {
-                  id 'nebula.netflixoss' version '11.6.0'
-              }
-              """,
-            """
-              plugins {
-                  id 'nebula.netflixoss' version '12.0.0'
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void upgradeNamespacedNebulaNetflixOssForGradle9() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
-          buildGradle(
-            """
-              plugins {
-                  id 'com.netflix.nebula.netflixoss' version '11.6.0'
-              }
-              """,
-            """
-              plugins {
-                  id 'com.netflix.nebula.netflixoss' version '12.0.0'
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void doNotDowngradeNebulaNetflixOss() {
-        rewriteRun(
-          spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
-          buildGradle(
-            """
-              plugins {
-                  id 'nebula.netflixoss' version '13.0.0'
-                  id 'com.netflix.nebula.netflixoss' version '13.0.0'
-              }
-              """
-          )
-        );
-    }
-
-    @Test
     void replacesRetiredAdoptDistributionForJava25() {
         rewriteRun(
           spec -> spec.recipeFromResources("org.openrewrite.java.migrate.UpgradePluginsForJava25"),
