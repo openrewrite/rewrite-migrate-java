@@ -158,7 +158,7 @@ class UpgradeJibBaseImageTest implements RewriteTest {
                                       <version>3.4.6</version>
                                       <configuration>
                                           <from>
-                                              <image>docker://eclipse-temurin:25-jre-slim</image>
+                                              <image>docker://eclipse-temurin:25-jre</image>
                                           </from>
                                       </configuration>
                                   </plugin>

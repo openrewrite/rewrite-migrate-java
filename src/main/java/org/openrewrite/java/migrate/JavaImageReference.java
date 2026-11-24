@@ -34,6 +34,10 @@ final class JavaImageReference {
             "bellsoft/liberica-openjdk-centos", "ibm-semeru-runtimes", "sapmachine"
     ));
 
+    private static final Set<String> UNPUBLISHED_TEMURIN_VARIANTS = new HashSet<>(asList(
+            "hotspot", "slim", "stretch", "buster", "bullseye", "bookworm", "trixie", "bionic", "xenial"));
+    /// Temurin builds no Ubuntu 20.04 images for a later Java version.
+    private static final int LAST_TEMURIN_FOCAL = 17;
     private static final int OLDEST_VERSION = 8;
     /// The feature version, then any patch or update version as published by the various vendors, such as
     /// `.0.9_9` and `u392-b08` of Temurin, `.0.20.1-17.68` of Zulu or `.0.19-11` of Liberica, then the variant.
@@ -108,7 +112,27 @@ final class JavaImageReference {
         if (!matcher.matches() || !isUpgrade(Integer.parseInt(matcher.group(1)), version)) {
             return null;
         }
-        return version + (matcher.group(2) == null ? "" : matcher.group(2));
+        String variant = matcher.group(2) == null ? "" : matcher.group(2);
+        if (DEPRECATED_IMAGES.contains(repository) || NEW_IMAGE.equals(repository)) {
+            variant = temurinVariant(variant, version);
+        }
+        return version + variant;
+    }
+
+    /// Variants of `openjdk` and `adoptopenjdk` images that `eclipse-temurin` never published, such as `-slim` and
+    /// `-hotspot`, as well as Debian releases, and Ubuntu releases that Temurin stopped building for, are dropped from a
+    /// tag, so that it names an image that exists: `11-jre-hotspot` becomes `25-jre`, and `17-jdk-slim-buster` becomes `25-jdk`.
+    private static String temurinVariant(String variant, int version) {
+        if (!variant.startsWith("-")) {
+            return variant;
+        }
+        StringBuilder supported = new StringBuilder();
+        for (String part : variant.substring(1).split("-")) {
+            if (!UNPUBLISHED_TEMURIN_VARIANTS.contains(part) && !("focal".equals(part) && version > LAST_TEMURIN_FOCAL)) {
+                supported.append('-').append(part);
+            }
+        }
+        return supported.toString();
     }
 
     private static @Nullable String upgradedMavenTag(String tag, int version) {
