@@ -52,6 +52,7 @@ public class UseNoArgsConstructor extends Recipe {
 				if (method.isConstructor() &&
 						!method.getMarkers().findFirst(CompactConstructor.class).isPresent() &&
 						method.getParameters().get(0) instanceof J.Empty &&
+                        (method.getThrows() == null || method.getThrows().isEmpty()) &&
                         method.getBody() != null &&
                         method.getBody().getStatements().isEmpty() &&
                         method.getBody().getEnd().getComments().isEmpty()) {
