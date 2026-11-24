@@ -48,10 +48,8 @@ import static java.util.Collections.singletonList;
 @Value
 public class UpgradeJibBaseImage extends Recipe {
 
-    private static final XPathMatcher PLUGIN_FROM_IMAGE =
-            new XPathMatcher("//plugin[artifactId='jib-maven-plugin']/configuration/from/image");
-    private static final XPathMatcher EXECUTION_FROM_IMAGE =
-            new XPathMatcher("//plugin[artifactId='jib-maven-plugin']/executions/execution/configuration/from/image");
+    private static final XPathMatcher JIB_FROM_IMAGE =
+            new XPathMatcher("//plugin[artifactId='jib-maven-plugin']//configuration/from/image");
     private static final String IMAGE_PROPERTIES = "IMAGE_PROPERTIES";
     private static final Pattern PROPERTY_REFERENCE = Pattern.compile("\\$\\{([^}]+)}");
     /// Jib reads a base image from a registry by default, or from the local Docker daemon or a tarball
@@ -96,7 +94,7 @@ public class UpgradeJibBaseImage extends Recipe {
                 Set<String> imageProperties = new MavenIsoVisitor<Set<String>>() {
                     @Override
                     public Xml.Tag visitTag(Xml.Tag tag, Set<String> properties) {
-                        if (isJibFromImage(getCursor())) {
+                        if (JIB_FROM_IMAGE.matches(getCursor())) {
                             tag.getValue().map(value -> PROPERTY_REFERENCE.matcher(value.trim()))
                                     .filter(Matcher::matches)
                                     .ifPresent(reference -> properties.add(reference.group(1)));
@@ -111,7 +109,7 @@ public class UpgradeJibBaseImage extends Recipe {
             @Override
             public Xml.Tag visitTag(Xml.Tag tag, ExecutionContext ctx) {
                 Xml.Tag t = super.visitTag(tag, ctx);
-                if (!isJibFromImage(getCursor()) && !isImageProperty(t)) {
+                if (!JIB_FROM_IMAGE.matches(getCursor()) && !isImageProperty(t)) {
                     return t;
                 }
                 String upgraded = t.getValue().map(value -> upgrade(value.trim(), version)).orElse(null);
@@ -129,10 +127,6 @@ public class UpgradeJibBaseImage extends Recipe {
                        getCursor().<Set<String>>getNearestMessage(IMAGE_PROPERTIES, emptySet()).contains(tag.getName());
             }
         };
-    }
-
-    private static boolean isJibFromImage(Cursor cursor) {
-        return PLUGIN_FROM_IMAGE.matches(cursor) || EXECUTION_FROM_IMAGE.matches(cursor);
     }
 
     private TreeVisitor<?, ExecutionContext> gradleVisitor() {
