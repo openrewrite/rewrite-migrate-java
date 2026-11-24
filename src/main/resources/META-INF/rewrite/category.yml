@@ -90,3 +90,8 @@ type: specs.openrewrite.org/v1beta/category
 name: DataNucleus
 packageName: org.openrewrite.java.migrate.datanucleus
 description: Recipes for migrating [DataNucleus](https://www.datanucleus.org/) JDO/JPA persistence applications.
+---
+type: specs.openrewrite.org/v1beta/category
+name: Jersey
+packageName: org.openrewrite.java.migrate.jersey
+description: Recipes for migrating [Jersey](https://eclipse-ee4j.github.io/jersey/) applications from Jersey 1 to Jersey 2.

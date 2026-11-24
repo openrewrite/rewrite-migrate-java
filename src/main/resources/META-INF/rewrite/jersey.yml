@@ -1,0 +1,761 @@
+#
+# Copyright 2026 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.MigrateToJersey2
+displayName: Migrate from Jersey 1 to Jersey 2
+description: >-
+  Migrate applications from Jersey 1 (`com.sun.jersey`, JAX-RS 1.1) to Jersey 2 (`org.glassfish.jersey`, JAX-RS 2.1),
+  which keeps the `javax.ws.rs` packages and needs Java 8 or later. This changes the Jersey dependencies, moves the
+  client code to the JAX-RS 2 client API (`ClientBuilder`, `WebTarget`, `Invocation.Builder`, `Entity`, `Response`),
+  and moves the server configuration, `web.xml` included, container filters, multipart and the other APIs that have a
+  Jersey 2 counterpart. Jersey 1's POJO mapping used Jackson 1, so Jersey 2 gets Jackson 1's JAX-RS provider, registered where
+  POJO mapping was switched on, which keeps the JSON the same. A repository is left alone when a library that is not
+  Jersey brings Jersey 1 along, such as Dropwizard before 0.8, Eureka 1 or Hadoop, because that library would still
+  need Jersey 1, or when Jersey 1 is `provided` or `compileOnly`, or when it uses the Jersey 1 Guice integration, or
+  when it extends Jersey 1 itself, with classes in the `com.sun.jersey` packages or Jersey 1 code in Scala, Kotlin or
+  Groovy, or when a module already uses Jersey 3. Tests on the Jersey 1 test framework move to the Jersey 2 one. Left
+  for the compiler to point out are the Jersey 1 SPIs without a mechanical replacement, such as `InjectableProvider`,
+  client filters that read the response, client handlers of the application's own, anonymous configurations that
+  override `getClasses()` or `getSingletons()` and `JSONConfiguration`. Unused imports of Jersey 1 types are removed.
+  Some differences only show at run time: `MultiPartFeature` is registered with the Jersey servlets of `web.xml`, but
+  a server configured in code has to register it; Jettison's `JSONObject` entities need `jersey-media-json-jettison`
+  and `JettisonFeature`; the default Jersey 2 connector does not see an SSL context or hostname verifier set as the
+  JVM default after it is created; a Jersey servlet mapped to `/` rather than `/*` finds no resource, since Jersey 2
+  takes the whole path for the servlet's; and a module that already uses another Jersey 2 version, through a library
+  such as Dropwizard, gets the newest Jersey 2 next to it.
+tags:
+  - jersey
+  - jaxrs
+preconditions:
+  - org.openrewrite.java.migrate.jersey.Jersey1RepositoryCanMigrate
+recipeList:
+  - org.openrewrite.java.migrate.jersey.WebResourceRequestToInvocation
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientToJersey2
+  - org.openrewrite.java.migrate.jersey.Jersey1TestFrameworkToJersey2
+  - org.openrewrite.java.migrate.jersey.Jersey1ServerToJersey2
+  - org.openrewrite.java.migrate.jersey.Jersey1PropertiesToJersey2
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientMethodsToJaxRs
+  - org.openrewrite.java.migrate.jersey.Jersey1TypesToJersey2
+  - org.openrewrite.java.migrate.jersey.RemoveUnusedJersey1Imports
+  - org.openrewrite.java.migrate.jersey.Jersey1DependenciesToJersey2
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ClientToJersey2
+displayName: Migrate the Jersey 1 client to the JAX-RS 2 client
+description: >-
+  Moves what the Jersey 1 client API offers beyond sending requests to its JAX-RS 2 and Jersey 2 counterparts: clients
+  are created through `ClientBuilder` and configured through `property` and `register`, a hostname verifier and
+  `SSLContext` given as `HTTPSProperties` go to the `ClientBuilder` or to each connection, the Apache HTTP clients become clients with the
+  Jersey 2 Apache connector, the built-in client filters become features, client filters that only change the request
+  become `ClientRequestFilter`s, the `ClientResponse` helpers become `Response` calls, `MultivaluedMapImpl` becomes
+  `MultivaluedHashMap` and Jersey 1's `Base64` becomes `java.util.Base64`.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.migrate.jersey.Jersey1HttpsPropertiesToClientBuilder
+  - org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToJersey2
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientToClientBuilder
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientFiltersToFeatures
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientFilterToClientRequestFilter
+  - org.openrewrite.java.migrate.jersey.Jersey1ClientResponseToResponse
+  - org.openrewrite.java.migrate.jersey.Jersey1MultivaluedMapImplToMultivaluedHashMap
+  - org.openrewrite.java.migrate.jersey.Jersey1Base64ToJavaUtilBase64
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToJersey2
+displayName: Migrate the Jersey 1 Apache HTTP clients to the Jersey 2 Apache connector
+description: >-
+  Moves clients of `jersey-apache-client4` and `jersey-apache-client` to a Jersey 2 client that sends its requests
+  through the `ApacheConnectorProvider` of `jersey-apache-connector`. Their proxy, credentials provider, cookie and
+  preemptive authentication properties become their `ClientProperties` and `ApacheClientProperties` counterparts, and
+  what remains of the Apache clients and their configurations is then the Jersey 1 `Client` and `ClientConfig`, which
+  the rest of the migration moves to Jersey 2. Clients built from a handler that wraps an `HttpClient` of the
+  application's own, the connection manager, HTTP parameters and buffering properties, and the HTTP state of
+  `DefaultApacheHttpClientConfig` are left for the compiler to point out.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_URI
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_URI
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_USERNAME
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_PASSWORD
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.CREDENTIALS_PROVIDER
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.DISABLE_COOKIES
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig.PROPERTY_PROXY_URI
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.PROXY_URI
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig.PROPERTY_PREEMPTIVE_AUTHENTICATION
+      fullyQualifiedConstantName: org.glassfish.jersey.apache.connector.ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION
+  - org.openrewrite.java.migrate.jersey.Jersey1ApacheClientToApacheConnector
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.ApacheHttpClient4
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.Client
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.ApacheHttpClient
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.Client
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.DefaultClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.DefaultClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache4.config.ApacheHttpClient4Config
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.ClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.client.apache.config.ApacheHttpClientConfig
+      newFullyQualifiedTypeName: com.sun.jersey.api.client.config.ClientConfig
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1TestFrameworkToJersey2
+displayName: Migrate tests on the Jersey 1 test framework to Jersey 2
+description: >-
+  Moves tests that extend the Jersey 1 `JerseyTest` to the Jersey 2 test framework: the application under test is
+  described by a `DeploymentContext` or a `ResourceConfig`, `resource()` becomes `target()`, `getBaseURI()` becomes
+  `getBaseUri()`, and the test container factories move to their Jersey 2 providers.
+tags:
+  - jersey
+  - testing
+recipeList:
+  - org.openrewrite.java.migrate.jersey.JerseyTestToJersey2
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.JerseyTest resource()
+      newMethodName: target
+      matchOverrides: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.JerseyTest getBaseURI()
+      newMethodName: getBaseUri
+      matchOverrides: true
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder contextListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder contextAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder requestListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder requestAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionActivationListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.test.framework.WebAppDescriptor$Builder httpSessionAttributeListenerClass(..)
+      newMethodName: addListener
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.JerseyTest
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.JerseyTest
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.WebAppDescriptor$Builder
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.ServletDeploymentContext$Builder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.WebAppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.ServletDeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.LowLevelAppDescriptor$Builder
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext$Builder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.LowLevelAppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.AppDescriptor
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.DeploymentContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainerException
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainerException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.TestContainer
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.spi.TestContainer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly2.web.GrizzlyWebTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly.web.GrizzlyWebTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly2.GrizzlyTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.grizzly.GrizzlyTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.inmemory.InMemoryTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.http.HTTPContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.jdkhttp.JdkHttpServerTestContainerFactory
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.test.framework.spi.container.external.ExternalTestContainerFactory
+      newFullyQualifiedTypeName: org.glassfish.jersey.test.external.ExternalTestContainerFactory
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ServerToJersey2
+displayName: Migrate the Jersey 1 server configuration to Jersey 2
+description: >-
+  Moves what configures a Jersey 1 application to Jersey 2: features, properties, classes and singletons added to a
+  `ResourceConfig`, `ClientConfig` or `Client` are registered through the JAX-RS 2 `Configurable` methods, a
+  `PackagesResourceConfig` becomes a `ResourceConfig` scanning the same packages, the Jersey 1 HTTP server factories
+  become their Jersey 2 counterparts, the Jersey 1 servlets and filters in `web.xml` become Jersey 2's, and container
+  request and response filters become JAX-RS 2 `ContainerRequestFilter`s and `ContainerResponseFilter`s, registered
+  where Jersey 1 listed them.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.migrate.jersey.FeaturesAndPropertiesToConfigurable
+  - org.openrewrite.java.migrate.jersey.PackagesResourceConfigToResourceConfig
+  - org.openrewrite.java.migrate.jersey.Jersey1ServerFactoriesToJersey2
+  - org.openrewrite.java.migrate.jersey.MigrateJersey1WebXml
+  - org.openrewrite.java.migrate.jersey.MigrateJersey1ContainerFiltersInWebXml
+  - org.openrewrite.java.migrate.jersey.Jersey1ContainerFilterToJaxRsFilter
+  - org.openrewrite.java.migrate.jersey.Jersey1GrizzlyToJersey2Grizzly
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1GrizzlyToJersey2Grizzly
+displayName: Move Grizzly 2.2 code to the Grizzly that Jersey 2 uses
+description: >-
+  Jersey 1's `jersey-grizzly2` brings Grizzly 2.2, and Jersey 2's Grizzly container brings Grizzly 2.4, which renamed
+  `NetworkListener.setMaxPostSize` to `setMaxFormPostSize`. This only changes modules that depend on `jersey-grizzly2`.
+tags:
+  - jersey
+  - grizzly
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey
+      artifactIdPattern: jersey-grizzly2
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: org.glassfish.grizzly.http.server.NetworkListener setMaxPostSize(int)
+      newMethodName: setMaxFormPostSize
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: org.glassfish.grizzly.http.server.NetworkListener getMaxPostSize()
+      newMethodName: getMaxFormPostSize
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1PropertiesToJersey2
+displayName: Rename the Jersey 1 configuration properties
+description: >-
+  Replaces the constants and the names of the Jersey 1 server, servlet and client configuration properties with their
+  Jersey 2 counterparts, as constants of `ServerProperties`, `ServletProperties`, `MessageProperties` and
+  `ClientProperties` or as string literals. Properties that Jersey 2 has no counterpart for keep their Jersey 1 name.
+tags:
+  - jersey
+recipeList:
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.PackagesResourceConfig.PROPERTY_PACKAGES
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.PROVIDER_PACKAGES
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.ClassNamesResourceConfig.PROPERTY_CLASSNAMES
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.PROVIDER_CLASSNAMES
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.ResourceConfig.FEATURE_DISABLE_WADL
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.WADL_FEATURE_DISABLE
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.ResourceConfig.PROPERTY_MEDIA_TYPE_MAPPINGS
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.MEDIA_TYPE_MAPPINGS
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.ResourceConfig.PROPERTY_LANGUAGE_MAPPINGS
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.LANGUAGE_MAPPINGS
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.core.ResourceConfig.PROPERTY_WADL_GENERATOR_CONFIG
+      fullyQualifiedConstantName: org.glassfish.jersey.server.ServerProperties.WADL_GENERATOR_CONFIG
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.core.util.FeaturesAndProperties.FEATURE_FORMATTED
+      fullyQualifiedConstantName: org.glassfish.jersey.message.MessageProperties.XML_FORMAT_OUTPUT
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.core.util.FeaturesAndProperties.FEATURE_XMLROOTELEMENT_PROCESSING
+      fullyQualifiedConstantName: org.glassfish.jersey.message.MessageProperties.JAXB_PROCESS_XML_ROOT_ELEMENT
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.core.util.FeaturesAndProperties.FEATURE_DISABLE_XML_SECURITY
+      fullyQualifiedConstantName: org.glassfish.jersey.message.MessageProperties.XML_SECURITY_DISABLE
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.ServletContainer.APPLICATION_CONFIG_CLASS
+      fullyQualifiedConstantName: org.glassfish.jersey.servlet.ServletProperties.JAXRS_APPLICATION_CLASS
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.WebComponent.APPLICATION_CONFIG_CLASS
+      fullyQualifiedConstantName: org.glassfish.jersey.servlet.ServletProperties.JAXRS_APPLICATION_CLASS
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX
+      fullyQualifiedConstantName: org.glassfish.jersey.servlet.ServletProperties.FILTER_STATIC_CONTENT_REGEX
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.ServletContainer.FEATURE_FILTER_FORWARD_ON_404
+      fullyQualifiedConstantName: org.glassfish.jersey.servlet.ServletProperties.FILTER_FORWARD_ON_404
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.ServletContainer.PROPERTY_FILTER_CONTEXT_PATH
+      fullyQualifiedConstantName: org.glassfish.jersey.servlet.ServletProperties.FILTER_CONTEXT_PATH
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.ServletContainer.JSP_TEMPLATES_BASE_PATH
+      fullyQualifiedConstantName: org.glassfish.jersey.server.mvc.jsp.JspMvcFeature.TEMPLATE_BASE_PATH
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.spi.container.servlet.WebComponent.JSP_TEMPLATES_BASE_PATH
+      fullyQualifiedConstantName: org.glassfish.jersey.server.mvc.jsp.JspMvcFeature.TEMPLATE_BASE_PATH
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.client.config.ClientConfig.PROPERTY_FOLLOW_REDIRECTS
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.client.config.ClientConfig.PROPERTY_READ_TIMEOUT
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.client.config.ClientConfig.PROPERTY_CONNECT_TIMEOUT
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.client.config.ClientConfig.PROPERTY_CHUNKED_ENCODING_SIZE
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.CHUNKED_ENCODING_SIZE
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.api.client.config.ClientConfig.PROPERTY_THREADPOOL_SIZE
+      fullyQualifiedConstantName: org.glassfish.jersey.client.ClientProperties.ASYNC_THREADPOOL_SIZE
+  - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
+      existingFullyQualifiedConstantName: com.sun.jersey.client.urlconnection.URLConnectionClientHandler.PROPERTY_HTTP_URL_CONNECTION_SET_METHOD_WORKAROUND
+      fullyQualifiedConstantName: org.glassfish.jersey.client.HttpUrlConnectorProvider.SET_METHOD_WORKAROUND
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.packages
+      newLiteralValue: jersey.config.server.provider.packages
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.classnames
+      newLiteralValue: jersey.config.server.provider.classnames
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.DisableWADL
+      newLiteralValue: jersey.config.server.wadl.disableWadl
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.MediaTypeMappings
+      newLiteralValue: jersey.config.server.mediaTypeMappings
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.LanguageMappings
+      newLiteralValue: jersey.config.server.languageMappings
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.WadlGeneratorConfig
+      newLiteralValue: jersey.config.server.wadl.generatorConfig
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.Formatted
+      newLiteralValue: jersey.config.xml.formatOutput
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.XmlRootElementProcessing
+      newLiteralValue: jersey.config.jaxb.collections.processXmlRootElement
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.DisableXmlSecurity
+      newLiteralValue: jersey.config.xml.security.disable
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.WebPageContentRegex
+      newLiteralValue: jersey.config.servlet.filter.staticContentRegex
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.FilterForwardOn404
+      newLiteralValue: jersey.config.servlet.filter.forwardOn404
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.feature.FilterContextPath
+      newLiteralValue: jersey.config.servlet.filter.contextPath
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.config.property.JSPTemplatesBasePath
+      newLiteralValue: jersey.config.server.mvc.templateBasePath.jsp
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.followRedirects
+      newLiteralValue: jersey.config.client.followRedirects
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.readTimeout
+      newLiteralValue: jersey.config.client.readTimeout
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.connectTimeout
+      newLiteralValue: jersey.config.client.connectTimeout
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.chunkedEncodingSize
+      newLiteralValue: jersey.config.client.chunkedEncodingSize
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.threadpoolSize
+      newLiteralValue: jersey.config.client.async.threadPoolSize
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.client.property.httpUrlConnectionSetMethodWorkaround
+      newLiteralValue: jersey.config.client.httpUrlConnection.setMethodWorkaround
+  - org.openrewrite.java.ReplaceStringLiteralValue:
+      oldLiteralValue: com.sun.jersey.spi.container.servlet.ServletContainer
+      newLiteralValue: org.glassfish.jersey.servlet.ServletContainer
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1ClientMethodsToJaxRs
+displayName: Rename Jersey 1 client methods to their JAX-RS 2 names
+description: >-
+  Renames the methods of the Jersey 1 `Client`, `WebResource` and `ClientResponse` whose JAX-RS 2 counterparts on
+  `Client`, `WebTarget` and `Response` take the same arguments: `resource` is `target`, `destroy` is `close`,
+  `getEntity` is `readEntity`, and the headers of a response, which Jersey 1 gave as strings, are
+  `getStringHeaders()`.
+recipeList:
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.Client resource(..)
+      newMethodName: target
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.Client destroy()
+      newMethodName: close
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.WebResource getRequestBuilder()
+      newMethodName: request
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.WebResource getURI()
+      newMethodName: getUri
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.WebResource getBuilder()
+      newMethodName: getUriBuilder
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getEntity(..)
+      newMethodName: readEntity
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getHeaders()
+      newMethodName: getStringHeaders
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getMetadata()
+      newMethodName: getStringHeaders
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getType()
+      newMethodName: getMediaType
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getResponseDate()
+      newMethodName: getDate
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.sun.jersey.api.client.ClientResponse getAllow()
+      newMethodName: getAllowedMethods
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1TypesToJersey2
+displayName: Use the JAX-RS 2 and Jersey 2 types for Jersey 1 types
+description: >-
+  Replaces the Jersey 1 types that have a counterpart with the same methods in JAX-RS 2 or Jersey 2, such as the
+  client's `Client`, `WebResource` and `ClientResponse`, the exceptions, `ResourceConfig`, `ServletContainer` and the
+  multipart API.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartWriter
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartReaderClientSide
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.multipart.impl.MultiPartReaderServerSide
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.MultiPartFeature
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.Client
+      newFullyQualifiedTypeName: javax.ws.rs.client.Client
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.WebResource$Builder
+      newFullyQualifiedTypeName: javax.ws.rs.client.Invocation$Builder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.WebResource
+      newFullyQualifiedTypeName: javax.ws.rs.client.WebTarget
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.ClientResponse$Status
+      newFullyQualifiedTypeName: javax.ws.rs.core.Response$Status
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.ClientResponse
+      newFullyQualifiedTypeName: javax.ws.rs.core.Response
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.GenericType
+      newFullyQualifiedTypeName: javax.ws.rs.core.GenericType
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.UniformInterfaceException
+      newFullyQualifiedTypeName: javax.ws.rs.WebApplicationException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.ClientHandlerException
+      newFullyQualifiedTypeName: javax.ws.rs.ProcessingException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.config.DefaultClientConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.client.ClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.client.config.ClientConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.client.ClientConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.NotFoundException
+      newFullyQualifiedTypeName: javax.ws.rs.NotFoundException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.ParamException$URIParamException
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ParamException$UriParamException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.ParamException
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ParamException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.container.ContainerException
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ContainerException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.spi.resource.Singleton
+      newFullyQualifiedTypeName: javax.inject.Singleton
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.spi.container.servlet.ServletContainer
+      newFullyQualifiedTypeName: org.glassfish.jersey.servlet.ServletContainer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.core.PackagesResourceConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ResourceConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.core.ClassNamesResourceConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ResourceConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.core.DefaultResourceConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ResourceConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.core.ResourceConfig
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.ResourceConfig
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.view.Viewable
+      newFullyQualifiedTypeName: org.glassfish.jersey.server.mvc.Viewable
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.uri.UriComponent
+      newFullyQualifiedTypeName: org.glassfish.jersey.uri.UriComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.api.uri.UriTemplate
+      newFullyQualifiedTypeName: org.glassfish.jersey.uri.UriTemplate
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.core.util.MultivaluedMapImpl
+      newFullyQualifiedTypeName: javax.ws.rs.core.MultivaluedHashMap
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.core.header.FormDataContentDisposition
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.FormDataContentDisposition
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.sun.jersey.core.header.ContentDisposition
+      newFullyQualifiedTypeName: org.glassfish.jersey.media.multipart.ContentDisposition
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.sun.jersey.multipart
+      newPackageName: org.glassfish.jersey.media.multipart
+      recursive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.Jersey1DependenciesToJersey2
+displayName: Use the Jersey 2 dependencies for Jersey 1 dependencies
+description: >-
+  Replaces each Jersey 1 dependency with its Jersey 2 counterpart, the JAX-RS 1.1 API with the JAX-RS 2.1 API, and
+  `jersey-json` with Jackson 1's JAX-RS provider, which is what Jersey 1's POJO mapping used. Jersey 2.26 and later
+  need an injection manager at runtime, so modules that use Jersey get `jersey-hk2`, and modules that use JAXB get
+  `jersey-media-jaxb`, whose XML providers Jersey 1 had built in. Modules that use Jettison or the Jersey 1 view API
+  get the dependency that `jersey-json` or `jersey-server` used to bring along.
+recipeList:
+  - org.openrewrite.java.migrate.jersey.AddJerseyHk2
+  - org.openrewrite.java.migrate.jersey.AddJerseyMediaJaxb
+  - org.openrewrite.java.migrate.jersey.AddJackson1XcForJerseyJson
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-client
+      newGroupId: org.glassfish.jersey.core
+      newArtifactId: jersey-client
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-core
+      newGroupId: org.glassfish.jersey.core
+      newArtifactId: jersey-common
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-server
+      newGroupId: org.glassfish.jersey.core
+      newArtifactId: jersey-server
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-servlet
+      newGroupId: org.glassfish.jersey.containers
+      newArtifactId: jersey-container-servlet
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-bundle
+      newGroupId: org.glassfish.jersey.bundles
+      newArtifactId: jaxrs-ri
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-grizzly2
+      newGroupId: org.glassfish.jersey.containers
+      newArtifactId: jersey-container-grizzly2-http
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-grizzly2-servlet
+      newGroupId: org.glassfish.jersey.containers
+      newArtifactId: jersey-container-grizzly2-servlet
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey
+      oldArtifactId: jersey-json
+      newGroupId: org.codehaus.jackson
+      newArtifactId: jackson-jaxrs
+      newVersion: 1.9.13
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.contribs
+      oldArtifactId: jersey-multipart
+      newGroupId: org.glassfish.jersey.media
+      newArtifactId: jersey-media-multipart
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.contribs
+      oldArtifactId: jersey-apache-client4
+      newGroupId: org.glassfish.jersey.connectors
+      newArtifactId: jersey-apache-connector
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.contribs
+      oldArtifactId: jersey-apache-client
+      newGroupId: org.glassfish.jersey.connectors
+      newArtifactId: jersey-apache-connector
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-core
+      newGroupId: org.glassfish.jersey.test-framework
+      newArtifactId: jersey-test-framework-core
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-grizzly2
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-grizzly2
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-grizzly
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-grizzly2
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-inmemory
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-inmemory
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-http
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-jdk-http
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: com.sun.jersey.jersey-test-framework
+      oldArtifactId: jersey-test-framework-external
+      newGroupId: org.glassfish.jersey.test-framework.providers
+      newArtifactId: jersey-test-framework-provider-external
+      newVersion: 2.x
+  - org.openrewrite.java.dependencies.ChangeDependency:
+      oldGroupId: javax.ws.rs
+      oldArtifactId: jsr311-api
+      newArtifactId: javax.ws.rs-api
+      newVersion: 2.1.1
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.codehaus.jettison
+      artifactId: jettison
+      version: 1.5.x
+      onlyIfUsing: org.codehaus.jettison..*
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.ext
+      artifactId: jersey-mvc
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.api.view.Viewable
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.test-framework.providers
+      artifactId: jersey-test-framework-provider-grizzly2
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.test.framework.WebAppDescriptor
+      scope: test
+      configuration: testImplementation
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.containers
+      artifactId: jersey-container-servlet
+      version: 2.x
+      onlyIfUsing: com.sun.jersey.spi.container.servlet.*
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.AddJerseyHk2
+displayName: Add `jersey-hk2` to modules that use Jersey 1
+description: >-
+  Jersey 2.26 and later find their injection manager on the runtime classpath, and fail to start without one, so
+  this adds `org.glassfish.jersey.inject:jersey-hk2` at runtime to modules that declare a Jersey 1 dependency.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey*
+      artifactIdPattern: "*"
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.inject
+      artifactId: jersey-hk2
+      version: 2.x
+      scope: runtime
+      configuration: runtimeOnly
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.AddJerseyMediaJaxb
+displayName: Add `jersey-media-jaxb` to modules that use Jersey 1 and JAXB
+description: >-
+  Jersey 1 read and wrote JAXB beans as XML with providers of its own core, where Jersey 2 keeps them in
+  `jersey-media-jaxb`, which `jersey-server` and `jersey-client` don't bring along. Without it a resource that returns
+  an `@XmlRootElement` bean fails with `MessageBodyWriter not found`, so this adds
+  `org.glassfish.jersey.media:jersey-media-jaxb` at runtime to modules that declare a Jersey 1 dependency and use
+  JAXB.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey*
+      artifactIdPattern: "*"
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.glassfish.jersey.media
+      artifactId: jersey-media-jaxb
+      version: 2.x
+      onlyIfUsing: javax.xml.bind..*
+      scope: runtime
+      configuration: runtimeOnly
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.jersey.AddJackson1XcForJerseyJson
+displayName: Add Jackson 1's JAXB support where `jersey-json` was used
+description: >-
+  Jersey 1's POJO mapping used Jackson 1's `JacksonJaxbJsonProvider`, which reads JAXB annotations through
+  `jackson-xc`. `jersey-json` brought it along, so modules that declare `jersey-json` get it directly.
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: com.sun.jersey
+      artifactIdPattern: jersey-json
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.codehaus.jackson
+      artifactId: jackson-xc
+      version: 1.9.13
