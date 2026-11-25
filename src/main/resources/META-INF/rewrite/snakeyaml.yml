@@ -1,0 +1,69 @@
+#
+# Copyright 2026 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.snakeyaml.UpgradeSnakeYaml_2
+displayName: Migrate to SnakeYAML 2.x
+description: >-
+  Migrate applications from SnakeYAML 1.x to 2.x. This raises `org.yaml:snakeyaml` to 2.x where the project declares its
+  version, passes a `LoaderOptions` or `DumperOptions` to the constructors that now need one, and upgrades a
+  `maven-plugin-plugin` too old to read the SnakeYAML 2 jar. A version that a BOM such as Spring Boot's manages is left
+  alone, since the framework has to work with SnakeYAML 2 as well: Spring Boot manages 2.x from 3.1, while 2.7.9, for
+  one, calls a `Representer` constructor that 2.0 removed. The same holds for every library that uses SnakeYAML. One
+  built against 1.x that calls a constructor 2.0 removed fails with a `NoSuchMethodError` once the version is raised, as
+  `jackson-dataformat-yaml` before 2.14 does when it parses a document, so upgrade such libraries along with SnakeYAML.
+  No compiler reports two changes in how documents load.
+  SnakeYAML 2 refuses global tags such as `!!com.example.Config` unless `LoaderOptions.setTagInspector(..)` allows them,
+  so a document that names the classes to create, as `Yaml.dump(..)` writes them, needs a `TagInspector` that allows
+  those classes. And code that comes from an older 1.x meets the limits that later releases set by default: at most 50
+  aliases to collections, 50 levels of nesting and 3 MB per document, which the setters of `LoaderOptions` raise where a
+  trusted document needs more.
+# A Gradle project shows the SnakeYAML version UpgradeDependencyVersion raised in the next cycle, where
+# AddSnakeYamlOptions can then call the constructors that only SnakeYAML 2 has
+causesAnotherCycle: true
+tags:
+  - snakeyaml
+  - yaml
+recipeList:
+  - org.openrewrite.java.migrate.snakeyaml.AddSnakeYamlOptions
+  - org.openrewrite.java.migrate.snakeyaml.UseScalarNodeScalarStyle
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.yaml
+      artifactId: snakeyaml
+      newVersion: 2.x
+  - org.openrewrite.java.migrate.snakeyaml.UpgradeMavenPluginPluginForSnakeYaml_2
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.snakeyaml.UpgradeMavenPluginPluginForSnakeYaml_2
+displayName: Upgrade `maven-plugin-plugin` to read SnakeYAML 2
+description: >-
+  The SnakeYAML 2 jar holds a Java 9 `module-info.class`, which `maven-plugin-plugin` 3.4 and earlier fail to read when
+  they scan the dependencies of a Maven plugin for mojo annotations. This upgrades `maven-plugin-plugin` to 3.5.x in
+  modules that depend on SnakeYAML 1.x, directly or not.
+tags:
+  - snakeyaml
+  - yaml
+preconditions:
+  - org.openrewrite.java.dependencies.search.ModuleHasDependency:
+      groupIdPattern: org.yaml
+      artifactIdPattern: snakeyaml
+      version: "[1,2)"
+recipeList:
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-plugin-plugin
+      newVersion: 3.5.x
