@@ -1,0 +1,232 @@
+#
+# Copyright 2026 the original author or authors.
+# <p>
+# Licensed under the Moderne Source Available License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# <p>
+# https://docs.moderne.io/licensing/moderne-source-available-license
+# <p>
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.UpgradeTwilio_13
+displayName: Migrate to Twilio Java SDK 13
+description: >-
+  Migrate applications from the Twilio Java SDK `com.twilio.sdk:twilio` 7.x or later to 13.x, which needs Java 8 or
+  later. This raises the dependency, declares what the SDK no longer brings along, and changes the calls that have a
+  mechanical replacement. A Gradle project with dependency locking needs its `gradle.lockfile` written again. Calls
+  that need a decision are left for the compiler to point out: the `org.joda.time` values the resources returned
+  are `java.time` since 8.0.0, `ListenableFuture` is `CompletableFuture` in the `*Async` methods, the Guava `Range`
+  date filters are separate before and after setters, and `getPrice()` of `Message` and `Call` is a `String`. The
+  Authy, Autopilot, Fax and Preview resources were removed with no replacement, and a newer JJWT comes along with the
+  SDK, which removed `Jwts.parserBuilder()` for code that uses JJWT itself. No compiler reports these, which
+  appear at runtime: JJWT 0.12 refuses an HMAC secret shorter than 256 bits, which a real Twilio secret is not but a
+  placeholder in a test may be; a mocked `TwilioRestClient` needs `getAccountSid()` stubbed, as the resources no
+  longer tolerate it being `null`; and `Message.fromJson` given a plain `ObjectMapper` needs `JavaTimeModule` on Java
+  17 or later with an old Jackson such as the 2.9 of Spring Boot 2.1, which the mapper of a real `TwilioRestClient`
+  already has.
+tags:
+  - twilio
+recipeList:
+  - org.openrewrite.java.migrate.twilio.TwilioRenamedApis
+  - org.openrewrite.java.migrate.twilio.TwilioJwtSecretToByteArray
+  - org.openrewrite.java.migrate.twilio.TwilioNetworkHttpClientBuilder
+  - org.openrewrite.java.migrate.twilio.TwilioUnusedAutopilotImports
+  - org.openrewrite.java.migrate.twilio.TwilioUnusedAuthyImports
+  - org.openrewrite.java.migrate.twilio.TwilioUnusedFaxImports
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.twilio.sdk
+      artifactId: twilio
+      newVersion: 13.x
+  - org.openrewrite.java.migrate.twilio.TwilioDroppedDependencies
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioRenamedApis
+displayName: Use the Twilio APIs renamed in 8.0.0
+description: >-
+  Twilio Java SDK 8.0.0 renamed the nested TwiML builder methods after their TwiML element, and removed the deprecated
+  `ConversationsGrant` and `configurationProfileSid` of `VideoGrant`, whose replacements are `VideoGrant` and `room`.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: com.twilio.jwt.accesstoken.ConversationsGrant
+      newFullyQualifiedTypeName: com.twilio.jwt.accesstoken.VideoGrant
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.jwt.accesstoken.VideoGrant getConfigurationProfileSid()
+      newMethodName: getRoom
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.jwt.accesstoken.VideoGrant setConfigurationProfileSid(String)
+      newMethodName: setRoom
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Refer$Builder referSip(com.twilio.twiml.voice.ReferSip)
+      newMethodName: sip
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlBreak(com.twilio.twiml.voice.SsmlBreak)
+      newMethodName: break_
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlEmphasis(com.twilio.twiml.voice.SsmlEmphasis)
+      newMethodName: emphasis
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlLang(com.twilio.twiml.voice.SsmlLang)
+      newMethodName: lang
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlP(com.twilio.twiml.voice.SsmlP)
+      newMethodName: p
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlPhoneme(com.twilio.twiml.voice.SsmlPhoneme)
+      newMethodName: phoneme
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlProsody(com.twilio.twiml.voice.SsmlProsody)
+      newMethodName: prosody
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlS(com.twilio.twiml.voice.SsmlS)
+      newMethodName: s
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlSayAs(com.twilio.twiml.voice.SsmlSayAs)
+      newMethodName: sayAs
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlSub(com.twilio.twiml.voice.SsmlSub)
+      newMethodName: sub
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: com.twilio.twiml.voice.Say$Builder ssmlW(com.twilio.twiml.voice.SsmlW)
+      newMethodName: w
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioNetworkHttpClientBuilder
+displayName: Pass `NetworkHttpClient` an Apache HttpClient 5 builder
+description: >-
+  Twilio Java SDK 11.0.0 moved `NetworkHttpClient` from Apache HttpClient 4 to 5, so its constructor takes the
+  HttpClient 5 `HttpClientBuilder`. This changes the builder's type only in the source files that pass one to
+  `NetworkHttpClient`, as other uses of Apache HttpClient 4 are not part of this migration.
+preconditions:
+  - org.openrewrite.java.search.FindMethods:
+      methodPattern: com.twilio.http.NetworkHttpClient <constructor>(org.apache.http.impl.client.HttpClientBuilder)
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.http.impl.client.HttpClientBuilder
+      newFullyQualifiedTypeName: org.apache.hc.client5.http.impl.classic.HttpClientBuilder
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioDroppedDependencies
+displayName: Declare the dependencies the Twilio Java SDK no longer brings along
+description: >-
+  Twilio Java SDK 7.x brought Guava, Joda-Time and Apache HttpClient 4 to the projects using it, which can use them
+  without declaring them. Later versions do not, so this declares the ones a project uses and no longer gets any other
+  way. A version the project declares itself is left as it is.
+preconditions:
+  - org.openrewrite.java.dependencies.search.RepositoryHasDependency:
+      groupIdPattern: com.twilio.sdk
+      artifactIdPattern: twilio
+recipeList:
+  - org.openrewrite.java.migrate.twilio.TwilioDroppedHttpClient
+  - org.openrewrite.java.migrate.twilio.TwilioDroppedGuava
+  - org.openrewrite.java.migrate.twilio.TwilioDroppedJodaTime
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioDroppedHttpClient
+displayName: Declare the Apache HttpClient 4 the Twilio Java SDK no longer brings along
+description: >-
+  Adds `org.apache.httpcomponents:httpclient` to a project that uses it but does not declare it, as `AddDependency`
+  would otherwise raise a version the project does declare.
+preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: org.apache.httpcomponents
+      artifactId: httpclient
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: org.apache.httpcomponents
+      artifactId: httpclient
+      version: 4.5.x
+      onlyIfUsing: org.apache.http..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioDroppedGuava
+displayName: Declare the Guava the Twilio Java SDK no longer brings along
+description: >-
+  Adds `com.google.guava:guava` to a project that uses it but does not declare it, as `AddDependency` would otherwise
+  raise a version the project does declare.
+preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: com.google.guava
+      artifactId: guava
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: com.google.guava
+      artifactId: guava
+      version: 33.x
+      versionPattern: -jre
+      onlyIfUsing: com.google.common..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioDroppedJodaTime
+displayName: Declare the Joda-Time the Twilio Java SDK no longer brings along
+description: >-
+  Adds `joda-time:joda-time` to a project that uses it but does not declare it, as `AddDependency` would otherwise
+  raise a version the project does declare.
+preconditions:
+  - org.openrewrite.java.dependencies.search.DoesNotIncludeDependency:
+      groupId: joda-time
+      artifactId: joda-time
+      onlyDirect: true
+recipeList:
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: joda-time
+      artifactId: joda-time
+      version: 2.x
+      onlyIfUsing: org.joda.time..*
+      acceptTransitive: true
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioUnusedAutopilotImports
+displayName: Remove unused imports of Twilio Autopilot
+description: >-
+  Autopilot was removed from the Twilio Java SDK, so an import of it no longer compiles even when nothing uses it. A
+  use of Autopilot has no replacement, so it is left for the compiler to point out.
+preconditions:
+  - org.openrewrite.java.search.FindImports:
+      typePattern: com.twilio.rest.autopilot..*
+recipeList:
+  - org.openrewrite.java.RemoveUnusedImports
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioUnusedAuthyImports
+displayName: Remove unused imports of Twilio Authy
+description: >-
+  Authy was removed from the Twilio Java SDK, so an import of it no longer compiles even when nothing uses it. A use
+  of Authy has no replacement, so it is left for the compiler to point out.
+preconditions:
+  - org.openrewrite.java.search.FindImports:
+      typePattern: com.twilio.rest.authy..*
+recipeList:
+  - org.openrewrite.java.RemoveUnusedImports
+
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.migrate.twilio.TwilioUnusedFaxImports
+displayName: Remove unused imports of Twilio Fax
+description: >-
+  Fax was removed from the Twilio Java SDK, so an import of it no longer compiles even when nothing uses it. A use of
+  Fax has no replacement, so it is left for the compiler to point out.
+preconditions:
+  - org.openrewrite.java.search.FindImports:
+      typePattern: com.twilio.rest.fax..*
+recipeList:
+  - org.openrewrite.java.RemoveUnusedImports
