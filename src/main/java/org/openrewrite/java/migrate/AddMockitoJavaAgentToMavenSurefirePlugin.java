@@ -18,6 +18,8 @@ package org.openrewrite.java.migrate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.intellij.lang.annotations.Language;
 import org.jspecify.annotations.Nullable;
@@ -52,6 +54,10 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
 
     private static final String PROPERTIES_GOAL = "properties";
 
+    private static final String MOCKITO_AGENT_PLACEHOLDER = "${org.mockito:mockito-core:jar}";
+    private static final String BYTE_BUDDY_AGENT_PLACEHOLDER = "${net.bytebuddy:byte-buddy-agent:jar}";
+    private static final Pattern JAVA_AGENT_ARGUMENT = Pattern.compile("-javaagent:(\\S+)");
+
     @Language("xml")
     private static final String MAVEN_DEPENDENCY_PLUGIN_EXECUTION_TAG =
             "<execution><id>get-mockito-agent-path</id><goals><goal>" + PROPERTIES_GOAL + "</goal></goals></execution>";
@@ -80,14 +86,14 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                     return null;
                 }
                 if (new LatestRelease(null).compare(null, mockito.get().getVersion(), "5.14.0") >= 0) {
-                    return "-javaagent:${org.mockito:mockito-core:jar}";
+                    return "-javaagent:" + MOCKITO_AGENT_PLACEHOLDER;
                 }
                 // Mockito 1 uses CGLIB. Older Mockito only supports this path when the agent jar
                 // actually resolves on the test classpath; dependency:properties cannot invent it.
                 return testDependencies.stream().anyMatch(dependency ->
                         "net.bytebuddy".equals(dependency.getGroupId()) &&
                                 "byte-buddy-agent".equals(dependency.getArtifactId())) ?
-                        "-javaagent:${net.bytebuddy:byte-buddy-agent:jar}" : null;
+                        "-javaagent:" + BYTE_BUDDY_AGENT_PLACEHOLDER : null;
             }
 
             private Xml.Tag buildConfigurationTag(String argLineJavaAgentParam, boolean hasExistingArgLine) {
@@ -120,6 +126,13 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                         .findFirst().orElse(null);
             }
 
+            private boolean surefireLoadsAgentFromJarPath(List<Plugin> plugins) {
+                return plugins.stream()
+                        .filter(plugin -> isMavenPlugin(plugin, MAVEN_SUREFIRE_PLUGIN_ARTIFACT_ID))
+                        .map(plugin -> plugin.getConfigurationStringValue("argLine"))
+                        .anyMatch(argLine -> argLine != null && loadsAgentFromJarPath(getResolutionResult().getPom().getValue(argLine)));
+            }
+
             @Override
             public Xml.Document visitDocument(Xml.Document document, ExecutionContext ctx) {
                 String agentArgument = getArgLineJavaAgentArgument();
@@ -127,6 +140,12 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                     return document;
                 }
                 if (surefireArgLineWithAgent(getResolutionResult().getPom().getPluginManagement()) != null) {
+                    return document;
+                }
+                // A surefire argLine that already loads the agent jar by its path, rather than through the
+                // `${group:artifact:jar}` property, needs neither our argLine nor the properties goal (#1383).
+                if (surefireLoadsAgentFromJarPath(getResolutionResult().getPom().getPlugins()) ||
+                        surefireLoadsAgentFromJarPath(getResolutionResult().getPom().getPluginManagement())) {
                     return document;
                 }
                 // Nothing to add when the surefire agent, the properties goal, and any `@{argLine}` property
@@ -222,6 +241,29 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
     private static boolean isMavenPlugin(Plugin plugin, String artifactId) {
         return artifactId.equals(plugin.getArtifactId()) &&
                 (plugin.getGroupId() == null || MAVEN_PLUGINS_GROUP_ID.equals(plugin.getGroupId()));
+    }
+
+    /**
+     * Whether the argLine has a {@code -javaagent:} pointing at a Mockito or Byte Buddy agent jar by any form other than
+     * the {@code ${group:artifact:jar}} properties this recipe adds, for instance
+     * {@code -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar}.
+     */
+    private static boolean loadsAgentFromJarPath(@Nullable String argLine) {
+        if (argLine == null) {
+            return false;
+        }
+        Matcher matcher = JAVA_AGENT_ARGUMENT.matcher(argLine);
+        while (matcher.find()) {
+            String agent = matcher.group(1).replace("\"", "").replace("'", "");
+            if (agent.contains(MOCKITO_AGENT_PLACEHOLDER) || agent.contains(BYTE_BUDDY_AGENT_PLACEHOLDER)) {
+                continue;
+            }
+            String jarName = agent.substring(Math.max(agent.lastIndexOf('/'), agent.lastIndexOf('\\')) + 1);
+            if (jarName.startsWith("mockito-core") || jarName.startsWith("byte-buddy-agent")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isJacocoPlugin(Plugin plugin) {
