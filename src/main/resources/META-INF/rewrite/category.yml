@@ -90,3 +90,8 @@ type: specs.openrewrite.org/v1beta/category
 name: DataNucleus
 packageName: org.openrewrite.java.migrate.datanucleus
 description: Recipes for migrating [DataNucleus](https://www.datanucleus.org/) JDO/JPA persistence applications.
+---
+type: specs.openrewrite.org/v1beta/category
+name: Sonar rules
+packageName: org.openrewrite.java.migrate.sonar
+description: Recipes that cover SonarQube Java rules, grouped by the default Sonar severity of each rule.
