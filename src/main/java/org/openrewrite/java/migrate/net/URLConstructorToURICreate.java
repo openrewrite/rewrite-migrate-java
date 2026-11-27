@@ -131,7 +131,6 @@ public class URLConstructorToURICreate extends Recipe {
                         }
 
                         try {
-                            //noinspection ResultOfMethodCallIgnored
                             URI.create(path).toURL();
                             return false;
                         } catch (Exception e) {

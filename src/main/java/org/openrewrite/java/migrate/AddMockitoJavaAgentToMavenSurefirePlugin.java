@@ -175,7 +175,6 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 if (argLineJavaAgentParam == null) {
                     return t;
                 }
-                //noinspection unchecked
                 List<Content> pluginContents = (List<Content>) t.getContent();
                 Optional<Xml.Tag> configuration = t.getChild("configuration");
                 if (!configuration.isPresent()) {
@@ -184,7 +183,6 @@ public class AddMockitoJavaAgentToMavenSurefirePlugin extends Recipe {
                 }
 
                 Xml.Tag config = configuration.get();
-                //noinspection unchecked
                 List<Content> configContents = (List<Content>) config.getContent();
                 List<Xml.Tag> argLineTagChildren = config.getChildren("argLine");
                 if (argLineTagChildren.isEmpty()) {
