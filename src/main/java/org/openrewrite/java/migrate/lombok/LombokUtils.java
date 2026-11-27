@@ -272,7 +272,7 @@ class LombokUtils {
      */
     static boolean isConstructorAssigningExactFields(J.MethodDeclaration constructor,
                                                      List<J.VariableDeclarations.NamedVariable> expectedFields) {
-        if (constructor.getBody() == null) {
+        if (constructor.getBody() == null || (constructor.getThrows() != null && !constructor.getThrows().isEmpty())) {
             return false;
         }
         List<Statement> statements = constructor.getBody().getStatements();
@@ -298,6 +298,9 @@ class LombokUtils {
                 return false;
             }
             J.VariableDeclarations paramDecl = (J.VariableDeclarations) params.get(i);
+            if (!paramDecl.getLeadingAnnotations().isEmpty() || paramDecl.getVarargs() != null) {
+                return false;
+            }
             J.VariableDeclarations.NamedVariable param = paramDecl.getVariables().get(0);
             if (!TypeUtils.isOfType(param.getType(), expectedField.getType())) {
                 return false;

@@ -152,5 +152,56 @@ class UseNoArgsConstructorTest implements RewriteTest {
           )
         );
     }
+  @Test
+  void preserveConstructorAnnotation() {
+      rewriteRun(
+        //language=java
+        java(
+          """
+            class A {
+                @Deprecated
+                A() {}
+            }
+            """,
+          """
+            import lombok.AccessLevel;
+            import lombok.NoArgsConstructor;
 
+            @NoArgsConstructor(access = AccessLevel.PACKAGE, onConstructor_ = {@Deprecated})
+            class A {
+            }
+            """
+        )
+      );
+  }
+
+  @Test
+  void keepConstructorWithComment() {
+      rewriteRun(
+        //language=java
+        java(
+          """
+            class A {
+                A() {
+                    // Required by JPA
+                }
+            }
+            """
+        )
+      );
+  }
+
+  @Test
+  void keepConstructorWithThrowsClause() {
+      rewriteRun(
+        //language=java
+        java(
+          """
+            class A {
+                A() throws Exception {}
+            }
+            """
+        )
+      );
+  }
 }

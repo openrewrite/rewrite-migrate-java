@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package org.openrewrite.java.migrate.lombok;
-
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -28,12 +28,17 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.marker.CompactConstructor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.AnnotationMatcher;
+import org.openrewrite.java.service.AnnotationService;
 
 import static java.util.Comparator.comparing;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class UseNoArgsConstructor extends Recipe {
+    
+    private static final AnnotationMatcher OVERRIDE_MATCHER =
+        new AnnotationMatcher("java.lang.Override");
 
     String displayName = "Use `@NoArgsConstructor` where applicable";
 
@@ -47,15 +52,22 @@ public class UseNoArgsConstructor extends Recipe {
 				if (method.isConstructor() &&
 						!method.getMarkers().findFirst(CompactConstructor.class).isPresent() &&
 						method.getParameters().get(0) instanceof J.Empty &&
-                        method.getBody() != null && method.getBody().getStatements().isEmpty()) {
+                        (method.getThrows() == null || method.getThrows().isEmpty()) &&
+                        method.getBody() != null &&
+                        method.getBody().getStatements().isEmpty() &&
+                        method.getBody().getEnd().getComments().isEmpty()) {
                     J.ClassDeclaration enclosing = getCursor().firstEnclosing(J.ClassDeclaration.class);
                     AccessLevel accessLevel = LombokUtils.getAccessLevel(method);
+                    List<J.Annotation> constructorAnnotations =
+                    service(AnnotationService.class).getAllAnnotations(getCursor());
+                    constructorAnnotations.removeIf(OVERRIDE_MATCHER::matches);
+
                     doAfterVisit(new JavaIsoVisitor<ExecutionContext>() {
                         @Override
                         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
                             if (TypeUtils.isOfType(classDecl.getType(), enclosing.getType())) {
-                                String template = "@NoArgsConstructor" + (accessLevel == AccessLevel.PUBLIC ?
-                                        "" : "(access = AccessLevel." + accessLevel.name() + ")");
+                                String template = UseRequiredArgsConstructor.buildAnnotationTemplate(
+                                        "NoArgsConstructor", accessLevel, constructorAnnotations);
                                 maybeAddImport("lombok.AccessLevel");
                                 maybeAddImport("lombok.NoArgsConstructor");
                                 return JavaTemplate.builder(template)
