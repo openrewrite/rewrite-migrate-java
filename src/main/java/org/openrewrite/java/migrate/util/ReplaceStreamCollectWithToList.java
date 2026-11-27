@@ -16,7 +16,6 @@
 package org.openrewrite.java.migrate.util;
 
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.singleton;
 
 @EqualsAndHashCode(callSuper = false)
 @Value
@@ -57,7 +56,7 @@ public class ReplaceStreamCollectWithToList extends Recipe {
 
     Duration estimatedEffortPerOccurrence = Duration.ofMinutes( 1 );
 
-    Set<String> tags = new HashSet<>( singletonList( "RSPEC-S6204" ) );
+    Set<String> tags = singleton("RSPEC-S6204");
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
