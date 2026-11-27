@@ -854,4 +854,95 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void importOuterTypeOfExtractedNestedParameterType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package foo;
+
+              import javax.tools.JavaFileObject;
+
+              public class Parent {
+                  public Parent(JavaFileObject.Kind kind) {
+                  }
+
+                  public static JavaFileObject.Kind source() {
+                      return JavaFileObject.Kind.SOURCE;
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package bar;
+
+              import foo.Parent;
+
+              class Child extends Parent {
+                  Child() {
+                      super(Parent.source());
+                  }
+              }
+              """,
+            """
+              package bar;
+
+              import foo.Parent;
+
+              import javax.tools.JavaFileObject;
+
+              class Child extends Parent {
+                  Child() {
+                      JavaFileObject.Kind kind = Parent.source();
+                      super(kind);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void nameAnonymousClassArgumentByFallback() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(Runnable arg0) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      super(new Runnable() {
+                          public void run() {
+                          }
+                      });
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(Runnable arg0) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      Runnable value = new Runnable() {
+                          public void run() {
+                          }
+                      };
+                      super(value);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

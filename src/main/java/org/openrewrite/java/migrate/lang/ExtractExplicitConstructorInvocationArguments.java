@@ -117,7 +117,11 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     declarations.append(typeName).append(' ').append(name).append(" = #{any()};\n");
                     declarationArgs.add(arg);
                     if (paramType instanceof JavaType.FullyQualified) {
-                        imports.add(((JavaType.FullyQualified) paramType).getFullyQualifiedName());
+                        JavaType.FullyQualified topLevel = (JavaType.FullyQualified) paramType;
+                        while (topLevel.getOwningClass() != null) {
+                            topLevel = topLevel.getOwningClass();
+                        }
+                        imports.add(topLevel.getFullyQualifiedName());
                     }
                 }
 
@@ -162,17 +166,29 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
 
             private J.VariableDeclarations withDeclaredType(J.VariableDeclarations declaration, JavaType type, JavaType.@Nullable Method owner) {
                 TypeTree typeExpression = declaration.getTypeExpression();
-                if (typeExpression instanceof J.Identifier) {
-                    declaration = declaration.withTypeExpression(((J.Identifier) typeExpression).withType(type));
-                } else if (typeExpression instanceof J.FieldAccess) {
-                    J.FieldAccess fieldAccess = (J.FieldAccess) typeExpression;
-                    declaration = declaration.withTypeExpression(fieldAccess.withName(fieldAccess.getName().withType(type)).withType(type));
+                if (typeExpression instanceof J.Identifier || typeExpression instanceof J.FieldAccess) {
+                    declaration = declaration.withTypeExpression((TypeTree) withTypeName((Expression) typeExpression, type));
                 }
                 return declaration.withVariables(ListUtils.map(declaration.getVariables(), variable -> {
                     JavaType.Variable variableType = new JavaType.Variable(null, 0, variable.getSimpleName(), owner, type, emptyList());
                     return variable.withVariableType(variableType)
                             .withName(variable.getName().withType(type).withFieldType(variableType));
                 }));
+            }
+
+            private Expression withTypeName(Expression typeName, @Nullable JavaType type) {
+                if (typeName instanceof J.Identifier) {
+                    return ((J.Identifier) typeName).withType(type);
+                }
+                if (typeName instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) typeName;
+                    JavaType.FullyQualified owner = type instanceof JavaType.FullyQualified ? ((JavaType.FullyQualified) type).getOwningClass() : null;
+                    return fieldAccess
+                            .withTarget(owner == null ? fieldAccess.getTarget() : withTypeName(fieldAccess.getTarget(), owner))
+                            .withName(fieldAccess.getName().withType(type))
+                            .withType(type);
+                }
+                return typeName;
             }
 
             private J.@Nullable MethodInvocation findExplicitConstructorInvocation(List<Statement> statements) {
