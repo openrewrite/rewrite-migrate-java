@@ -37,6 +37,8 @@ import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
+import javax.lang.model.SourceVersion;
+
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
@@ -145,11 +147,16 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     }
                     if (statement.getId().equals(superCall.getId())) {
                         J.MethodInvocation invocation = (J.MethodInvocation) statement;
-                        return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> names[i] == null ? arg :
-                                declared.get(names[i]).withId(Tree.randomId()).withPrefix(arg.getPrefix())));
+                        return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> {
+                            J.Identifier local = names[i] == null ? null : declared.get(names[i]);
+                            return local == null ? arg : local.withId(Tree.randomId()).withPrefix(arg.getPrefix());
+                        }));
                     }
                     return statement;
                 });
+                if (!declared.keySet().containsAll(extractedTypes.keySet())) {
+                    return md;
+                }
                 return withDeclarations.withBody(body.withStatements(statements));
             }
 
@@ -214,20 +221,22 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                 if (isValidBaseName(paramName)) {
                     return paramName;
                 }
+                String name = null;
                 if (arg instanceof J.MethodInvocation) {
-                    return ((J.MethodInvocation) arg).getSimpleName();
+                    name = ((J.MethodInvocation) arg).getSimpleName();
+                } else {
+                    JavaType.FullyQualified created = TypeUtils.asFullyQualified(arg.getType());
+                    if (created != null) {
+                        String className = created.getClassName();
+                        name = StringUtils.uncapitalize(className.substring(className.lastIndexOf('.') + 1));
+                    }
                 }
-                JavaType.FullyQualified created = TypeUtils.asFullyQualified(arg.getType());
-                if (created != null) {
-                    return StringUtils.uncapitalize(created.getClassName());
-                }
-                return "value";
+                return isValidBaseName(name) ? name : "value";
             }
 
             private boolean isValidBaseName(@Nullable String name) {
                 // Reject synthetic parameter names (`arg0`, `arg1`, ...) from constructors compiled without `-parameters`
-                return StringUtils.isNotEmpty( name ) && Character.isJavaIdentifierStart(name.charAt(0)) &&
-                       !name.matches("arg\\d+");
+                return name != null && SourceVersion.isName(name) && !name.matches("arg\\d+");
             }
 
             private String uniqueName(String base, Set<String> usedNames) {

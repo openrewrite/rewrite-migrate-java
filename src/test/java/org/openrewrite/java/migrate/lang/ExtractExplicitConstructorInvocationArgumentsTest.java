@@ -804,4 +804,54 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void nameExtractedNestedTypeArgumentsBySimpleName() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.tools.JavaFileObject;
+
+              class Parent {
+                  Parent(String arg0, Runnable arg1, JavaFileObject.Kind arg2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      super(String.valueOf(1), new Task(), JavaFileObject.Kind.SOURCE);
+                  }
+
+                  static class Task implements Runnable {
+                      public void run() {
+                      }
+                  }
+              }
+              """,
+            """
+              import javax.tools.JavaFileObject;
+
+              class Parent {
+                  Parent(String arg0, Runnable arg1, JavaFileObject.Kind arg2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      String valueOf = String.valueOf(1);
+                      Runnable task = new Task();
+                      JavaFileObject.Kind kind = JavaFileObject.Kind.SOURCE;
+                      super(valueOf, task, kind);
+                  }
+
+                  static class Task implements Runnable {
+                      public void run() {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
 }
