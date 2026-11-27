@@ -120,7 +120,6 @@ public class UseJavaUtilBase64 extends Recipe {
             public J visitNewClass(J.NewClass newClass, ExecutionContext ctx) {
                 J.NewClass c = (J.NewClass) super.visitNewClass(newClass, ctx);
                 if (newBase64Encoder.matches(c)) {
-                    // noinspection Convert2MethodRef
                     JavaTemplate.Builder encoderTemplate = useMimeCoder ?
                             Semantics.expression(this, "getMimeEncoder", () -> Base64.getMimeEncoder()) :
                             Semantics.expression(this, "getEncoder", () -> Base64.getEncoder());

@@ -76,7 +76,6 @@ public class MoveAnnotationToArrayType extends Recipe {
                 md = md.withLeadingAnnotations(leading);
 
                 J.ArrayType arrayType = (J.ArrayType) md.getReturnTypeExpression();
-                //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
                         singletonList(match[0].withPrefix(Space.SINGLE_SPACE)));
                 md = md.withReturnTypeExpression(arrayType);
@@ -109,7 +108,6 @@ public class MoveAnnotationToArrayType extends Recipe {
                 mv = mv.withLeadingAnnotations(leading);
 
                 J.ArrayType arrayType = (J.ArrayType) mv.getTypeExpression();
-                //noinspection DataFlowIssue
                 arrayType = arrayType.withAnnotations(
                         singletonList(match[0].withPrefix(Space.SINGLE_SPACE)));
                 if (mv.getLeadingAnnotations().isEmpty()) {

@@ -42,7 +42,6 @@ public class AnnotateTypesVisitor extends JavaIsoVisitor<Set<String>> {
             String className = split[split.length - 1];
             String packageName = annotationToBeAdded.substring(0, annotationToBeAdded.lastIndexOf("."));
             String interfaceAsString = String.format("package %s\npublic @interface %s {}", packageName, className);
-            //noinspection LanguageMismatch
             cd = JavaTemplate.builder("@" + className)
                     .imports(annotationToBeAdded)
                     .javaParser(JavaParser.fromJavaVersion().dependsOn(interfaceAsString))

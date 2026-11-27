@@ -132,7 +132,6 @@ class PersistenceXmlVisitor extends XmlVisitor<ExecutionContext> {
                     }
 
                     Xml.Tag updatedProp = updateAttributeValue("value", scmValue, sdh.sharedCacheModeProperty);
-                    //noinspection unchecked
                     sdh.propertiesElement = sdh.propertiesElement.withContent(ListUtils.map((List<Content>) sdh.propertiesElement.getContent(), content ->
                             content == sdh.sharedCacheModeProperty ? updatedProp : content));
                     sdh.sharedCacheModeProperty = updatedProp;

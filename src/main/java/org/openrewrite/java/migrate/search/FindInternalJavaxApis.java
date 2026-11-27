@@ -61,7 +61,6 @@ public class FindInternalJavaxApis extends Recipe {
                         .asVisitor((ma, ctx) -> {
                             MethodCall call = ma.getTree();
                             JavaType.Method methodType = call.getMethodType();
-                            //noinspection ConstantValue
                             if (methodType == null || methodType.getReturnType() == null || methodType.getReturnType() instanceof JavaType.Unknown) {
                                 return call;
                             }
