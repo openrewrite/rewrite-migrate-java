@@ -15,7 +15,6 @@
  */
 package org.openrewrite.java.migrate.lang;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import lombok.EqualsAndHashCode;
@@ -30,7 +29,7 @@ import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.SearchResult;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -46,7 +45,7 @@ public class FindThreadStartInConstructor extends Recipe {
             "before the subclass' own fields have been initialised. Move the `start()` call to a " +
             "separate method callers invoke after construction, or declare the class `final`.";
 
-    Set<String> tags = new HashSet<>(asList("RSPEC-S2693"));
+    Set<String> tags = singleton("RSPEC-S2693");
 
     private static final MethodMatcher THREAD_START = new MethodMatcher("java.lang.Thread start()", true);
 
