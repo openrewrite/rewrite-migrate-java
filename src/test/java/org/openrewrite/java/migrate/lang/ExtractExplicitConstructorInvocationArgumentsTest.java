@@ -804,4 +804,145 @@ class ExtractExplicitConstructorInvocationArgumentsTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void nameExtractedNestedTypeArgumentsBySimpleName() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              import javax.tools.JavaFileObject;
+
+              class Parent {
+                  Parent(String arg0, Runnable arg1, JavaFileObject.Kind arg2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      super(String.valueOf(1), new Task(), JavaFileObject.Kind.SOURCE);
+                  }
+
+                  static class Task implements Runnable {
+                      public void run() {
+                      }
+                  }
+              }
+              """,
+            """
+              import javax.tools.JavaFileObject;
+
+              class Parent {
+                  Parent(String arg0, Runnable arg1, JavaFileObject.Kind arg2) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      String valueOf = String.valueOf(1);
+                      Runnable task = new Task();
+                      JavaFileObject.Kind kind = JavaFileObject.Kind.SOURCE;
+                      super(valueOf, task, kind);
+                  }
+
+                  static class Task implements Runnable {
+                      public void run() {
+                      }
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void importOuterTypeOfExtractedNestedParameterType() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              package foo;
+
+              import javax.tools.JavaFileObject;
+
+              public class Parent {
+                  public Parent(JavaFileObject.Kind kind) {
+                  }
+
+                  public static JavaFileObject.Kind source() {
+                      return JavaFileObject.Kind.SOURCE;
+                  }
+              }
+              """
+          ),
+          //language=java
+          java(
+            """
+              package bar;
+
+              import foo.Parent;
+
+              class Child extends Parent {
+                  Child() {
+                      super(Parent.source());
+                  }
+              }
+              """,
+            """
+              package bar;
+
+              import foo.Parent;
+
+              import javax.tools.JavaFileObject;
+
+              class Child extends Parent {
+                  Child() {
+                      JavaFileObject.Kind kind = Parent.source();
+                      super(kind);
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void nameAnonymousClassArgumentByFallback() {
+        rewriteRun(
+          //language=java
+          java(
+            """
+              class Parent {
+                  Parent(Runnable arg0) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      super(new Runnable() {
+                          public void run() {
+                          }
+                      });
+                  }
+              }
+              """,
+            """
+              class Parent {
+                  Parent(Runnable arg0) {
+                  }
+              }
+
+              class Child extends Parent {
+                  Child() {
+                      Runnable value = new Runnable() {
+                          public void run() {
+                          }
+                      };
+                      super(value);
+                  }
+              }
+              """
+          )
+        );
+    }
 }

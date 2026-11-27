@@ -37,6 +37,8 @@ import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.staticanalysis.java.JavaFileChecker;
 
+import javax.lang.model.SourceVersion;
+
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
@@ -115,7 +117,11 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     declarations.append(typeName).append(' ').append(name).append(" = #{any()};\n");
                     declarationArgs.add(arg);
                     if (paramType instanceof JavaType.FullyQualified) {
-                        imports.add(((JavaType.FullyQualified) paramType).getFullyQualifiedName());
+                        JavaType.FullyQualified topLevel = (JavaType.FullyQualified) paramType;
+                        while (topLevel.getOwningClass() != null) {
+                            topLevel = topLevel.getOwningClass();
+                        }
+                        imports.add(topLevel.getFullyQualifiedName());
                     }
                 }
 
@@ -145,27 +151,44 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                     }
                     if (statement.getId().equals(superCall.getId())) {
                         J.MethodInvocation invocation = (J.MethodInvocation) statement;
-                        return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> names[i] == null ? arg :
-                                declared.get(names[i]).withId(Tree.randomId()).withPrefix(arg.getPrefix())));
+                        return invocation.withArguments(ListUtils.map(invocation.getArguments(), (i, arg) -> {
+                            J.Identifier local = names[i] == null ? null : declared.get(names[i]);
+                            return local == null ? arg : local.withId(Tree.randomId()).withPrefix(arg.getPrefix());
+                        }));
                     }
                     return statement;
                 });
+                if (!declared.keySet().containsAll(extractedTypes.keySet())) {
+                    return md;
+                }
                 return withDeclarations.withBody(body.withStatements(statements));
             }
 
             private J.VariableDeclarations withDeclaredType(J.VariableDeclarations declaration, JavaType type, JavaType.@Nullable Method owner) {
                 TypeTree typeExpression = declaration.getTypeExpression();
-                if (typeExpression instanceof J.Identifier) {
-                    declaration = declaration.withTypeExpression(((J.Identifier) typeExpression).withType(type));
-                } else if (typeExpression instanceof J.FieldAccess) {
-                    J.FieldAccess fieldAccess = (J.FieldAccess) typeExpression;
-                    declaration = declaration.withTypeExpression(fieldAccess.withName(fieldAccess.getName().withType(type)).withType(type));
+                if (typeExpression instanceof J.Identifier || typeExpression instanceof J.FieldAccess) {
+                    declaration = declaration.withTypeExpression((TypeTree) withTypeName((Expression) typeExpression, type));
                 }
                 return declaration.withVariables(ListUtils.map(declaration.getVariables(), variable -> {
                     JavaType.Variable variableType = new JavaType.Variable(null, 0, variable.getSimpleName(), owner, type, emptyList());
                     return variable.withVariableType(variableType)
                             .withName(variable.getName().withType(type).withFieldType(variableType));
                 }));
+            }
+
+            private Expression withTypeName(Expression typeName, @Nullable JavaType type) {
+                if (typeName instanceof J.Identifier) {
+                    return ((J.Identifier) typeName).withType(type);
+                }
+                if (typeName instanceof J.FieldAccess) {
+                    J.FieldAccess fieldAccess = (J.FieldAccess) typeName;
+                    JavaType.FullyQualified owner = type instanceof JavaType.FullyQualified ? ((JavaType.FullyQualified) type).getOwningClass() : null;
+                    return fieldAccess
+                            .withTarget(owner == null ? fieldAccess.getTarget() : withTypeName(fieldAccess.getTarget(), owner))
+                            .withName(fieldAccess.getName().withType(type))
+                            .withType(type);
+                }
+                return typeName;
             }
 
             private J.@Nullable MethodInvocation findExplicitConstructorInvocation(List<Statement> statements) {
@@ -214,20 +237,22 @@ public class ExtractExplicitConstructorInvocationArguments extends Recipe {
                 if (isValidBaseName(paramName)) {
                     return paramName;
                 }
+                String name = null;
                 if (arg instanceof J.MethodInvocation) {
-                    return ((J.MethodInvocation) arg).getSimpleName();
+                    name = ((J.MethodInvocation) arg).getSimpleName();
+                } else {
+                    JavaType.FullyQualified created = TypeUtils.asFullyQualified(arg.getType());
+                    if (created != null) {
+                        String className = created.getClassName();
+                        name = StringUtils.uncapitalize(className.substring(className.lastIndexOf('.') + 1));
+                    }
                 }
-                JavaType.FullyQualified created = TypeUtils.asFullyQualified(arg.getType());
-                if (created != null) {
-                    return StringUtils.uncapitalize(created.getClassName());
-                }
-                return "value";
+                return isValidBaseName(name) ? name : "value";
             }
 
             private boolean isValidBaseName(@Nullable String name) {
                 // Reject synthetic parameter names (`arg0`, `arg1`, ...) from constructors compiled without `-parameters`
-                return StringUtils.isNotEmpty( name ) && Character.isJavaIdentifierStart(name.charAt(0)) &&
-                       !name.matches("arg\\d+");
+                return name != null && SourceVersion.isName(name) && !name.matches("arg\\d+");
             }
 
             private String uniqueName(String base, Set<String> usedNames) {
